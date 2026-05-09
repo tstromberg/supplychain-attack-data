@@ -1,0 +1,88 @@
+---
+layout: base.njk
+title: Supply-Chain Attack Compendium
+---
+<div class="hero">
+  <h1>Supply-Chain Attack Compendium</h1>
+  <p class="subtitle">A chronicle of the world's most devastating software supply-chain attacks.</p>
+  <p class="last-updated">Last Updated: {{ buildInfo.lastUpdated }}</p>
+</div>
+
+<section class="dashboard">
+  <div class="chart-container">
+    <canvas id="timelineChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="ecosystemChart"></canvas>
+  </div>
+</section>
+
+<section class="poison-selection">
+  <h2>Pick Your Poison</h2>
+  
+  <div class="poison-cards">
+    <a href="/oss/" class="poison-card">
+      <div class="poison-graphic">
+        <svg viewBox="0 0 100 100" class="metal-svg">
+          <path d="M50 10 L30 40 L40 40 L20 80 L50 60 L50 90 L80 40 L60 40 Z" fill="none" stroke="#fff" stroke-width="2" />
+        </svg>
+      </div>
+      <h3>Open Source</h3>
+      <p>The treacherous wildlands of community code.</p>
+    </a>
+    
+    <a href="/proprietary/" class="poison-card">
+      <div class="poison-graphic">
+        <!-- Abstract hand holding an apple using paths -->
+        <svg viewBox="0 0 100 100" class="metal-svg">
+          <!-- Apple -->
+          <path d="M45 40 C35 40 30 50 30 60 C30 75 45 85 50 85 C55 85 70 75 70 60 C70 50 65 40 55 40 C50 40 50 45 50 45 C50 45 50 40 45 40 Z" fill="none" stroke="#fff" stroke-width="2" />
+          <!-- Apple Stem -->
+          <path d="M50 42 C50 35 55 30 55 30" fill="none" stroke="#fff" stroke-width="2" />
+          <!-- Skeletal Hand / Claws gripping the apple -->
+          <path d="M20 90 C25 70 30 65 35 60 L38 65" fill="none" stroke="#fff" stroke-width="2" />
+          <path d="M30 95 C35 75 45 70 50 65 L48 72" fill="none" stroke="#fff" stroke-width="2" />
+          <path d="M70 95 C65 75 55 70 50 65" fill="none" stroke="#fff" stroke-width="2" />
+          <path d="M80 90 C75 70 70 65 65 60 L62 65" fill="none" stroke="#fff" stroke-width="2" />
+        </svg>
+      </div>
+      <h3>Proprietary</h3>
+      <p>The walled gardens, breached and burning.</p>
+    </a>
+  </div>
+</section>
+
+<section class="chronicle">
+  <h2>The Chronicle of Compromise</h2>
+  <p class="subtitle">Open Source (Left) vs. Proprietary (Right)</p>
+  
+  <div class="timeline timeline-condensed">
+    {% set currentYear = 0 %}
+    {% for attack in attacks %}
+      {% if attack.year != currentYear and attack.year > 1970 %}
+        <div class="timeline-year-wrapper">
+          <h3 class="year-marker">{{ attack.year }}</h3>
+        </div>
+        {% set currentYear = attack.year %}
+      {% endif %}
+      
+      <div class="timeline-item {% if attack.category == 'OSS' %}side-left{% else %}side-right{% endif %}">
+        <div class="timeline-content">
+          <div class="timeline-date">{{ attack.formatted_date }}</div>
+          <h4><a href="/attack/{{ attack.slug }}/">{{ attack.name }}</a></h4>
+          <p class="attack-meta">{{ attack.title }}</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<script>
+  const attackData = [
+    {% for attack in attacks %}
+      { year: {{ attack.year }}, lang: "{{ attack.lang }}" }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ];
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/charts.js"></script>

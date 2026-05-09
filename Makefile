@@ -1,6 +1,6 @@
-.PHONY: all compile run clean
+.PHONY: all compile run clean site serve deploy
 
-all: compile run
+all: compile run site
 
 compile: out/yaml2csv
 
@@ -11,6 +11,19 @@ out/yaml2csv: $(wildcard ./cmd/yaml2csv/*.go)
 run: out/yaml2csv
 	(cd oss && ../out/yaml2csv > ../oss_summary.csv)
 	(cd proprietary && ../out/yaml2csv > ../proprietary_summary.csv)
+
+site:
+	npm install
+	npm run build
+
+serve:
+	@command -v npx >/dev/null 2>&1 || { echo "npx not found. Please install Node.js and npm."; exit 1; }
+	@npx eleventy --version >/dev/null 2>&1 || { echo "Eleventy not found. Installing dependencies..."; npm install; }
+	npm run serve
+
+deploy: site
+	@command -v npx >/dev/null 2>&1 || { echo "npx not found. Please install Node.js and npm."; exit 1; }
+	@npx gh-pages -d _site
 
 clean:
 	@echo "Cleaning up generated files..."

@@ -1,0 +1,70 @@
+---
+pagination:
+  data: attacks
+  size: 1
+  alias: attack
+permalink: "attack/{{ attack.slug }}/index.html"
+layout: base.njk
+eleventyComputed:
+  title: "{{ attack.title }}"
+---
+<div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>{{ attack.title }}</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> {{ attack.name }}</div>
+    <div class="meta-item"><strong>Repository:</strong> {% if attack.repo %}<a href="{{ attack.repo }}" target="_blank">{{ attack.repo }}</a>{% else %}N/A{% endif %}</div>
+    <div class="meta-item"><strong>Date:</strong> {{ attack.formatted_date }}{% if attack.formatted_end_date and attack.formatted_end_date != "Unknown Date" and attack.formatted_end_date != attack.formatted_date %} to {{ attack.formatted_end_date }}{% endif %}{% if attack.duration and attack.duration != "Same day" %} ({{ attack.duration }}){% endif %}</div>
+    <div class="meta-item"><strong>Attribution:</strong> {{ attack.attribution_type }}</div>
+    <div class="meta-item"><strong>Component:</strong> {{ attack.component_type }}</div>
+    <div class="meta-item"><strong>Language:</strong> {{ attack.lang }}</div>
+    <div class="meta-item"><strong>Cause:</strong> {{ attack.cause }}</div>
+    <div class="meta-item"><strong>Motive:</strong> {{ attack.motive }}</div>
+    <div class="meta-item"><strong>Transitive:</strong> {{ attack.transitive }}</div>
+    <div class="meta-item"><strong>Impact Type:</strong> {{ attack.impact_type }}</div>
+    <div class="meta-item"><strong>User Impact:</strong> {{ attack.impact_user_count }}</div>
+    <div class="meta-item"><strong>Domain:</strong> {{ attack.domain }} ({{ attack.domain_type }})</div>
+    <div class="meta-item"><strong>Artifact Type:</strong> {{ attack.artifact_type }}</div>
+    <div class="meta-item"><strong>Insertion Phase:</strong> {{ attack.insertion_phase }}</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">{{ attack.synopsis }}</p>
+
+  {% if attack.versions and attack.versions.length > 0 %}
+  <h2>Compromised Versions</h2>
+  <ul>
+    {% for v in attack.versions %}
+      <li><code>{{ v }}</code></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if attack.hashes and attack.hashes.length > 0 %}
+  <h2>Hashes</h2>
+  <ul class="hashes">
+    {% for h in attack.hashes %}
+      <li><code>{{ h }}</code></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if attack.commits and attack.commits.length > 0 %}
+  <h2>Commits</h2>
+  <ul>
+    {% for c in attack.commits %}
+      <li><code>{{ c }}</code></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if attack.references and attack.references.length > 0 %}
+  <h2>References</h2>
+  <ul>
+    {% for r in attack.references %}
+      <li><a href="{{ r }}" target="_blank">{{ r }}</a></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
