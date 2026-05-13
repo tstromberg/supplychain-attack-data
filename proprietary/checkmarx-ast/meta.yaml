@@ -1,182 +1,238 @@
-- name: checkmarx-ast-github-action
-  title: Checkmarx AST GitHub Action compromised
-  repo: https://github.com/Checkmarx/ast-github-action
-  synopsis: Attackers gained unauthorized access to Checkmarx GitHub repositories through the TeamPCP/Trivy supply-chain chain and injected credential-harvesting payloads into the public AST GitHub Action. Checkmarx reported a March 23, 2026 exposure window for the GitHub Actions and a second affected ast-github-action tag, 2.3.35, on April 22, 2026.
+- name: checkmarx-march-2026
+  title: Checkmarx March 2026 GitHub Actions and OpenVSX compromise
+  repo: https://github.com/Checkmarx
+  synopsis: TeamPCP turned Checkmarx's own developer tooling into a credential-harvesting path on March 23, 2026. Malicious GitHub Action tags and OpenVSX extensions reached CI runners and developer workstations, collecting environment variables, cloud keys, SSH material, Kubernetes tokens, and Checkmarx credentials before exfiltration to attacker infrastructure. The incident mattered because security scanners and IDE plugins sit directly inside privileged build and development workflows.
   start_date: 2026-03-23
-  end_date: 2026-04-22
+  end_date: 2026-03-23
   attribution_type: Advanced Persistent Threat
-  component_type: Application
+  component_type: CI/CD plugin
   lang: Shell
   cause: Compromised Account/Credentials
   motive: Credential Theft
   transitive: true
   historical_artifacts:
     - https://github.com/Checkmarx/ast-github-action
+    - https://github.com/Checkmarx/kics-github-action
+    - https://open-vsx.org/extension/checkmarx/ast-results
+    - https://open-vsx.org/extension/checkmarx/cx-dev-assist
   current_artifacts: []
   domain: github.com
-  domain_type: repository
-  artifact_type: action
+  domain_type: code distribution
+  artifact_type: GitHub Action
   insertion_phase: CI/CD
   impact_type: Credential theft
   impact_user_count: 0
   references:
     - https://checkmarx.com/blog/ongoing-security-updates/
     - https://checkmarx.com/blog/checkmarx-security-update/
-    - https://checkmarx.com/blog/checkmarx-security-update-april-22/
     - https://www.wiz.io/blog/teampcp-attack-kics-github-action
-  versions:
-    - "main during March 2026 exposure window"
-    - "2.3.32"
-    - "2.3.35"
+    - https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags
+  versions: []
   commits: []
   hashes: []
+  affected_artifacts:
+    - name: Checkmarx AST GitHub Action
+      package: checkmarx/ast-github-action
+      ecosystem: GitHub Actions
+      repo: https://github.com/Checkmarx/ast-github-action
+      start_date: "2026-03-23T12:58:00Z"
+      end_date: "2026-03-23T16:50:00Z"
+      domain: github.com
+      domain_type: repository
+      artifact_type: action
+      insertion_phase: CI/CD
+      impact_type: Credential theft
+      versions:
+        - "2.3.32"
+        - "main during March 2026 exposure window"
+      historical_artifacts:
+        - https://github.com/Checkmarx/ast-github-action
+      references:
+        - https://checkmarx.com/blog/ongoing-security-updates/
+        - https://www.wiz.io/blog/teampcp-attack-kics-github-action
+      notes: Checkmarx later identified 2.3.32 and floating main references that resolved during the exposure window as compromised; safe replacement guidance pointed users to v2.3.33 or later.
+    - name: Checkmarx KICS GitHub Action
+      package: checkmarx/kics-github-action
+      ecosystem: GitHub Actions
+      repo: https://github.com/Checkmarx/kics-github-action
+      start_date: "2026-03-23T12:58:00Z"
+      end_date: "2026-03-23T16:50:00Z"
+      domain: github.com
+      domain_type: repository
+      artifact_type: action
+      insertion_phase: CI/CD
+      impact_type: Credential theft
+      versions:
+        - "all active tags during March 2026 exposure window"
+        - "main during March 2026 exposure window"
+      historical_artifacts:
+        - https://github.com/Checkmarx/kics-github-action
+      references:
+        - https://checkmarx.com/blog/ongoing-security-updates/
+        - https://www.wiz.io/blog/teampcp-attack-kics-github-action
+        - https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags
+      notes: Third-party reporting described all release tags as poisoned with setup.sh changes; Checkmarx described any floating reference that resolved during the window as affected.
+    - name: Checkmarx AST Results OpenVSX extension
+      package: checkmarx.ast-results
+      ecosystem: OpenVSX
+      repo: https://open-vsx.org/extension/checkmarx/ast-results
+      start_date: "2026-03-23T02:53:00Z"
+      end_date: "2026-03-23T15:41:00Z"
+      domain: open-vsx.org
+      domain_type: package host
+      artifact_type: extension
+      insertion_phase: distribution
+      impact_type: Credential theft
+      versions:
+        - "2.53.0"
+      hashes:
+        - "sha256:65bd72fcddaf938cefdf55b3323ad29f649a65d4ddd6aea09afa974dfc7f105d"
+      historical_artifacts:
+        - https://open-vsx.org/extension/checkmarx/ast-results
+      references:
+        - https://checkmarx.com/blog/ongoing-security-updates/
+        - https://www.wiz.io/blog/teampcp-attack-kics-github-action
+    - name: Checkmarx Developer Assist OpenVSX extension
+      package: checkmarx.cx-dev-assist
+      ecosystem: OpenVSX
+      repo: https://open-vsx.org/extension/checkmarx/cx-dev-assist
+      start_date: "2026-03-23T02:53:00Z"
+      end_date: "2026-03-23T15:41:00Z"
+      domain: open-vsx.org
+      domain_type: package host
+      artifact_type: extension
+      insertion_phase: distribution
+      impact_type: Credential theft
+      versions:
+        - "1.7.0"
+      hashes:
+        - "sha256:744c9d61b66bcd2bb5474d9afeee6c00bb7e0cd32535781da188b80eb59383e0"
+      historical_artifacts:
+        - https://open-vsx.org/extension/checkmarx/cx-dev-assist
+      references:
+        - https://checkmarx.com/blog/ongoing-security-updates/
+        - https://www.wiz.io/blog/teampcp-attack-kics-github-action
 
-- name: checkmarx-kics-github-action
-  title: Checkmarx KICS GitHub Action compromised
-  repo: https://github.com/Checkmarx/kics-github-action
-  synopsis: >-
-    Attackers gained access to Checkmarx repositories and injected
-    credential-harvesting code into the public KICS GitHub Action. Checkmarx's
-    official March 2026 exposure window controls this record. Third-party
-    analysis described tag poisoning with malicious setup.sh changes,
-    runner-memory and cloud-secret theft, encrypted exfiltration to
-    checkmarx.zone, and attempted systemd or Kubernetes persistence.
-  start_date: 2026-03-23
-  end_date: 2026-03-23
+- name: checkmarx-april-2026
+  title: Checkmarx April 2026 artifact compromise wave
+  repo: https://github.com/Checkmarx
+  synopsis: The April 2026 Checkmarx wave reached additional official distribution channels after the March TeamPCP incident. Checkmarx reported malicious AST GitHub Action, KICS DockerHub, and IDE extension artifacts on April 22, shifting the exposure from a single March day into a later release-channel cleanup problem. The record keeps those artifacts together while preserving their package, version, and distribution-specific details.
+  start_date: 2026-04-22
+  end_date: 2026-04-22
   attribution_type: Advanced Persistent Threat
-  component_type: Application
+  component_type: CI/CD plugin
   lang: Shell
   cause: Compromised Account/Credentials
   motive: Credential Theft
   transitive: true
   historical_artifacts:
-    - https://github.com/Checkmarx/kics-github-action
-  current_artifacts: []
-  domain: github.com
-  domain_type: repository
-  artifact_type: action
-  insertion_phase: CI/CD
-  impact_type: Credential theft
-  impact_user_count: 0
-  references:
-    - https://checkmarx.com/blog/ongoing-security-updates/
-    - https://checkmarx.com/blog/checkmarx-security-update/
-    - https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags
-    - https://www.wiz.io/blog/teampcp-attack-kics-github-action
-  versions:
-    - "main during March 2026 exposure window"
-  commits: []
-  hashes: []
-
-- name: checkmarx-kics-dockerhub
-  title: Checkmarx KICS DockerHub image compromised
-  repo: https://github.com/Checkmarx/kics
-  synopsis: In a second wave of the Checkmarx supply-chain incident, attackers published malicious tags for the public KICS DockerHub image. Checkmarx reported that the affected image tags were present on DockerHub on April 22, 2026, extending the campaign from source and CI assets into container distribution.
-  start_date: 2026-04-22
-  end_date: 2026-04-22
-  attribution_type: Advanced Persistent Threat
-  component_type: Application
-  lang: Go
-  cause: Compromised Account/Credentials
-  motive: Credential Theft
-  transitive: true
-  historical_artifacts:
+    - https://github.com/Checkmarx/ast-github-action
     - https://hub.docker.com/r/checkmarx/kics
-  current_artifacts: []
-  domain: hub.docker.com
-  domain_type: container host
-  artifact_type: OCI image
-  insertion_phase: distribution
-  impact_type: Credential theft
-  impact_user_count: 0
-  references:
-    - https://checkmarx.com/blog/ongoing-security-updates/
-    - https://checkmarx.com/blog/checkmarx-security-update-april-22/
-  versions:
-    - "v2.1.20-debian"
-    - "v2.1.21-debian"
-    - "debian"
-    - "v2.1.21"
-    - "v2.1.20"
-    - "alpine"
-    - "latest"
-  commits: []
-  hashes: []
-
-- name: checkmarx-ast-results-extension
-  title: Checkmarx AST Results VS Code extension compromised
-  repo: https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results
-  synopsis: Malicious versions of the Checkmarx AST Results VS Code extension were published through third-party extension marketplaces during the Checkmarx supply-chain incident. Checkmarx reported an Open VSX malicious version 2.53.0 on March 23, 2026 and later malicious versions 2.63 and 2.66 on April 22, 2026 across Microsoft Marketplace and Open VSX windows.
-  start_date: 2026-03-23
-  end_date: 2026-04-22
-  attribution_type: Advanced Persistent Threat
-  component_type: Plugin
-  lang: TypeScript
-  cause: Compromised Account/Credentials
-  motive: Credential Theft
-  transitive: true
-  historical_artifacts:
     - https://open-vsx.org/extension/checkmarx/ast-results
     - https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results
-  current_artifacts: []
-  domain: open-vsx.org
-  domain_type: package host
-  artifact_type: extension
-  insertion_phase: distribution
-  impact_type: Credential theft
-  impact_user_count: 0
-  references:
-    - https://checkmarx.com/blog/ongoing-security-updates/
-    - https://checkmarx.com/blog/checkmarx-security-update/
-    - https://checkmarx.com/blog/checkmarx-security-update-april-22/
-    - https://www.wiz.io/blog/teampcp-attack-kics-github-action
-  versions:
-    - "2.53.0"
-    - "2.63"
-    - "2.66"
-  commits: []
-  hashes:
-    - "sha256:65bd72fcddaf938cefdf55b3323ad29f649a65d4ddd6aea09afa974dfc7f105d"
-
-- name: checkmarx-developer-assist-extension
-  title: Checkmarx Developer Assist VS Code extension compromised
-  repo: https://marketplace.visualstudio.com/items?itemName=checkmarx.cx-dev-assist
-  synopsis: Malicious versions of the Checkmarx Developer Assist VS Code extension were published during the Checkmarx supply-chain incident. Checkmarx reported an Open VSX malicious version 1.7.0 on March 23, 2026 and later malicious versions 1.17 and 1.19 on April 22, 2026 across Microsoft Marketplace and Open VSX windows.
-  start_date: 2026-03-23
-  end_date: 2026-04-22
-  attribution_type: Advanced Persistent Threat
-  component_type: Plugin
-  lang: TypeScript
-  cause: Compromised Account/Credentials
-  motive: Credential Theft
-  transitive: true
-  historical_artifacts:
     - https://open-vsx.org/extension/checkmarx/cx-dev-assist
     - https://marketplace.visualstudio.com/items?itemName=checkmarx.cx-dev-assist
   current_artifacts: []
-  domain: open-vsx.org
-  domain_type: package host
-  artifact_type: extension
+  domain: github.com
+  domain_type: code distribution
+  artifact_type: release binary/container image/action
   insertion_phase: distribution
   impact_type: Credential theft
   impact_user_count: 0
   references:
     - https://checkmarx.com/blog/ongoing-security-updates/
-    - https://checkmarx.com/blog/checkmarx-security-update/
     - https://checkmarx.com/blog/checkmarx-security-update-april-22/
-    - https://www.wiz.io/blog/teampcp-attack-kics-github-action
-  versions:
-    - "1.7.0"
-    - "1.17"
-    - "1.19"
+  versions: []
   commits: []
-  hashes:
-    - "sha256:744c9d61b66bcd2bb5474d9afeee6c00bb7e0cd32535781da188b80eb59383e0"
+  hashes: []
+  affected_artifacts:
+    - name: Checkmarx AST GitHub Action
+      package: checkmarx/ast-github-action
+      ecosystem: GitHub Actions
+      repo: https://github.com/Checkmarx/ast-github-action
+      start_date: 2026-04-22
+      end_date: 2026-04-22
+      domain: github.com
+      domain_type: repository
+      artifact_type: action
+      insertion_phase: CI/CD
+      impact_type: Credential theft
+      versions:
+        - "2.3.35"
+      historical_artifacts:
+        - https://github.com/Checkmarx/ast-github-action
+      references:
+        - https://checkmarx.com/blog/ongoing-security-updates/
+        - https://checkmarx.com/blog/checkmarx-security-update-april-22/
+    - name: Checkmarx KICS DockerHub image
+      package: checkmarx/kics
+      ecosystem: DockerHub
+      repo: https://hub.docker.com/r/checkmarx/kics
+      start_date: 2026-04-22
+      end_date: 2026-04-22
+      domain: hub.docker.com
+      domain_type: container host
+      artifact_type: OCI image
+      insertion_phase: distribution
+      impact_type: Credential theft
+      versions:
+        - "v2.1.20-debian"
+        - "v2.1.21-debian"
+        - "debian"
+        - "v2.1.21"
+        - "v2.1.20"
+        - "alpine"
+        - "latest"
+      historical_artifacts:
+        - https://hub.docker.com/r/checkmarx/kics
+      references:
+        - https://checkmarx.com/blog/ongoing-security-updates/
+        - https://checkmarx.com/blog/checkmarx-security-update-april-22/
+    - name: Checkmarx AST Results extension
+      package: checkmarx.ast-results
+      ecosystem: VS Code Marketplace/OpenVSX
+      repo: https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results
+      start_date: 2026-04-22
+      end_date: 2026-04-22
+      domain: marketplace.visualstudio.com
+      domain_type: package host
+      artifact_type: extension
+      insertion_phase: distribution
+      impact_type: Credential theft
+      versions:
+        - "2.63"
+        - "2.66"
+      historical_artifacts:
+        - https://open-vsx.org/extension/checkmarx/ast-results
+        - https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results
+      references:
+        - https://checkmarx.com/blog/ongoing-security-updates/
+        - https://checkmarx.com/blog/checkmarx-security-update-april-22/
+    - name: Checkmarx Developer Assist extension
+      package: checkmarx.cx-dev-assist
+      ecosystem: VS Code Marketplace/OpenVSX
+      repo: https://marketplace.visualstudio.com/items?itemName=checkmarx.cx-dev-assist
+      start_date: 2026-04-22
+      end_date: 2026-04-22
+      domain: marketplace.visualstudio.com
+      domain_type: package host
+      artifact_type: extension
+      insertion_phase: distribution
+      impact_type: Credential theft
+      versions:
+        - "1.17"
+        - "1.19"
+      historical_artifacts:
+        - https://open-vsx.org/extension/checkmarx/cx-dev-assist
+        - https://marketplace.visualstudio.com/items?itemName=checkmarx.cx-dev-assist
+      references:
+        - https://checkmarx.com/blog/ongoing-security-updates/
+        - https://checkmarx.com/blog/checkmarx-security-update-april-22/
 
-- name: checkmarx-jenkins-ast-plugin
-  title: Checkmarx Jenkins AST plugin compromised
+- name: checkmarx-may-2026
+  title: Checkmarx May 2026 Jenkins AST plugin compromise
   repo: https://plugins.jenkins.io/checkmarx-ast-scanner
-  synopsis: A modified Checkmarx Jenkins AST plugin was published to the Jenkins Marketplace as version 2026.5.09. Checkmarx advised users to avoid the malicious release and remain on version 2.0.13-829.vc72453fa_1c16 or earlier, keeping CI pipelines off the poisoned plugin until a clean build was available.
+  synopsis: The May 2026 Checkmarx record tracks the Jenkins AST plugin rather than folding it into the March or April waves. A malicious 2026.5.09 release reached the Jenkins Marketplace, putting build pipelines at risk through a trusted scanner plugin. Checkmarx advised users to avoid the poisoned release and remain on version 2.0.13-829.vc72453fa_1c16 or earlier while clean distribution was restored.
   start_date: 2026-05-09
   end_date: 2026-05-10
   attribution_type: Advanced Persistent Threat
@@ -196,10 +252,29 @@
   impact_user_count: 0
   references:
     - https://checkmarx.com/blog/ongoing-security-updates/
-  versions:
-    - "2026.5.09"
+  versions: []
   commits: []
-  hashes:
-    - "sha256:01ff1e56fd59a8fa525d97e670f7f297a1a204331b89b2cd4e36a9abc6419203"
-    - "sha256:f50a96d26a5b0beb29de4127e82b2bf350c21511e5a43d286e43f798dc6cd53f"
-    - "sha256:3ddb8967919a801b3c383e58cddceab21138134c6a26560d99e2672e86f36f2a"
+  hashes: []
+  affected_artifacts:
+    - name: Checkmarx Jenkins AST plugin
+      package: checkmarx-ast-scanner
+      ecosystem: Jenkins Marketplace
+      repo: https://plugins.jenkins.io/checkmarx-ast-scanner
+      start_date: 2026-05-09
+      end_date: 2026-05-10
+      domain: plugins.jenkins.io
+      domain_type: package host
+      artifact_type: plugin
+      insertion_phase: distribution
+      impact_type: Credential theft
+      versions:
+        - "2026.5.09"
+      hashes:
+        - "sha256:01ff1e56fd59a8fa525d97e670f7f297a1a204331b89b2cd4e36a9abc6419203"
+        - "sha256:f50a96d26a5b0beb29de4127e82b2bf350c21511e5a43d286e43f798dc6cd53f"
+        - "sha256:3ddb8967919a801b3c383e58cddceab21138134c6a26560d99e2672e86f36f2a"
+      historical_artifacts:
+        - https://plugins.jenkins.io/checkmarx-ast-scanner
+      references:
+        - https://checkmarx.com/blog/ongoing-security-updates/
+      notes: Checkmarx's guidance named 2.0.13-829.vc72453fa_1c16 or earlier as the version line to stay on while the malicious release was avoided.

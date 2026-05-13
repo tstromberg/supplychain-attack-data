@@ -27,15 +27,82 @@ eleventyComputed:
     <div class="meta-item"><strong>Domain:</strong> {{ attack.domain }} ({{ attack.domain_type }})</div>
     <div class="meta-item"><strong>Artifact Type:</strong> {{ attack.artifact_type }}</div>
     <div class="meta-item"><strong>Insertion Phase:</strong> {{ attack.insertion_phase }}</div>
+    {%- if attack.campaign_links and attack.campaign_links.length > 0 %}
+    <div class="meta-item"><strong>Campaigns:</strong>
+      {% for campaign in attack.campaign_links %}
+        <a href="/campaign/{{ campaign.slug }}/">{{ campaign.title }}</a>{% if not loop.last %}, {% endif %}
+      {% endfor %}
+    </div>
+    {%- endif %}
   </div>
 
   <h2>Synopsis</h2>
   <p class="synopsis">{{ attack.synopsis }}</p>
 
+  {% if attack.affected_artifacts and attack.affected_artifacts.length > 0 %}
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for artifact in attack.affected_artifacts %}
+        <tr>
+          <td>
+            <strong>{{ artifact.name or artifact.package }}</strong>
+            {% if artifact.package and artifact.name and artifact.package != artifact.name %}<br><code>{{ artifact.package }}</code>{% endif %}
+            {% if artifact.ecosystem %}<br><span>{{ artifact.ecosystem }}</span>{% endif %}
+            {% if artifact.repo %}<br><a href="{{ artifact.repo }}" target="_blank">{{ artifact.repo }}</a>{% endif %}
+          </td>
+          <td>{{ artifact.start_date or attack.start_date }}{% if artifact.end_date and artifact.end_date != (artifact.start_date or attack.start_date) %}<br>to {{ artifact.end_date }}{% elif not artifact.end_date and attack.end_date and attack.end_date != attack.start_date %}<br>to {{ attack.end_date }}{% endif %}</td>
+          <td>
+            {% if artifact.versions and artifact.versions.length > 0 %}
+              {% for v in artifact.versions %}<code>{{ v }}</code>{% if not loop.last %}<br>{% endif %}{% endfor %}
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td>
+            {% if artifact.fixed_versions and artifact.fixed_versions.length > 0 %}
+              {% for v in artifact.fixed_versions %}<code>{{ v }}</code>{% if not loop.last %}<br>{% endif %}{% endfor %}
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td>
+            {% if artifact.hashes and artifact.hashes.length > 0 %}
+              {% for h in artifact.hashes %}<code>{{ h }}</code>{% if not loop.last %}<br>{% endif %}{% endfor %}
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
   {% if attack.versions and attack.versions.length > 0 %}
   <h2>Compromised Versions</h2>
   <ul>
     {% for v in attack.versions %}
+      <li><code>{{ v }}</code></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if attack.fixed_versions and attack.fixed_versions.length > 0 %}
+  <h2>Fixed Versions</h2>
+  <ul>
+    {% for v in attack.fixed_versions %}
       <li><code>{{ v }}</code></li>
     {% endfor %}
   </ul>

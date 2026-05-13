@@ -11,6 +11,8 @@ out/yaml2csv: $(wildcard ./cmd/yaml2csv/*.go)
 run: out/yaml2csv
 	(cd oss && ../out/yaml2csv > ../oss_summary.csv)
 	(cd proprietary && ../out/yaml2csv > ../proprietary_summary.csv)
+	(cd oss && ../out/yaml2csv --artifacts > ../oss_artifacts.csv)
+	(cd proprietary && ../out/yaml2csv --artifacts > ../proprietary_artifacts.csv)
 
 site:
 	npm install
@@ -27,5 +29,5 @@ deploy: site
 
 clean:
 	@echo "Cleaning up generated files..."
-	rm -f out/yaml2csv oss_summary.csv proprietary_summary.csv
+	rm -f out/yaml2csv oss_summary.csv proprietary_summary.csv oss_artifacts.csv proprietary_artifacts.csv
 	@rmdir --ignore-fail-on-non-empty out
