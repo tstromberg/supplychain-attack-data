@@ -13,18 +13,25 @@ eleventyComputed:
   <h1>{{ campaign.title }}</h1>
 
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Campaign:</strong> {{ campaign.name }}</div>
+    <div class="meta-item"><strong>Campaign:</strong> {{ campaign.id }}</div>
     <div class="meta-item"><strong>Date:</strong> {{ campaign.formatted_date }}{% if campaign.formatted_end_date and campaign.formatted_end_date != "Unknown Date" and campaign.formatted_end_date != campaign.formatted_date %} to {{ campaign.formatted_end_date }}{% endif %}{% if campaign.duration and campaign.duration != "Same day" %} ({{ campaign.duration }}){% endif %}</div>
-    {% if campaign.attribution_type %}<div class="meta-item"><strong>Attribution:</strong> {{ campaign.attribution_type }}</div>{% endif %}
-    {% if campaign.cause %}<div class="meta-item"><strong>Cause:</strong> {{ campaign.cause }}</div>{% endif %}
-    {% if campaign.motive %}<div class="meta-item"><strong>Motive:</strong> {{ campaign.motive }}</div>{% endif %}
-    {% if campaign.impact_type %}<div class="meta-item"><strong>Impact Type:</strong> {{ campaign.impact_type }}</div>{% endif %}
-    {% if campaign.impact_user_count %}<div class="meta-item"><strong>User Impact:</strong> {{ campaign.impact_user_count }}</div>{% endif %}
+    {% if campaign.actor %}<div class="meta-item"><strong>Actor:</strong> {{ campaign.actor.name }} ({{ campaign.actor.kind }})</div>{% endif %}
+    {% if campaign.impact and campaign.impact.types %}<div class="meta-item"><strong>Impact:</strong> {{ campaign.impact.types | join(", ") }}</div>{% endif %}
+    {% if campaign.impact and campaign.impact.users %}<div class="meta-item"><strong>User Impact:</strong> {{ campaign.impact.users }}</div>{% endif %}
   </div>
 
   {% if campaign.synopsis %}
   <h2>Synopsis</h2>
   <p class="synopsis">{{ campaign.synopsis }}</p>
+  {% endif %}
+
+  {% if campaign.story %}
+  <h2>Story</h2>
+  <div class="story">
+    {% for paragraph in campaign.story | paragraphs %}
+      <p>{{ paragraph }}</p>
+    {% endfor %}
+  </div>
   {% endif %}
 
   {% if campaign.members and campaign.members.length > 0 %}
@@ -34,26 +41,17 @@ eleventyComputed:
       <div class="record-list-item">
         <div class="timeline-date">{{ attack.formatted_date }}</div>
         <h4><a href="/attack/{{ attack.slug }}/">{{ attack.title }}</a></h4>
-        <p class="attack-meta"><strong>Target:</strong> {{ attack.name }} | <strong>Impact:</strong> {{ attack.impact_type }}</p>
+        <p class="attack-meta"><strong>Target:</strong> {{ attack.target.name }} | <strong>Impact:</strong> {{ attack.impact.types | join(", ") }}</p>
       </div>
     {% endfor %}
   </div>
   {% endif %}
 
-  {% if campaign.versions and campaign.versions.length > 0 %}
-  <h2>Campaign Artifact Notes</h2>
+  {% if campaign.notes and campaign.notes.length > 0 %}
+  <h2>Notes</h2>
   <ul>
-    {% for v in campaign.versions %}
-      <li><code>{{ v }}</code></li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-
-  {% if campaign.hashes and campaign.hashes.length > 0 %}
-  <h2>Hashes</h2>
-  <ul class="hashes">
-    {% for h in campaign.hashes %}
-      <li><code>{{ h }}</code></li>
+    {% for note in campaign.notes %}
+      <li>{{ note }}</li>
     {% endfor %}
   </ul>
   {% endif %}
@@ -62,7 +60,7 @@ eleventyComputed:
   <h2>References</h2>
   <ul>
     {% for r in campaign.references %}
-      <li><a href="{{ r }}" target="_blank">{{ r }}</a></li>
+      <li><a href="{{ r.url }}" target="_blank">{{ r.title or r.url }}</a></li>
     {% endfor %}
   </ul>
   {% endif %}

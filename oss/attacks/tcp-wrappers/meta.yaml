@@ -1,30 +1,71 @@
-- name: tcp-wrappers
+---
+- id: tcp-wrappers
   title: tcp-wrappers distribution trojanized granting remote root
-  synopsis: The official source code distribution tarball for tcp-wrappers version 7.6 (`tcp_wrappers_7.6.tar.gz`) was replaced with a trojaned version on several FTP distribution sites, including the primary site at the time (Eindhoven University). The backdoor provided root access to attackers initiating connections from source port 421 and also sent system information via email upon compilation.
-  start_date: 1999-01-21 # Date trojaned file reported available from
-  end_date: 1999-01-22 # Date of CERT Advisory CA-99.01 warning users
-  attribution_type: Individual Hacker
-  component_type: Library # Security Tool
-  lang: C # Backdoor inserted into C source
-  cause: Compromised Infrastructure # FTP distribution sites hacked
-  motive: Unauthorized Access/Control # Root backdoor
-  transitive: false
-  insertion_phase: distribution # Official source tarball replaced on distribution sites
-  impact_type: Backdoor, Remote code execution
+  synopsis: The official source code distribution tarball for tcp-wrappers version
+    7.6 (`tcp_wrappers_7.6.tar.gz`) was replaced with a trojaned version on several
+    FTP distribution sites, including the primary site at the time (Eindhoven University).
+    The backdoor provided root access to attackers initiating connections from source
+    port 421 and also sent system information via email upon compilation.
+  story: |
+    In January 1999, the trusted tcp-wrappers source archive became the attack path. CERT confirmed that copies of `tcp_wrappers_7.6.tar.gz` had been modified by an intruder and made available through FTP distribution sites, including the Eindhoven University site that served as the primary upstream location at the time.
+
+    The backdoor was small but brutal: it could grant root access when an attacker connected from source port 421, and the build also sent identifying system information by email. CERT reissued the advisory on January 22 to correct the port direction, note Wietse Venema's move to a new official distribution site, and publish checksums that let administrators separate authentic source from poisoned source.
+  start_date: 1999-01-21
+  end_date: 1999-01-22
+  target:
+    name: tcp-wrappers
+    kind: library
+    website: https://ftp.win.tue.nl
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: C
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+  artifacts:
+  - id: tcp-wrappers
+    name: tcp-wrappers
+    kind: source_archive
+    website: https://ftp.win.tue.nl
+    start_date: 1999-01-21
+    end_date: 1999-01-22
+    versions:
+    - 7.6
+    locations:
+    - uri: ftp://ftp.win.tue.nl/pub/security/tcp_wrappers_7.6.tar.gz
+      role: distribution
+    - uri: ftp://ftp.porcupine.org/pub/security/tcp_wrappers_7.6.tar.gz
+      role: distribution
+    - uri: https://web.archive.org/web/20140720105610/http://www.cert.org/advisories/CA-1999-01.html
+      role: mirror
+    - uri: https://seclists.org/bugtraq/1999/Jan/282
+      role: mirror
+    - uri: https://www.cs.toronto.edu/sunmanagers/1999/0096.html
+      role: mirror
+    - uri: https://attrition.org/security/advisory/fedcirc/1999/fedcirc.99.01.txt
+      role: mirror
+    hashes:
+    - md5:af7f76fb9960a95a1341c1777b48f1df
+    indicators:
+    - kind: observable
+      value: ftp://ftp.win.tue.nl/pub/security/tcp_wrappers_7.6.tar.gz
+    - kind: observable
+      value: ftp://ftp.porcupine.org/pub/security/tcp_wrappers_7.6.tar.gz
   references:
-    - https://web.archive.org/web/20140720105610/http://www.cert.org/advisories/CA-1999-01.html # Archived CERT Advisory CA-99.01
-    - https://attrition.org/security/advisory/fedcirc/1999/fedcirc.99.01.txt # Mirror of advisory text
-    - https://en.wikipedia.org/wiki/TCP_Wrappers#Security # References the incident
-  versions:
-    - 7.6 # Specific source tarball tcp_wrappers_7.6.tar.gz
-  historical_artifacts:
-    - ftp://ftp.win.tue.nl/pub/security/tcp_wrappers_7.6.tar.gz # Primary compromised site
-    - ftp://ftp.porcupine.org/pub/security/tcp_wrappers_7.6.tar.gz # Original distribution site (potentially affected)
-  current_artifacts:
-    - https://web.archive.org/web/20140720105610/http://www.cert.org/advisories/CA-1999-01.html # Advisory with technical details
-    - https://attrition.org/security/advisory/fedcirc/1999/fedcirc.99.01.txt # Advisory with backdoor technical details
-  domain: ftp.win.tue.nl
-  domain_type: project download host
-  artifact_type: source archive
-  hashes:
-    - md5:3a95175a092f1753a0591bf501ff9d39 # Trojaned tcp_wrappers_7.6.tar.gz (from advisory)
+  - url: https://web.archive.org/web/20140720105610/http://www.cert.org/advisories/CA-1999-01.html
+    title: 'CERT Advisory CA-99.01: Trojan TCP Wrappers'
+  - url: https://seclists.org/bugtraq/1999/Jan/282
+    title: 'Bugtraq: CERT Advisory CA-99.01 - TCP Wrappers Trojan Horse'
+  - url: https://www.cs.toronto.edu/sunmanagers/1999/0096.html
+    title: 'Sun Managers: Break-in? / tcp-wrappers'
+  - url: https://attrition.org/security/advisory/fedcirc/1999/fedcirc.99.01.txt
+    title: 'FedCIRC Advisory FA-99-01: Trojan Horse Version of TCP Wrappers'
+  - url: https://en.wikipedia.org/wiki/TCP_Wrappers#Security
+    title: 'Wikipedia: TCP Wrappers security incident'

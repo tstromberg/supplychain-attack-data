@@ -1,36 +1,55 @@
-- name: rc
+---
+- id: rc
   title: rc NPM package includes malicious coa dependency
-  repo: https://github.com/dominictarr/rc
-  synopsis: The rc configuration loader was compromised indirectly after attackers gained control of coa, one of its dependencies, and published malicious releases. When rc moved onto the poisoned coa versions, it began carrying password-stealing malware transitively, proving that a clean package can still ship dirty code.
-  start_date: 2021-11-04 # Date coa compromise impacted rc
-  end_date: 2021-11-05 # Malicious versions removed
-  attribution_type: Compromised Dependency # Same actor as coa compromise
-  component_type: Library
-  lang: Javascript
-  cause: Malicious Dependency # Malicious coa dependency added
-  motive: Credential Theft
-  transitive: true
-  insertion_phase: dependency # Malicious dependency specified
-  impact_type: Data Exfiltration
-  impact_user_count: 10000000 # Based on weekly downloads of rc
-  references:
-    - https://therecord.media/malware-found-in-coa-and-rc-two-npm-packages-with-23m-weekly-downloads/
-    - https://snyk.io/blog/npm-security-malicious-code-in-rc-and-coa-packages/
-    - https://github.com/advisories/GHSA-g2q5-5433-rhrf
-  versions:
+  synopsis: The rc configuration loader was compromised indirectly after attackers
+    gained control of coa, one of its dependencies, and published malicious releases.
+    When rc moved onto the poisoned coa versions, it began carrying password-stealing
+    malware transitively, proving that a clean package can still ship dirty code.
+  start_date: 2021-11-04
+  end_date: 2021-11-05
+  target:
+    name: rc
+    kind: library
+    repo: https://github.com/dominictarr/rc
+  actor:
+    name: Compromised Dependency
+    kind: dependency
+  language: Javascript
+  method:
+    cause: malicious_dependency
+    phase: dependency
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - data_exfiltration
+    users: 10000000
+  artifacts:
+  - id: rc
+    name: rc
+    kind: source_archive
+    repo: https://github.com/dominictarr/rc
+    start_date: 2021-11-04
+    end_date: 2021-11-05
+    versions:
     - 1.2.9
     - 1.3.9
     - 2.3.9
-  historical_artifacts:
-    - https://registry.npmjs.org/rc/-/rc-1.2.9.tgz
-    - https://registry.npmjs.org/rc/-/rc-1.3.9.tgz
-    - https://registry.npmjs.org/rc/-/rc-2.3.9.tgz
-  current_artifacts:
-    - https://snyk.io/blog/npm-security-malicious-code-in-rc-and-coa-packages/
-    - https://socket.dev/npm/package/rc/versions
-  domain: npmjs.org
-  domain_type: package host
-  artifact_type: source archive
-  hashes:
-    - sha256:47e42e13c821b68a5e7a60114ac739bcb22365c41f0b5dcefa8632ce977a5f53 # rc 1.2.9
-    - sha256:3bbc2a836422ea9c327bb3e7b8429b3b6a878dc25811e19869bb48e0b933c089 # rc 2.3.9
+    locations:
+    - uri: https://registry.npmjs.org/rc/-/rc-1.2.9.tgz
+      role: distribution
+    - uri: https://registry.npmjs.org/rc/-/rc-1.3.9.tgz
+      role: distribution
+    - uri: https://registry.npmjs.org/rc/-/rc-2.3.9.tgz
+      role: distribution
+    - uri: https://snyk.io/blog/npm-security-malicious-code-in-rc-and-coa-packages/
+      role: mirror
+    - uri: https://socket.dev/npm/package/rc/versions
+      role: mirror
+    hashes:
+    - sha256:47e42e13c821b68a5e7a60114ac739bcb22365c41f0b5dcefa8632ce977a5f53
+    - sha256:3bbc2a836422ea9c327bb3e7b8429b3b6a878dc25811e19869bb48e0b933c089
+  references:
+  - url: https://therecord.media/malware-found-in-coa-and-rc-two-npm-packages-with-23m-weekly-downloads/
+  - url: https://snyk.io/blog/npm-security-malicious-code-in-rc-and-coa-packages/
+  - url: https://github.com/advisories/GHSA-g2q5-5433-rhrf

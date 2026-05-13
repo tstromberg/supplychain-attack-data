@@ -1,33 +1,55 @@
-- name: webmin
+---
+- id: webmin-2019
   title: Webmin build infrastructure compromise inserts backdoor (2019)
-  synopsis: Webmin's build infrastructure was compromised, and attackers modified useradmin/password_change.cgi before official releases were produced. The inserted backdoor enabled unauthenticated remote command execution through the password change form, quietly riding multiple signed-looking releases over several months before public discovery by users.
-  start_date: 2019-04-17 # Approximate date backdoor first appeared in build (v1.890)
-  end_date: 2019-08-17 # Date publicly disclosed at Def Con / fixed (v1.930)
-  attribution_type: Individual Hacker
-  component_type: Daemon # System administration tool
-  lang: Perl
-  cause: Compromised Infrastructure # Build infrastructure compromised
-  motive: Unauthorized Access/Control # Root command execution
-  insertion_phase: source # Build process modified source code
-  impact_type: Backdoor, Remote code execution
+  synopsis: Webmin's build infrastructure was compromised, and attackers modified
+    useradmin/password_change.cgi before official releases were produced. The inserted
+    backdoor enabled unauthenticated remote command execution through the password
+    change form, quietly riding multiple signed-looking releases over several months
+    before public discovery by users.
+  start_date: 2019-04-17
+  end_date: 2019-08-17
+  target:
+    name: webmin
+    kind: daemon
+    website: https://webmin.com
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: Perl
+  method:
+    cause: compromised_infrastructure
+    phase: source
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+  artifacts:
+  - id: webmin-2019
+    name: webmin
+    kind: source_archive
+    website: https://webmin.com
+    start_date: 2019-04-17
+    end_date: 2019-08-17
+    versions:
+    - '1.890'
+    - '1.900'
+    - '1.910'
+    - '1.920'
+    locations:
+    - uri: https://sourceforge.net/projects/webadmin/files/webmin/1.920/webmin-1.920.tar.gz/download
+      role: distribution
+    - uri: https://prdownloads.sourceforge.net/webadmin/webmin-1.890.tar.gz
+      role: distribution
+    - uri: https://www.webmin.com/exploit.html
+      role: mirror
+    - uri: https://github.com/webmin/webmin/commit/1a1021d869f27e22c36d4b33b50293289faaa914
+      role: mirror
+    hashes:
+    - sha256:049286261fbcd846142014f4a7782ab3243b1a7ae816a57468f5d2f8c2199b0c
+    - md5:7e1d72249a9eec92f9c9dc69dcfbffb3
   references:
-    - https://pentest.com.tr/exploits/DEFCON-Webmin-1920-Unauthenticated-Remote-Command-Execution.html # Discovery disclosure
-    - https://www.webmin.com/exploit.html # Official explanation
-    - https://nvd.nist.gov/vuln/detail/CVE-2019-15107 # Related CVE
-  domain: webmin.com
-  domain_type: project download host
-  artifact_type: source archive
-  historical_artifacts:
-    - https://sourceforge.net/projects/webadmin/files/webmin/1.920/webmin-1.920.tar.gz/download # Compromised release
-    - https://prdownloads.sourceforge.net/webadmin/webmin-1.890.tar.gz # First compromised version
-  current_artifacts:
-    - https://www.webmin.com/exploit.html # Official explanation with technical details
-    - https://github.com/webmin/webmin/commit/1a1021d869f27e22c36d4b33b50293289faaa914 # Fix commit removing the backdoor
-  hashes:
-    - sha256:049286261fbcd846142014f4a7782ab3243b1a7ae816a57468f5d2f8c2199b0c # Malicious webmin-1.920.tar.gz
-    - md5:7e1d72249a9eec92f9c9dc69dcfbffb3 # webmin-1.890.tar.gz with backdoor
-  versions:
-    - 1.890 # Backdoor introduced
-    - 1.900
-    - 1.910
-    - 1.920 # Backdoor present up to this version
+  - url: https://pentest.com.tr/exploits/DEFCON-Webmin-1920-Unauthenticated-Remote-Command-Execution.html
+  - url: https://www.webmin.com/exploit.html
+  - url: https://nvd.nist.gov/vuln/detail/CVE-2019-15107

@@ -12,7 +12,7 @@ function slugify(value) {
 function uniqueSlugs(records) {
     const slugs = new Set();
     for (const record of records) {
-        const base = slugify(record.name);
+        const base = slugify(record.id);
         let slug = base;
         let counter = 1;
         while (slugs.has(slug)) {
@@ -49,7 +49,7 @@ function loadYamlRecords(dir, options = {}) {
                 dataArray = [dataArray];
             }
             for (const data of dataArray) {
-                if (data && data.name) {
+                if (data && data.id) {
                     data.source_path = fullPath;
                     if (options.category) {
                         data.category = options.category;
@@ -108,17 +108,31 @@ function normalizeCampaignList(record) {
     }
 }
 
-function normalizeAffectedArtifacts(record) {
-    if (!record.affected_artifacts || !Array.isArray(record.affected_artifacts)) {
+function normalizeArtifacts(record) {
+    if (!record.artifacts || !Array.isArray(record.artifacts)) {
         return;
     }
-    for (const artifact of record.affected_artifacts) {
+    for (const artifact of record.artifacts) {
         for (const field of ['start_date', 'end_date']) {
             if (artifact[field] instanceof Date && !isNaN(artifact[field].getTime())) {
                 artifact[field] = artifact[field].toISOString().split('T')[0];
             }
         }
     }
+}
+
+function addDerivedFields(record) {
+    record.name = record.target?.name || record.id;
+    record.repo = record.target?.repo || "";
+    record.component_type = record.target?.kind || "";
+    record.cause = record.method?.cause || "";
+    record.motive = record.method?.motive || "";
+    record.insertion_phase = record.method?.phase || "";
+    record.transitive = record.method?.transitive ?? false;
+    record.impact_type = (record.impact?.types || []).join(", ");
+    record.impact_user_count = record.impact?.users || 0;
+    record.artifact_count = Array.isArray(record.artifacts) ? record.artifacts.length : 0;
+    record.references = record.references || [];
 }
 
 function compareByDate(a, b) {
@@ -134,6 +148,9 @@ function loadCampaigns() {
     const campaigns = loadYamlRecords(root, { category: 'OSS' });
     for (const campaign of campaigns) {
         addDateFields(campaign);
+        campaign.name = campaign.id;
+        campaign.impact_type = (campaign.impact?.types || []).join(", ");
+        campaign.impact_user_count = campaign.impact?.users || 0;
     }
     uniqueSlugs(campaigns);
     campaigns.sort(compareByDate);
@@ -151,17 +168,18 @@ function loadAttacks() {
     const all = oss.concat(proprietary);
 
     const campaigns = loadCampaigns();
-    const campaignByName = new Map(campaigns.map((campaign) => [campaign.name, campaign]));
+    const campaignByName = new Map(campaigns.map((campaign) => [campaign.id, campaign]));
 
     for (const attack of all) {
         addDateFields(attack);
         normalizeCampaignList(attack);
-        normalizeAffectedArtifacts(attack);
+        normalizeArtifacts(attack);
+        addDerivedFields(attack);
         attack.campaign_links = attack.campaigns
             .map((campaignName) => campaignByName.get(campaignName))
             .filter(Boolean)
             .map((campaign) => ({
-                name: campaign.name,
+                id: campaign.id,
                 title: campaign.title,
                 slug: campaign.slug,
             }));
@@ -175,7 +193,7 @@ function loadAttacks() {
 function loadCampaignsWithMembers() {
     const campaigns = loadCampaigns();
     const attacks = loadAttacks();
-    const campaignByName = new Map(campaigns.map((campaign) => [campaign.name, campaign]));
+    const campaignByName = new Map(campaigns.map((campaign) => [campaign.id, campaign]));
 
     for (const campaign of campaigns) {
         campaign.members = [];

@@ -1,36 +1,61 @@
-- name: bitwarden-cli
+---
+- id: bitwarden-cli
   title: Bitwarden CLI Compromise (Shai-Hulud V3)
   campaigns:
-    - teampcp-2026
-  repo: https://github.com/bitwarden/clients
-  synopsis: The official Bitwarden CLI npm package (@bitwarden/cli) version 2026.4.0 was compromised during the broader Checkmarx/TeamPCP supply-chain campaign after attackers abused a GitHub Actions path in Bitwarden's CI/CD pipeline. The malicious package included a bw1.js payload that shared infrastructure with the Checkmarx campaign, harvested GitHub, npm, cloud, SSH, environment, Claude, and MCP credentials, exfiltrated to audit.checkmarx.cx and GitHub commit-based dead drops, and attempted npm/GitHub supply-chain propagation with injected install hooks and workflow files.
+  - teampcp-2026
+  synopsis: The official Bitwarden CLI npm package (@bitwarden/cli) version 2026.4.0
+    was compromised during the broader Checkmarx/TeamPCP supply-chain campaign after
+    attackers abused a GitHub Actions path in Bitwarden's CI/CD pipeline. The malicious
+    package included a bw1.js payload that shared infrastructure with the Checkmarx
+    campaign, harvested GitHub, npm, cloud, SSH, environment, Claude, and MCP credentials,
+    exfiltrated to audit.checkmarx.cx and GitHub commit-based dead drops, and attempted
+    npm/GitHub supply-chain propagation with injected install hooks and workflow files.
   start_date: 2026-04-22
   end_date: 2026-04-23
-  attribution_type: Advanced Persistent Threat
-  component_type: Application
-  lang: JavaScript
-  cause: CI/CD Exploit
-  motive: Credential Theft
-  transitive: true
-  historical_artifacts:
-    - https://www.npmjs.com/package/@bitwarden/cli/v/2026.4.0
-  current_artifacts:
-    - "file:bw1.js"
-    - "url:https://audit.checkmarx.cx/v1/telemetry"
-    - "ip:94.154.172.43"
-    - "path:/tmp/tmp.987654321.lock"
-    - "path:/tmp/_tmp_<Unix Epoch Timestamp>/"
-    - "file:package-updated.tgz"
-  domain: npmjs.com
-  domain_type: package host
-  artifact_type: source archive
-  insertion_phase: CI/CD
-  impact_type: Credential theft, Self-Propagation
-  impact_user_count: 100000
+  target:
+    name: bitwarden-cli
+    kind: application
+    repo: https://github.com/bitwarden/clients
+  actor:
+    name: Advanced Persistent Threat
+    kind: group
+  language: JavaScript
+  method:
+    cause: ci_cd_exploit
+    phase: ci_cd
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - self_propagation
+    users: 100000
+  artifacts:
+  - id: bitwarden-cli
+    name: bitwarden-cli
+    ecosystem: npm
+    kind: source_archive
+    repo: https://github.com/bitwarden/clients
+    start_date: 2026-04-22
+    end_date: 2026-04-23
+    versions:
+    - 2026.4.0
+    locations:
+    - uri: https://www.npmjs.com/package/@bitwarden/cli/v/2026.4.0
+      role: distribution
+    indicators:
+    - kind: file
+      value: bw1.js
+    - kind: url
+      value: https://audit.checkmarx.cx/v1/telemetry
+    - kind: observable
+      value: ip:94.154.172.43
+    - kind: observable
+      value: path:/tmp/tmp.987654321.lock
+    - kind: observable
+      value: path:/tmp/_tmp_<Unix Epoch Timestamp>/
+    - kind: file
+      value: package-updated.tgz
   references:
-    - https://socket.dev/blog/bitwarden-cli-compromised
-    - https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/
-  versions:
-    - "2026.4.0"
-  commits: []
-  hashes: []
+  - url: https://socket.dev/blog/bitwarden-cli-compromised
+  - url: https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/

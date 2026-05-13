@@ -1,30 +1,71 @@
-- name: phpmyadmin
+---
+- id: phpmyadmin-2012
   title: phpMyAdmin SourceForge mirror distributes backdoored zip file
-  repo: https://github.com/phpmyadmin/phpmyadmin
-  synopsis: An official phpMyAdmin download mirror on SourceForge was compromised, and attackers replaced phpMyAdmin-3.5.2.2-all-languages.zip with an archive containing the server_sync.php backdoor. Users who landed on that mirror received a poisoned administrative tool through a legitimate distribution lane for database operators and maintainers.
-  start_date: 2012-09-25 # Approximate date malicious file appeared
-  end_date: 2012-09-27 # Date discovered and removed
-  attribution_type: Individual Hacker
-  component_type: Application # Database management tool
-  lang: PHP
-  cause: Compromised Infrastructure # SourceForge mirror infrastructure
-  motive: Unauthorized Access/Control # Backdoor functionality
-  transitive: false
-  insertion_phase: distribution # Compromise of official download mirror
-  impact_type: Backdoor, Remote code execution
+  synopsis: The SourceForge mirror cdnetworks-kr-1 distributed a modified
+    phpMyAdmin-3.5.2.2-all-languages.zip archive containing the server_sync.php
+    backdoor. The payload allowed remote PHP code execution as the web server user,
+    and js/cross_framing_protection.js was also modified. SourceForge logs showed
+    about 400 downloads before the mirror was removed from rotation.
+  story: |
+    Around September 22, 2012, the SourceForge mirror `cdnetworks-kr-1` in Korea began serving a corrupted copy of `phpMyAdmin-3.5.2.2-all-languages.zip`. This was not a lookalike package or a third-party repost: users could arrive through the legitimate SourceForge download system and receive a backdoored archive for a database administration tool commonly exposed on web servers.
+
+    phpMyAdmin's advisory, issued September 25 and updated September 26, identified `server_sync.php` as the backdoor and `js/cross_framing_protection.js` as another modified file. The backdoor allowed remote PHP code execution under the web server account. SourceForge removed the mirror from rotation on September 25, confirmed the compromise was limited to that mirror, and reported roughly 400 downloads of the corrupted file.
+  start_date: 2012-09-22
+  end_date: 2012-09-25
+  target:
+    name: phpmyadmin
+    kind: application
+    website: https://www.phpmyadmin.net
+    repo: https://github.com/phpmyadmin/phpmyadmin
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: PHP
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+    users: 400
+  artifacts:
+  - id: phpmyadmin-2012
+    name: phpmyadmin
+    kind: source_archive
+    repo: https://github.com/phpmyadmin/phpmyadmin
+    start_date: 2012-09-22
+    end_date: 2012-09-25
+    versions:
+    - 3.5.2.2
+    locations:
+    - uri: https://sourceforge.net/projects/phpmyadmin/files/phpMyAdmin/3.5.2.2/phpMyAdmin-3.5.2.2-all-languages.zip/download
+      role: distribution
+    - uri: http://cdnetworks-kr-1.dl.sourceforge.net/project/phpmyadmin/phpMyAdmin/3.5.2.2/phpMyAdmin-3.5.2.2-all-languages.zip
+      role: distribution
+    - uri: https://www.phpmyadmin.net/security/PMASA-2012-5/
+      role: mirror
+    - uri: https://sourceforge.net/blog/phpmyadmin-back-door/
+      role: mirror
+    - uri: https://www.zdnet.com/article/phpmyadmin-update-released-after-security-compromise/
+      role: mirror
+    hashes:
+    - md5:cee5fa3565412733e42a8e461a2bcb39
+    indicators:
+    - kind: observable
+      value: cdnetworks-kr-1
+    - kind: file
+      value: server_sync.php
+    - kind: file
+      value: js/cross_framing_protection.js
   references:
-    - https://www.phpmyadmin.net/news/2012/9/27/sourceforge-mirror-compromised/ # Official advisory
-    - https://www.zdnet.com/article/phpmyadmin-update-released-after-security-compromise/ # News coverage
-  versions:
-    - 3.5.2.2 # Specifically the -all-languages.zip file from one mirror
-  historical_artifacts:
-    - https://sourceforge.net/projects/phpmyadmin/files/phpMyAdmin/3.5.2.2/phpMyAdmin-3.5.2.2-all-languages.zip/download # Original download URL from compromised mirror
-    - http://ignum-dl.sourceforge.net/project/phpmyadmin/phpMyAdmin/3.5.2.2/phpMyAdmin-3.5.2.2-all-languages.zip # Specific mirror URL
-  current_artifacts:
-    - https://www.phpmyadmin.net/news/2012/9/27/sourceforge-mirror-compromised/ # Advisory with technical details
-    - https://www.zdnet.com/article/phpmyadmin-update-released-after-security-compromise/ # Analysis with description of the backdoor
-  domain: sourceforge.net
-  domain_type: package host
-  artifact_type: source archive
-  hashes:
-    - md5:cee5fa3565412733e42a8e461a2bcb39 # Malicious phpMyAdmin-3.5.2.2-all-languages.zip
+  - url: https://www.phpmyadmin.net/security/PMASA-2012-5/
+    title: PMASA-2012-5
+  - url: https://sourceforge.net/blog/phpmyadmin-back-door/
+    title: phpMyAdmin corrupted copy on Korean mirror server
+  - url: https://www.hkcert.org/security-bulletin/phpmyadmin-compromised-source-package-backdoor-vulnerability
+    title: phpMyAdmin Compromised Source Package Backdoor Vulnerability
+  - url: https://www.zdnet.com/article/phpmyadmin-update-released-after-security-compromise/
+    title: phpMyAdmin update released after security compromise

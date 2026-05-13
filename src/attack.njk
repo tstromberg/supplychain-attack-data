@@ -13,20 +13,17 @@ eleventyComputed:
   <h1>{{ attack.title }}</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> {{ attack.name }}</div>
-    <div class="meta-item"><strong>Repository:</strong> {% if attack.repo %}<a href="{{ attack.repo }}" target="_blank">{{ attack.repo }}</a>{% else %}N/A{% endif %}</div>
+    <div class="meta-item"><strong>Target:</strong> {{ attack.target.name }}{% if attack.target.website %} · <a href="{{ attack.target.website }}" target="_blank">website</a>{% endif %}{% if attack.target.repo %} · <a href="{{ attack.target.repo }}" target="_blank">repo</a>{% endif %}</div>
     <div class="meta-item"><strong>Date:</strong> {{ attack.formatted_date }}{% if attack.formatted_end_date and attack.formatted_end_date != "Unknown Date" and attack.formatted_end_date != attack.formatted_date %} to {{ attack.formatted_end_date }}{% endif %}{% if attack.duration and attack.duration != "Same day" %} ({{ attack.duration }}){% endif %}</div>
-    <div class="meta-item"><strong>Attribution:</strong> {{ attack.attribution_type }}</div>
-    <div class="meta-item"><strong>Component:</strong> {{ attack.component_type }}</div>
-    <div class="meta-item"><strong>Language:</strong> {{ attack.lang }}</div>
-    <div class="meta-item"><strong>Cause:</strong> {{ attack.cause }}</div>
-    <div class="meta-item"><strong>Motive:</strong> {{ attack.motive }}</div>
-    <div class="meta-item"><strong>Transitive:</strong> {{ attack.transitive }}</div>
-    <div class="meta-item"><strong>Impact Type:</strong> {{ attack.impact_type }}</div>
-    <div class="meta-item"><strong>User Impact:</strong> {{ attack.impact_user_count }}</div>
-    <div class="meta-item"><strong>Domain:</strong> {{ attack.domain }} ({{ attack.domain_type }})</div>
-    <div class="meta-item"><strong>Artifact Type:</strong> {{ attack.artifact_type }}</div>
-    <div class="meta-item"><strong>Insertion Phase:</strong> {{ attack.insertion_phase }}</div>
+    <div class="meta-item"><strong>Actor:</strong> {{ attack.actor.name }} ({{ attack.actor.kind }})</div>
+    <div class="meta-item"><strong>Target Kind:</strong> {{ attack.target.kind }}</div>
+    <div class="meta-item"><strong>Language:</strong> {{ attack.language or "N/A" }}</div>
+    <div class="meta-item"><strong>Cause:</strong> {{ attack.method.cause }}</div>
+    <div class="meta-item"><strong>Motive:</strong> {{ attack.method.motive }}</div>
+    <div class="meta-item"><strong>Transitive:</strong> {{ attack.method.transitive }}</div>
+    <div class="meta-item"><strong>Impact:</strong> {{ attack.impact.types | join(", ") }}</div>
+    <div class="meta-item"><strong>User Impact:</strong> {{ attack.impact.users or 0 }}</div>
+    <div class="meta-item"><strong>Phase:</strong> {{ attack.method.phase }}</div>
     {%- if attack.campaign_links and attack.campaign_links.length > 0 %}
     <div class="meta-item"><strong>Campaigns:</strong>
       {% for campaign in attack.campaign_links %}
@@ -39,7 +36,16 @@ eleventyComputed:
   <h2>Synopsis</h2>
   <p class="synopsis">{{ attack.synopsis }}</p>
 
-  {% if attack.affected_artifacts and attack.affected_artifacts.length > 0 %}
+  {% if attack.story %}
+  <h2>Story</h2>
+  <div class="story">
+    {% for paragraph in attack.story | paragraphs %}
+      <p>{{ paragraph }}</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if attack.artifacts and attack.artifacts.length > 0 %}
   <h2>Affected Artifacts</h2>
   <div class="artifact-table-wrap">
     <table class="artifact-table">
@@ -53,12 +59,13 @@ eleventyComputed:
         </tr>
       </thead>
       <tbody>
-        {% for artifact in attack.affected_artifacts %}
+        {% for artifact in attack.artifacts %}
         <tr>
           <td>
             <strong>{{ artifact.name or artifact.package }}</strong>
             {% if artifact.package and artifact.name and artifact.package != artifact.name %}<br><code>{{ artifact.package }}</code>{% endif %}
-            {% if artifact.ecosystem %}<br><span>{{ artifact.ecosystem }}</span>{% endif %}
+            {% if artifact.ecosystem or artifact.kind %}<br><span>{{ artifact.ecosystem }}{% if artifact.ecosystem and artifact.kind %} · {% endif %}{{ artifact.kind }}</span>{% endif %}
+            {% if artifact.website %}<br><a href="{{ artifact.website }}" target="_blank">{{ artifact.website }}</a>{% endif %}
             {% if artifact.repo %}<br><a href="{{ artifact.repo }}" target="_blank">{{ artifact.repo }}</a>{% endif %}
           </td>
           <td>{{ artifact.start_date or attack.start_date }}{% if artifact.end_date and artifact.end_date != (artifact.start_date or attack.start_date) %}<br>to {{ artifact.end_date }}{% elif not artifact.end_date and attack.end_date and attack.end_date != attack.start_date %}<br>to {{ attack.end_date }}{% endif %}</td>
@@ -90,20 +97,20 @@ eleventyComputed:
   </div>
   {% endif %}
 
-  {% if attack.versions and attack.versions.length > 0 %}
-  <h2>Compromised Versions</h2>
+  {% if attack.locations and attack.locations.length > 0 %}
+  <h2>Locations</h2>
   <ul>
-    {% for v in attack.versions %}
-      <li><code>{{ v }}</code></li>
+    {% for location in attack.locations %}
+      <li><code>{{ location.role }}</code>: <code>{{ location.uri }}</code></li>
     {% endfor %}
   </ul>
   {% endif %}
 
-  {% if attack.fixed_versions and attack.fixed_versions.length > 0 %}
-  <h2>Fixed Versions</h2>
+  {% if attack.indicators and attack.indicators.length > 0 %}
+  <h2>Indicators</h2>
   <ul>
-    {% for v in attack.fixed_versions %}
-      <li><code>{{ v }}</code></li>
+    {% for indicator in attack.indicators %}
+      <li><code>{{ indicator.kind }}:{{ indicator.value }}</code></li>
     {% endfor %}
   </ul>
   {% endif %}
@@ -130,7 +137,7 @@ eleventyComputed:
   <h2>References</h2>
   <ul>
     {% for r in attack.references %}
-      <li><a href="{{ r }}" target="_blank">{{ r }}</a></li>
+      <li><a href="{{ r.url }}" target="_blank">{{ r.title or r.url }}</a></li>
     {% endfor %}
   </ul>
   {% endif %}

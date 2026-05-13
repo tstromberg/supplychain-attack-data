@@ -1,31 +1,67 @@
-- name: unrealircd
+---
+- id: unrealircd
   title: UnrealIRCd distribution tarball backdoored for RCE
-  synopsis: The official UnrealIRCd 3.2.8.1 distribution tarball was replaced with a backdoored version on official download infrastructure and remained exposed for months. The hidden source change allowed arbitrary command execution with the privileges of the IRC daemon when a client sent the AB;COMMAND; trigger. The DailyDave thread preserved attacker-side context and a compact Python exploit for the same trigger.
-  start_date: 2009-11-01 # Approximate date backdoored tarball appeared
-  end_date: 2010-06-12 # Date backdoor discovered/announced
-  attribution_type: Individual Hacker
-  component_type: Daemon # IRC Server
-  lang: C # Backdoor code in C source
-  cause: Compromised Infrastructure # Download mirror(s) hacked
-  motive: Unauthorized Access/Control # Command execution
-  insertion_phase: distribution # Official download tarball replaced
-  impact_type: Backdoor, Remote code execution
+  synopsis: The official UnrealIRCd 3.2.8.1 source distribution was replaced on
+    project mirrors around November 10, 2009 and remained exposed until June 12,
+    2010. The injected code disguised itself behind DEBUGMODE3 logic and executed
+    arbitrary commands with the daemon user's privileges when a client sent input
+    beginning with AB.
+  story: |
+    Around November 10, 2009, UnrealIRCd 3.2.8.1 source mirrors were replaced with a tarball containing a backdoor. The substitution was not discovered until June 12, 2010, leaving a seven-month window in which users who built the IRC server from project mirrors could deploy attacker-modified source. LWN noted that official Windows binaries were not affected, but the project had not yet provided signatures that would have made the swap easier to detect.
+
+    The source change was disguised as `DEBUGMODE3` logic. When input began with `AB`, `DEBUGMODE3_INFO` matched and `DEBUG3_LOG` ultimately called `system()`, executing the rest of the client-supplied command as the user running the daemon. The DailyDave thread preserved the attacker-facing lore around the trigger, while LWN captured the larger lesson: unsigned source distribution left a project mirror network able to turn ordinary build practice into remote command execution.
+  start_date: 2009-11-10
+  end_date: 2010-06-12
+  target:
+    name: unrealircd
+    kind: daemon
+    website: https://unrealircd.org
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: C
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+  artifacts:
+  - id: unrealircd
+    name: unrealircd
+    kind: source_archive
+    website: https://unrealircd.org
+    start_date: 2009-11-10
+    end_date: 2010-06-12
+    versions:
+    - 3.2.8.1
+    locations:
+    - uri: http://mirror.unrealircd.org/Unreal3.2.8.1.tar.gz
+      role: distribution
+    - uri: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2010-2075
+      role: mirror
+    - uri: https://www.rapid7.com/db/modules/exploit/unix/irc/unreal_ircd_3281_backdoor/
+      role: mirror
+    - uri: https://seclists.org/dailydave/2010/q2/56
+      role: mirror
+    hashes:
+    - md5:e5a4f00a16455005a45d969992173911
+    indicators:
+    - kind: observable
+      value: ftp://ftp.unrealircd.com/Unreal3.2.8.1.tar.gz
+    - kind: observable
+      value: AB
+    - kind: file
+      value: DEBUGMODE3
   references:
-    - https://www.rapid7.com/db/modules/exploit/unix/irc/unreal_ircd_3281_backdoor/ # Exploit module details
-    - https://lwn.net/Articles/392201/ # Initial report
-    - https://arstechnica.com/information-technology/2010/06/unreal-ircd-backdoored-for-months/ # News reporting
-    - https://seclists.org/dailydave/2010/q2/56 # Attacker-side context and AB; exploit example
-  historical_artifacts:
-    - ftp://ftp.unrealircd.com/Unreal3.2.8.1.tar.gz # Original compromised download location
-    - http://mirror.unrealircd.org/Unreal3.2.8.1.tar.gz # Mirror of compromised tarball
-  current_artifacts:
-    - https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2010-2075 # CVE with technical details
-    - https://www.rapid7.com/db/modules/exploit/unix/irc/unreal_ircd_3281_backdoor/ # Exploit code for research
-    - https://seclists.org/dailydave/2010/q2/56 # Python exploit example
-  domain: unrealircd.org
-  domain_type: project download host
-  artifact_type: source archive
-  versions:
-    - 3.2.8.1 # Specific source tarball Unreal3.2.8.1.tar.gz
-  hashes:
-    - md5:e5a4f00a16455005a45d969992173911 # Backdoored Unreal3.2.8.1.tar.gz
+  - url: https://www.rapid7.com/db/modules/exploit/unix/irc/unreal_ircd_3281_backdoor/
+    title: UnrealIRCD 3.2.8.1 Backdoor Command Execution
+  - url: https://lwn.net/Articles/392201/
+    title: A backdoor in UnrealIRCd
+  - url: https://arstechnica.com/information-technology/2010/06/unreal-ircd-backdoored-for-months/
+    title: UnrealIRCd backdoored for months
+  - url: https://seclists.org/dailydave/2010/q2/56
+    title: 'DailyDave: Unreal IRC 0day'

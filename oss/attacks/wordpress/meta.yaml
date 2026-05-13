@@ -1,30 +1,56 @@
-- name: wordpress
+---
+- id: wordpress
   title: WordPress official download backdoored enabling remote execution (2.1.1)
-  synopsis: Shortly after its release, the official WordPress 2.1.1 download package (`.zip`) hosted on wordpress.org was compromised by attackers who gained access to a web server. Obfuscated malicious PHP code was injected into core files (`wp-includes/vars.php` and possibly `wp-includes/theme.php`), creating a backdoor. This backdoor allowed remote attackers to pass arbitrary PHP code via specific request parameters (like `ix` or `iz`) for execution on the server, effectively granting them control over sites that installed the compromised package. The WordPress team detected the compromise quickly, removed the malicious package, and released version 2.1.2 with fixes and additional security hardening.
-  start_date: 2007-02-21 # Approximate date compromised package was available
-  end_date: 2007-02-22 # Approximate date discovered/removed/replaced with 2.1.2
-  attribution_type: Individual Hacker # Attacker(s) who breached wordpress.org server
-  component_type: Daemon # Content Management System (CMS)
-  lang: PHP
-  cause: Compromised Infrastructure # wordpress.org download server hacked
-  motive: Unauthorized Access/Control # RCE backdoor
-  insertion_phase: distribution # Official download package modified on server
-  impact_type: Backdoor, Remote code execution
+  synopsis: Shortly after its release, the official WordPress 2.1.1 download package
+    (`.zip`) hosted on wordpress.org was compromised by attackers who gained access
+    to a web server. Obfuscated malicious PHP code was injected into core files (`wp-includes/vars.php`
+    and possibly `wp-includes/theme.php`), creating a backdoor. This backdoor allowed
+    remote attackers to pass arbitrary PHP code via specific request parameters (like
+    `ix` or `iz`) for execution on the server, effectively granting them control over
+    sites that installed the compromised package. The WordPress team detected the
+    compromise quickly, removed the malicious package, and released version 2.1.2
+    with fixes and additional security hardening.
+  start_date: 2007-02-21
+  end_date: 2007-02-22
+  target:
+    name: wordpress
+    kind: daemon
+    website: https://wordpress.org
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: PHP
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+  artifacts:
+  - id: wordpress
+    name: wordpress
+    kind: source_archive
+    website: https://wordpress.org
+    start_date: 2007-02-21
+    end_date: 2007-02-22
+    versions:
+    - 2.1.1
+    locations:
+    - uri: https://wordpress.org/wordpress-2.1.1.zip
+      role: distribution
+    - uri: https://wordpress.org/wordpress-2.1.1.tar.gz
+      role: distribution
+    - uri: https://blog.sucuri.net/2017/01/website-backdoor-wp-php-info.html
+      role: mirror
+    - uri: https://wpvulndb.com/vulnerabilities/6231
+      role: mirror
+    hashes:
+    - md5:9b2e021b99f71846a99db1f3975e108d
+    - sha1:43e08637c4b60b9208ee160483f4e9241241bc5e
   references:
-    - https://wordpress.org/news/2007/03/upgrade-to-wordpress-212/ # Official announcement
-    - https://threatpost.com/wordpress-fixes-security-issues-in-core-engine-021622/21404/ # News coverage
-    - https://www.thetechherald.com/tech-news/wordpress-211-infected-with-backdoor-code/
-  historical_artifacts:
-    - https://wordpress.org/wordpress-2.1.1.zip # Original compromised download package
-    - https://wordpress.org/wordpress-2.1.1.tar.gz # Alternative format potentially affected
-  current_artifacts:
-    - https://blog.sucuri.net/2017/01/website-backdoor-wp-php-info.html # Analysis of similar backdoor technique
-    - https://wpvulndb.com/vulnerabilities/6231 # WPScan Vulnerability Database entry
-  domain: wordpress.org
-  domain_type: project download host
-  artifact_type: source archive
-  hashes:
-    - md5:9b2e021b99f71846a99db1f3975e108d # Compromised wordpress-2.1.1.zip
-    - sha1:43e08637c4b60b9208ee160483f4e9241241bc5e # Alternative hash for malicious version
-  versions:
-    - 2.1.1 # Specific official download package from wordpress.org during the compromise window
+  - url: https://wordpress.org/news/2007/03/upgrade-to-wordpress-212/
+  - url: https://threatpost.com/wordpress-fixes-security-issues-in-core-engine-021622/21404/
+  - url: https://www.thetechherald.com/tech-news/wordpress-211-infected-with-backdoor-code/

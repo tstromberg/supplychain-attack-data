@@ -1,28 +1,59 @@
-- name: wuftpd
+---
+- id: wuftpd
   title: wu-ftpd source distribution trojaned with backdoor
-  synopsis: The source code distribution for the popular wu-ftpd FTP server was modified by an attacker to include a backdoor. This trojaned version was then uploaded to the primary distribution site. The backdoor allowed attackers who knew the trigger mechanism to gain root privileges on systems that compiled and ran the compromised server.
-  start_date: 1994-03-28 # Date trojaned version discovered
-  end_date: 1994-03-28 # Quickly identified and replaced
-  attribution_type: Individual Hacker
-  component_type: Daemon # FTP Server
-  lang: C
-  cause: Compromised Infrastructure # Primary distribution site hacked
-  motive: Unauthorized Access/Control # Root backdoor
-  insertion_phase: distribution # Official source tarball replaced
-  impact_type: Backdoor, Remote code execution
+  synopsis: The source code distribution for the popular wu-ftpd FTP server was modified
+    by an attacker to include a backdoor. This trojaned version was then uploaded
+    to the primary distribution site. The backdoor allowed attackers who knew the
+    trigger mechanism to gain root privileges on systems that compiled and ran the
+    compromised server.
+  story: |
+    In March 1994, copies of the wuarchive ftpd source distribution were found to have been modified at trusted FTP distribution points. The compromised source affected at least wu-ftpd 2.2, and CERT later warned that version 2.1f and possibly earlier versions may also have been exposed. The practical risk was severe for the era: administrators could compile what looked like normal upstream FTP daemon source and unknowingly install a root-level backdoor.
+
+    CERT's advisory told sites running wuarchive ftpd to install version 2.3 or disable the FTP daemon, and it published checksums so administrators could distinguish known-good and trojaned archives. A contemporary comp.unix.admin thread captured how quickly the incident became a reference point for open-source distribution trust: operators discussed the backdoored FTP daemon, compared it with earlier trusting-trust ideas, and treated the official source channel itself as the compromised boundary.
+  start_date: 1994-03-28
+  end_date: 1994-03-28
+  target:
+    name: wuftpd
+    kind: daemon
+    website: https://ftp.wustl.edu
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: C
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+  artifacts:
+  - id: wuftpd
+    name: wuftpd
+    kind: source_archive
+    website: https://ftp.wustl.edu
+    start_date: 1994-03-28
+    end_date: 1994-03-28
+    versions:
+    - 2.2
+    locations:
+    - uri: https://www.cert.org/historical/advisories/CA-1994-07.cfm
+      role: mirror
+    - uri: https://web.archive.org/web/20030804000609/http://www.team.net/mjb/hawp/hacks/wuftpd.html
+      role: mirror
+    hashes:
+    - md5:3e12b0efb95bcb97e5b58fb916323618
+    indicators:
+    - kind: observable
+      value: ftp://ftp.wustl.edu/packages/wuarchive-ftpd/wu-ftpd-2.2.tar.Z
+    - kind: observable
+      value: ftp://ftp.cs.umn.edu/pub/wuftpd/wu-ftpd-2.2.tar.Z
   references:
-    - https://www.cert.org/historical/advisories/CA-1994-07.cfm # CERT Advisory
-    - https://web.archive.org/web/20030804000609/http://www.team.net/mjb/hawp/hacks/wuftpd.html # Archive of initial findings
-  historical_artifacts:
-    - ftp://ftp.wustl.edu/packages/wuarchive-ftpd/wu-ftpd-2.2.tar.Z # Original compromised download location
-    - ftp://ftp.cs.umn.edu/pub/wuftpd/wu-ftpd-2.2.tar.Z # Mirror potentially affected
-  current_artifacts:
-    - https://www.cert.org/historical/advisories/CA-1994-07.cfm # Advisory with technical details
-    - https://web.archive.org/web/20030804000609/http://www.team.net/mjb/hawp/hacks/wuftpd.html # Analysis of the backdoor
-  domain: ftp.wustl.edu
-  domain_type: project download host
-  artifact_type: source archive
-  hashes:
-    - md5:3e12b0efb95bcb97e5b58fb916323618 # Backdoored wu-ftpd-2.2.tar.Z
-  versions:
-    - 2.2 # wu-ftpd-2.2.tar.Z distribution file
+  - url: https://www.cert.org/historical/advisories/CA-1994-07.cfm
+    title: 'CERT Advisory CA-1994-07: wuarchive ftpd Trojan Horse'
+  - url: https://web.archive.org/web/20030804000609/http://www.team.net/mjb/hawp/hacks/wuftpd.html
+    title: wuftpd backdoor notes
+  - url: https://groups.google.com/g/comp.unix.admin/c/5gZt3uQbJ9E
+    title: 'comp.unix.admin: wuarchive ftpd Trojan'

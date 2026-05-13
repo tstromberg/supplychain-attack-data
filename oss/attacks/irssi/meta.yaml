@@ -1,29 +1,62 @@
-- name: irssi
+---
+- id: irssi
   title: Irssi configure script backdoored
-  repo: https://github.com/irssi/irssi
-  synopsis: The irssi.org server was cracked, and the official Irssi 0.8.4 source distribution served a modified configure script for about two months. The backdoor compiled into builds made from the poisoned archive and allowed remote access through IRC-triggered behavior. The project disclosed the compromise, restored the site, and released Irssi 0.8.4a with a clean configure script.
+  synopsis: The irssi.org server was cracked, and the official Irssi 0.8.4 source
+    distribution served a modified configure script for about two months. The backdoor
+    forked during configuration, connected to 204.120.36.206 on TCP/6667, and handed
+    stdin, stdout, and stderr to the remote socket. The project restored the site
+    and released Irssi 0.8.4a with a clean configure script.
+  story: |
+    In March 2002, irssi.org was cracked and the Irssi 0.8.4 source distribution was altered through its `configure` script. For roughly two months, users building from the official source archive could execute attacker-added C code before they ever ran the IRC client. The project disclosed the compromise on May 25 and noted that binaries were not affected.
+
+    The injected code looked like a small autoconf test, but it forked, opened a TCP connection to 204.120.36.206 on port 6667, and duped standard input, output, and error to that socket. The practical detection advice was equally direct: grep the source tree for `SOCK_STREAM` in `configure`, replace the source, and verify future releases with the author's GPG key.
   start_date: 2002-03-14
   end_date: 2002-05-25
-  attribution_type: Unknown attacker
-  component_type: Application
-  lang: Shell
-  cause: Website compromise
-  motive: Unauthorized Access
-  transitive: false
-  insertion_phase: distribution
-  impact_type: Backdoor, Remote code execution
-  impact_user_count: 0
+  target:
+    name: irssi
+    kind: application
+    website: https://irssi.org
+    repo: https://github.com/irssi/irssi
+  actor:
+    name: Unknown attacker
+    kind: unknown
+  language: Shell
+  method:
+    cause: website_compromise
+    phase: distribution
+    motive: unauthorized_access
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+    users: 0
+  artifacts:
+  - id: irssi
+    name: irssi
+    kind: source_archive
+    website: https://irssi.org
+    repo: https://github.com/irssi/irssi
+    start_date: 2002-03-14
+    end_date: 2002-05-25
+    versions:
+    - 0.8.4
+    locations:
+    - uri: https://irssi.org/files/irssi-0.8.4.tar.gz
+      role: distribution
+    indicators:
+    - kind: observable
+      value: 204.120.36.206:6667
+    - kind: file
+      value: configure
+    - kind: observable
+      value: SOCK_STREAM
   references:
-    - https://irssi.org/2002/05/25/irssi.org-cracked-irssis-configure-backdoored-for-past-two-months/
-    - https://nvd.nist.gov/vuln/detail/CVE-2002-1840
-    - https://cvefeed.io/vuln/detail/CVE-2002-1840
-  versions:
-    - irssi 0.8.4
-  commits: []
-  historical_artifacts:
-    - https://irssi.org/files/irssi-0.8.4.tar.gz
-  current_artifacts: []
-  domain: irssi.org
-  domain_type: project download host
-  artifact_type: source archive
-  hashes: []
+  - url: https://irssi.org/2002/05/25/irssi.org-cracked-irssis-configure-backdoored-for-past-two-months/
+    title: irssi.org cracked, irssi's configure backdoored for past two months
+  - url: https://artofhacking.com/tucops3/hack/unix/live/aoh_unix5372.htm
+    title: irssi backdoor
+  - url: https://nvd.nist.gov/vuln/detail/CVE-2002-1840
+    title: 'NVD: CVE-2002-1840'
+  - url: https://cvefeed.io/vuln/detail/CVE-2002-1840
+    title: 'CVEFeed: CVE-2002-1840'

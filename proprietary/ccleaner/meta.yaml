@@ -1,77 +1,91 @@
-- name: CCleaner
+---
+- id: ccleaner
   title: CCleaner distributed with multi-stage backdoor.
-  synopsis: Attackers compromised Piriform's build environment and inserted a backdoor into official CCleaner releases before Avast completed the acquisition. More than two million users received the first-stage telemetry collector, while a much narrower second stage pursued high-value technology companies. The incident showed how consumer utility software could become a precision espionage filter.
-  start_date: 2017-03-12 # Approximate date initial compromise or malware installation on Piriform's network
-  end_date: 2017-09-12 # Date clean version 5.34 was released (infected version 5.33 released Aug 15, discovered Sept 13)
-  attribution_type: Nation-state
-  component_type: Application # System utility
-  cause: Build system compromise
-  motive: Espionage
-  transitive: false
-  insertion_phase: CI/CD # Malicious code injected during build process
-  impact_type: Backdoor, Data theft, Remote access (targeted second stage)
-  impact_user_count: 2270000 # Users who downloaded the backdoored first-stage version
+  synopsis: Attackers compromised Piriform's build environment and inserted a backdoor
+    into official CCleaner releases before Avast completed the acquisition. More than
+    two million users received the first-stage telemetry collector, while a much narrower
+    second stage pursued high-value technology companies. The incident showed how
+    consumer utility software could become a precision espionage filter.
+  start_date: 2017-03-12
+  end_date: 2017-09-12
+  target:
+    name: CCleaner
+    kind: application
+    website: https://piriform.com
+  actor:
+    name: Nation-state
+    kind: state
+  method:
+    cause: build_system_compromise
+    phase: ci_cd
+    motive: espionage
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - data_theft
+    - remote_access_targeted_second_stage
+    users: 2270000
+  locations:
+  - uri: https://download.piriform.com/ccsetup533.exe
+    role: distribution
+  - uri: https://download.piriform.com/ccleaner/5.33/ccsetup533.exe
+    role: distribution
+  - uri: http://download.piriform.com/ccsetup533_slim.exe
+    role: distribution
+  - uri: https://www.ccleaner.com/ccleaner/download/standard
+    role: distribution
+  - uri: https://github.com/InQuest/malware-samples/tree/master/2017-09-CCleaner-Supply-Chain-Attack
+    role: mirror
+  - uri: https://www.virustotal.com/gui/file/1a4a5123d7b2c534cb3e3168f7032cf9ebf38b9a2a97226d0fdb7933cf6030ff
+    role: mirror
+  - uri: https://www.hybrid-analysis.com/sample/1a4a5123d7b2c534cb3e3168f7032cf9ebf38b9a2a97226d0fdb7933cf6030ff
+    role: mirror
+  artifacts:
+  - id: ccleaner
+    name: CCleaner
+    package: CCleaner
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://piriform.com
+    start_date: 2017-08-15
+    end_date: 2017-09-12
+    versions:
+    - 5.33.6162
+    locations:
+    - uri: https://download.piriform.com/ccsetup533.exe
+      role: distribution
+    - uri: https://download.piriform.com/ccleaner/5.33/ccsetup533.exe
+      role: distribution
+    - uri: http://download.piriform.com/ccsetup533_slim.exe
+      role: distribution
+    hashes:
+    - sha256:1a4a5123d7b2c534cb3e3168f7032cf9ebf38b9a2a97226d0fdb7933cf6030ff
+    - md5:5d4a6ae5ed7de98404bedfe504dbfb4a
+  - id: ccleaner-cloud
+    name: CCleaner Cloud
+    package: CCleaner Cloud
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://piriform.com
+    start_date: 2017-08-15
+    end_date: 2017-09-12
+    versions:
+    - 1.07.3191
+  - id: ccleaner-second-stage-dll
+    name: CCleaner second-stage payload
+    package: CCleaner second-stage DLL
+    ecosystem: windows dll
+    kind: binary_archive
+    website: https://piriform.com
+    start_date: 2017-09-12
+    end_date: 2017-09-12
+    hashes:
+    - sha256:36b36ee9515e0a60629d2c722b006b33e543dce1c8c2611053e0651a0bfdb2e9
+    notes:
+    - Second-stage DLL deployed only to selected high-value targets after the first-stage
+      CCleaner compromise.
   references:
-    - https://blog.avast.com/ccleaner-incident-report-now-and-then-avast
-    - https://blogs.cisco.com/talos/ccleaner-c2-goes-down
-    - https://www.talosintelligence.com/reports/TALOS-2017-0481 # For one of the vulnerabilities exploited by second stage
-  versions: []
-  domain: piriform.com # Original software vendor domain (downloads.piriform.com)
-  domain_type: project download host
-  artifact_type: binary archive # Installer
-  historical_artifacts:
-    - "https://download.piriform.com/ccsetup533.exe"
-    - "https://download.piriform.com/ccleaner/5.33/ccsetup533.exe"
-    - "http://download.piriform.com/ccsetup533_slim.exe"
-    - "https://www.ccleaner.com/ccleaner/download/standard"
-  current_artifacts:
-    - "https://github.com/InQuest/malware-samples/tree/master/2017-09-CCleaner-Supply-Chain-Attack"
-    - "https://www.virustotal.com/gui/file/1a4a5123d7b2c534cb3e3168f7032cf9ebf38b9a2a97226d0fdb7933cf6030ff"
-    - "https://www.hybrid-analysis.com/sample/1a4a5123d7b2c534cb3e3168f7032cf9ebf38b9a2a97226d0fdb7933cf6030ff"
-  hashes: []
-  affected_artifacts:
-    - name: "CCleaner"
-      package: "CCleaner"
-      ecosystem: "Windows installer"
-      start_date: 2017-08-15
-      end_date: 2017-09-12
-      domain: piriform.com
-      domain_type: project download host
-      artifact_type: binary archive
-      insertion_phase: CI/CD
-      impact_type: "Backdoor, Data theft, Remote access"
-      impact_user_count: 2270000
-      versions:
-        - "5.33.6162"
-      hashes:
-        - "sha256:1a4a5123d7b2c534cb3e3168f7032cf9ebf38b9a2a97226d0fdb7933cf6030ff"
-        - "md5:5d4a6ae5ed7de98404bedfe504dbfb4a"
-      historical_artifacts:
-        - "https://download.piriform.com/ccsetup533.exe"
-        - "https://download.piriform.com/ccleaner/5.33/ccsetup533.exe"
-        - "http://download.piriform.com/ccsetup533_slim.exe"
-    - name: "CCleaner Cloud"
-      package: "CCleaner Cloud"
-      ecosystem: "Windows installer"
-      start_date: 2017-08-15
-      end_date: 2017-09-12
-      domain: piriform.com
-      domain_type: project download host
-      artifact_type: binary archive
-      insertion_phase: CI/CD
-      impact_type: "Backdoor, Data theft, Remote access"
-      versions:
-        - "1.07.3191"
-    - name: "CCleaner second-stage payload"
-      package: "CCleaner second-stage DLL"
-      ecosystem: "Windows DLL"
-      start_date: 2017-09-12
-      end_date: 2017-09-12
-      domain: piriform.com
-      domain_type: project download host
-      artifact_type: binary archive
-      insertion_phase: CI/CD
-      impact_type: "Backdoor, Data theft, Remote access"
-      hashes:
-        - "sha256:36b36ee9515e0a60629d2c722b006b33e543dce1c8c2611053e0651a0bfdb2e9"
-      notes: "Second-stage DLL deployed only to selected high-value targets after the first-stage CCleaner compromise."
+  - url: https://blog.avast.com/ccleaner-incident-report-now-and-then-avast
+  - url: https://blogs.cisco.com/talos/ccleaner-c2-goes-down
+  - url: https://www.talosintelligence.com/reports/TALOS-2017-0481

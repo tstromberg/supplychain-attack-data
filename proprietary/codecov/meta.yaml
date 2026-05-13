@@ -1,32 +1,55 @@
-- name: codecov
+---
+- id: codecov
   title: Codecov Bash Uploader compromised via CI/CD
-  repo: https://github.com/codecov/codecov-bash
-  synopsis: Attackers modified Codecov's Bash Uploader after gaining access to a private GCP key through a flawed Docker image creation process. The one-line change exfiltrated environment variables from customer CI/CD jobs, pulling credentials, tokens, and keys from build systems. Its impact came from position; one trusted coverage script quietly crossed many private software pipelines.
+  synopsis: Attackers modified Codecov's Bash Uploader after gaining access to a private
+    GCP key through a flawed Docker image creation process. The one-line change exfiltrated
+    environment variables from customer CI/CD jobs, pulling credentials, tokens, and
+    keys from build systems. Its impact came from position; one trusted coverage script
+    quietly crossed many private software pipelines.
   start_date: 2021-01-31
   end_date: 2021-04-01
-  attribution_type: Unknown
-  component_type: Application
-  lang: Shell
-  cause: Stolen credentials # Leaked CI/CD variable leading to image build compromise
-  motive: Espionage # Credential harvesting
-  transitive: true
-  domain: codecov.io
-  domain_type: project download host
-  artifact_type: source code
-  insertion_phase: CI/CD # Compromise of the build/distribution process for the uploader script
-  impact_type: Credential theft, Data theft
+  target:
+    name: codecov
+    kind: application
+    website: https://codecov.io
+    repo: https://github.com/codecov/codecov-bash
+  actor:
+    name: Unknown
+    kind: unknown
+  language: Shell
+  method:
+    cause: stolen_credentials
+    phase: ci_cd
+    motive: espionage
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - data_theft
+  artifacts:
+  - id: codecov
+    name: codecov
+    kind: source_code
+    website: https://codecov.io
+    repo: https://github.com/codecov/codecov-bash
+    start_date: 2021-01-31
+    end_date: 2021-04-01
+    locations:
+    - uri: https://codecov.io/bash
+      role: distribution
+    - uri: https://raw.githubusercontent.com/codecov/codecov-bash/master/codecov
+      role: distribution
+    - uri: https://codecov.s3.amazonaws.com/bash/codecov
+      role: distribution
+    - uri: https://github.com/codecov/codecov-bash/blob/373961d648b96a1402514e4e457746d67f782a83/codecov
+      role: mirror
+    - uri: https://about.codecov.io/security-update/compromised-bash-uploader/
+      role: mirror
+    - uri: https://github.com/codecov/codecov-bash/commit/373961d648b96a1402514e4e457746d67f782a83
+      role: mirror
+    hashes:
+    - sha256:6730a44f191168573710105178477116f718333b6de1f008ff811066c424bb59
+    commits:
+    - 373961d648b96a1402514e4e457746d67f782a83
   references:
-    - https://about.codecov.io/security-update/
-  commits:
-    - 373961d648b96a1402514e4e457746d67f782a83 # Commit containing the malicious change to the uploader script
-
-  historical_artifacts:
-    - "https://codecov.io/bash"
-    - "https://raw.githubusercontent.com/codecov/codecov-bash/master/codecov"
-    - "https://codecov.s3.amazonaws.com/bash/codecov"
-  current_artifacts:
-    - "https://github.com/codecov/codecov-bash/blob/373961d648b96a1402514e4e457746d67f782a83/codecov"
-    - "https://about.codecov.io/security-update/compromised-bash-uploader/"
-    - "https://github.com/codecov/codecov-bash/commit/373961d648b96a1402514e4e457746d67f782a83"
-  hashes:
-    - sha256:6730a44f191168573710105178477116f718333b6de1f008ff811066c424bb59 # Hash of the compromised bash uploader script
+  - url: https://about.codecov.io/security-update/

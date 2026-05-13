@@ -1,75 +1,93 @@
-- name: 3CX
+---
+- id: 3cx
   title: 3CX app updates delivered multi-stage malware.
-  synopsis: Attackers compromised 3CX's build process and shipped malware through signed Desktop App updates for Windows and macOS to a customer base spanning hundreds of thousands of organizations. The breach cascaded from another supply-chain attack, X_TRADER, and turned 3CX into a downstream delivery system for data theft, reconnaissance, and follow-on payloads inside enterprise networks.
-  start_date: 2022-12-07 # Approximate date C2 infrastructure was activated/testing began
-  end_date: 2023-03-30 # Public disclosure and remediation efforts underway
-  attribution_type: Nation-state
-  component_type: Application # VoIP Softphone Client
-  cause: Build system compromise # Initial vector to 3CX was via other compromised software (X_TRADER) downloaded by an employee
-  motive: Espionage # Potentially financial gain for later stages
-  transitive: true # The compromise of 3CX was due to another supply chain attack (X_TRADER software)
-  insertion_phase: CI/CD # Malicious code injected into 3CX Desktop App during build/packaging
-  impact_type: Backdoor, Data theft, Remote access
-  lang: C
-  impact_user_count: 600000 # Number of business customers using 3CX software globally (potential reach)
+  synopsis: Attackers compromised 3CX's build process and shipped malware through
+    signed Desktop App updates for Windows and macOS to a customer base spanning hundreds
+    of thousands of organizations. The breach cascaded from another supply-chain attack,
+    X_TRADER, and turned 3CX into a downstream delivery system for data theft, reconnaissance,
+    and follow-on payloads inside enterprise networks.
+  start_date: 2022-12-07
+  end_date: 2023-03-30
+  target:
+    name: 3CX
+    kind: application
+    website: https://3cx.com
+  actor:
+    name: Nation-state
+    kind: state
+  language: C
+  method:
+    cause: build_system_compromise
+    phase: ci_cd
+    motive: espionage
+    transitive: true
+  impact:
+    types:
+    - backdoor
+    - data_theft
+    - remote_access
+    users: 600000
+  locations:
+  - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi
+    role: distribution
+  - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi
+    role: distribution
+  - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg
+    role: distribution
+  - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg
+    role: distribution
+  - uri: https://malware-research.org/3cx-supply-chain-attack-iocs-indicators-of-compromise/
+    role: mirror
+  - uri: https://www.crowdstrike.com/blog/crowdstrike-detects-and-prevents-active-intrusion-campaign-targeting-3cxdesktopapp-customers/
+    role: mirror
+  - uri: https://github.com/sophoslabs/IoCs/blob/master/3CX-IoCs.csv
+    role: mirror
+  - uri: https://www.virustotal.com/gui/file/53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4
+    role: mirror
+  - uri: https://www.securelist.com/the-3cx-incident-what-we-know/109371/
+    role: mirror
+  artifacts:
+  - id: 3cxdesktopapp-windows
+    name: 3CX Desktop App for Windows
+    package: 3CXDesktopApp
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://3cx.com
+    start_date: 2022-12-07
+    end_date: 2023-03-30
+    versions:
+    - 18.12.407
+    - 18.12.416
+    locations:
+    - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi
+      role: distribution
+    - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi
+      role: distribution
+    hashes:
+    - sha256:53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4
+    - sha256:2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43
+  - id: 3cxdesktopapp-macos
+    name: 3CX Desktop App for macOS
+    package: 3CXDesktopApp
+    ecosystem: macos disk image
+    kind: binary_archive
+    website: https://3cx.com
+    start_date: 2022-12-07
+    end_date: 2023-03-30
+    versions:
+    - 18.11.1213
+    - 18.12.402
+    - 18.12.407
+    - 18.12.416
+    locations:
+    - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg
+      role: distribution
+    - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg
+      role: distribution
+    hashes:
+    - sha256:e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be
+    - sha256:7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5
   references:
-    - https://www.mandiant.com/resources/blog/3cx-software-supply-chain-compromise
-    - https://www.volexity.com/blog/2023/03/30/3cx-supply-chain-compromise-leads-to-iconic-incident/
-    - https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-090a
-  versions: []
-  domain: 3cx.com # Official distribution domain
-  domain_type: project download host
-  artifact_type: binary archive # Software update/installer
-  historical_artifacts:
-    - "https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi"
-    - "https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi"
-    - "https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg"
-    - "https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg"
-  current_artifacts:
-    - "https://malware-research.org/3cx-supply-chain-attack-iocs-indicators-of-compromise/"
-    - "https://www.crowdstrike.com/blog/crowdstrike-detects-and-prevents-active-intrusion-campaign-targeting-3cxdesktopapp-customers/"
-    - "https://github.com/sophoslabs/IoCs/blob/master/3CX-IoCs.csv"
-    - "https://www.virustotal.com/gui/file/53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4"
-    - "https://www.securelist.com/the-3cx-incident-what-we-know/109371/"
-  hashes: []
-  affected_artifacts:
-    - name: "3CX Desktop App for Windows"
-      package: "3CXDesktopApp"
-      ecosystem: "Windows installer"
-      start_date: 2022-12-07
-      end_date: 2023-03-30
-      domain: 3cx.com
-      domain_type: project download host
-      artifact_type: binary archive
-      insertion_phase: CI/CD
-      impact_type: "Backdoor, Data theft, Remote access"
-      versions:
-        - "18.12.407"
-        - "18.12.416"
-      hashes:
-        - "sha256:53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4"
-        - "sha256:2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43"
-      historical_artifacts:
-        - "https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi"
-        - "https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi"
-    - name: "3CX Desktop App for macOS"
-      package: "3CXDesktopApp"
-      ecosystem: "macOS disk image"
-      start_date: 2022-12-07
-      end_date: 2023-03-30
-      domain: 3cx.com
-      domain_type: project download host
-      artifact_type: binary archive
-      insertion_phase: CI/CD
-      impact_type: "Backdoor, Data theft, Remote access"
-      versions:
-        - "18.11.1213"
-        - "18.12.402"
-        - "18.12.407"
-        - "18.12.416"
-      hashes:
-        - "sha256:e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be"
-        - "sha256:7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5"
-      historical_artifacts:
-        - "https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg"
-        - "https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg"
+  - url: https://www.mandiant.com/resources/blog/3cx-software-supply-chain-compromise
+  - url: https://www.volexity.com/blog/2023/03/30/3cx-supply-chain-compromise-leads-to-iconic-incident/
+  - url: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-090a

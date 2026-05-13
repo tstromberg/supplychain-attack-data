@@ -1,31 +1,84 @@
-- name: proftpd
+---
+- id: proftpd
   title: ProFTPD official site compromise distributes backdoored source
-  repo: https://github.com/proftpd/proftpd
-  synopsis: The main FTP server distributing the ProFTPD source code (`ftp.proftpd.org`) was compromised. Attackers replaced the legitimate source code tarball for ProFTPD version 1.3.3c with a modified version containing a backdoor. Compiling and running this version would allow attackers remote root access.
+  synopsis: ProFTPD's main FTP and rsync distribution server was compromised on
+    November 28, 2010, and the 1.3.3c source archives were replaced with backdoored
+    copies until December 2. The modified daemon granted unauthenticated root access
+    through the HELP command trigger ACIDBITCHEZ, while the configure script also
+    compiled and ran a callback program during builds.
+  story: |
+    Around 20:00 UTC on November 28, 2010, attackers compromised ProFTPD's main distribution server, `ftp.proftpd.org`, which also acted as the project's rsync source for official mirrors. They replaced ProFTPD 1.3.3c source archives with modified copies, so anyone downloading from the official site or mirrors through December 2 could receive poisoned source through the normal project channel.
+
+    The backdoor had two faces. At build time, the modified `configure` script compiled and ran `tests/tests.c`, which attempted an HTTP callback to 212.26.42.47 on port 9090. At runtime, a patch in `src/help.c` gave unauthenticated users root shell execution when they issued `HELP ACIDBITCHEZ`. The published diff and hashes turned the incident into a compact lesson in source-release trust: a project server, a mirror network, and a small source patch were enough to turn a widely deployed FTP daemon into a root shell.
   start_date: 2010-11-28
-  end_date: 2010-12-01 # Approximate discovery/replacement window
-  attribution_type: Individual Hacker
-  component_type: Application # FTP Server
-  lang: C # Backdoor inserted into C source
-  cause: Compromised Infrastructure # Official FTP distribution server hacked
-  motive: Unauthorized Access/Control # Root backdoor
-  transitive: false
-  insertion_phase: distribution # Official download source tarball replaced
-  impact_type: Backdoor, Remote code execution
+  end_date: 2010-12-02
+  target:
+    name: proftpd
+    kind: application
+    website: https://ftp.proftpd.org
+    repo: https://github.com/proftpd/proftpd
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: C
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+  artifacts:
+  - id: proftpd
+    name: proftpd
+    kind: source_archive
+    website: https://ftp.proftpd.org
+    repo: https://github.com/proftpd/proftpd
+    start_date: 2010-11-28
+    end_date: 2010-12-02
+    versions:
+    - 1.3.3c
+    locations:
+    - uri: ftp://ftp.proftpd.org/distrib/source/proftpd-1.3.3c.tar.gz
+      role: distribution
+    - uri: ftp://mirror.proftpd.org/proftpd-1.3.3c.tar.gz
+      role: distribution
+    - uri: https://www.exploit-db.com/application/15662
+      role: mirror
+    - uri: https://www.aldeid.com/wiki/Exploits/proftpd-1.3.3c-backdoor
+      role: mirror
+    - uri: https://www.theregister.com/2010/12/02/proftpd_backdoor/
+      role: mirror
+    - uri: https://www.zdnet.com/article/open-source-proftpd-hacked-backdoor-planted-in-source-code/
+      role: mirror
+    - uri: https://www.securityfocus.com/bid/45150
+      role: mirror
+    hashes:
+    - md5:4f2c554d6273b8145095837913ba9e5d
+    - md5:8571bd78874b557e98480ed48e2df1d2
+    indicators:
+    - kind: observable
+      value: ftp://ftp.proftpd.org/distrib/source/proftpd-1.3.3c.tar.gz
+    - kind: observable
+      value: ftp://mirror.proftpd.org/proftpd-1.3.3c.tar.gz
+    - kind: observable
+      value: HELP ACIDBITCHEZ
+    - kind: observable
+      value: 212.26.42.47:9090
+    - kind: file
+      value: src/help.c
+    - kind: file
+      value: tests/tests.c
   references:
-    - https://www.theregister.com/2010/12/02/proftpd_backdoor/ # News report on the backdoor
-    - https://lwn.net/Articles/418326/ # LWN coverage of the incident
-    - https://www.linux-magazine.com/Online/News/ProFTPD-Backdoor-Discovered # Linux Magazine coverage
-  versions:
-    - 1.3.3c # Specific source tarball
-  historical_artifacts:
-    - ftp://ftp.proftpd.org/distrib/source/proftpd-1.3.3c.tar.gz # Original compromised download location
-    - ftp://mirror.proftpd.org/proftpd-1.3.3c.tar.gz # Mirror potentially affected
-  current_artifacts:
-    - https://www.theregister.com/2010/12/02/proftpd_backdoor/ # Analysis with technical details
-    - https://www.securityfocus.com/bid/45150 # SecurityFocus with backdoor details
-  domain: ftp.proftpd.org
-  domain_type: project download host
-  artifact_type: source archive
-  hashes:
-    - md5:565b57ceda4b00b80f896c5f44703291 # Backdoored proftpd-1.3.3c.tar.gz
+  - url: https://www.theregister.com/2010/12/02/proftpd_backdoor/
+    title: Backdoor sneaked into ProFTPD source code
+  - url: https://www.zdnet.com/article/open-source-proftpd-hacked-backdoor-planted-in-source-code/
+    title: Open source ProFTPD hacked, backdoor planted in source code
+  - url: https://www.aldeid.com/wiki/Exploits/proftpd-1.3.3c-backdoor
+    title: Exploits/proftpd-1.3.3c-backdoor
+  - url: https://lwn.net/Articles/418326/
+    title: ProFTPD source archive backdoored
+  - url: https://www.linux-magazine.com/Online/News/ProFTPD-Backdoor-Discovered
+    title: ProFTPD Backdoor Discovered

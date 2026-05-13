@@ -1,42 +1,69 @@
-- name: openx
+---
+- id: openx
   title: OpenX Source archive backdoored
-  synopsis: The official OpenX Source 2.8.10 distribution archives were compromised for months, shipping a remote PHP code execution backdoor in the open-source ad server. The payload hid obfuscated PHP inside flowplayer-3.1.1.min.js, while modified delivery code invoked it through MAX_commonReadFile and require_once. Compromised ad servers could be taken over and then used for malvertising, phishing, or drive-by download campaigns against site visitors.
+  synopsis: The official OpenX Source 2.8.10 distribution archives were compromised
+    for months, shipping a remote PHP code execution backdoor in the open-source ad
+    server. The payload hid obfuscated PHP inside flowplayer-3.1.1.min.js, while modified
+    delivery code invoked it through MAX_commonReadFile and require_once. Compromised
+    ad servers could be taken over and then used for malvertising, phishing, or drive-by
+    download campaigns against site visitors.
   start_date: 2012-11-01
   end_date: 2013-08-08
-  attribution_type: Cybercriminal Gang # Likely financially motivated group
-  component_type: Application # Ad Server
-  lang: PHP # Malicious code inserted into PHP application
-  cause: Compromised Infrastructure # Download/update infrastructure breached
-  motive: Financial Gain # Server takeover and potential exploit kit distribution
-  transitive: false
-  insertion_phase: distribution # Compromise of official download/update mechanism
-  impact_type: Backdoor, Remote code execution
+  target:
+    name: openx
+    kind: application
+    website: https://openx.com
+  actor:
+    name: Cybercriminal Gang
+    kind: group
+  language: PHP
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: financial_gain
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+  artifacts:
+  - id: openx
+    name: openx
+    kind: source_archive
+    website: https://openx.com
+    start_date: 2012-11-01
+    end_date: 2013-08-08
+    versions:
+    - 2.8.10
+    locations:
+    - uri: https://www.openx.org/download/openx-source-2.8.10.zip
+      role: distribution
+    - uri: https://www.openx.org/download/openx-source-2.8.10.tar.gz
+      role: distribution
+    - uri: https://www.openx.org/download/openx-source-2.8.10.tar.bz2
+      role: distribution
+    - uri: https://web.archive.org/web/20131201000000*/http://www.openx.org/download/openx-source-2.8.10.zip
+      role: distribution
+    - uri: https://www.clearmind.cc/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/
+      role: mirror
+    - uri: https://seclists.org/oss-sec/2013/q3/295
+      role: mirror
+    - uri: https://www.tenable.com/plugins/nessus/69371
+      role: mirror
+    - uri: https://blog.sucuri.net/2013/12/openx-compromise-serving-malware.html
+      role: mirror
+    - uri: https://www.unmaskparasites.com/2013/12/05/ad-networks-openx-source-compromised/
+      role: mirror
+    hashes:
+    - md5:3cf59a7b8996dcc52370cf918f248ee4
+    - md5:558c80e601fb996e5f6bbc99a9ee0051
+    - md5:fa4991d5fd3bf4a947b6ab0b15ce10b2
+    - md5:5014c31b479094c0b32221ae1f1473ac
+    - md5:6b3459f16238aa717f379565650cb0cf
   references:
-    - https://www.clearmind.cc/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/ # Three-file technical analysis
-    - https://seclists.org/oss-sec/2013/q3/295 # CVE-2013-4211 assignment and July 15 sample confirmation
-    - https://www.cisa.gov/news-events/alerts/2013/08/08/openx-releases-security-update # US-CERT alert
-    - https://arstechnica.com/information-technology/2013/08/backdoor-in-popular-ad-serving-software-opens-websites-to-remote-hijacking/ # News and technical context
-    - https://www.tenable.com/plugins/nessus/69371 # Detection details for CVE-2013-4211
-    - https://blog.sucuri.net/2013/12/openx-compromise-serving-malware.html # Original disclosure
-  versions:
-    - "OpenX Source 2.8.10"
-  historical_artifacts:
-    - https://www.openx.org/download/openx-source-2.8.10.zip # Original download URL (inactive)
-    - https://www.openx.org/download/openx-source-2.8.10.tar.gz # Original download URL (inactive)
-    - https://www.openx.org/download/openx-source-2.8.10.tar.bz2 # Original download URL (inactive)
-    - https://web.archive.org/web/20131201000000*/http://www.openx.org/download/openx-source-2.8.10.zip # Archive snapshot
-  current_artifacts:
-    - https://www.clearmind.cc/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/ # Explains flowplayer payload and require_once chain
-    - https://seclists.org/oss-sec/2013/q3/295 # Confirms openXVideoAds.zip path and MD5
-    - https://www.tenable.com/plugins/nessus/69371 # Plugin checks for flowplayer backdoor
-    - https://blog.sucuri.net/2013/12/openx-compromise-serving-malware.html # Analysis with details
-    - https://www.unmaskparasites.com/2013/12/05/ad-networks-openx-source-compromised/ # Technical analysis with code snippets
-  domain: openx.com
-  domain_type: project download host
-  artifact_type: source archive
-  hashes:
-    - md5:3cf59a7b8996dcc52370cf918f248ee4 # Reported hash of compromised file
-    - md5:558c80e601fb996e5f6bbc99a9ee0051 # flowplayer-3.1.1.min.js with backdoor
-    - md5:fa4991d5fd3bf4a947b6ab0b15ce10b2 # player.delivery.php involved in backdoor invocation
-    - md5:5014c31b479094c0b32221ae1f1473ac # common.php with MAX_commonReadFile require_once path
-    - md5:6b3459f16238aa717f379565650cb0cf # openXVideoAds.zip containing the backdoored flowplayer path
+  - url: https://www.clearmind.cc/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/
+  - url: https://seclists.org/oss-sec/2013/q3/295
+  - url: https://www.cisa.gov/news-events/alerts/2013/08/08/openx-releases-security-update
+  - url: https://arstechnica.com/information-technology/2013/08/backdoor-in-popular-ad-serving-software-opens-websites-to-remote-hijacking/
+  - url: https://www.tenable.com/plugins/nessus/69371
+  - url: https://blog.sucuri.net/2013/12/openx-compromise-serving-malware.html

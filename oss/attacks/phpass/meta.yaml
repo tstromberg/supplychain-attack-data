@@ -1,31 +1,53 @@
-- name: phpass (Hautelook fork on GitHub / Packagist)
+---
+- id: phpass-hautelook-fork-on-github-packagist
   title: hautelook/phpass library hijacked via GitHub org.
-  synopsis: The GitHub organization 'hautelook', which maintained a popular fork of the phpass PHP password hashing library, was deleted. An attacker later registered the 'hautelook' organization name and created a repository named 'phpass' with the same URL as the original. This new repository contained a malicious version of phpass designed to steal AWS credentials by exfiltrating environment variables. Packagist, which mirrored the original GitHub repository, then began serving this malicious version to users who updated the dependency.
-  start_date: 2022-05-19 # Attacker registered 'hautelook' and uploaded malicious code
-  end_date: 2022-05-24 # Malicious package identified and removed/mitigated by Packagist
-  attribution_type: Individual Hacker # (Claimed as 'research' by same individual as 'ctx' incident)
-  component_type: Library
-  lang: PHP
-  cause: Compromised Account/Credentials # (GitHub organization/repo name reuse)
-  motive: Credential Theft # (Targeting AWS keys)
-  transitive: false # Direct compromise of this specific fork's distribution path
-  insertion_phase: source # (Malicious code uploaded to a recreated 'trusted' source location)
-  impact_type: Data Exfiltration
-  impact_user_count: 2500000 # Total historical downloads of phpass via Packagist, indicating potential reach
+  synopsis: The GitHub organization 'hautelook', which maintained a popular fork of
+    the phpass PHP password hashing library, was deleted. An attacker later registered
+    the 'hautelook' organization name and created a repository named 'phpass' with
+    the same URL as the original. This new repository contained a malicious version
+    of phpass designed to steal AWS credentials by exfiltrating environment variables.
+    Packagist, which mirrored the original GitHub repository, then began serving this
+    malicious version to users who updated the dependency.
+  start_date: 2022-05-19
+  end_date: 2022-05-24
+  target:
+    name: phpass (Hautelook fork on GitHub / Packagist)
+    kind: library
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: PHP
+  method:
+    cause: compromised_account_credentials
+    phase: source
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - data_exfiltration
+    users: 2500000
+  artifacts:
+  - id: phpass-hautelook-fork-on-github-packagist
+    name: phpass (Hautelook fork on GitHub / Packagist)
+    ecosystem: packagist
+    kind: source_archive
+    start_date: 2022-05-19
+    end_date: 2022-05-24
+    locations:
+    - uri: https://packagist.org/packages/hautelook/phpass
+      role: distribution
+    - uri: https://github.com/hautelook/phpass
+      role: distribution
+    - uri: https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking
+      role: mirror
+    - uri: https://github.com/concrete5/hautelook_phpass_rsa
+      role: mirror
+    hashes:
+    - sha256:bc9cf9f18f5c41cc27d53d46b579f95f3ea45a70f94a8da3060b864d3e2d18c4
+    notes:
+    - Affected Packagist scope covered hautelook/phpass versions pulled between 2022-05-19
+      and 2022-05-24.
   references:
-    - https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking
-    - https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html
-    - https://cybersecuritynews.com/attackers-compromised-pypi-package/
-  versions:
-    - Versions of hautelook/phpass pulled from Packagist between May 19-24, 2022
-  historical_artifacts:
-    - https://packagist.org/packages/hautelook/phpass # Original package URL
-    - https://github.com/hautelook/phpass # Hijacked repository
-  current_artifacts:
-    - https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking # Analysis with technical details
-    - https://github.com/concrete5/hautelook_phpass_rsa # Preserved sample of the malicious code
-  domain: packagist.org # (Distribution via Packagist, sourced from GitHub)
-  domain_type: package host
-  artifact_type: source archive
-  hashes:
-    - sha256:bc9cf9f18f5c41cc27d53d46b579f95f3ea45a70f94a8da3060b864d3e2d18c4 # Malicious version
+  - url: https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking
+  - url: https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html
+  - url: https://cybersecuritynews.com/attackers-compromised-pypi-package/

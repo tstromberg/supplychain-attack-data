@@ -1,33 +1,56 @@
-- name: ViPNet Client (InfoTeCS)
+---
+- id: vipnet-client-infotecs
   title: ViPNet updates mimicked to deploy backdoor.
-  synopsis: A sophisticated backdoor was distributed disguised as updates for ViPNet, a secure networking software suite by InfoTeCS used in Russia. Attackers crafted update archives that, when processed by the ViPNet update service component, would execute a malicious loader and deploy a versatile backdoor.
-  start_date: 2025-04-01 # Approximate time of discovery of campaign activity (April 2025)
-  end_date: 2025-04-22 # Ongoing investigation as of report
-  attribution_type: APT group # (Implied by sophistication)
-  component_type: Application # (Secure networking client)
-  lang: C++ # (Backdoor components)
-  cause: Compromised update package # (Exploiting update mechanism logic)
-  motive: Espionage
-  transitive: false
-  insertion_phase: distribution # (Malicious archives mimicking updates)
-  impact_type: Backdoor, Data theft, Remote access
+  synopsis: A sophisticated backdoor was distributed disguised as updates for ViPNet,
+    a secure networking software suite by InfoTeCS used in Russia. Attackers crafted
+    update archives that, when processed by the ViPNet update service component, would
+    execute a malicious loader and deploy a versatile backdoor.
+  start_date: 2025-04-01
+  end_date: 2025-04-22
+  target:
+    name: ViPNet Client (InfoTeCS)
+    kind: application
+  actor:
+    name: APT group
+    kind: group
+  language: C++
+  method:
+    cause: compromised_update_package
+    phase: distribution
+    motive: espionage
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - data_theft
+    - remote_access
+  artifacts:
+  - id: vipnet-client-infotecs
+    name: ViPNet Client (InfoTeCS)
+    kind: binary_archive
+    start_date: 2025-04-01
+    end_date: 2025-04-22
+    locations:
+    - uri: https://securelist.com/new-backdoor-mimics-security-software-update/116246/
+      role: mirror
+    hashes:
+    - md5:018AD336474B9E54E1BD0E9528CA4DB5
+    - md5:28AC759E6662A4B4BE3E5BA7CFB62204
+    - md5:77DA0829858178CCFC2C0A5313E327C1
+    - md5:A5B31B22E41100EB9D0B9A27B9B2D8EF
+    - md5:E6DB606FA2B7E9D58340DF14F65664B8
+    indicators:
+    - kind: observable
+      value: Malicious LZH update archives for ViPNet software, designed to be processed
+        by the ViPNet update service.
+    - kind: observable
+      value: "%TEMP%\\update_tmp*\\update\\msinfo32.exe"
+    - kind: observable
+      value: "%PROGRAMFILES%\\common files\\infotecs\\update_tmp\\driv_*\\*\\msinfo32.exe"
+    - kind: observable
+      value: "%PROGRAMFILESx86%\\InfoTeCS\\ViPNet Coordinator\\ccc\\update_tmp\\DRIV_FSA\\*\\msinfo32.exe"
+    notes:
+    - Affected ViPNet scope covered client versions susceptible to update package
+      manipulation.
   references:
-    - https://securelist.com/new-backdoor-mimics-security-software-update/116246/
-  versions:
-    - ViPNet Client versions susceptible to this update package manipulation
-  domain: N/A # (Malicious archives likely distributed via targeted means, not necessarily from official servers)
-  domain_type: vendor
-  artifact_type: binary archive # (LZH update archives)
-  historical_artifacts:
-    - "Malicious LZH update archives for ViPNet software, designed to be processed by the ViPNet update service."
-  current_artifacts:
-    - "https://securelist.com/new-backdoor-mimics-security-software-update/116246/"
-    - "%TEMP%\\update_tmp*\\update\\msinfo32.exe"
-    - "%PROGRAMFILES%\\common files\\infotecs\\update_tmp\\driv_*\\*\\msinfo32.exe"
-    - "%PROGRAMFILESx86%\\InfoTeCS\\ViPNet Coordinator\\ccc\\update_tmp\\DRIV_FSA\\*\\msinfo32.exe"
-  hashes:
-    - md5:018AD336474B9E54E1BD0E9528CA4DB5 # msinfo32.exe loader
-    - md5:28AC759E6662A4B4BE3E5BA7CFB62204 # msinfo32.exe loader
-    - md5:77DA0829858178CCFC2C0A5313E327C1 # msinfo32.exe loader
-    - md5:A5B31B22E41100EB9D0B9A27B9B2D8EF # msinfo32.exe loader
-    - md5:E6DB606FA2B7E9D58340DF14F65664B8 # msinfo32.exe loader
+  - url: https://securelist.com/new-backdoor-mimics-security-software-update/116246/

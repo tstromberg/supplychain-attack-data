@@ -16,75 +16,158 @@
   <h1>Trojan Horse in OpenSSH Distribution Files</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> openssh</div>
-    <div class="meta-item"><strong>Repository:</strong> N/A</div>
+    <div class="meta-item"><strong>Target:</strong> openssh · <a href="https://www.openssh.com" target="_blank">website</a></div>
     <div class="meta-item"><strong>Date:</strong> 2002-07-30 to 2002-08-01 (2 days)</div>
-    <div class="meta-item"><strong>Attribution:</strong> Unknown</div>
-    <div class="meta-item"><strong>Component:</strong> Application</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
     <div class="meta-item"><strong>Language:</strong> C</div>
-    <div class="meta-item"><strong>Cause:</strong> Sabotage</div>
-    <div class="meta-item"><strong>Motive:</strong> Unauthorized Access/Control</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> unauthorized_access_control</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
-    <div class="meta-item"><strong>Impact Type:</strong> Limited</div>
-    <div class="meta-item"><strong>User Impact:</strong> </div>
-    <div class="meta-item"><strong>Domain:</strong> openssh.com (code distribution)</div>
-    <div class="meta-item"><strong>Artifact Type:</strong> tar archive</div>
-    <div class="meta-item"><strong>Insertion Phase:</strong> distribution</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Malicious code was discovered in OpenSSH distribution files on the official OpenBSD FTP server. The trojan was inserted into the source code archives and would activate during compilation, connecting to a remote server on IRC port 6667 and allowing arbitrary command execution. The backdoor was discovered quickly and the compromised files were replaced with clean versions before widespread damage could occur.</p>
+  <p class="synopsis">OpenSSH 3.2.2p1, 3.4p1, and 3.4 source archives on the OpenBSD FTP server were trojanized between July 30 and August 1, 2002, with copies possibly spreading through mirrors. The inserted code ran during compilation, connected outbound on TCP/6667, and allowed arbitrary commands as the user building the software, turning trusted source installation into host compromise.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>At the end of July 2002, source archives for OpenSSH were replaced on the OpenBSD FTP server and potentially propagated by the normal mirror network. The affected files were `openssh-3.4p1.tar.gz`, `openssh-3.4.tgz`, and `openssh-3.2.2p1.tar.gz`; the project replaced them with clean originals at 13:00 UTC on August 1.</p>
+    
+      <p>The payload lived in `bf-test.c` and executed during the build, not when a running SSH daemon handled traffic. Once compiled, it attempted hourly outbound connections to an IRC-style port and could execute attacker-supplied commands as the build user. CERT&#39;s advisory treated any host that built the trojaned source as compromised and told mirrors, redistributors, and administrators to verify signatures and checksums rather than trusting timestamps or file sizes.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>openssh</strong>
+            
+            <br><span>tar_archive</span>
+            <br><a href="https://openssh.com" target="_blank">https://openssh.com</a>
+            
+          </td>
+          <td>2002-07-30<br>to 2002-08-01</td>
+          <td>
+            
+              <code>3.4p1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>md5:3ac9bc346d736b4a51d676faa2a08a57</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>openssh</strong>
+            
+            <br><span>tar_archive</span>
+            <br><a href="https://openssh.com" target="_blank">https://openssh.com</a>
+            
+          </td>
+          <td>2002-07-30<br>to 2002-08-01</td>
+          <td>
+            
+              <code>3.4</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>openssh</strong>
+            
+            <br><span>tar_archive</span>
+            <br><a href="https://openssh.com" target="_blank">https://openssh.com</a>
+            
+          </td>
+          <td>2002-07-30<br>to 2002-08-01</td>
+          <td>
+            
+              <code>3.2.2p1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
 
   
 
   
-  <h2>Compromised Versions</h2>
-  <ul>
-    
-      <li><code>3.2.2p1</code></li>
-    
-      <li><code>3.4p1</code></li>
-    
-      <li><code>3.4</code></li>
-    
-  </ul>
-  
 
   
 
-  
-  <h2>Hashes</h2>
-  <ul class="hashes">
-    
-      <li><code>md5:3ac9bc346d736b4a51d676faa2a08a57</code></li>
-    
-  </ul>
-  
-
-  
-  <h2>Commits</h2>
-  <ul>
-    
-      <li><code>None</code></li>
-    
-  </ul>
   
 
   
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.openssh.com/txt/trojan.adv" target="_blank">https://www.openssh.com/txt/trojan.adv</a></li>
+      <li><a href="https://www.openssh.com/txt/trojan.adv" target="_blank">OpenSSH Security Advisory adv.trojan</a></li>
     
-      <li><a href="https://undeadly.org/cgi?action=article&amp;sid=20020801122759" target="_blank">https://undeadly.org/cgi?action=article&amp;sid=20020801122759</a></li>
+      <li><a href="https://groups.google.com/g/comp.security.announce/c/Y7V0PyvQXJ8" target="_blank">CERT Advisory CA-2002-24 Trojan Horse OpenSSH Distribution</a></li>
     
-      <li><a href="https://www.itworldcanada.com/article/trojan-horse-found-in-openssh/25256" target="_blank">https://www.itworldcanada.com/article/trojan-horse-found-in-openssh/25256</a></li>
+      <li><a href="https://sourceware.org/legacy-ml/cygwin/2002-08/msg00102.html" target="_blank">Cygwin mailing list: CERT Advisory CA-2002-24 Trojan Horse OpenSSH Distribution</a></li>
     
-      <li><a href="https://www.cert.org/advisories/CA-2002-24.html" target="_blank">https://www.cert.org/advisories/CA-2002-24.html</a></li>
+      <li><a href="https://undeadly.org/cgi?action=article&amp;sid=20020801122759" target="_blank">OpenSSH Security Advisory</a></li>
     
-      <li><a href="https://www.mavetju.org/unix/openssh-trojan.php" target="_blank">https://www.mavetju.org/unix/openssh-trojan.php</a></li>
+      <li><a href="https://www.itworldcanada.com/article/trojan-horse-found-in-openssh/25256" target="_blank">Trojan horse found in OpenSSH</a></li>
     
-      <li><a href="https://slashdot.org/comments.pl?sid=37188&amp;cid=3991288" target="_blank">https://slashdot.org/comments.pl?sid=37188&amp;cid=3991288</a></li>
+      <li><a href="https://www.cert.org/advisories/CA-2002-24.html" target="_blank">CERT Advisory CA-2002-24: Trojan Horse OpenSSH Distribution</a></li>
+    
+      <li><a href="https://www.mavetju.org/unix/openssh-trojan.php" target="_blank">OpenSSH Trojan</a></li>
+    
+      <li><a href="https://slashdot.org/comments.pl?sid=37188&amp;cid=3991288" target="_blank">Slashdot comment on OpenSSH trojan details</a></li>
     
   </ul>
   

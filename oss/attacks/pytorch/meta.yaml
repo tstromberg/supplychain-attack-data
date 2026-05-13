@@ -1,31 +1,51 @@
-- name: pytorch
+---
+- id: pytorch
   title: PyTorch nightly builds compromised via malicious dependency
-  repo: https://github.com/pytorch/pytorch
-  synopsis: PyTorch nightly builds were compromised when a malicious torchtriton package was uploaded to PyPI and won dependency resolution over the intended internal package. The poisoned dependency executed during installation, exfiltrating sensitive build environment data and showing how one namespace collision can bend a trusted ML build.
+  synopsis: PyTorch nightly builds were compromised when a malicious torchtriton package
+    was uploaded to PyPI and won dependency resolution over the intended internal
+    package. The poisoned dependency executed during installation, exfiltrating sensitive
+    build environment data and showing how one namespace collision can bend a trusted
+    ML build.
   start_date: 2022-12-25
   end_date: 2022-12-30
-  attribution_type: Individual Hacker
-  component_type: Library # Machine Learning Framework
-  lang: Python
-  cause: Malicious Dependency
-  motive: Credential Theft # Data theft, Remote execution
-  transitive: true # Malicious code was in the dependency
-  insertion_phase: dependency # Build system pulled malicious dependency from PyPI
-  impact_type: Data Exfiltration
+  target:
+    name: pytorch
+    kind: library
+    repo: https://github.com/pytorch/pytorch
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: Python
+  method:
+    cause: malicious_dependency
+    phase: dependency
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - data_exfiltration
+  artifacts:
+  - id: pytorch
+    name: pytorch
+    ecosystem: pypi
+    kind: source_archive
+    repo: https://github.com/pytorch/pytorch
+    start_date: 2022-12-25
+    end_date: 2022-12-30
+    locations:
+    - uri: https://pypi.org/project/torchtriton/2.0.0.post1/
+      role: distribution
+    - uri: https://pypi.org/simple/torchtriton/
+      role: distribution
+    - uri: https://pytorch.org/blog/security-alert/
+      role: mirror
+    - uri: https://blog.checkpoint.com/research/supply-chain-attack-on-pytorch-dependency-confusion-via-malicious-packages/
+      role: mirror
+    hashes:
+    - sha256:919118939367690c239923b9748520c261503865094823459177886619378916
+    notes:
+    - Affected PyTorch scope covered nightly builds between 2022-12-25 and 2022-12-30.
   references:
-    - https://pytorch.org/blog/security-alert/
-    - https://blog.checkpoint.com/research/supply-chain-attack-on-pytorch-dependency-confusion-via-malicious-packages/
-    - https://blog.sonatype.com/pytorch-hijacked-dependency-confusion-2.0
-  versions:
-    - Nightly builds between 2022-12-25 and 2022-12-30
-  historical_artifacts:
-    - https://pypi.org/project/torchtriton/2.0.0.post1/
-    - https://pypi.org/simple/torchtriton/
-  current_artifacts:
-    - https://pytorch.org/blog/security-alert/ # Official advisory with technical details
-    - https://blog.checkpoint.com/research/supply-chain-attack-on-pytorch-dependency-confusion-via-malicious-packages/ # Analysis with screenshots
-  domain: pypi.org
-  domain_type: package host
-  artifact_type: source archive
-  hashes:
-    - sha256:919118939367690c239923b9748520c261503865094823459177886619378916 # torchtriton-2.0.0.post1.tar.gz
+  - url: https://pytorch.org/blog/security-alert/
+  - url: https://blog.checkpoint.com/research/supply-chain-attack-on-pytorch-dependency-confusion-via-malicious-packages/
+  - url: https://blog.sonatype.com/pytorch-hijacked-dependency-confusion-2.0

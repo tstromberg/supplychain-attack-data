@@ -1,58 +1,75 @@
-- name: vgca
+---
+- id: vgca
   title: Vietnam Government Certificate Authority website served backdoored installers
-  synopsis: ESET disclosed Operation SignSight on 2020-12-17 — between 2020-07-23 and 2020-08-16, attackers compromised the Vietnam Government Certification Authority's website (ca.gov.vn) and replaced the official `gca01-client-v2-x32-8.3.msi` and `gca01-client-v2-x64-8.3.msi` digital-signature toolkit installers with trojanized versions. The malicious MSIs ran the legitimate signing client while side-loading PhantomNet (a.k.a. Smanager), a modular backdoor compiled 2020-04-26, that beaconed to `vgca.homeunix.org` and `office365.blogdns.com`. The trojanized installers carried the same SafeNet certificate as the legitimate ones. ESET noted tooling similarities to TA428.
+  synopsis: ESET disclosed Operation SignSight on 2020-12-17 — between 2020-07-23
+    and 2020-08-16, attackers compromised the Vietnam Government Certification Authority's
+    website (ca.gov.vn) and replaced the official `gca01-client-v2-x32-8.3.msi` and
+    `gca01-client-v2-x64-8.3.msi` digital-signature toolkit installers with trojanized
+    versions. The malicious MSIs ran the legitimate signing client while side-loading
+    PhantomNet (a.k.a. Smanager), a modular backdoor compiled 2020-04-26, that beaconed
+    to `vgca.homeunix.org` and `office365.blogdns.com`. The trojanized installers
+    carried the same SafeNet certificate as the legitimate ones. ESET noted tooling
+    similarities to TA428.
   start_date: 2020-07-23
   end_date: 2020-08-16
-  attribution_type: Nation-state
-  component_type: Application
-  lang: c++
-  cause: Website compromise
-  motive: Espionage
-  transitive: false
-  insertion_phase: distribution
-  impact_type: Backdoor, Espionage
-  references:
-    - https://www.welivesecurity.com/2020/12/17/operation-signsight-supply-chain-attack-southeast-asia/
-    - https://www.eset.com/sg/about/newsroom/press-releases1/announcements/eset-discovers-operation-signsight-supply-chain-attack/
-    - https://www.zdnet.com/article/vietnam-targeted-in-complex-supply-chain-attack/
-  versions: []
-  historical_artifacts: []
-  domain: ca.gov.vn
-  domain_type: project download host
-  artifact_type: binary archive
+  target:
+    name: vgca
+    kind: application
+    website: https://ca.gov.vn
+  actor:
+    name: Nation-state
+    kind: state
+  language: c++
+  method:
+    cause: website_compromise
+    phase: distribution
+    motive: espionage
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - espionage
   hashes:
-    - sha1:5C77A18880CF58DF9FBA102DD8267C3F369DF449
-    - sha1:B0E4E9BB6EF8AA7A9FCB9C9E571D8162B1B2443A
-    - sha1:9522F369AC109B03E6C16511D49D1C5B42E12A44
-    - sha1:989334094EC5BA8E0E8F2238CDF34D5C57C283F2
-  affected_artifacts:
-    - name: "VGCA x86 signing toolkit installer"
-      package: "gca01-client-v2-x32"
-      ecosystem: "Windows MSI"
-      start_date: 2020-07-23
-      end_date: 2020-08-16
-      domain: ca.gov.vn
-      domain_type: project download host
-      artifact_type: binary archive
-      insertion_phase: distribution
-      impact_type: "Backdoor, Espionage"
-      versions:
-        - "8.3"
-      historical_artifacts:
-        - https://ca.gov.vn/
-      notes: "The published filename was gca01-client-v2-x32-8.3.msi; hashes remain at the attack level because the current record does not map each SHA1 to installer or payload."
-    - name: "VGCA x64 signing toolkit installer"
-      package: "gca01-client-v2-x64"
-      ecosystem: "Windows MSI"
-      start_date: 2020-07-23
-      end_date: 2020-08-16
-      domain: ca.gov.vn
-      domain_type: project download host
-      artifact_type: binary archive
-      insertion_phase: distribution
-      impact_type: "Backdoor, Espionage"
-      versions:
-        - "8.3"
-      historical_artifacts:
-        - https://ca.gov.vn/
-      notes: "The published filename was gca01-client-v2-x64-8.3.msi; hashes remain at the attack level because the current record does not map each SHA1 to installer or payload."
+  - sha1:5C77A18880CF58DF9FBA102DD8267C3F369DF449
+  - sha1:B0E4E9BB6EF8AA7A9FCB9C9E571D8162B1B2443A
+  - sha1:9522F369AC109B03E6C16511D49D1C5B42E12A44
+  - sha1:989334094EC5BA8E0E8F2238CDF34D5C57C283F2
+  artifacts:
+  - id: gca01-client-v2-x32
+    name: VGCA x86 signing toolkit installer
+    package: gca01-client-v2-x32
+    ecosystem: windows msi
+    kind: binary_archive
+    website: https://ca.gov.vn
+    start_date: 2020-07-23
+    end_date: 2020-08-16
+    versions:
+    - '8.3'
+    locations:
+    - uri: https://ca.gov.vn/
+      role: distribution
+    notes:
+    - The published filename was gca01-client-v2-x32-8.3.msi; hashes remain at the
+      attack level because the current record does not map each SHA1 to installer
+      or payload.
+  - id: gca01-client-v2-x64
+    name: VGCA x64 signing toolkit installer
+    package: gca01-client-v2-x64
+    ecosystem: windows msi
+    kind: binary_archive
+    website: https://ca.gov.vn
+    start_date: 2020-07-23
+    end_date: 2020-08-16
+    versions:
+    - '8.3'
+    locations:
+    - uri: https://ca.gov.vn/
+      role: distribution
+    notes:
+    - The published filename was gca01-client-v2-x64-8.3.msi; hashes remain at the
+      attack level because the current record does not map each SHA1 to installer
+      or payload.
+  references:
+  - url: https://www.welivesecurity.com/2020/12/17/operation-signsight-supply-chain-attack-southeast-asia/
+  - url: https://www.eset.com/sg/about/newsroom/press-releases1/announcements/eset-discovers-operation-signsight-supply-chain-attack/
+  - url: https://www.zdnet.com/article/vietnam-targeted-in-complex-supply-chain-attack/

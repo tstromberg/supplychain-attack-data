@@ -1,0 +1,107 @@
+---
+- id: monkey-org-dsniff-fragroute
+  title: monkey.org dsniff, fragroute, and fragrouter source tarballs backdoored
+  synopsis: The monkey.org host serving Dug Song's security tools was compromised
+    on May 14, 2002, and attackers modified the dsniff 2.3, fragroute 1.2, and
+    fragrouter 1.6 source tarballs at 03:00 on May 17. The altered configure script
+    compiled a connect-back shell to 216.80.99.202:6667, exposing Unix systems
+    that built the poisoned official downloads.
+  story: |
+    In May 2002, monkey.org was compromised through an epic4-pre2.511 client-side hole that yielded access to a local administrator account and then to a root screen session. At 03:00 on May 17, the dsniff 2.3, fragroute 1.2, and fragrouter 1.6 tarballs were modified to include a configure-time backdoor. The downloads were not impostors; they came from the project host used for Dug Song's security tools.
+
+    The injected configure block wrote `conftest.c`, compiled it, and executed it during the build. The payload forked, connected to 216.80.99.202 on TCP/6667, and handed stdin, stdout, and stderr to `/bin/sh`. Dug Song reported 1,951 successful downloads of the backdoored tarballs before discovery around May 24, including hundreds of Unix hosts and automated BSD ports fetches, then restored the system from scratch and published clean checksums.
+  start_date: 2002-05-17
+  end_date: 2002-05-24
+  target:
+    name: monkey.org
+    kind: project_host
+    website: https://www.monkey.org
+  actor:
+    name: Unknown attacker
+    kind: unknown
+  language: C
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+    users: 1951
+  indicators:
+  - kind: observable
+    value: 216.80.99.202:6667
+  - kind: observable
+    value: epic4-pre2.511
+  - kind: file
+    value: configure
+  - kind: file
+    value: conftest.c
+  artifacts:
+  - id: dsniff-2-3
+    name: dsniff
+    package: dsniff
+    kind: source_archive
+    website: https://www.monkey.org/~dugsong/dsniff/
+    start_date: 2002-05-17
+    end_date: 2002-05-24
+    versions:
+    - 2.3
+    locations:
+    - uri: http://www.monkey.org/~dugsong/dsniff/dsniff-2.3.tar.gz
+      role: distribution
+    indicators:
+    - kind: file
+      value: configure
+    notes:
+    - Dug Song published 183e336a45e38013f3af840bddec44b4 as the clean MD5
+      for dsniff-2.3.tar.gz after restoration.
+  - id: fragroute-1-2
+    name: fragroute
+    package: fragroute
+    kind: source_archive
+    website: https://www.monkey.org/~dugsong/fragroute/
+    start_date: 2002-05-17
+    end_date: 2002-05-24
+    versions:
+    - 1.2
+    locations:
+    - uri: http://www.monkey.org/~dugsong/fragroute/fragroute-1.2.tar.gz
+      role: distribution
+    indicators:
+    - kind: file
+      value: configure
+    notes:
+    - Dug Song published 7e4de763fae35a50e871bdcd1ac8e23a as the clean MD5
+      for fragroute-1.2.tar.gz after restoration.
+  - id: fragrouter-1-6
+    name: fragrouter
+    package: fragrouter
+    kind: source_archive
+    website: https://www.monkey.org/~dugsong/
+    start_date: 2002-05-17
+    end_date: 2002-05-24
+    versions:
+    - 1.6
+    locations:
+    - uri: http://www.monkey.org/~dugsong/fragrouter-1.6.tar.gz
+      role: distribution
+    indicators:
+    - kind: file
+      value: configure
+    notes:
+    - Dug Song published 73fdc73f8da0b41b995420ded00533cc as the clean MD5
+      for fragrouter-1.6.tar.gz after restoration.
+  references:
+  - url: https://artofhacking.com/tucops3/hack/unix/live/aoh_unix5397.htm
+    title: fragroute, dsniff and fragrouter have been backdoored
+  - url: https://www.helpnetsecurity.com/2002/06/03/backdoored-dsniff-fragroute-and-fragrouter/
+    title: Backdoored dsniff, fragroute and fragrouter
+  - url: https://seclists.org/isn/2002/Jun/8
+    title: Download Sites Hacked, Source Code Backdoored
+  - url: https://lwn.net/Articles/809/
+    title: LWN Security reports for June 2002
+  - url: https://nvd.nist.gov/vuln/detail/CVE-2002-2049
+    title: 'NVD: CVE-2002-2049'

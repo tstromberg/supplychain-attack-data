@@ -1,34 +1,57 @@
-- name: CyberLink
+---
+- id: cyberlink
   title: CyberLink installer compromised to distribute malware.
-  synopsis: A North Korean group tracked as Diamond Sleet or ZINC modified a legitimate CyberLink multimedia installer and signed it with a valid certificate. Hosted on CyberLink's update infrastructure, the LambLoad trojanized installer downloaded secondary payloads onto victim systems across multiple countries.
-  start_date: 2023-10-20 # Approximate date malicious activity first observed
-  end_date: 2023-11-22 # Approximate date of public disclosure / remediation
-  attribution_type: Nation-state
-  component_type: Application # Multimedia software
-  cause: Vendor infrastructure compromise # Specific vector (build vs update server) TBC, but update infra hosted malware
-  motive: Espionage, Data theft
-  transitive: false
-  insertion_phase: distribution # Malicious installer hosted on official update infrastructure
-  impact_type: Backdoor, Remote access
-  impact_user_count: 100 # Devices confirmed impacted across several countries (initial report)
+  synopsis: A North Korean group tracked as Diamond Sleet or ZINC modified a legitimate
+    CyberLink multimedia installer and signed it with a valid certificate. Hosted
+    on CyberLink's update infrastructure, the LambLoad trojanized installer downloaded
+    secondary payloads onto victim systems across multiple countries.
+  start_date: 2023-10-20
+  end_date: 2023-11-22
+  target:
+    name: CyberLink
+    kind: application
+    website: https://cyberlink.com
+  actor:
+    name: Nation-state
+    kind: state
+  method:
+    cause: vendor_infrastructure_compromise
+    phase: distribution
+    motive: espionage_data_theft
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_access
+    users: 100
+  artifacts:
+  - id: cyberlink
+    name: CyberLink
+    kind: binary_archive
+    website: https://cyberlink.com
+    start_date: 2023-10-20
+    end_date: 2023-11-22
+    locations:
+    - uri: https://update.cyberlink.com/Retail/Promeo/RDZCMSFY1ELY/CyberLink_Promeo_Downloader.exe
+      role: distribution
+    - uri: https://update.cyberlink.com/Retail/Patch/Promeo/DL/RDZCMSFY1ELY/CyberLink_Promeo_Downloader.exe
+      role: distribution
+    - uri: https://www.microsoft.com/en-us/security/blog/2023/11/22/diamond-sleet-supply-chain-compromise-distributes-a-modified-cyberlink-installer/
+      role: mirror
+    - uri: https://www.virustotal.com/gui/file/166d1a6ddcde4e859a89c2c825cd3c8c953a86bfa92b343de7e5bfbfb5afb8be
+      role: mirror
+    - uri: https://www.virustotal.com/gui/file/089573b3a1167f387dcdad5e014a5132e998b2c89bff29bcf8b06dd497d4e63d
+      role: mirror
+    - uri: https://www.virustotal.com/gui/file/915c2495e03ff7408f11a2a197f23344004c533ff87db4b807cc937f80c217a1
+      role: mirror
+    hashes:
+    - sha256:166d1a6ddcde4e859a89c2c825cd3c8c953a86bfa92b343de7e5bfbfb5afb8be
+    - sha256:089573b3a1167f387dcdad5e014a5132e998b2c89bff29bcf8b06dd497d4e63d
+    - sha256:915c2495e03ff7408f11a2a197f23344004c533ff87db4b807cc937f80c217a1
+    notes:
+    - Affected CyberLink scope covered specific application installers active around
+      October and November 2023, including Promeo reporting.
   references:
-    - https://www.microsoft.com/en-us/security/blog/2023/11/22/diamond-sleet-supply-chain-compromise-distributes-a-modified-cyberlink-installer/
-    - https://thehackernews.com/2023/11/north-korean-hackers-distribute.html
-    - https://www.bleepingcomputer.com/news/security/microsoft-north-korean-hackers-breached-cyberlink-in-supply-chain-attack/
-  versions:
-    - "Specific CyberLink application installers (e.g., Promeo reported) active around Oct/Nov 2023" # Exact versions potentially numerous or withheld
-  historical_artifacts:
-    - "https://update.cyberlink.com/Retail/Promeo/RDZCMSFY1ELY/CyberLink_Promeo_Downloader.exe" # Malicious installer URL from Microsoft report
-    - "https://update.cyberlink.com/Retail/Patch/Promeo/DL/RDZCMSFY1ELY/CyberLink_Promeo_Downloader.exe" # Malicious installer URL from Microsoft report
-  current_artifacts:
-    - "https://www.microsoft.com/en-us/security/blog/2023/11/22/diamond-sleet-supply-chain-compromise-distributes-a-modified-cyberlink-installer/" # Primary analysis by Microsoft
-    - "https://www.virustotal.com/gui/file/166d1a6ddcde4e859a89c2c825cd3c8c953a86bfa92b343de7e5bfbfb5afb8be" # Trojanized CyberLink installer (LambLoad)
-    - "https://www.virustotal.com/gui/file/089573b3a1167f387dcdad5e014a5132e998b2c89bff29bcf8b06dd497d4e63d" # Second-stage PNG payload
-    - "https://www.virustotal.com/gui/file/915c2495e03ff7408f11a2a197f23344004c533ff87db4b807cc937f80c217a1" # Decrypted PE from second-stage PNG
-  domain: cyberlink.com # Official vendor domain and update infrastructure
-  domain_type: project download host
-  artifact_type: binary archive # Software installer
-  hashes:
-    - sha256:166d1a6ddcde4e859a89c2c825cd3c8c953a86bfa92b343de7e5bfbfb5afb8be # Trojanized CyberLink installer (LambLoad)
-    - sha256:089573b3a1167f387dcdad5e014a5132e998b2c89bff29bcf8b06dd497d4e63d # Second-stage PNG payload
-    - sha256:915c2495e03ff7408f11a2a197f23344004c533ff87db4b807cc937f80c217a1 # Decrypted PE from second-stage PNG
+  - url: https://www.microsoft.com/en-us/security/blog/2023/11/22/diamond-sleet-supply-chain-compromise-distributes-a-modified-cyberlink-installer/
+  - url: https://thehackernews.com/2023/11/north-korean-hackers-distribute.html
+  - url: https://www.bleepingcomputer.com/news/security/microsoft-north-korean-hackers-breached-cyberlink-in-supply-chain-attack/

@@ -1,112 +1,121 @@
-- name: sap-cap-js
+---
+- id: sap-cap-js
   title: SAP CAP Packages Mini Shai-Hulud
   campaigns:
-    - teampcp-2026
-  repo: https://github.com/cap-js/cds-dbs
-  synopsis: >-
-    Mini Shai-Hulud compromised SAP ecosystem npm packages mbt,
-    @cap-js/sqlite, @cap-js/postgres, and @cap-js/db-service through two release
-    paths: a stolen static npm token for mbt and an abused GitHub Actions OIDC
-    publishing flow for cap-js/cds-dbs. The malicious releases ran a Bun-based
-    credential stealer, exfiltrated encrypted secrets through attacker-created
-    GitHub repositories, added IDE persistence through Claude Code and VS Code
-    hooks, injected repository-secret stealing workflows, and attempted
-    propagation through stolen npm tokens.
+  - teampcp-2026
+  synopsis: 'Mini Shai-Hulud compromised SAP ecosystem npm packages mbt, @cap-js/sqlite,
+    @cap-js/postgres, and @cap-js/db-service through two release paths: a stolen static
+    npm token for mbt and an abused GitHub Actions OIDC publishing flow for cap-js/cds-dbs.
+    The malicious releases ran a Bun-based credential stealer, exfiltrated encrypted
+    secrets through attacker-created GitHub repositories, added IDE persistence through
+    Claude Code and VS Code hooks, injected repository-secret stealing workflows,
+    and attempted propagation through stolen npm tokens.'
   start_date: 2026-04-29
   end_date: 2026-04-30
-  attribution_type: Advanced Persistent Threat
-  component_type: Library
-  lang: JavaScript
-  cause: CI/CD Exploit
-  motive: Credential Theft
-  transitive: true
-  historical_artifacts:
-    - https://www.npmjs.com/package/mbt/v/1.2.48
-    - https://www.npmjs.com/package/@cap-js/sqlite/v/2.2.2
-    - https://www.npmjs.com/package/@cap-js/postgres/v/2.2.2
-    - https://www.npmjs.com/package/@cap-js/db-service/v/2.10.1
-  current_artifacts: []
-  domain: npmjs.com
-  domain_type: package host
-  artifact_type: source archive
-  insertion_phase: CI/CD
-  impact_type: Credential theft, Self-Propagation
-  impact_user_count: 570000
-  references:
-    - https://www.stepsecurity.io/blog/a-mini-shai-hulud-has-appeared
-    - https://github.com/SAP/cloud-mta-build-tool/issues/1651
-    - https://github.com/cap-js/cds-dbs/issues/1328
-    - https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/
-  versions: []
+  target:
+    name: sap-cap-js
+    kind: library
+    repo: https://github.com/cap-js/cds-dbs
+  actor:
+    name: Advanced Persistent Threat
+    kind: group
+  language: JavaScript
+  method:
+    cause: ci_cd_exploit
+    phase: ci_cd
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - self_propagation
+    users: 570000
+  locations:
+  - uri: https://www.npmjs.com/package/mbt/v/1.2.48
+    role: distribution
+  - uri: https://www.npmjs.com/package/@cap-js/sqlite/v/2.2.2
+    role: distribution
+  - uri: https://www.npmjs.com/package/@cap-js/postgres/v/2.2.2
+    role: distribution
+  - uri: https://www.npmjs.com/package/@cap-js/db-service/v/2.10.1
+    role: distribution
   commits:
-    - "0a3dd44"
-    - "eca039d"
-    - "4ae7eb0"
-  hashes: []
-  affected_artifacts:
-    - package: "mbt"
-      ecosystem: "npm"
-      start_date: 2026-04-29
-      end_date: 2026-04-29
-      domain: npmjs.com
-      domain_type: package host
-      artifact_type: source archive
-      insertion_phase: distribution
-      impact_type: "Credential theft, Self-Propagation"
-      versions:
-        - "1.2.48"
-      hashes:
-        - "sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34"
-        - "sha256:80a3d2877813968ef847ae73b5eeeb70b9435254e74d7f07d8cf4057f0a710ac"
-      historical_artifacts:
-        - "https://www.npmjs.com/package/mbt/v/1.2.48"
-      notes: "Clean predecessor identified as mbt@1.2.47. StepSecurity reported mbt was published at 09:55 UTC with a stolen static npm automation token."
-    - package: "@cap-js/sqlite"
-      ecosystem: "npm"
-      start_date: 2026-04-29
-      end_date: 2026-04-29
-      domain: npmjs.com
-      domain_type: package host
-      artifact_type: source archive
-      insertion_phase: distribution
-      impact_type: "Credential theft, Self-Propagation"
-      versions:
-        - "2.2.2"
-      hashes:
-        - "sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34"
-        - "sha256:6f933d00b7d05678eb43c90963a80b8947c4ae6830182f89df31da9f568fea95"
-      historical_artifacts:
-        - "https://www.npmjs.com/package/@cap-js/sqlite/v/2.2.2"
-      notes: "Clean predecessor identified as @cap-js/sqlite@2.2.1. Published through abused OIDC trusted publishing from cap-js/cds-dbs."
-    - package: "@cap-js/postgres"
-      ecosystem: "npm"
-      start_date: 2026-04-29
-      end_date: 2026-04-30
-      domain: npmjs.com
-      domain_type: package host
-      artifact_type: source archive
-      insertion_phase: distribution
-      impact_type: "Credential theft, Self-Propagation"
-      versions:
-        - "2.2.2"
-      hashes:
-        - "sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34"
-      historical_artifacts:
-        - "https://www.npmjs.com/package/@cap-js/postgres/v/2.2.2"
-      notes: "Clean predecessor identified as @cap-js/postgres@2.2.1. StepSecurity later noted this release was unpublished from npm."
-    - package: "@cap-js/db-service"
-      ecosystem: "npm"
-      start_date: 2026-04-29
-      end_date: 2026-04-30
-      domain: npmjs.com
-      domain_type: package host
-      artifact_type: source archive
-      insertion_phase: distribution
-      impact_type: "Credential theft, Self-Propagation"
-      versions:
-        - "2.10.1"
-      hashes:
-        - "sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34"
-      historical_artifacts:
-        - "https://www.npmjs.com/package/@cap-js/db-service/v/2.10.1"
-      notes: "Clean predecessor identified as @cap-js/db-service@2.10.0. Published through abused OIDC trusted publishing from cap-js/cds-dbs."
+  - 0a3dd44
+  - eca039d
+  - 4ae7eb0
+  artifacts:
+  - id: mbt
+    name: mbt
+    package: mbt
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-04-29
+    end_date: 2026-04-29
+    versions:
+    - 1.2.48
+    locations:
+    - uri: https://www.npmjs.com/package/mbt/v/1.2.48
+      role: distribution
+    hashes:
+    - sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34
+    - sha256:80a3d2877813968ef847ae73b5eeeb70b9435254e74d7f07d8cf4057f0a710ac
+    notes:
+    - Clean predecessor identified as mbt@1.2.47. StepSecurity reported mbt was published
+      at 09:55 UTC with a stolen static npm automation token.
+  - id: cap-js-sqlite
+    name: "@cap-js/sqlite"
+    package: "@cap-js/sqlite"
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-04-29
+    end_date: 2026-04-29
+    versions:
+    - 2.2.2
+    locations:
+    - uri: https://www.npmjs.com/package/@cap-js/sqlite/v/2.2.2
+      role: distribution
+    hashes:
+    - sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34
+    - sha256:6f933d00b7d05678eb43c90963a80b8947c4ae6830182f89df31da9f568fea95
+    notes:
+    - Clean predecessor identified as @cap-js/sqlite@2.2.1. Published through abused
+      OIDC trusted publishing from cap-js/cds-dbs.
+  - id: cap-js-postgres
+    name: "@cap-js/postgres"
+    package: "@cap-js/postgres"
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-04-29
+    end_date: 2026-04-30
+    versions:
+    - 2.2.2
+    locations:
+    - uri: https://www.npmjs.com/package/@cap-js/postgres/v/2.2.2
+      role: distribution
+    hashes:
+    - sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34
+    notes:
+    - Clean predecessor identified as @cap-js/postgres@2.2.1. StepSecurity later noted
+      this release was unpublished from npm.
+  - id: cap-js-db-service
+    name: "@cap-js/db-service"
+    package: "@cap-js/db-service"
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-04-29
+    end_date: 2026-04-30
+    versions:
+    - 2.10.1
+    locations:
+    - uri: https://www.npmjs.com/package/@cap-js/db-service/v/2.10.1
+      role: distribution
+    hashes:
+    - sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34
+    notes:
+    - Clean predecessor identified as @cap-js/db-service@2.10.0. Published through
+      abused OIDC trusted publishing from cap-js/cds-dbs.
+  references:
+  - url: https://www.stepsecurity.io/blog/a-mini-shai-hulud-has-appeared
+  - url: https://github.com/SAP/cloud-mta-build-tool/issues/1651
+  - url: https://github.com/cap-js/cds-dbs/issues/1328
+  - url: https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/

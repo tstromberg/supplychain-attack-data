@@ -1,38 +1,109 @@
-- name: openssh
+---
+- id: openssh
   title: Trojan Horse in OpenSSH Distribution Files
-  synopsis: Malicious code was discovered in OpenSSH distribution files on the official OpenBSD FTP server. The trojan was inserted into the source code archives and would activate during compilation, connecting to a remote server on IRC port 6667 and allowing arbitrary command execution. The backdoor was discovered quickly and the compromised files were replaced with clean versions before widespread damage could occur.
-  start_date: 2002-07-30 # Approximate date of insertion
-  end_date: 2002-08-01 # Date of discovery/removal
-  attribution_type: Unknown # No public attribution
-  component_type: Application # Security/cryptography software
-  lang: C
-  cause: Sabotage # Intentional insertion of malicious code
-  motive: Unauthorized Access/Control # Command execution backdoor
-  transitive: false
-  insertion_phase: distribution # Inserted into distribution files
-  impact_type: Limited
-  references:
-    - https://www.openssh.com/txt/trojan.adv
-    - https://undeadly.org/cgi?action=article&sid=20020801122759
-    - https://www.itworldcanada.com/article/trojan-horse-found-in-openssh/25256
-    - https://www.cert.org/advisories/CA-2002-24.html
-    - https://www.mavetju.org/unix/openssh-trojan.php
-    - https://slashdot.org/comments.pl?sid=37188&cid=3991288
-  historical_artifacts:
-    - ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.4p1.tar.gz # Trojaned distribution file
-    - ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.4.tgz # Trojaned distribution file
-    - ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.2.2p1.tar.gz # Trojaned distribution file
-  current_artifacts:
-    - http://www.mavetju.org/~edwin/bf-test.c # Preserved copy of the malicious file
-    - http://www.mavetju.org/~edwin/bf-output.sh # Generated shell script
-  commits:
-    - None # The attack was on distribution files, not repository commits
-  domain: openssh.com
-  domain_type: code distribution
-  artifact_type: tar archive
-  versions:
-    - 3.2.2p1
+  synopsis: OpenSSH 3.2.2p1, 3.4p1, and 3.4 source archives on the OpenBSD FTP
+    server were trojanized between July 30 and August 1, 2002, with copies possibly
+    spreading through mirrors. The inserted code ran during compilation, connected
+    outbound on TCP/6667, and allowed arbitrary commands as the user building the
+    software, turning trusted source installation into host compromise.
+  story: |
+    At the end of July 2002, source archives for OpenSSH were replaced on the OpenBSD FTP server and potentially propagated by the normal mirror network. The affected files were `openssh-3.4p1.tar.gz`, `openssh-3.4.tgz`, and `openssh-3.2.2p1.tar.gz`; the project replaced them with clean originals at 13:00 UTC on August 1.
+
+    The payload lived in `bf-test.c` and executed during the build, not when a running SSH daemon handled traffic. Once compiled, it attempted hourly outbound connections to an IRC-style port and could execute attacker-supplied commands as the build user. CERT's advisory treated any host that built the trojaned source as compromised and told mirrors, redistributors, and administrators to verify signatures and checksums rather than trusting timestamps or file sizes.
+  start_date: 2002-07-30
+  end_date: 2002-08-01
+  target:
+    name: openssh
+    kind: application
+    website: https://www.openssh.com
+  actor:
+    name: Unknown
+    kind: unknown
+  language: C
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+  artifacts:
+  - id: openssh-3-4p1
+    name: openssh
+    kind: tar_archive
+    website: https://openssh.com
+    start_date: 2002-07-30
+    end_date: 2002-08-01
+    versions:
     - 3.4p1
+    locations:
+    - uri: ftp://ftp.openssh.com/pub/OpenBSD/OpenSSH/openssh-3.4p1.tar.gz
+      role: distribution
+    - uri: ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.4p1.tar.gz
+      role: distribution
+    - uri: http://www.mavetju.org/~edwin/bf-test.c
+      role: mirror
+    - uri: http://www.mavetju.org/~edwin/bf-output.sh
+      role: mirror
+    hashes:
+    - md5:3ac9bc346d736b4a51d676faa2a08a57
+    commits:
+    - None
+    indicators:
+    - kind: observable
+      value: ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.4p1.tar.gz
+  - id: openssh-3-4
+    name: openssh
+    kind: tar_archive
+    website: https://openssh.com
+    start_date: 2002-07-30
+    end_date: 2002-08-01
+    versions:
     - 3.4
-  hashes:
-    - md5:3ac9bc346d736b4a51d676faa2a08a57 # MD5 of trojaned openssh-3.4p1.tar.gz
+    locations:
+    - uri: ftp://ftp.openssh.com/pub/OpenBSD/OpenSSH/openssh-3.4.tgz
+      role: distribution
+    - uri: ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.4.tgz
+      role: distribution
+    commits:
+    - None
+    indicators:
+    - kind: observable
+      value: ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.4.tgz
+  - id: openssh-3-2-2p1
+    name: openssh
+    kind: tar_archive
+    website: https://openssh.com
+    start_date: 2002-07-30
+    end_date: 2002-08-01
+    versions:
+    - 3.2.2p1
+    locations:
+    - uri: ftp://ftp.openssh.com/pub/OpenBSD/OpenSSH/openssh-3.2.2p1.tar.gz
+      role: distribution
+    - uri: ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.2.2p1.tar.gz
+      role: distribution
+    commits:
+    - None
+    indicators:
+    - kind: observable
+      value: ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.2.2p1.tar.gz
+  references:
+  - url: https://www.openssh.com/txt/trojan.adv
+    title: OpenSSH Security Advisory adv.trojan
+  - url: https://groups.google.com/g/comp.security.announce/c/Y7V0PyvQXJ8
+    title: CERT Advisory CA-2002-24 Trojan Horse OpenSSH Distribution
+  - url: https://sourceware.org/legacy-ml/cygwin/2002-08/msg00102.html
+    title: 'Cygwin mailing list: CERT Advisory CA-2002-24 Trojan Horse OpenSSH Distribution'
+  - url: https://undeadly.org/cgi?action=article&sid=20020801122759
+    title: OpenSSH Security Advisory
+  - url: https://www.itworldcanada.com/article/trojan-horse-found-in-openssh/25256
+    title: Trojan horse found in OpenSSH
+  - url: https://www.cert.org/advisories/CA-2002-24.html
+    title: 'CERT Advisory CA-2002-24: Trojan Horse OpenSSH Distribution'
+  - url: https://www.mavetju.org/unix/openssh-trojan.php
+    title: OpenSSH Trojan
+  - url: https://slashdot.org/comments.pl?sid=37188&cid=3991288
+    title: Slashdot comment on OpenSSH trojan details

@@ -1,39 +1,61 @@
-- name: reviewdog/action-setup
+---
+- id: reviewdog-action-setup
   title: reviewdog/action-setup GitHub Action compromise leaks secrets
   campaigns:
-    - reviewdog-tj-actions-2025
-  synopsis: Attackers compromised a contributor's Personal Access Token (PAT), traced back to an earlier leak from the SpotBugs project, which granted write access. They maliciously updated the `v1` tag of the official `reviewdog/action-setup` GitHub Action to point to malicious code (`f0d342d`). For approximately 2 hours, workflows using `@v1` executed this code, which dumped secrets (like GITHUB_TOKEN) from the runner environment into publicly accessible workflow logs. This incident was a precursor, enabling the compromise of the `tj-actions/changed-files` action.
+  - reviewdog-tj-actions-2025
+  synopsis: Attackers compromised a contributor's Personal Access Token (PAT), traced
+    back to an earlier leak from the SpotBugs project, which granted write access.
+    They maliciously updated the `v1` tag of the official `reviewdog/action-setup`
+    GitHub Action to point to malicious code (`f0d342d`). For approximately 2 hours,
+    workflows using `@v1` executed this code, which dumped secrets (like GITHUB_TOKEN)
+    from the runner environment into publicly accessible workflow logs. This incident
+    was a precursor, enabling the compromise of the `tj-actions/changed-files` action.
   start_date: 2025-03-11
   end_date: 2025-03-17
-  attribution_type: Individual Hacker # Actor behind the initial token compromises
-  component_type: CI/CD plugin # CI/CD Component (GitHub Action)
-  lang: Shell # Malicious payload likely involved shell commands/scripts
-  cause: Compromised Account/Credentials # Leaked contributor PAT token via upstream compromise
-  motive: Credential Theft # Exfiltrating secrets from CI/CD pipelines
-  transitive: False
-  insertion_phase: CI/CD # Official Git tag maliciously updated
-  impact_type: Data Exfiltration
-  impact_user_count: 1500 # Estimated repositories potentially affected during the window
-  domain: github.com
-  domain_type: code host
-  artifact_type: revision control system
-  historical_artifacts:
-    - https://github.com/reviewdog/action-setup/tree/f0d342d24037bb11d26b9bd8496e0808ba32e9ec # Malicious commit state
-    - https://github.com/reviewdog/action-setup/tree/v1 # Tag that pointed to malicious commit
-  current_artifacts:
-    - https://www.wiz.io/blog/new-github-action-supply-chain-attack-reviewdog-action-setup # Analysis with screenshots
-    - https://www.stepsecurity.io/blog/reviewdog-github-actions-are-compromised # Technical details with code samples
-  hashes:
-    - sha1:f0d342d24037bb11d26b9bd8496e0808ba32e9ec # Malicious commit hash
+  target:
+    name: reviewdog/action-setup
+    kind: ci_cd_plugin
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: Shell
+  method:
+    cause: compromised_account_credentials
+    phase: ci_cd
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - data_exfiltration
+    users: 1500
+  artifacts:
+  - id: reviewdog-action-setup
+    name: reviewdog/action-setup
+    ecosystem: github
+    kind: revision_control_system
+    website: https://github.com
+    start_date: 2025-03-11
+    end_date: 2025-03-17
+    versions:
+    - v1
+    locations:
+    - uri: https://github.com/reviewdog/action-setup/tree/f0d342d24037bb11d26b9bd8496e0808ba32e9ec
+      role: distribution
+    - uri: https://github.com/reviewdog/action-setup/tree/v1
+      role: distribution
+    - uri: https://www.wiz.io/blog/new-github-action-supply-chain-attack-reviewdog-action-setup
+      role: mirror
+    - uri: https://www.stepsecurity.io/blog/reviewdog-github-actions-are-compromised
+      role: mirror
+    hashes:
+    - sha1:f0d342d24037bb11d26b9bd8496e0808ba32e9ec
+    commits:
+    - f0d342d24037bb11d26b9bd8496e0808ba32e9ec
   references:
-    - https://github.com/reviewdog/reviewdog/security/advisories/GHSA-qmg3-hpqr-gqvc # Official GitHub Advisory
-    - https://nvd.nist.gov/vuln/detail/CVE-2025-30154 # NVD Entry
-    - https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction # CISA Alert covering both incidents
-    - https://nvd.nist.gov/vuln/detail/CVE-2025-30066 # NVD Entry for tj-actions/changed-files CVE
-    - https://www.wiz.io/blog/new-github-action-supply-chain-attack-reviewdog-action-setup # Wiz Research Blog Post
-    - https://www.stepsecurity.io/blog/reviewdog-github-actions-are-compromised # StepSecurity Blog Post
-    - https://github.com/reviewdog/reviewdog/issues/2079 # Maintainer discussion/response
-  versions:
-    - v1 # Specific tag compromised during the incident window
-  commits:
-    - f0d342d24037bb11d26b9bd8496e0808ba32e9ec # Malicious commit the v1 tag pointed to during the compromise
+  - url: https://github.com/reviewdog/reviewdog/security/advisories/GHSA-qmg3-hpqr-gqvc
+  - url: https://nvd.nist.gov/vuln/detail/CVE-2025-30154
+  - url: https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
+  - url: https://nvd.nist.gov/vuln/detail/CVE-2025-30066
+  - url: https://www.wiz.io/blog/new-github-action-supply-chain-attack-reviewdog-action-setup
+  - url: https://www.stepsecurity.io/blog/reviewdog-github-actions-are-compromised
+  - url: https://github.com/reviewdog/reviewdog/issues/2079

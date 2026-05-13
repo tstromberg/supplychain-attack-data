@@ -16,45 +16,83 @@
   <h1>UnrealIRCd distribution tarball backdoored for RCE</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> unrealircd</div>
-    <div class="meta-item"><strong>Repository:</strong> N/A</div>
-    <div class="meta-item"><strong>Date:</strong> 2009-11-01 to 2010-06-12 (223 days)</div>
-    <div class="meta-item"><strong>Attribution:</strong> Individual Hacker</div>
-    <div class="meta-item"><strong>Component:</strong> Daemon</div>
+    <div class="meta-item"><strong>Target:</strong> unrealircd · <a href="https://unrealircd.org" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2009-11-10 to 2010-06-12 (214 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> daemon</div>
     <div class="meta-item"><strong>Language:</strong> C</div>
-    <div class="meta-item"><strong>Cause:</strong> Compromised Infrastructure</div>
-    <div class="meta-item"><strong>Motive:</strong> Unauthorized Access/Control</div>
-    <div class="meta-item"><strong>Transitive:</strong> </div>
-    <div class="meta-item"><strong>Impact Type:</strong> Backdoor, Remote code execution</div>
-    <div class="meta-item"><strong>User Impact:</strong> </div>
-    <div class="meta-item"><strong>Domain:</strong> unrealircd.org (project download host)</div>
-    <div class="meta-item"><strong>Artifact Type:</strong> source archive</div>
-    <div class="meta-item"><strong>Insertion Phase:</strong> distribution</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> unauthorized_access_control</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The official UnrealIRCd 3.2.8.1 distribution tarball was replaced with a backdoored version on official download infrastructure and remained exposed for months. The hidden source change allowed arbitrary command execution with the privileges of the IRC daemon when a client sent the AB;COMMAND; trigger. The DailyDave thread preserved attacker-side context and a compact Python exploit for the same trigger.</p>
+  <p class="synopsis">The official UnrealIRCd 3.2.8.1 source distribution was replaced on project mirrors around November 10, 2009 and remained exposed until June 12, 2010. The injected code disguised itself behind DEBUGMODE3 logic and executed arbitrary commands with the daemon user&#39;s privileges when a client sent input beginning with AB.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Around November 10, 2009, UnrealIRCd 3.2.8.1 source mirrors were replaced with a tarball containing a backdoor. The substitution was not discovered until June 12, 2010, leaving a seven-month window in which users who built the IRC server from project mirrors could deploy attacker-modified source. LWN noted that official Windows binaries were not affected, but the project had not yet provided signatures that would have made the swap easier to detect.</p>
+    
+      <p>The source change was disguised as `DEBUGMODE3` logic. When input began with `AB`, `DEBUGMODE3_INFO` matched and `DEBUG3_LOG` ultimately called `system()`, executing the rest of the client-supplied command as the user running the daemon. The DailyDave thread preserved the attacker-facing lore around the trigger, while LWN captured the larger lesson: unsigned source distribution left a project mirror network able to turn ordinary build practice into remote command execution.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>unrealircd</strong>
+            
+            <br><span>source_archive</span>
+            <br><a href="https://unrealircd.org" target="_blank">https://unrealircd.org</a>
+            
+          </td>
+          <td>2009-11-10<br>to 2010-06-12</td>
+          <td>
+            
+              <code>3.2.8.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>md5:e5a4f00a16455005a45d969992173911</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
 
   
 
   
-  <h2>Compromised Versions</h2>
-  <ul>
-    
-      <li><code>3.2.8.1</code></li>
-    
-  </ul>
-  
 
-  
-
-  
-  <h2>Hashes</h2>
-  <ul class="hashes">
-    
-      <li><code>md5:e5a4f00a16455005a45d969992173911</code></li>
-    
-  </ul>
   
 
   
@@ -63,13 +101,13 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.rapid7.com/db/modules/exploit/unix/irc/unreal_ircd_3281_backdoor/" target="_blank">https://www.rapid7.com/db/modules/exploit/unix/irc/unreal_ircd_3281_backdoor/</a></li>
+      <li><a href="https://www.rapid7.com/db/modules/exploit/unix/irc/unreal_ircd_3281_backdoor/" target="_blank">UnrealIRCD 3.2.8.1 Backdoor Command Execution</a></li>
     
-      <li><a href="https://lwn.net/Articles/392201/" target="_blank">https://lwn.net/Articles/392201/</a></li>
+      <li><a href="https://lwn.net/Articles/392201/" target="_blank">A backdoor in UnrealIRCd</a></li>
     
-      <li><a href="https://arstechnica.com/information-technology/2010/06/unreal-ircd-backdoored-for-months/" target="_blank">https://arstechnica.com/information-technology/2010/06/unreal-ircd-backdoored-for-months/</a></li>
+      <li><a href="https://arstechnica.com/information-technology/2010/06/unreal-ircd-backdoored-for-months/" target="_blank">UnrealIRCd backdoored for months</a></li>
     
-      <li><a href="https://seclists.org/dailydave/2010/q2/56" target="_blank">https://seclists.org/dailydave/2010/q2/56</a></li>
+      <li><a href="https://seclists.org/dailydave/2010/q2/56" target="_blank">DailyDave: Unreal IRC 0day</a></li>
     
   </ul>
   

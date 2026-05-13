@@ -1,33 +1,54 @@
-- name: spam
+---
+- id: spam
   title: spam PyPI package compromised via phishing.
-  synopsis: During the same JuiceLedger phishing wave that hit exotel, the maintainer account for the PyPI package spam was compromised. Malicious versions 2.0.2 and 4.0.2 were uploaded with installation logic that downloaded and executed infostealer malware on developer systems during installs.
-  start_date: 2022-08-01 # Approximate start of campaign/compromise window
-  end_date: 2022-08-31 # Approximate discovery/remediation window
-  attribution_type: Threat Actor # (JuiceLedger)
-  component_type: Library
-  lang: Python # Malicious code added to package
-  cause: Phishing, Stolen credentials
-  motive: Credential theft, Data theft
-  transitive: false
-  insertion_phase: distribution # Malicious version uploaded to package host
-  impact_type: Infostealer, Credential theft
-  impact_user_count: 200000 # Approximate total downloads for the package historically, indicating potential reach
-  references:
-    - https://checkmarx.com/blog/first-known-phishing-attack-against-pypi-users/
-    - https://www.sentinelone.com/labs/pypi-phishing-campaign-juiceledger-threat-actor-pivots-from-fake-apps-to-supply-chain-attacks/
-    - https://www.itpro.com/security/phishing/368899/pypi-packages-succumb-to-mailchimp-phishing-scam
-  versions:
+  synopsis: During the same JuiceLedger phishing wave that hit exotel, the maintainer
+    account for the PyPI package spam was compromised. Malicious versions 2.0.2 and
+    4.0.2 were uploaded with installation logic that downloaded and executed infostealer
+    malware on developer systems during installs.
+  start_date: 2022-08-01
+  end_date: 2022-08-31
+  target:
+    name: spam
+    kind: library
+  actor:
+    name: Threat Actor
+    kind: group
+  language: Python
+  method:
+    cause: phishing_stolen_credentials
+    phase: distribution
+    motive: credential_theft_data_theft
+    transitive: false
+  impact:
+    types:
+    - infostealer
+    - credential_theft
+    users: 200000
+  artifacts:
+  - id: spam
+    name: spam
+    ecosystem: pypi
+    kind: source_archive
+    start_date: 2022-08-01
+    end_date: 2022-08-31
+    versions:
     - 2.0.2
     - 4.0.2
-  historical_artifacts:
-    - https://pypi.org/project/spam/ # Original package location
-    - 2.0.2 # Compromised version
-    - 4.0.2 # Compromised version
-  current_artifacts:
-    - https://checkmarx.com/blog/first-known-phishing-attack-against-pypi-users/ # Analysis and IOCs for JuiceLedger campaign
-    - https://www.virustotal.com/gui/file/60434af3ebe924efabc96558e6c8d8176bf4eb06dd6cc47b4c491da9964be874 # VirusTotal entry for python-install.scr payload
-  hashes:
-    - sha256:60434af3ebe924efabc96558e6c8d8176bf4eb06dd6cc47b4c491da9964be874 # python-install.scr (payload downloaded by malicious spam package versions)
-  domain: pypi.org
-  domain_type: package host
-  artifact_type: source archive
+    locations:
+    - uri: https://pypi.org/project/spam/
+      role: distribution
+    - uri: https://checkmarx.com/blog/first-known-phishing-attack-against-pypi-users/
+      role: mirror
+    - uri: https://www.virustotal.com/gui/file/60434af3ebe924efabc96558e6c8d8176bf4eb06dd6cc47b4c491da9964be874
+      role: mirror
+    hashes:
+    - sha256:60434af3ebe924efabc96558e6c8d8176bf4eb06dd6cc47b4c491da9964be874
+    indicators:
+    - kind: observable
+      value: 2.0.2
+    - kind: observable
+      value: 4.0.2
+  references:
+  - url: https://checkmarx.com/blog/first-known-phishing-attack-against-pypi-users/
+  - url: https://www.sentinelone.com/labs/pypi-phishing-campaign-juiceledger-threat-actor-pivots-from-fake-apps-to-supply-chain-attacks/
+  - url: https://www.itpro.com/security/phishing/368899/pypi-packages-succumb-to-mailchimp-phishing-scam

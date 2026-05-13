@@ -1,37 +1,88 @@
-- name: xzutils
-  title: xz utils backdoor via social engineering, build modification
-  synopsis: A sophisticated multi-year social engineering campaign resulted in an attacker gaining maintainership of xz utils. Malicious code was hidden in test files within the source repository and injected into the build process (configure script via m4 macro) only under specific conditions (x86-64 Linux, building .deb/.rpm with gcc/glibc). The backdoor targeted the OpenSSH server (sshd) linked against the compromised liblzma, enabling potential remote code execution by attackers possessing a specific private key.
-  start_date: 2024-02-24 # Malicious code first included in release tarball (v5.6.0)
-  end_date: 2024-03-29 # Backdoor discovered and publicly disclosed
-  attribution_type: Nation-state # Suspected due to sophistication/patience
-  component_type: Library # Compression utility/library
-  lang: Shell # Build script modifications (m4/autoconf)
-  cause: Social Engineering # Maintainer access takeover
-  motive: Espionage/Strategic Advantage # Remote access to sshd
-  insertion_phase: CI/CD # Malicious code injected during configure/build stage
-  impact_type: Backdoor, Remote code execution
-  references:
-    - https://nvd.nist.gov/vuln/detail/CVE-2024-3094
-    - https://www.openwall.com/lists/oss-security/2024/03/29/4 # Initial disclosure by Andres Freund
-    - https://research.swtch.com/xz-timeline # Detailed timeline by Russ Cox
-    - https://web.archive.org/web/20240402162054/https://www.cisa.gov/news-events/alerts/2024/03/29/reported-supply-chain-compromise-affecting-xz-utils-data-compression-library # CISA Alert (Archived)
-  versions:
+---
+- id: xzutils
+  title: xz utils liblzma backdoor in official release tarballs
+  synopsis: An attacker using the Jia Tan persona gained xz utils maintainer access
+    after a long social-engineering campaign, then shipped official 5.6.0 and 5.6.1
+    release tarballs that hid a liblzma backdoor in test files and m4 build logic.
+    On selected x86-64 Linux distribution builds, the payload could hook sshd through
+    libsystemd and enable targeted pre-authentication remote code execution.
+  story: |
+    The xz utils compromise was not a smash-and-grab package takeover. An attacker operating as Jia Tan spent years becoming a trusted contributor, obtained release authority, and then used that position to publish official source tarballs for versions 5.6.0 and 5.6.1. The malicious release path mattered: parts of the backdoor lived in generated tarball content and obfuscated test files, while GitHub's auto-generated source archives did not contain the same complete payload.
+
+    The backdoor activated only under narrow build and runtime conditions, including x86-64 Linux, gcc, GNU ld, glibc-like environments, and Debian or RPM package-build signals. When the resulting liblzma was pulled into patched OpenSSH builds through libsystemd, it could intercept sshd's authentication path and respond to an attacker-controlled key with hidden command execution.
+
+    Andres Freund caught the attack by following performance anomalies, valgrind complaints, and unexpected liblzma CPU time in sshd on Debian unstable. That chance discovery kept the backdoor mostly inside unstable, testing, and pre-release distribution channels rather than stable Linux fleets. The incident exposed both the reach of small infrastructure libraries and the weakness of maintainer trust as a single control.
+  start_date: 2024-02-24
+  end_date: 2024-03-29
+  target:
+    name: xzutils
+    kind: library
+    website: https://tukaani.org/xz/
+    repo: https://github.com/tukaani-project/xz
+  actor:
+    name: Jia Tan persona
+    kind: persona
+  language: Shell
+  method:
+    cause: social_engineering
+    phase: distribution
+    motive: espionage_strategic_advantage
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+  artifacts:
+  - id: xzutils
+    name: xzutils
+    ecosystem: github
+    kind: source_archive
+    website: https://tukaani.org/xz/
+    repo: https://github.com/tukaani-project/xz
+    start_date: 2024-02-24
+    end_date: 2024-03-29
+    versions:
     - 5.6.0
     - 5.6.1
-  domain: github.com
-  domain_type: code host
-  artifact_type: source archive
-  historical_artifacts:
-    - https://github.com/tukaani-project/xz/releases/download/v5.6.0/xz-5.6.0.tar.gz
-    - https://github.com/tukaani-project/xz/releases/download/v5.6.1/xz-5.6.1.tar.gz
-  current_artifacts:
-    - https://github.com/tukaani-project/xz/tree/release-5.6.1
-    - https://research.swtch.com/xz-backdoor # Analysis with code samples
-    - https://www.openwall.com/lists/oss-security/2024/03/29/4 # Initial disclosure with code analysis
-  commits:
-    - 9c45a8548eda244bd2127e2d2ae1a943c1affb12 # Initial malicious commit adding "cleanup" code
-    - 61af4bc0f8cc25805e459cfa2ff011c80095daa6 # "xz: Fix assert which is often hit in fuzz testing" (concealing malicious code)
-    - 70e9b1960fa77c5e45e9fb60db65a8ef8e0f438e # Malicious m4 macro for configure
-  hashes:
-    - sha256:64c34a523acb4925cf066c8e9ac66d53b0e7456e14364d12186616abc1e3c7ce # xz-5.6.1.tar.gz (contains malicious components)
-    - sha256:ae2c4f079373aca8bcaf96225defedc0db2274686bcbec5f9e2d2ba344569345 # xz-5.6.0.tar.gz
+    locations:
+    - uri: https://github.com/tukaani-project/xz/releases/download/v5.6.0/xz-5.6.0.tar.gz
+      role: distribution
+    - uri: https://github.com/tukaani-project/xz/releases/download/v5.6.1/xz-5.6.1.tar.gz
+      role: distribution
+    - uri: https://github.com/tukaani-project/xz/tree/release-5.6.1
+      role: mirror
+    - uri: https://research.swtch.com/xz-backdoor
+      role: mirror
+    - uri: https://www.openwall.com/lists/oss-security/2024/03/29/4
+      role: mirror
+    hashes:
+    - sha256:64c34a523acb4925cf066c8e9ac66d53b0e7456e14364d12186616abc1e3c7ce
+    - sha256:ae2c4f079373aca8bcaf96225defedc0db2274686bcbec5f9e2d2ba344569345
+    commits:
+    - 9c45a8548eda244bd2127e2d2ae1a943c1affb12
+    - 61af4bc0f8cc25805e459cfa2ff011c80095daa6
+    - 70e9b1960fa77c5e45e9fb60db65a8ef8e0f438e
+    indicators:
+    - kind: file
+      value: m4/build-to-host.m4
+    - kind: file
+      value: tests/files/bad-3-corrupt_lzma2.xz
+    - kind: file
+      value: tests/files/good-large_compressed.lzma
+    - kind: symbol
+      value: RSA_public_decrypt
+    - kind: symbol
+      value: crc64_resolve
+  references:
+  - url: https://nvd.nist.gov/vuln/detail/CVE-2024-3094
+    title: 'NVD: CVE-2024-3094'
+  - url: https://www.openwall.com/lists/oss-security/2024/03/29/4
+    title: backdoor in upstream xz/liblzma leading to ssh server compromise
+  - url: https://research.swtch.com/xz-timeline
+    title: Timeline of the xz open source attack
+  - url: https://research.swtch.com/xz-backdoor
+    title: The xz attack shell script
+  - url: https://doublepulsar.com/inside-the-failed-attempt-to-backdoor-ssh-globally-that-got-caught-by-chance-bbfe628fafdd
+    title: Inside the failed attempt to backdoor SSH globally - that got caught by chance
+  - url: https://web.archive.org/web/20240402162054/https://www.cisa.gov/news-events/alerts/2024/03/29/reported-supply-chain-compromise-affecting-xz-utils-data-compression-library
+    title: Reported Supply Chain Compromise Affecting XZ Utils Data Compression Library

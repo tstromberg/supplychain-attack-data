@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>monkey.org dsniff, fragroute, and fragrouter source tarballs backdoored</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>monkey.org dsniff, fragroute, and fragrouter source tarballs backdoored</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> monkey.org · <a href="https://www.monkey.org" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2002-05-17 to 2002-05-24 (7 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> project_host</div>
+    <div class="meta-item"><strong>Language:</strong> C</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> unauthorized_access_control</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 1951</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">The monkey.org host serving Dug Song&#39;s security tools was compromised on May 14, 2002, and attackers modified the dsniff 2.3, fragroute 1.2, and fragrouter 1.6 source tarballs at 03:00 on May 17. The altered configure script compiled a connect-back shell to 216.80.99.202:6667, exposing Unix systems that built the poisoned official downloads.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>In May 2002, monkey.org was compromised through an epic4-pre2.511 client-side hole that yielded access to a local administrator account and then to a root screen session. At 03:00 on May 17, the dsniff 2.3, fragroute 1.2, and fragrouter 1.6 tarballs were modified to include a configure-time backdoor. The downloads were not impostors; they came from the project host used for Dug Song&#39;s security tools.</p>
+    
+      <p>The injected configure block wrote `conftest.c`, compiled it, and executed it during the build. The payload forked, connected to 216.80.99.202 on TCP/6667, and handed stdin, stdout, and stderr to `/bin/sh`. Dug Song reported 1,951 successful downloads of the backdoored tarballs before discovery around May 24, including hundreds of Unix hosts and automated BSD ports fetches, then restored the system from scratch and published clean checksums.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>dsniff</strong>
+            
+            <br><span>source_archive</span>
+            <br><a href="https://www.monkey.org/~dugsong/dsniff/" target="_blank">https://www.monkey.org/~dugsong/dsniff/</a>
+            
+          </td>
+          <td>2002-05-17<br>to 2002-05-24</td>
+          <td>
+            
+              <code>2.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>fragroute</strong>
+            
+            <br><span>source_archive</span>
+            <br><a href="https://www.monkey.org/~dugsong/fragroute/" target="_blank">https://www.monkey.org/~dugsong/fragroute/</a>
+            
+          </td>
+          <td>2002-05-17<br>to 2002-05-24</td>
+          <td>
+            
+              <code>1.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>fragrouter</strong>
+            
+            <br><span>source_archive</span>
+            <br><a href="https://www.monkey.org/~dugsong/" target="_blank">https://www.monkey.org/~dugsong/</a>
+            
+          </td>
+          <td>2002-05-17<br>to 2002-05-24</td>
+          <td>
+            
+              <code>1.6</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>observable:216.80.99.202:6667</code></li>
+    
+      <li><code>observable:epic4-pre2.511</code></li>
+    
+      <li><code>file:configure</code></li>
+    
+      <li><code>file:conftest.c</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://artofhacking.com/tucops3/hack/unix/live/aoh_unix5397.htm" target="_blank">fragroute, dsniff and fragrouter have been backdoored</a></li>
+    
+      <li><a href="https://www.helpnetsecurity.com/2002/06/03/backdoored-dsniff-fragroute-and-fragrouter/" target="_blank">Backdoored dsniff, fragroute and fragrouter</a></li>
+    
+      <li><a href="https://seclists.org/isn/2002/Jun/8" target="_blank">Download Sites Hacked, Source Code Backdoored</a></li>
+    
+      <li><a href="https://lwn.net/Articles/809/" target="_blank">LWN Security reports for June 2002</a></li>
+    
+      <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2002-2049" target="_blank">NVD: CVE-2002-2049</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

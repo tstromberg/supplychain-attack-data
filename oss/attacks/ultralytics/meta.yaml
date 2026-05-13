@@ -1,43 +1,69 @@
-- name: ultralytics
+---
+- id: ultralytics
   title: Ultralytics PyPI package compromised distributing cryptominer
-  repo: https://github.com/ultralytics/ultralytics
-  synopsis: Attackers exploited a vulnerability in the project's GitHub Actions CI/CD workflow (combining `pull_request_target` trigger with command injection via unsanitized branch names). This allowed them to execute arbitrary code during the build/publish process and upload malicious versions of the official `ultralytics` package directly to PyPI. These compromised versions contained an XMRig cryptominer. Several malicious versions were published over a few days before being detected and removed.
-  start_date: 2024-12-04 # Date first malicious version (8.3.41) published to PyPI
-  end_date: 2024-12-07 # Date last malicious version (8.3.46) published (discovery/remediation occurred shortly after)
-  attribution_type: Individual Hacker
-  component_type: Library # AI/ML Computer Vision
-  lang: Python # Package is Python; payload was a binary cryptominer
-  cause: GHA Vulnerability # GitHub Actions workflow vulnerability exploited
-  motive: Financial Gain # Cryptomining
-  insertion_phase: CI/CD # Malicious code injected during build/publish pipeline, artifact uploaded to PyPI
-  impact_type: Financial Exploitation
-  domain: pypi.org
-  domain_type: package host
-  artifact_type: source archive
-  historical_artifacts:
-    - https://pypi.org/project/ultralytics/8.3.41/
-    - https://pypi.org/project/ultralytics/8.3.42/
-    - https://pypi.org/project/ultralytics/8.3.45/
-    - https://pypi.org/project/ultralytics/8.3.46/
-  current_artifacts:
-    - https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent # Analysis with screenshots and technical details
-    - https://safetycli.com/research/supply-chain-attack-ultralytics-ai # Analysis with code snippets
-    - https://github.com/ultralytics/ultralytics/security/advisories/GHSA-32hc-9xrg-cc9g # Official GitHub Security Advisory
-    - https://github.com/ossf/package-analysis/blob/main/pkg/analyzers/search/rules/rules.yaml#L196-L203 # OSSF package analysis entry
-  hashes:
-    - sha256:23d1f5dcec5d678a34a5947d615f3c3d31246e935bb8c93d9f7c790a23b19a8c # ultralytics-8.3.41.tar.gz
-    - sha256:16b1a872b13c63c9a5d75cfb5cdec76a6a4fd95a7d42f5fc3ca3d40b78b80fe7 # ultralytics-8.3.42.tar.gz
-    - sha256:e2e05bdc1b2f22fef4a14d4fe4b4f21b8d15f83ceb4a9a4a21f5f6e02cb25a1c # ultralytics-8.3.45.tar.gz
-    - sha256:6d01a5382b3b1f1c03d795aafc4830c2b8389cb0d5e30c9e0285e55af0a237eb # ultralytics-8.3.46.tar.gz
-  commits:
-    - fd3acf4de0a65c8866aded0c0efca9137e0e31e4 # Pull request with malicious GitHub Actions workflow
-    - 859f5a09dbfcc36f47ae57ab2f87ea3a10e6f9a9 # Related to CI/CD pipeline exploit
-  references:
-    - https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent # Legit Security Blog detailing the attack vector
-    - https://safetycli.com/research/supply-chain-attack-ultralytics-ai # Safety CLI Blog detailing timeline and versions
-    - https://github.com/ultralytics/ultralytics/issues/18029 # GitHub issue discussing the incident
-  versions: # Malicious versions published to PyPI
+  synopsis: Attackers exploited a vulnerability in the project's GitHub Actions CI/CD
+    workflow (combining `pull_request_target` trigger with command injection via unsanitized
+    branch names). This allowed them to execute arbitrary code during the build/publish
+    process and upload malicious versions of the official `ultralytics` package directly
+    to PyPI. These compromised versions contained an XMRig cryptominer. Several malicious
+    versions were published over a few days before being detected and removed.
+  start_date: 2024-12-04
+  end_date: 2024-12-07
+  target:
+    name: ultralytics
+    kind: library
+    repo: https://github.com/ultralytics/ultralytics
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: Python
+  method:
+    cause: gha_vulnerability
+    phase: ci_cd
+    motive: financial_gain
+    transitive: false
+  impact:
+    types:
+    - financial_exploitation
+  artifacts:
+  - id: ultralytics
+    name: ultralytics
+    ecosystem: pypi
+    kind: source_archive
+    repo: https://github.com/ultralytics/ultralytics
+    start_date: 2024-12-04
+    end_date: 2024-12-07
+    versions:
     - 8.3.41
     - 8.3.42
     - 8.3.45
     - 8.3.46
+    locations:
+    - uri: https://pypi.org/project/ultralytics/8.3.41/
+      role: distribution
+    - uri: https://pypi.org/project/ultralytics/8.3.42/
+      role: distribution
+    - uri: https://pypi.org/project/ultralytics/8.3.45/
+      role: distribution
+    - uri: https://pypi.org/project/ultralytics/8.3.46/
+      role: distribution
+    - uri: https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent
+      role: mirror
+    - uri: https://safetycli.com/research/supply-chain-attack-ultralytics-ai
+      role: mirror
+    - uri: https://github.com/ultralytics/ultralytics/security/advisories/GHSA-32hc-9xrg-cc9g
+      role: mirror
+    - uri: https://github.com/ossf/package-analysis/blob/main/pkg/analyzers/search/rules/rules.yaml#L196-L203
+      role: mirror
+    hashes:
+    - sha256:23d1f5dcec5d678a34a5947d615f3c3d31246e935bb8c93d9f7c790a23b19a8c
+    - sha256:16b1a872b13c63c9a5d75cfb5cdec76a6a4fd95a7d42f5fc3ca3d40b78b80fe7
+    - sha256:e2e05bdc1b2f22fef4a14d4fe4b4f21b8d15f83ceb4a9a4a21f5f6e02cb25a1c
+    - sha256:6d01a5382b3b1f1c03d795aafc4830c2b8389cb0d5e30c9e0285e55af0a237eb
+    commits:
+    - fd3acf4de0a65c8866aded0c0efca9137e0e31e4
+    - 859f5a09dbfcc36f47ae57ab2f87ea3a10e6f9a9
+  references:
+  - url: https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent
+  - url: https://safetycli.com/research/supply-chain-attack-ultralytics-ai
+  - url: https://github.com/ultralytics/ultralytics/issues/18029

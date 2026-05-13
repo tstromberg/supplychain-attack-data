@@ -1,33 +1,55 @@
-- name: kong-ingress-controller
+---
+- id: kong-ingress-controller
   title: Kong Ingress Controller image backdoored with cryptominer
-  repo: https://github.com/Kong/kubernetes-ingress-controller
-  synopsis: An attacker compromised a Kong DockerHub Personal Access Token (PAT), likely via a CI/CD pipeline exploit ("Pwn Request" targeting an old branch). Using this token, they uploaded a malicious version of the official Kong Ingress Controller container image (v3.4.0) directly to DockerHub. This malicious image contained an XMRig cryptominer configured to mine Monero using the resources of clusters that pulled and ran the compromised image.
-  start_date: 2024-12-23 # Approximate date malicious image uploaded to DockerHub
-  end_date: 2025-01-02 # Date malicious image removed from DockerHub by Kong
-  attribution_type: Individual Hacker
-  component_type: Application # Kubernetes Ingress Controller
-  lang: Binary # Cryptominer payload
-  cause: Compromised Account/Credentials # Leaked/exploited CI/CD token (PAT)
-  motive: Financial Gain # Cryptomining
-  insertion_phase: CI/CD # Compromised token allowed push to distribution platform (DockerHub)
-  impact_type: Financial Exploitation
-  domain: docker.io
-  domain_type: container host
-  artifact_type: OCI image
-  historical_artifacts:
-    - docker://docker.io/kong/kubernetes-ingress-controller:3.4.0@sha256:a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43 # Malicious image
-    - https://hub.docker.com/layers/kong/kubernetes-ingress-controller/3.4.0/images/sha256-a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43 # DockHub link to malicious image
-  current_artifacts:
-    - https://github.com/r0binak/kong-xmrig
+  synopsis: An attacker compromised a Kong DockerHub Personal Access Token (PAT),
+    likely via a CI/CD pipeline exploit ("Pwn Request" targeting an old branch). Using
+    this token, they uploaded a malicious version of the official Kong Ingress Controller
+    container image (v3.4.0) directly to DockerHub. This malicious image contained
+    an XMRig cryptominer configured to mine Monero using the resources of clusters
+    that pulled and ran the compromised image.
+  start_date: 2024-12-23
+  end_date: 2025-01-02
+  target:
+    name: kong-ingress-controller
+    kind: application
+    repo: https://github.com/Kong/kubernetes-ingress-controller
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: Binary
+  method:
+    cause: compromised_account_credentials
+    phase: ci_cd
+    motive: financial_gain
+    transitive: false
+  impact:
+    types:
+    - financial_exploitation
+  artifacts:
+  - id: kong-ingress-controller
+    name: kong-ingress-controller
+    kind: oci_image
+    website: https://docker.io
+    repo: https://github.com/Kong/kubernetes-ingress-controller
+    start_date: 2024-12-23
+    end_date: 2025-01-02
+    versions:
+    - 3.4.0
+    locations:
+    - uri: https://hub.docker.com/layers/kong/kubernetes-ingress-controller/3.4.0/images/sha256-a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43
+      role: distribution
+    - uri: https://github.com/r0binak/kong-xmrig
+      role: mirror
+    hashes:
+    - sha256:a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43
+    - sha256:4e3bbca1ba0bf9f0d53c8b1cc07bf92d9b1d41b3f066fdf4aec7cdd8c21ca3b7
+    - sha256:e164e6e21c661679c556d16638300c25e16d86bb2d567ad66b4181f1a65f4788
+    - sha256:56ff46874f0536c289ff38af4cb308af8f7e6156e3f9d9227b71004d2042a4e6
+    indicators:
+    - kind: observable
+      value: docker://docker.io/kong/kubernetes-ingress-controller:3.4.0@sha256:a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43
   references:
-    - https://github.com/Kong/kubernetes-ingress-controller/security/advisories/GHSA-58mg-ww7q-xw3p # Official GitHub Advisory
-    - https://konghq.com/blog/product-releases/december-2024-unauthorized-kong-ingress-controller-3-4-0-build # Official Kong Blog Post/RCA
-    - https://hackread.com/malicious-kong-ingress-controller-image-dockerhub/ # Security News Report
-    - https://www.armosec.io/blog/kong-ingress-controller-cryptojacking/ # Security Vendor Analysis
-  versions:
-    - 3.4.0 # Specific image hash compromised
-  hashes:
-    - sha256:a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43 # Malicious container image
-    - sha256:4e3bbca1ba0bf9f0d53c8b1cc07bf92d9b1d41b3f066fdf4aec7cdd8c21ca3b7 # XMRig binary hash found in malicious image
-    - sha256:e164e6e21c661679c556d16638300c25e16d86bb2d567ad66b4181f1a65f4788 # trojanized kong binary from YARA rule
-    - sha256:56ff46874f0536c289ff38af4cb308af8f7e6156e3f9d9227b71004d2042a4e6 # XMRig miner from YARA rule
+  - url: https://github.com/Kong/kubernetes-ingress-controller/security/advisories/GHSA-58mg-ww7q-xw3p
+  - url: https://konghq.com/blog/product-releases/december-2024-unauthorized-kong-ingress-controller-3-4-0-build
+  - url: https://hackread.com/malicious-kong-ingress-controller-image-dockerhub/
+  - url: https://www.armosec.io/blog/kong-ingress-controller-cryptojacking/
