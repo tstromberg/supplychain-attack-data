@@ -1,7 +1,15 @@
 - name: sap-cap-js
   title: SAP CAP Packages Mini Shai-Hulud
   repo: https://github.com/cap-js/cds-dbs
-  synopsis: In April 2026, the SAP Cloud Application Programming Model ecosystem was compromised when attackers exploited an npm OIDC configuration gap. They published backdoored versions of official packages like @cap-js/sqlite and @cap-js/postgres. A preinstall script used a downloaded Bun binary to execute a multi-stage credential stealer targeting SAP developers.
+  synopsis: >-
+    Mini Shai-Hulud compromised SAP ecosystem npm packages mbt,
+    @cap-js/sqlite, @cap-js/postgres, and @cap-js/db-service through two release
+    paths: a stolen static npm token for mbt and an abused GitHub Actions OIDC
+    publishing flow for cap-js/cds-dbs. The malicious releases ran a Bun-based
+    credential stealer, exfiltrated encrypted secrets through attacker-created
+    GitHub repositories, added IDE persistence through Claude Code and VS Code
+    hooks, injected repository-secret stealing workflows, and attempted
+    propagation through stolen npm tokens.
   start_date: 2026-04-29
   end_date: 2026-04-30
   attribution_type: Advanced Persistent Threat
@@ -9,19 +17,38 @@
   lang: JavaScript
   cause: CI/CD Exploit
   motive: Credential Theft
-  transitive: false
-  historical_artifacts: []
+  transitive: true
+  historical_artifacts:
+    - https://www.npmjs.com/package/mbt/v/1.2.48
+    - https://www.npmjs.com/package/@cap-js/sqlite/v/2.2.2
+    - https://www.npmjs.com/package/@cap-js/postgres/v/2.2.2
+    - https://www.npmjs.com/package/@cap-js/db-service/v/2.10.1
   current_artifacts: []
   domain: npmjs.com
   domain_type: package host
   artifact_type: source archive
-  insertion_phase: distribution
-  impact_type: Credential Theft
+  insertion_phase: ci/cd
+  impact_type: Credential Theft/Self-Propagation
   impact_user_count: 570000
   references:
+    - https://www.stepsecurity.io/blog/a-mini-shai-hulud-has-appeared
+    - https://github.com/SAP/cloud-mta-build-tool/issues/1651
+    - https://github.com/cap-js/cds-dbs/issues/1328
     - https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/
   versions:
-    - 2.2.2
-    - 2.10.1
-  commits: []
-  hashes: []
+    - "mbt@1.2.48"
+    - "@cap-js/sqlite@2.2.2"
+    - "@cap-js/postgres@2.2.2"
+    - "@cap-js/db-service@2.10.1"
+    - "safe: mbt@1.2.47"
+    - "safe: @cap-js/sqlite@2.2.1"
+    - "safe: @cap-js/postgres@2.2.1"
+    - "safe: @cap-js/db-service@2.10.0"
+  commits:
+    - "0a3dd44"
+    - "eca039d"
+    - "4ae7eb0"
+  hashes:
+    - "sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34"
+    - "sha256:80a3d2877813968ef847ae73b5eeeb70b9435254e74d7f07d8cf4057f0a710ac"
+    - "sha256:6f933d00b7d05678eb43c90963a80b8947c4ae6830182f89df31da9f568fea95"

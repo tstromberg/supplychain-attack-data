@@ -1,26 +1,34 @@
 - name: bitwarden-cli
   title: Bitwarden CLI Compromise (Shai-Hulud V3)
   repo: https://github.com/bitwarden/clients
-  synopsis: The official Bitwarden CLI npm package (@bitwarden/cli) was compromised to distribute the Shai-Hulud worm payload. The malicious version (2026.4.0) stole credentials and automatically backdoored every npm package the victim had permission to publish.
+  synopsis: The official Bitwarden CLI npm package (@bitwarden/cli) version 2026.4.0 was compromised during the broader Checkmarx/TeamPCP supply-chain campaign after attackers abused a GitHub Actions path in Bitwarden's CI/CD pipeline. The malicious package included a bw1.js payload that shared infrastructure with the Checkmarx campaign, harvested GitHub, npm, cloud, SSH, environment, Claude, and MCP credentials, exfiltrated to audit.checkmarx.cx and GitHub commit-based dead drops, and attempted npm/GitHub supply-chain propagation with injected install hooks and workflow files.
   start_date: 2026-04-22
-  end_date: 2026-04-22
+  end_date: 2026-04-23
   attribution_type: Advanced Persistent Threat
   component_type: Application
   lang: JavaScript
-  cause: Compromised Account/Credentials
+  cause: CI/CD Exploit
   motive: Credential Theft
-  transitive: false
-  historical_artifacts: []
+  transitive: true
+  historical_artifacts:
+    - https://www.npmjs.com/package/@bitwarden/cli/v/2026.4.0
   current_artifacts: []
   domain: npmjs.com
   domain_type: package host
   artifact_type: source archive
-  insertion_phase: distribution
-  impact_type: Token Theft/Self-Propagation
+  insertion_phase: ci/cd
+  impact_type: Credential Theft/Self-Propagation
   impact_user_count: 100000
   references:
+    - https://socket.dev/blog/bitwarden-cli-compromised
     - https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/
   versions:
-    - 2026.4.0
+    - "@bitwarden/cli@2026.4.0"
   commits: []
-  hashes: []
+  hashes:
+    - "file:bw1.js"
+    - "url:https://audit.checkmarx.cx/v1/telemetry"
+    - "ip:94.154.172.43"
+    - "path:/tmp/tmp.987654321.lock"
+    - "path:/tmp/_tmp_<Unix Epoch Timestamp>/"
+    - "file:package-updated.tgz"

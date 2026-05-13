@@ -1,25 +1,39 @@
 - name: pytorch-lightning
-  title: PyTorch Lightning Compromise (Mini Shai-Hulud)
+  title: Lightning PyPI wheel bundled Shai-Hulud credential stealer
   repo: https://github.com/Lightning-AI/pytorch-lightning
-  synopsis: "The Mini Shai-Hulud campaign compromised the Lightning (PyTorch Lightning) package on PyPI. The attack utilized an obfuscated payload to exfiltrate GitHub tokens, SSH keys, cloud credentials, and .env files to zero.masscan.cloud."
+  synopsis: "The Mini Shai-Hulud campaign compromised the lightning PyPI package, with malicious versions 2.6.2 and 2.6.3 bundling a hidden _runtime directory. On import, the package started a daemon thread that downloaded the Bun JavaScript runtime from GitHub and executed an 11 MB obfuscated _runtime/router_runtime.js payload. StepSecurity reported credential theft, environment and cloud secret harvesting, GitHub API exfiltration through victim credentials, and npm tarball poisoning on the developer machine."
   start_date: 2026-04-30
   end_date: 2026-04-30
-  attribution_type: Third Party
+  attribution_type: Advanced Persistent Threat
   component_type: Library
   lang: Python
   cause: Compromised Account/Credentials
   motive: Credential Theft
-  transitive: false
-  historical_artifacts: []
+  transitive: true
+  historical_artifacts:
+    - https://pypi.org/project/lightning/2.6.2/
+    - https://pypi.org/project/lightning/2.6.3/
   current_artifacts: []
   domain: pypi.org
   domain_type: package host
-  artifact_type: source archive
+  artifact_type: wheel
   insertion_phase: distribution
-  impact_type: Credential Theft
+  impact_type: Credential Theft/Self-Propagation
   impact_user_count: 0
   references:
+    - https://www.stepsecurity.io/blog/lightning-obfuscated-javascript-credential-stealer-bundled-in-pypi-wheel
+    - https://github.com/Lightning-AI/pytorch-lightning/issues/21689
     - https://semgrep.dev/blog/2026/malicious-intercom-php-package-spreads-mini-shai-hulud-attack-to-packagist-via-composer-plugin/
-  versions: []
+  versions:
+    - "lightning@2.6.2"
+    - "lightning@2.6.3"
+    - "safe: lightning@2.6.1"
   commits: []
-  hashes: []
+  hashes:
+    - "dir:_runtime/"
+    - "file:_runtime/start.py"
+    - "file:_runtime/router_runtime.js"
+    - "url:https://github.com/oven-sh/bun/releases/"
+    - "marker:router_runtime.js"
+    - "marker:GitHub API exfiltration"
+    - "marker:npm tarball poisoning"

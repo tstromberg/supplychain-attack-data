@@ -1,29 +1,123 @@
-- name: trivy
-  title: Trivy GitHub Actions Tag Hijacking
+- name: trivy-hackerbot-claw
+  title: Trivy Repository Takeover via hackerbot-claw
   repo: https://github.com/aquasecurity/trivy
-  synopsis: Attackers exploited a misconfigured pull_request_target workflow in the Trivy GitHub repository. An autonomous bot named hackerbot-claw stole a Personal Access Token (PAT). TeamPCP maintained access and injected credential stealers into 75 release tags and Docker images, expanding to push malicious Docker images (0.69.4, 0.69.5, 0.69.6) to Docker Hub bypassing the normal release process.
-  start_date: 2026-03-19
-  end_date: 2026-03-22
-  attribution_type: Advanced Persistent Threat
+  synopsis: >-
+    The hackerbot-claw account exploited a pull_request_target workflow in
+    aquasecurity/trivy to run untrusted fork code with repository privileges.
+    The stolen token was used to push directly to the repository, vandalize the
+    README, temporarily privatize and rename the project, replace it with an
+    empty repository, delete release assets from v0.27.0 through v0.69.1, and
+    publish a suspicious Trivy VS Code extension artifact. Aqua restored the
+    repository, revoked publishing tokens, removed the vulnerable workflow, and
+    republished v0.69.2 while rebuilding release assets.
+  start_date: 2026-02-28
+  end_date: 2026-03-01
+  attribution_type: Individual
   component_type: Application
   lang: Go
   cause: CI/CD Exploit
-  motive: Credential Theft
+  motive: Credential Theft/Vandalism
   transitive: false
-  historical_artifacts: []
+  historical_artifacts:
+    - https://github.com/aquasecurity/trivy/pull/10254
+    - https://github.com/aquasecurity/trivy/commit/d267cc4
+    - https://open-vsx.org/extension/aquasecurityofficial/trivy-vulnerability-scanner
   current_artifacts: []
   domain: github.com
   domain_type: repository
-  artifact_type: action
+  artifact_type: source archive
+  insertion_phase: ci/cd
+  impact_type: Repository Takeover
+  impact_user_count: 0
+  references:
+    - https://www.stepsecurity.io/blog/hackerbot-claw-github-actions-exploitation
+    - https://github.com/aquasecurity/trivy/discussions/10265
+  versions:
+    - "release assets deleted: v0.27.0-v0.69.1"
+    - "restored: v0.69.2"
+  commits:
+    - d267cc4
+  hashes: []
+- name: trivy-second-compromise
+  title: Trivy v0.69.4 Release and Action Compromise
+  repo: https://github.com/aquasecurity/trivy
+  synopsis: >-
+    After incomplete containment of the February Trivy takeover, compromised
+    credentials were used to publish malicious Trivy v0.69.4 artifacts,
+    force-push most trivy-action version tags, and replace setup-trivy tags with
+    credential-stealing commits. The payloads read GitHub Actions runner memory
+    and process environments, collected developer and cloud secrets, encrypted
+    the data, and exfiltrated to the typosquatted domain scan.aquasecurtiy.org
+    or fallback public tpcp-docs repositories. Compromised Docker Hub images
+    followed on March 22. Aqua deleted affected tags, released fixed action
+    versions, and published GHSA-69fq-xp46-6x23 / CVE-2026-33634.
+  start_date: 2026-03-19
+  end_date: 2026-03-23
+  attribution_type: Advanced Persistent Threat
+  component_type: Application
+  lang: Go
+  cause: Compromised Account/Credentials
+  motive: Credential Theft
+  transitive: true
+  historical_artifacts:
+    - https://github.com/aquasecurity/trivy/releases/tag/v0.69.4
+    - https://github.com/aquasecurity/trivy-action
+    - https://github.com/aquasecurity/setup-trivy
+    - docker.io/aquasec/trivy:0.69.4
+    - docker.io/aquasec/trivy:0.69.5
+    - docker.io/aquasec/trivy:0.69.6
+  current_artifacts: []
+  domain: github.com, docker.io
+  domain_type: repository/container registry
+  artifact_type: release binary/container image/action
   insertion_phase: ci/cd
   impact_type: Credential Theft
   impact_user_count: 0
   references:
-    - https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next
+    - https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release
+    - https://www.stepsecurity.io/blog/canisterworm-how-a-self-propagating-npm-worm-is-spreading-backdoors-across-the-ecosystem
+    - https://github.com/advisories/GHSA-69fq-xp46-6x23
+    - https://github.com/aquasecurity/trivy/discussions/10425
     - https://socket.dev/blog/trivy-docker-images-compromised
+    - https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next
   versions:
-    - 0.69.4
-    - 0.69.5
-    - 0.69.6
-  commits: []
-  hashes: []
+    - trivy==0.69.4
+    - aquasec/trivy:0.69.4
+    - aquasec/trivy:0.69.5
+    - aquasec/trivy:0.69.6
+    - "aquasecurity/trivy-action@<0.35.0"
+    - "aquasecurity/setup-trivy@<0.2.6"
+    - "safe: trivy==0.69.3"
+    - "safe: aquasecurity/trivy-action@0.35.0"
+    - "safe: aquasecurity/setup-trivy@0.2.6"
+  commits:
+    - 8afa9b9
+    - ddb9da4
+    - 3fb12ec
+  hashes:
+    - sha256:c5b16c42dbd2a1494141cd651a406ec9094d5031a421c0aa624c4d139ae81239
+    - sha256:cff74e3e9ac0cda2078d31800d8fcad832d7b52c9920b085054d1e96dacff8a3
+    - sha256:55047c55a5ceab6d80b13884b4a4e8cd27a0bab7a218a952a00aae9e05f16f80
+    - sha256:ba04ba6a0c028cde17599c8ddaefdb854055c5a23c595e06630732002ea59a76
+    - sha256:90d61cf37355b89fae9ff84867100e1721c1876007ef1771e465ce5a721141ad
+    - sha256:1dc871b02cd7a1fd80babb1b8762a2fd9cc2b735d4d3759d012626de3ccc7a5b
+    - sha256:0376b98064636c30f5fbe60fb3b1225516e23e88dd7e909937f81d9265292e7d
+    - sha256:822dd269ec10459572dfaaefe163dae693c344249a0161953f0d5cdd110bd2a0
+    - sha256:e64e152afe2c722d750f10259626f357cdea40420c5eedae37969fbf13abbecf
+    - sha256:d5edd791021b966fb6af0ace09319ace7b97d6642363ef27b3d5056ca654a94c
+    - sha256:ecce7ae5ffc9f57bb70efd3ea136a2923f701334a8cd47d4fbf01a97fd22859c
+    - sha256:27f446230c60bbf0b70e008db798bd4f33b7826f9f76f756606f5417100beef3
+    - sha256:12c702212dee1cbec9471e9261501a3335963321fe76e60e5a715b5acd3c40a2
+    - sha256:2d7cee41048988eec27615412e7c6e2e21046f2b5faa888c24e11ca6764058ed
+    - sha256:ae3494bd6ae860d7727116681bd09fc7b20dc994ec7a8105738f0a623ea93427
+    - sha256:43f46547efd488e56dcf862ed4d7cc342730a803f8d5bec5cac443028fefabef
+    - sha256:cc464a3961e1dbe145c75343b55c2f446e08b821782ec993728c4222b0d85589
+    - sha256:5aaa1d7cfa9ca4649d6ffad165435c519dc836fa6e21b729a2174ad10b057d2b
+    - sha256:95ff680103570179feb0c6667a9b9b2d98c53fa5a9a451265036810390bbe70a
+    - sha256:4f7a06bb51714713ab308d2f8125f3b09ee1c3ffbba1a5ffd0cc80da95fbb6cc
+    - sha256:edef8e5816eced552a909b878ff262c0c47776d3297bcc23796ad4cce1e85414
+    - sha256:425cd3e1a2846ac73944e891250377d2b03653e6f028833e30fc00c1abbc6d33
+    - sha256:dd8beb3b40df080b3fd7f9a0f5a1b02f3692f65c68980f46da8328ce8bb788ef
+    - sha256:4b22cedea58780ff76735c3e08b9ee8cb5d06c908ffa868152f11d45349eb696
+    - sha256:9efd59534d2b6b81b8b7a0e74015f358650e24b9dab00c900d3118593
+    - sha256:5e5fb53cf4ce5555171ff5206302ba2f4f66f5381bbf673c354c87a925473f07
