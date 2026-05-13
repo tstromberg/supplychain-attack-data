@@ -1,12 +1,20 @@
 ---
 - id: kaseya-vsa
   title: Kaseya VSA distributed REvil ransomware
-  synopsis: Attackers (REvil RaaS affiliate) exploited a chain of zero-day vulnerabilities
-    (authentication bypass, arbitrary file upload, and code injection) in Kaseya VSA
-    to distribute REvil ransomware. The attack delivered a malicious agent.crt which
-    was decoded into agent.exe. This executable dropped a legitimate Windows Defender
-    binary to sideload the malicious mpsvc.dll REvil encryptor, affecting approximately
-    30 MSPs and over 1,500 downstream businesses.
+  synopsis: REvil exploited Kaseya VSA on-premises servers on July 2, 2021 and used
+    the remote monitoring platform to push ransomware through managed service providers
+    into downstream customer networks. The chain delivered agent.crt, decoded it
+    into agent.exe, dropped a legitimate Windows Defender binary, and sideloaded
+    the malicious mpsvc.dll encryptor. Kaseya said fewer than 60 customers were affected,
+    but downstream impact reached roughly 800 to 1,500 organizations.
+  story: |
+    Kaseya VSA gave managed service providers central control over customer fleets. They used it to push scripts, deploy software, and administer many networks from one console. On July 2, 2021, REvil used that management plane to distribute ransomware.
+
+    The attackers exploited vulnerabilities in on-premises VSA servers, then used normal VSA agent execution paths to push a payload to managed endpoints. The chain used `agent.crt` as encoded content, decoded it into `agent.exe`, dropped a legitimate Microsoft Defender executable, and sideloaded `mpsvc.dll` as the REvil encryptor. To endpoints, the activity arrived through the tool already allowed to manage them.
+
+    Kaseya reported fewer than 60 directly affected customers, but many were MSPs, so the attack reached downstream customer networks. CISA and the FBI urged MSPs and downstream customers to shut down VSA servers, use Kaseya's detection tooling, enforce MFA, restrict remote monitoring and management access, and restore carefully from clean backups.
+
+    REvil publicly claimed responsibility and demanded $70 million in bitcoin for a universal decryptor. Individual victims reportedly saw demands from tens of thousands to millions of dollars. Kaseya restored SaaS service and released on-premises patches on July 11.
   start_date: 2021-07-02
   end_date: 2021-07-11
   target:
@@ -14,17 +22,19 @@
     kind: application
     website: https://kaseya.com
   actor:
-    name: Cybercriminal Gang
+    name: REvil
     kind: group
   language: C#
   method:
     cause: exploit
-    phase: ci_cd
+    phase: distribution
     motive: financial_gain
     transitive: false
   impact:
     types:
     - ransomware
+    - data_encryption
+    - service_disruption
     users: 1500
   artifacts:
   - id: kaseya-vsa
@@ -61,9 +71,60 @@
     - sha256:e2a24ab94f865caeacdf2c3ad015f31f23008ac6db8312c2cbfb32e4a5466ea2
     - sha256:8dd620d9aeb35960bb766458c8890ede987c33d239cf730f93fe49d90ae759dd
     - sha256:0496ca57e387b10dbc85000f66a0bc8d47b710f9be26d11cd69051219fb4c070
+    - md5:939aae3cc456de8964cb182c75a5f8cc
+    - md5:561cffbaba71a6e8cc1cdceda990ead4
+    - md5:a47cf00aedf769d60d58bfe00c0b5421
+    indicators:
+    - kind: file
+      value: agent.crt
+    - kind: file
+      value: agent.exe
+    - kind: file
+      value: mpsvc.dll
+    - kind: file
+      value: cert.exe
+    - kind: path
+      value: C:\PROGRAM FILES (X86)\KASEYA\<ID>\AGENTMON.EXE
+    - kind: ip
+      value: 35.226.94.113
+    - kind: ip
+      value: 161.35.239.148
+    - kind: ip
+      value: 162.253.124.162
+    - kind: http
+      value: POST /dl.asp curl/7.69.1
+    - kind: http
+      value: GET /done.asp curl/7.69.1
+    - kind: http
+      value: POST /cgi-bin/KUpload.dll curl/7.69.1
+    - kind: observable
+      value: VSA agent execution delivered encoded agent.crt, decoded agent.exe,
+        and sideloaded mpsvc.dll through a legitimate Microsoft Defender binary.
+    notes:
+    - REvil is also known as Sodinokibi.
+    - Kaseya said fewer than 60 customers were directly affected; public summaries
+      place downstream organizational impact around 800 to 1,500.
+    - Kaseya and CISA said SaaS servers were shut down as a precaution, with no evidence
+      that SaaS customers were compromised.
+    - Kaseya restored SaaS service and released on-premises VSA patches on July 11,
+      2021.
   references:
   - url: https://www.cisa.gov/news-events/cybersecurity-advisories/aa21-201a
+    title: 'CISA Advisory AA21-201A: Ransomware Awareness for Holidays and Weekends'
+  - url: https://www.cisa.gov/news-events/alerts/2021/07/04/cisa-fbi-guidance-msps-and-their-customers-affected-kaseya-vsa-supply
+    title: CISA-FBI Guidance for MSPs and their Customers Affected by the Kaseya VSA
+      Supply-Chain Ransomware Attack
+  - url: https://www.cisa.gov/news-events/news/kaseya-ransomware-attack-guidance-affected-msps-and-their-customers
+    title: Kaseya Ransomware Attack - Guidance for Affected MSPs and their Customers
   - url: https://helpdesk.kaseya.com/hc/en-gb/articles/4403440684689-Kaseya-VSA-Security-Incident
+    title: Kaseya VSA Security Incident
   - url: https://www.mandiant.com/resources/blog/kaseya-supply-chain-attack-what-we-know
+    title: Kaseya Supply Chain Attack - What We Know
   - url: https://www.huntress.com/blog/kaseya-vsa-supply-chain-attack-what-we-know-so-far
+    title: Kaseya VSA Supply Chain Attack - What We Know So Far
   - url: https://www.huntress.com/blog/rapid-response-kaseya-vsa-mass-msp-ransomware-incident
+    title: Rapid Response - Kaseya VSA Mass MSP Ransomware Incident
+  - url: https://therecord.media/revil-gang-asks-70-million-to-decrypt-systems-locked-in-kaseya-attack
+    title: REvil gang asks for $70 million to decrypt systems locked in Kaseya attack
+  - url: https://purplesec.us/breach-report/kaseya-ransomware-attack-explained/
+    title: Kaseya VSA Ransomware Attack Explained

@@ -31,14 +31,27 @@
       
         <a href="/campaign/teampcp-2026/">TeamPCP 2026 Package Compromise Campaign</a>, 
       
-        <a href="/campaign/shai-hulud-here-we-go-again/">Shai-Hulud hits NPM and PyPI</a>
+        <a href="/campaign/shai-hulud-here-we-go-again/">Shai-Hulud hits npm and PyPI</a>
       
     </div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">TeamPCP&#39;s Mini Shai-Hulud worm compromised the TanStack Router release pipeline by chaining a pull_request_target &quot;Pwn Request&quot; pattern, GitHub Actions cache poisoning, and runtime extraction of a GitHub Actions OIDC trusted-publisher token from runner memory. On 2026-05-11 between 19:20 and 19:26 UTC, 84 malicious versions across 42 @tanstack/* npm packages were published with a malicious optional dependency on an orphan git commit. The install-time payload harvested cloud, Kubernetes, Vault, GitHub, npm, and SSH credentials, exfiltrated over the Session/Oxen network, and attempted self-propagation by republishing packages maintained by victims.</p>
+  <p class="synopsis">TeamPCP&#39;s Mini Shai-Hulud worm compromised the TanStack Router release pipeline by chaining a pull_request_target &quot;Pwn Request&quot; pattern, GitHub Actions cache poisoning, and runtime extraction of a GitHub Actions OIDC trusted-publisher token from runner memory. On 2026-05-11, malicious @tanstack/* versions added root payload files and an optional GitHub dependency on @tanstack/setup at an orphan commit whose prepare script ran tanstack_runner.js with Bun. The payload harvested cloud, Kubernetes, Vault, GitHub, npm, SSH, and local secrets, exfiltrated through Session/Oxen, and attempted npm self-propagation.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The TanStack wave made provenance uncomfortable. The attacker did not only steal a registry token and push a tarball by hand. According to the public postmortem and follow-on research, the release path was abused through GitHub Actions: a pull_request_target pattern, cache poisoning, and extraction of trusted-publishing material from the runner while the workflow still looked like official automation.</p>
+    
+      <p>The npm packages carried a new root-level payload file, reported by Aikido as router_init.js, and added an optional dependency on @tanstack/setup from a GitHub commit in the TanStack router repository. That dependency had a prepare script that ran tanstack_runner.js with Bun and then exited nonzero. Because it was optional, the visible install failure could be treated as noise after the code had already run.</p>
+    
+      <p>The payload was built for developer workstations and CI/CD runners. It searched for GitHub and npm tokens, GitHub Actions OIDC material, AWS credentials and metadata endpoints, Kubernetes service account files, Vault tokens, environment variables, local filesystem secrets, and SSH material. Exfiltration and staging followed the broader Mini Shai-Hulud pattern, including Session/Oxen infrastructure and GitHub-centered propagation logic.</p>
+    
+      <p>TanStack is recorded separately because its package scope and release pipeline evidence are unusually clear. Aikido counted 83 TanStack package-version entries within a broader May 2026 wave of 373 malicious package-version entries across 169 npm package names. This record preserves the TanStack artifacts, while the campaign record carries the shifting cross-ecosystem count.</p>
+    
+  </div>
   
 
   
@@ -1167,7 +1180,43 @@
   
 
   
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file:router_init.js</code></li>
+    
+      <li><code>file:router_runtime.js</code></li>
+    
+      <li><code>file:tanstack_runner.js</code></li>
+    
+      <li><code>package:@tanstack/setup</code></li>
+    
+      <li><code>dependency:github:tanstack/router#79ac49eedf774dd4b0cfa308722bc463cfe5885c</code></li>
+    
+      <li><code>command:bun run tanstack_runner.js</code></li>
+    
+      <li><code>url:hxxp://filev2[.]getsession[.]org/file/</code></li>
+    
+      <li><code>url:hxxp://169[.]254[.]169[.]254/latest/meta-data/iam/security-credentials/</code></li>
+    
+      <li><code>url:hxxp://169[.]254[.]170[.]2</code></li>
+    
+      <li><code>url:hxxps://registry[.]npmjs[.]org/-/npm/v1/tokens</code></li>
+    
+      <li><code>service:vault[.]svc[.]cluster[.]local:8200</code></li>
+    
+  </ul>
+  
 
+  
+  <h2>Hashes</h2>
+  <ul class="hashes">
+    
+      <li><code>sha256:ab4fcadaec49c03278063dd269ea5eef82d24f2124a8e15d7b90f2fa8601266c</code></li>
+    
+      <li><code>sha256:2ec78d556d696e208927cc503d48e4b5eb56b31abc2870c2ed2e98d6be27fc96</code></li>
+    
+  </ul>
   
 
   
@@ -1185,19 +1234,19 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://github.com/TanStack/router/issues/7383" target="_blank">https://github.com/TanStack/router/issues/7383</a></li>
+      <li><a href="https://github.com/TanStack/router/issues/7383" target="_blank">Security Advisory and Incident Discussion for TanStack Router npm Compromise</a></li>
     
-      <li><a href="https://tanstack.com/blog/npm-supply-chain-compromise-postmortem" target="_blank">https://tanstack.com/blog/npm-supply-chain-compromise-postmortem</a></li>
+      <li><a href="https://tanstack.com/blog/npm-supply-chain-compromise-postmortem" target="_blank">NPM Supply Chain Compromise Postmortem</a></li>
     
-      <li><a href="https://github.com/advisories/GHSA-g7cv-rxg3-hmpx" target="_blank">https://github.com/advisories/GHSA-g7cv-rxg3-hmpx</a></li>
+      <li><a href="https://github.com/advisories/GHSA-g7cv-rxg3-hmpx" target="_blank">GitHub Advisory GHSA-g7cv-rxg3-hmpx</a></li>
     
-      <li><a href="https://www.stepsecurity.io/blog/mini-shai-hulud-is-back-a-self-spreading-supply-chain-attack-hits-the-npm-ecosystem" target="_blank">https://www.stepsecurity.io/blog/mini-shai-hulud-is-back-a-self-spreading-supply-chain-attack-hits-the-npm-ecosystem</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/mini-shai-hulud-is-back-a-self-spreading-supply-chain-attack-hits-the-npm-ecosystem" target="_blank">Mini Shai-Hulud is Back - A Self-Spreading Supply Chain Attack Hits the npm Ecosystem</a></li>
     
-      <li><a href="https://research.jfrog.com/post/shai-hulud-here-we-go-again/" target="_blank">https://research.jfrog.com/post/shai-hulud-here-we-go-again/</a></li>
+      <li><a href="https://research.jfrog.com/post/shai-hulud-here-we-go-again/" target="_blank">Shai-Hulud: Here We Go Again</a></li>
     
-      <li><a href="https://www.aikido.dev/blog/mini-shai-hulud-is-back-tanstack-compromised" target="_blank">https://www.aikido.dev/blog/mini-shai-hulud-is-back-tanstack-compromised</a></li>
+      <li><a href="https://www.aikido.dev/blog/mini-shai-hulud-is-back-tanstack-compromised" target="_blank">Mini Shai-Hulud Is Back: npm Worm Hits over 160 Packages, including Mistral and Tanstack</a></li>
     
-      <li><a href="https://socket.dev/blog/tanstack-npm-packages-compromised-mini-shai-hulud-supply-chain-attack" target="_blank">https://socket.dev/blog/tanstack-npm-packages-compromised-mini-shai-hulud-supply-chain-attack</a></li>
+      <li><a href="https://socket.dev/blog/tanstack-npm-packages-compromised-mini-shai-hulud-supply-chain-attack" target="_blank">TanStack npm Packages Compromised in Mini Shai-Hulud Supply Chain Attack</a></li>
     
   </ul>
   

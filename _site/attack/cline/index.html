@@ -21,7 +21,7 @@
     <div class="meta-item"><strong>Actor:</strong> Unknown (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> cli_tool</div>
     <div class="meta-item"><strong>Language:</strong> JavaScript</div>
-    <div class="meta-item"><strong>Cause:</strong> compromised_npm_token_ci_cache_poisoning</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
     <div class="meta-item"><strong>Motive:</strong> unauthorized_software_installation</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
     <div class="meta-item"><strong>Impact:</strong> unauthorized_software_installation</div>
@@ -30,8 +30,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">An unauthorized party used an exposed npm publish token to publish cline@2.3.0. The release was byte-identical to cline@2.2.3 except for a postinstall script that globally installed the unrelated openclaw package. Cline reported no malicious code delivery, user-data access, source-code compromise, or VS Code/OpenVSX/JetBrains extension compromise. The exposed token traced back to a vulnerable AI-powered issue-triage workflow that had been removed but whose npm credential was not revoked. Maintainers deprecated 2.3.0, published clean 2.4.0, and revoked the token.</p>
+  <p class="synopsis">An unauthorized party used an exposed npm publish token to publish cline@2.3.0. The release was byte-identical to cline@2.2.3 except for a postinstall script that ran npm install -g openclaw@latest. Cline reported no malicious code delivery, user-data access, source-code compromise, or VS Code/OpenVSX/JetBrains extension compromise. The exposed token traced back to an AI-powered issue-triage workflow vulnerable to prompt injection; that workflow had been removed, but its npm credential was not revoked. Maintainers deprecated 2.3.0, published clean 2.4.0, revoked the token, and moved npm publishing to OIDC provenance.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Cline&#39;s February 2026 incident was strange because the payload was not itself malware. An unauthorized publisher released cline@2.3.0 to npm, and the package was otherwise nearly identical to the previous release. The meaningful change was a lifecycle hook that installed OpenClaw globally on the user&#39;s machine.</p>
+    
+      <p>The access path is the important part. Adnan Khan had reported a prompt-injection weakness in Cline&#39;s AI issue triage flow, showing how an issue could influence automation with access to release credentials. The live npm incident was performed by a different actor, but the exposed long-lived npm token traced back to that removed workflow and had not been revoked.</p>
+    
+      <p>The malicious package ran `npm install -g openclaw@latest` during installation. Endor Labs noted that OpenClaw itself was a legitimate open-source package and that the compromised release did not install or start OpenClaw&#39;s gateway daemon. The impact was still real: thousands of developers received globally installed software they did not request from an official package release.</p>
+    
+      <p>Cline deprecated 2.3.0, published 2.4.0, revoked the compromised token, and moved npm publication to OIDC provenance through GitHub Actions. The deeper lesson is not OpenClaw; it is that AI-maintained project automation can become release infrastructure, and prompt injection against that automation can leave ordinary package-registry credentials behind.</p>
+    
+  </div>
   
 
   
@@ -65,12 +78,12 @@
           </td>
           <td>
             
-              N/A
+              <code>2.4.0</code>
             
           </td>
           <td>
             
-              N/A
+              <code>sha256:c5b2c21abdf0606a881f293e1cce61d38b90dac0ae647a943d36464530fbf804</code>
             
           </td>
         </tr>
@@ -92,11 +105,17 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://cline.bot/blog/post-mortem-unauthorized-cline-cli-npm" target="_blank">https://cline.bot/blog/post-mortem-unauthorized-cline-cli-npm</a></li>
+      <li><a href="https://cline.bot/blog/post-mortem-unauthorized-cline-cli-npm" target="_blank">Post Mortem - Unauthorized Cline CLI npm Release</a></li>
     
-      <li><a href="https://github.com/cline/cline/security/advisories/GHSA-9ppg-jx86-fqw7" target="_blank">https://github.com/cline/cline/security/advisories/GHSA-9ppg-jx86-fqw7</a></li>
+      <li><a href="https://github.com/cline/cline/security/advisories/GHSA-9ppg-jx86-fqw7" target="_blank">GHSA-9ppg-jx86-fqw7 - Unauthorized Cline CLI npm release</a></li>
     
-      <li><a href="https://www.stepsecurity.io/blog/cline-supply-chain-attack-detected-cline-2-3-0-silently-installs-openclaw" target="_blank">https://www.stepsecurity.io/blog/cline-supply-chain-attack-detected-cline-2-3-0-silently-installs-openclaw</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/cline-supply-chain-attack-detected-cline-2-3-0-silently-installs-openclaw" target="_blank">Cline Supply Chain Attack Detected - Cline 2.3.0 Silently Installs OpenClaw</a></li>
+    
+      <li><a href="https://adnanthekhan.com/posts/clinejection/" target="_blank">Clinejection - Compromising Cline&#39;s Production Releases just by Prompting an Issue Triager</a></li>
+    
+      <li><a href="https://www.theregister.com/security/2026/02/20/ai-coding-assistant-cline-compromised-installs-openclaw/4803356" target="_blank">AI coding assistant Cline compromised to create more OpenClaw chaos</a></li>
+    
+      <li><a href="https://www.endorlabs.com/learn/supply-chain-attack-targeting-cline-installs-openclaw" target="_blank">Supply Chain Attack targeting Cline installs OpenClaw</a></li>
     
   </ul>
   

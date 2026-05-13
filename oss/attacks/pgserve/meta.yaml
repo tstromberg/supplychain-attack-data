@@ -1,0 +1,97 @@
+---
+- id: pgserve
+  title: pgserve npm CanisterSprawl credential stealer
+  campaigns:
+  - teampcp-2026
+  synopsis: On April 21, 2026, malicious pgserve npm versions 1.1.11, 1.1.12,
+    and 1.1.13 added a postinstall loader that harvested developer and CI secrets,
+    encrypted them with RSA-4096 and AES-256, and exfiltrated to an Internet Computer
+    Protocol canister. The payload could propagate through npm publish tokens and
+    PyPI tokens, turning an embedded PostgreSQL development package into a cross-ecosystem
+    credential theft worm.
+  story: |
+    pgserve was a small, convenient development dependency: an embedded PostgreSQL server meant to drop into Node.js projects with little ceremony. The malicious versions changed that trust boundary at install time. Versions 1.1.11, 1.1.12, and 1.1.13 were published to npm on April 21, 2026 without matching upstream git tags.
+
+    The package change was blunt and effective. Compared with the last legitimate release, 1.1.10, the malicious tarballs added scripts/check-env.js and scripts/public.pem, then wired package.json to run a postinstall command. The command ended with `|| true`, so an error in the malware would not break the install or warn the developer with a failed dependency.
+
+    The injected script harvested environment variables, package-manager tokens, SSH keys, cloud credentials, Kubernetes and database material, crypto wallets, and browser password stores. Before transmission, it used a hybrid RSA-4096 and AES-256 scheme, then exfiltrated primarily to an Internet Computer Protocol canister and secondarily to a webhook if the right environment key was present.
+
+    The propagation logic made this more than a theft implant. If it found an npm publish token, it could enumerate packages the victim could publish, copy its loader and public key into each package, bump versions, and publish again. If it found a PyPI token, it attempted Python-package infection using .pth execution, crossing from npm into Python packaging.
+  start_date: 2026-04-21T22:14:00Z
+  end_date: 2026-04-22
+  target:
+    name: pgserve
+    kind: library
+    repo: https://github.com/iarna/pgserve
+  actor:
+    name: TeamPCP
+    kind: group
+  language: JavaScript
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - self_propagation
+    users: 0
+  artifacts:
+  - id: pgserve
+    name: pgserve
+    package: pgserve
+    ecosystem: npm
+    kind: source_archive
+    repo: https://github.com/iarna/pgserve
+    start_date: 2026-04-21T22:14:00Z
+    end_date: 2026-04-22
+    versions:
+    - 1.1.11
+    - 1.1.12
+    - 1.1.13
+    fixed_versions:
+    - 1.1.10
+    locations:
+    - uri: https://www.npmjs.com/package/pgserve/v/1.1.11
+      role: distribution
+    - uri: https://www.npmjs.com/package/pgserve/v/1.1.12
+      role: distribution
+    - uri: https://www.npmjs.com/package/pgserve/v/1.1.13
+      role: distribution
+    indicators:
+    - kind: file
+      value: scripts/check-env.js
+    - kind: file
+      value: scripts/public.pem
+    - kind: lifecycle_hook
+      value: postinstall node scripts/check-env.cjs || true
+    - kind: domain
+      value: cjn37-uyaaa-aaaac-qgnva-cai.raw.icp0.io
+    - kind: url
+      value: https://cjn37-uyaaa-aaaac-qgnva-cai.raw.icp0.io/drop
+    - kind: domain
+      value: telemetry.api-monitor.com
+    - kind: url
+      value: https://telemetry.api-monitor.com/v1/telemetry
+    - kind: canister
+      value: cjn37-uyaaa-aaaac-qgnva-cai
+    - kind: observable
+      value: RSA-4096 public key in scripts/public.pem and AES-256-CBC session encryption.
+    - kind: observable
+      value: Npm token propagation by copying scripts/check-env.js and scripts/public.pem,
+        adding postinstall, bumping patch version, and publishing affected packages.
+    - kind: observable
+      value: PyPI token propagation through .pth file injection.
+    notes:
+    - StepSecurity reported pgserve@1.1.10, published on April 17, 2026 with git
+      tag v1.1.10, as the last legitimate release before the compromised versions.
+    - StepSecurity reported pgserve@1.1.11 at 2026-04-21 22:14 UTC and pgserve@1.1.12
+      at 2026-04-21 22:26 UTC; pgserve@1.1.13 was also published on April 21, 2026.
+    - StepSecurity said the three compromised versions had no corresponding upstream
+      git tag.
+  references:
+  - url: https://www.stepsecurity.io/blog/pgserve-compromised-on-npm-malicious-versions-harvest-credentials
+    title: 'CanisterSprawl: pgserve Compromised on npm'
+  - url: https://github.com/iarna/pgserve/issues/25
+    title: Disclosure issue for malicious pgserve npm releases

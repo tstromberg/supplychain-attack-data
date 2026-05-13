@@ -38,7 +38,11 @@
     
       <p>At the end of July 2002, source archives for OpenSSH were replaced on the OpenBSD FTP server and potentially propagated by the normal mirror network. The affected files were `openssh-3.4p1.tar.gz`, `openssh-3.4.tgz`, and `openssh-3.2.2p1.tar.gz`; the project replaced them with clean originals at 13:00 UTC on August 1.</p>
     
+      <p>The attacker changed source distribution, not the SSH protocol. The tainted archives carried `bf-test.c`, and the build system compiled and executed it during `configure`. A system could be compromised by building OpenSSH even if it never deployed the resulting daemon.</p>
+    
       <p>The payload lived in `bf-test.c` and executed during the build, not when a running SSH daemon handled traffic. Once compiled, it attempted hourly outbound connections to an IRC-style port and could execute attacker-supplied commands as the build user. CERT&#39;s advisory treated any host that built the trojaned source as compromised and told mirrors, redistributors, and administrators to verify signatures and checksums rather than trusting timestamps or file sizes.</p>
+    
+      <p>The detection path was ordinary package hygiene. Isosceles notes that FreeBSD ports already had expected checksums, so a developer building the tainted archive saw a mismatch. The short exposure window prevented broader compromise, but the attack showed that replacing source archives on trusted infrastructure was enough to reach high-value Unix systems.</p>
     
   </div>
   
@@ -154,6 +158,10 @@
   <ul>
     
       <li><a href="https://www.openssh.com/txt/trojan.adv" target="_blank">OpenSSH Security Advisory adv.trojan</a></li>
+    
+      <li><a href="https://marc.info/?l=bugtraq&amp;m=102821663814127&amp;w=2" target="_blank">Bugtraq: OpenSSH Security Advisory - Trojaned Distribution Files</a></li>
+    
+      <li><a href="https://blog.isosceles.com/openssh-backdoors/" target="_blank">OpenSSH Backdoors</a></li>
     
       <li><a href="https://groups.google.com/g/comp.security.announce/c/Y7V0PyvQXJ8" target="_blank">CERT Advisory CA-2002-24 Trojan Horse OpenSSH Distribution</a></li>
     

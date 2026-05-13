@@ -5,13 +5,18 @@
   - glassworm-march-2026
   synopsis: An attacker controlling the astroonauta npm account published malicious
     react-native-international-phone-number releases without matching GitHub releases,
-    tags, or workflow runs. The first wave used a direct preinstall hook; later releases
-    hid the same malware behind a dependency chain through @agnoliaarisian7180/string-argv
-    and @usebioerhold8733/s-format. The final chain executed a detached JavaScript
-    loader using a Solana wallet dead-drop C2, RPC fallbacks, geofiltering, encrypted
-    payload delivery, and a local rate-limit file. The incident is notable for the
-    attacker returning after disclosure and switching from obvious install hooks to
-    transitive delivery.
+    tags, or workflow runs. Aikido reported 0.11.8 was published on March 16, 2026
+    at 10:49:29 UTC with the same preinstall install.js loader used minutes later
+    in react-native-country-select. Later releases hid the same malware behind a
+    dependency chain through @agnoliaarisian7180/string-argv and @usebioerhold8733/s-format.
+    The staged chain used Solana and Google Calendar indirection to deliver a Windows
+    credential and wallet stealer.
+  story: |
+    The first malicious react-native-international-phone-number release landed at 10:49:29 UTC on March 16, 2026. It added a preinstall hook that ran node install.js, while the prior adjacent 0.11.7 release did not include that hook. Aikido noted that 0.11.8 still depended on the clean react-native-country-select 0.3.9, which means this package was directly backdoored rather than merely poisoned by its dependency.
+
+    The loader followed the same staged path as the companion package. It queried Solana RPC for a memo, decoded a link, fetched a second stage, and decrypted a third-stage payload. The third stage used a Google Calendar URL to recover another slug, then requested more content from the same attacker-controlled IP address.
+
+    The recovered payload targeted Windows developer systems. It established persistence through schtasks and the HKCU Run key, wrote an init.json state file, downloaded Node.js runtimes, walked browser and wallet storage, collected npm and GitHub credentials, and posted the archive to attacker infrastructure. After disclosure, the same npm account was used in later releases that moved the delivery into a transitive dependency chain.
   start_date: 2026-03-16
   end_date: 2026-03-18
   target:
@@ -59,7 +64,53 @@
       role: distribution
     - uri: https://www.npmjs.com/package/@usebioerhold8733/s-format/v/2.0.4
       role: distribution
+    hashes:
+    - sha256:59221aa9623d86c930357dba7e3f54138c7ccbd0daa9c483d766cd8ce1b6ad26
+    indicators:
+    - kind: file
+      value: install.js
+    - kind: lifecycle_hook
+      value: preinstall node install.js
+    - kind: observable
+      value: Solana RPC getSignaturesForAddress dead-drop lookup.
+    - kind: observable
+      value: Russian locale and timezone exclusion checks.
+    - kind: url
+      value: hxxp://45[.]32[.]150[.]251/3e4Tg8V%2F8aCmOJKipASADg%3D%3D
+    - kind: url
+      value: hxxps://calendar[.]app[.]google/2NkrcKKj4T6Dn4uK6
+    - kind: domain
+      value: socket.network
+    - kind: domain
+      value: n.xyz
+    - kind: domain
+      value: p.link
+    - kind: ip
+      value: 45.32.150.251
+    - kind: ip
+      value: 217.69.3.152
+    - kind: file
+      value: init.json
+    - kind: persistence
+      value: schtasks task UpdateApp
+    - kind: persistence
+      value: HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+    notes:
+    - Aikido reported react-native-international-phone-number@0.11.8 was published
+      on March 16, 2026 at 10:49:29 UTC and had 20,691 weekly downloads and 92,298
+      monthly downloads when checked that day.
+    - Aikido noted 0.11.8 depended on react-native-country-select@0.3.9, the clean
+      adjacent version, so the first-wave compromise was direct rather than inherited
+      from react-native-country-select@0.3.91.
+    - StepSecurity later tracked additional malicious releases, including transitive
+      delivery through @agnoliaarisian7180/string-argv and @usebioerhold8733/s-format.
   references:
   - url: https://www.stepsecurity.io/blog/malicious-npm-releases-found-in-popular-react-native-packages---130k-monthly-downloads-compromised
+    title: Malicious npm Releases Found in Popular React Native Packages - 130K Monthly
+      Downloads Compromised
   - url: https://github.com/AstrOOnauta/react-native-international-phone-number/issues/165
+    title: Malicious release report for react-native-international-phone-number
   - url: https://github.com/AstrOOnauta/react-native-international-phone-number/issues/167
+    title: Follow-up malicious release report for react-native-international-phone-number
+  - url: https://www.aikido.dev/blog/glassworm-strikes-react-packages-phone-numbers
+    title: Glassworm Strikes Popular React Native Phone Number Packages

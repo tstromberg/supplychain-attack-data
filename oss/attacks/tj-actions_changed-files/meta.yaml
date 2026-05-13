@@ -3,11 +3,20 @@
   title: tj-actions GitHub Actions compromised via token leak
   campaigns:
   - reviewdog-tj-actions-2025
-  synopsis: A maintainer's personal access token (PAT) with repository write access
-    was leaked from a compromised development environment. This potentially allowed
-    attackers to modify the code of several `tj-actions`, including `changed-files`,
-    used in GitHub Actions workflows. Such modifications could exfiltrate secrets
-    or execute malicious code within users\' CI/CD pipelines.
+  synopsis: Attackers used a token stolen through the reviewdog/action-setup compromise
+    to rewrite tj-actions/changed-files tags to a malicious commit. The payload fetched
+    memdump.py from a GitHub Gist, scanned GitHub Actions runner memory for secrets,
+    and printed double-base64 encoded secret material into workflow logs. More than
+    23,000 repositories used the action; public repositories were most exposed because
+    logs could reveal AWS keys, GitHub PATs, npm tokens, and private keys.
+  story: |
+    tj-actions/changed-files was trusted for a mundane CI task: finding which files changed in a workflow. The attacker turned that trust into a broad secret-exposure path by moving mutable action tags to a malicious commit. Workflows using tag references such as version tags could silently execute the attacker's code.
+
+    The payload was direct. It embedded base64 shell, fetched memdump.py from a GitHub Gist, ran it against the GitHub Actions Runner Worker process, searched memory for values marked as secrets, and printed the result to the workflow log as double-encoded base64. There was no separate command-and-control server observed for the broad tj-actions phase; the log became the leak surface.
+
+    Unit 42 tied the tj-actions compromise to reviewdog/action-setup and a targeted Coinbase phase. A token obtained through the reviewdog path gave write access to tj-actions/changed-files. After Coinbase removed the vulnerable workflow, the attacker replaced all changed-files tags with the malicious commit, widening the impact to any repository that ran the action during the exposure window.
+
+    The practical blast radius depended on repository visibility and workflow privileges. Public repositories could expose secrets directly through public logs; private repositories still had to treat secrets as compromised. Wiz reported exposed AWS keys, GitHub PATs, npm tokens, private RSA keys, and other sensitive material in affected public repositories.
   start_date: 2025-03-14
   end_date: 2025-03-15
   target:
@@ -15,8 +24,8 @@
     kind: library
     repo: https://github.com/tj-actions/changed-files
   actor:
-    name: Individual Hacker
-    kind: person
+    name: Unknown attacker
+    kind: unknown
   language: Shell
   method:
     cause: compromised_account_credentials
@@ -26,6 +35,8 @@
   impact:
     types:
     - data_exfiltration
+    - credential_theft
+    users: 23000
   artifacts:
   - id: tj-actions-changed-files
     name: tj-actions_changed-files
@@ -46,9 +57,42 @@
       role: mirror
     commits:
     - 0e58ed8671d6b60d0890c21b07f8835ace038e67
+    indicators:
+    - kind: cve
+      value: CVE-2025-30066
+    - kind: commit
+      value: 0e58ed8671d6b60d0890c21b07f8835ace038e67
+    - kind: url
+      value: https://gist.githubusercontent.com/nikitastupin/30e525b776c409e03c2d6f328f254965/raw/memdump.py
+    - kind: file
+      value: /tmp/run.sh
+    - kind: file
+      value: memdump.py
+    - kind: observable
+      value: Double-base64 encoded secrets printed to GitHub Actions workflow logs.
+    - kind: observable
+      value: All tj-actions/changed-files tags were repointed to malicious commits.
+    - kind: observable
+      value: Secret extraction from GitHub Actions Runner Worker process memory.
+    notes:
+    - The Register and StepSecurity reported more than 23,000 repositories used
+      tj-actions/changed-files; this is exposure count, not a confirmed victim count.
+    - Wiz reported dozens of public repositories with exposed secrets, including
+      large enterprise repositories.
   references:
   - url: https://nvd.nist.gov/vuln/detail/CVE-2025-30066
+    title: CVE-2025-30066
   - url: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-30066
+    title: MITRE CVE-2025-30066
   - url: https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
+    title: Supply Chain Compromise of tj-actions/changed-files and reviewdog/action-setup
   - url: https://www.wiz.io/blog/github-action-tj-actions-changed-files-supply-chain-attack-cve-2025-30066
+    title: GitHub Action tj-actions/changed-files supply chain attack
   - url: https://www.stepsecurity.io/blog/harden-runner-detection-tj-actions-changed-files-action-is-compromised
+    title: Harden-Runner detection - tj-actions/changed-files Action is compromised
+  - url: https://github.com/tj-actions/changed-files/issues/2464#issuecomment-2727020537
+    title: tj-actions/changed-files issue reporting malicious changed-files commit
+  - url: https://www.theregister.com/security/2025/03/17/github-supply-chain-attack-spills-secrets-from-23k-projects/1192629
+    title: GitHub supply chain attack spills secrets from 23,000 projects
+  - url: https://unit42.paloaltonetworks.com/github-actions-supply-chain-attack/
+    title: GitHub Actions Supply Chain Attack

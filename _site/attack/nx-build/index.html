@@ -24,14 +24,27 @@
     <div class="meta-item"><strong>Cause:</strong> ci_cd_exploit</div>
     <div class="meta-item"><strong>Motive:</strong> credential_theft_data_exfiltration</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
-    <div class="meta-item"><strong>Impact:</strong> data_exfiltration, disruption</div>
-    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration, disruption</div>
+    <div class="meta-item"><strong>User Impact:</strong> 400</div>
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The s1ngularity incident began with a vulnerable Nx GitHub Actions workflow that combined pull_request_target privileges with shell injection in pull-request metadata. The attacker used it to trigger publish.yml, run a malicious commit that leaked the npm token, and publish 19 malicious nx and @nx package versions. The postinstall payload harvested developer, GitHub/npm, SSH, environment, and wallet secrets, used local AI CLI tools to help find sensitive files, and exfiltrated data through public s1ngularity-repository GitHub repos. It also appended a shutdown command to shell startup files. Nx Console VS Code versions 18.63.x-18.65.x widened exposure by running nx@latest during the malicious publish window.</p>
+  <p class="synopsis">The s1ngularity incident began with a vulnerable Nx GitHub Actions workflow that combined pull_request_target privileges with shell injection in pull-request metadata. The attacker used it to publish malicious nx, @nrwl/nx, and @nx package versions. The postinstall payload harvested developer, GitHub, npm, SSH, environment, and wallet secrets, coerced local AI CLI tools into reconnaissance, and exfiltrated data to public s1ngularity GitHub repositories. Wiz later observed a second phase using leaked GitHub tokens to expose more than 5,500 private repositories.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The Nx attack began in CI, not in the npm registry. A vulnerable GitHub Actions workflow combined `pull_request_target` privileges with unsanitized pull-request title handling. That gave attacker-controlled metadata a path to command execution with elevated repository permissions, and the attacker used that path to reach npm publishing.</p>
+    
+      <p>The malicious releases added a postinstall `telemetry.js` payload to Nx packages on August 26, 2025. It ran on Linux and macOS, searched for `.env` files, SSH keys, wallet material, GitHub and npm credentials, and other developer secrets. It also appended `sudo shutdown -h 0` to shell startup files, a noisy sabotage step that may have helped defenders notice the compromise quickly.</p>
+    
+      <p>The novel part was tool abuse. The payload prompted locally installed AI CLI tools such as Claude, Gemini, and Amazon Q with permissive flags like `--dangerously-skip-permissions`, `--yolo`, and `--trust-all-tools`, coercing trusted tools into filesystem reconnaissance. The output fed `/tmp/inventory.txt`, then exfiltration code pushed double- or triple-base64 encoded data into GitHub repositories named `s1ngularity-repository`.</p>
+    
+      <p>GitHub disabled the attacker-created repositories after an exposure window of roughly eight hours, but Wiz observed more than 1,000 valid GitHub tokens, dozens of cloud and npm credentials, and roughly 20,000 files in the leaked material. A second phase used leaked GitHub tokens to make more than 5,500 private repositories public across more than 400 users and organizations.</p>
+    
+  </div>
   
 
   
@@ -48,6 +61,32 @@
         </tr>
       </thead>
       <tbody>
+        
+        <tr>
+          <td>
+            <strong>@nrwl/nx</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2025-08-26<br>to 2025-08-27</td>
+          <td>
+            
+              <code>20.9.0</code><br><code>20.10.0</code><br><code>20.11.0</code><br><code>20.12.0</code><br><code>21.5.0</code><br><code>21.6.0</code><br><code>21.7.0</code><br><code>21.8.0</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
         
         <tr>
           <td>
@@ -304,7 +343,55 @@
   
 
   
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file:telemetry.js</code></li>
+    
+      <li><code>file:/tmp/inventory.txt</code></li>
+    
+      <li><code>file:/tmp/inventory.txt.bak</code></li>
+    
+      <li><code>file:results.b64</code></li>
+    
+      <li><code>file:~/.bashrc</code></li>
+    
+      <li><code>file:~/.zshrc</code></li>
+    
+      <li><code>command:sudo shutdown -h 0</code></li>
+    
+      <li><code>command:claude --dangerously-skip-permissions</code></li>
+    
+      <li><code>command:gemini --yolo</code></li>
+    
+      <li><code>command:q --trust-all-tools</code></li>
+    
+      <li><code>domain:api.github.com</code></li>
+    
+      <li><code>repository:s1ngularity-repository</code></li>
+    
+      <li><code>repository:s1ngularity-repository-0</code></li>
+    
+      <li><code>repository:s1ngularity-repository-1</code></li>
+    
+      <li><code>repository:s1ngularity-repository-#5letters#</code></li>
+    
+  </ul>
+  
 
+  
+  <h2>Hashes</h2>
+  <ul class="hashes">
+    
+      <li><code>sha1:2379ac0e03b1a67c4ca5693136eff4945e644a91</code></li>
+    
+      <li><code>sha1:e5d1f3c45ee7cca6ae59cf64e0573050bbe136ec</code></li>
+    
+      <li><code>sha1:b4f20b39aa6df1002872f07973024d85aa49abaf</code></li>
+    
+      <li><code>sha1:d2438106211ebd12c4f0a248848bc9864c97a3c0</code></li>
+    
+  </ul>
   
 
   
@@ -320,11 +407,15 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.stepsecurity.io/blog/supply-chain-security-alert-popular-nx-build-system-package-compromised-with-data-stealing-malware" target="_blank">https://www.stepsecurity.io/blog/supply-chain-security-alert-popular-nx-build-system-package-compromised-with-data-stealing-malware</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/supply-chain-security-alert-popular-nx-build-system-package-compromised-with-data-stealing-malware" target="_blank">Supply Chain Security Alert - Popular Nx Build System Package Compromised With Data-Stealing Malware</a></li>
     
-      <li><a href="https://github.com/nrwl/nx/security/advisories/GHSA-cxm3-wv7p-598c" target="_blank">https://github.com/nrwl/nx/security/advisories/GHSA-cxm3-wv7p-598c</a></li>
+      <li><a href="https://github.com/nrwl/nx/security/advisories/GHSA-cxm3-wv7p-598c" target="_blank">GHSA-cxm3-wv7p-598c - Malicious versions of Nx and affected plugins</a></li>
     
-      <li><a href="https://www.kaspersky.co.uk/blog/nx-build-s1ngularity-supply-chain-attack/29435/" target="_blank">https://www.kaspersky.co.uk/blog/nx-build-s1ngularity-supply-chain-attack/29435/</a></li>
+      <li><a href="https://www.kaspersky.co.uk/blog/nx-build-s1ngularity-supply-chain-attack/29435/" target="_blank">Nx build system s1ngularity supply-chain attack</a></li>
+    
+      <li><a href="https://www.theregister.com/software/2025/08/27/nx-npm-packages-poisoned-in-ai-assisted-supply-chain-attack/1137095" target="_blank">Nx NPM packages poisoned in AI-assisted supply chain attack</a></li>
+    
+      <li><a href="https://www.wiz.io/blog/s1ngularity-supply-chain-attack" target="_blank">s1ngularity: supply chain attack leaks secrets on GitHub</a></li>
     
   </ul>
   

@@ -30,15 +30,19 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The official UnrealIRCd 3.2.8.1 source distribution was replaced on project mirrors around November 10, 2009 and remained exposed until June 12, 2010. The injected code disguised itself behind DEBUGMODE3 logic and executed arbitrary commands with the daemon user&#39;s privileges when a client sent input beginning with AB.</p>
+  <p class="synopsis">The official UnrealIRCd 3.2.8.1 source distribution was replaced on project mirrors around November 10, 2009 and remained exposed until June 12, 2010. The injected code disguised itself behind DEBUGMODE3 logic and executed arbitrary commands with the daemon user&#39;s privileges when a client sent input beginning with AB. The project forum notice identified the bad tarball MD5 as 752e46f2d873c1679fa99de3f52a274d and said Windows binaries, CVS, and earlier versions were not affected.</p>
 
   
   <h2>Story</h2>
   <div class="story">
     
-      <p>Around November 10, 2009, UnrealIRCd 3.2.8.1 source mirrors were replaced with a tarball containing a backdoor. The substitution was not discovered until June 12, 2010, leaving a seven-month window in which users who built the IRC server from project mirrors could deploy attacker-modified source. LWN noted that official Windows binaries were not affected, but the project had not yet provided signatures that would have made the swap easier to detect.</p>
+      <p>Around November 10, 2009, UnrealIRCd 3.2.8.1 source mirrors were replaced with a tarball containing a backdoor. The substitution was not discovered until June 12, 2010, leaving a seven-month window in which users who built the IRC server from project mirrors could deploy attacker-modified source. The project forum notice said official Windows binaries, CVS, 3.2.8, and earlier releases were not affected.</p>
     
-      <p>The source change was disguised as `DEBUGMODE3` logic. When input began with `AB`, `DEBUGMODE3_INFO` matched and `DEBUG3_LOG` ultimately called `system()`, executing the rest of the client-supplied command as the user running the daemon. The DailyDave thread preserved the attacker-facing lore around the trigger, while LWN captured the larger lesson: unsigned source distribution left a project mirror network able to turn ordinary build practice into remote command execution.</p>
+      <p>The delivery was source distribution through project mirrors. The changed archive built a daemon that behaved normally until it received the trigger. That made detection depend on source comparison, signatures, or runtime knowledge of the magic input.</p>
+    
+      <p>The source change was disguised as `DEBUGMODE3` logic. When input began with `AB`, `DEBUGMODE3_INFO` matched and `DEBUG3_LOG` ultimately called `system()`, executing the rest of the client-supplied command as the user running the daemon. The project told users to grep include/struct.h for `DEBUG3_DOLOG_SYSTEM`; two matching lines meant the running tree was trojanized.</p>
+    
+      <p>The response was a lesson in distribution hygiene. The project restored the good April 2009 archive, published MD5s for good and bad files, told affected administrators to re-download, verify, recompile, and restart, and said it would re-implement PGP/GPG signing. The Register captured the blunt public takeaway: source mirrors can become the attack if releases are not routinely checked and signed.</p>
     
   </div>
   
@@ -79,7 +83,7 @@
           </td>
           <td>
             
-              <code>md5:e5a4f00a16455005a45d969992173911</code>
+              <code>md5:752e46f2d873c1679fa99de3f52a274d</code>
             
           </td>
         </tr>
@@ -101,9 +105,13 @@
   <h2>References</h2>
   <ul>
     
+      <li><a href="https://forums.unrealircd.org/viewtopic.php?t=6562" target="_blank">Some versions of Unreal3.2.8.1.tar.gz contain a backdoor</a></li>
+    
       <li><a href="https://www.rapid7.com/db/modules/exploit/unix/irc/unreal_ircd_3281_backdoor/" target="_blank">UnrealIRCD 3.2.8.1 Backdoor Command Execution</a></li>
     
       <li><a href="https://lwn.net/Articles/392201/" target="_blank">A backdoor in UnrealIRCd</a></li>
+    
+      <li><a href="https://www.theregister.com/software/2010/06/14/linux-irc-server-leaves-backdoor-open/1373423" target="_blank">Linux IRC server leaves backdoor open</a></li>
     
       <li><a href="https://arstechnica.com/information-technology/2010/06/unreal-ircd-backdoored-for-months/" target="_blank">UnrealIRCd backdoored for months</a></li>
     

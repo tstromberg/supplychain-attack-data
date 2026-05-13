@@ -25,13 +25,26 @@
     <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
     <div class="meta-item"><strong>Transitive:</strong> true</div>
     <div class="meta-item"><strong>Impact:</strong> credential_theft</div>
-    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>User Impact:</strong> 1000</div>
     <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
   </div>
 
   <h2>Synopsis</h2>
   <p class="synopsis">After incomplete containment of the February Trivy takeover, compromised credentials were used to publish malicious Trivy v0.69.4 artifacts, force-push most trivy-action version tags, and replace setup-trivy tags with credential-stealing commits. The payloads read GitHub Actions runner memory and process environments, collected developer and cloud secrets, encrypted the data, and exfiltrated to the typosquatted domain scan.aquasecurtiy.org or fallback public tpcp-docs repositories. Compromised Docker Hub images followed on March 22. Aqua deleted affected tags, released fixed action versions, and published GHSA-69fq-xp46-6x23 / CVE-2026-33634.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The second Trivy compromise was a containment failure with a long tail. After the February takeover, attackers still had usable access. On March 19, 2026, they used compromised credentials to publish Trivy v0.69.4 artifacts and to change action tags that existing CI/CD workflows already trusted.</p>
+    
+      <p>The delivery path was not one file. It included the Trivy release, `trivy-action`, `setup-trivy`, and later Docker Hub images for 0.69.4, 0.69.5, and 0.69.6. Many workflows referenced mutable action tags instead of pinned commits, so force-pushed tags changed code under stable-looking configuration.</p>
+    
+      <p>The payload read GitHub Actions runner memory and process environments, collected developer and cloud secrets, encrypted the archive, and tried to exfiltrate it to `scan.aquasecurtiy.org` or fallback public repositories. Trivy was valuable to the attacker because it already ran where secrets live: inside build and deployment pipelines.</p>
+    
+      <p>The Register reported Mandiant&#39;s estimate of more than 1,000 impacted SaaS environments, with researchers warning that the number could grow. Aqua removed affected tags, released fixed action versions, and published GHSA-69fq-xp46-6x23. The incident then bled into adjacent tools, including LiteLLM, through secrets stolen from CI/CD.</p>
+    
+  </div>
   
 
   
@@ -253,17 +266,19 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release" target="_blank">https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release" target="_blank">Trivy Compromised a Second Time - Malicious v0.69.4 Release</a></li>
     
-      <li><a href="https://www.stepsecurity.io/blog/canisterworm-how-a-self-propagating-npm-worm-is-spreading-backdoors-across-the-ecosystem" target="_blank">https://www.stepsecurity.io/blog/canisterworm-how-a-self-propagating-npm-worm-is-spreading-backdoors-across-the-ecosystem</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/canisterworm-how-a-self-propagating-npm-worm-is-spreading-backdoors-across-the-ecosystem" target="_blank">CanisterWorm - How a Self-Propagating npm Worm Is Spreading Backdoors Across the Ecosystem</a></li>
     
-      <li><a href="https://github.com/advisories/GHSA-69fq-xp46-6x23" target="_blank">https://github.com/advisories/GHSA-69fq-xp46-6x23</a></li>
+      <li><a href="https://github.com/advisories/GHSA-69fq-xp46-6x23" target="_blank">GitHub Advisory: Trivy supply chain compromise</a></li>
     
-      <li><a href="https://github.com/aquasecurity/trivy/discussions/10425" target="_blank">https://github.com/aquasecurity/trivy/discussions/10425</a></li>
+      <li><a href="https://github.com/aquasecurity/trivy/discussions/10425" target="_blank">Trivy v0.69.4 supply chain compromise discussion</a></li>
     
-      <li><a href="https://socket.dev/blog/trivy-docker-images-compromised" target="_blank">https://socket.dev/blog/trivy-docker-images-compromised</a></li>
+      <li><a href="https://socket.dev/blog/trivy-docker-images-compromised" target="_blank">Trivy Docker Images Compromised in Supply Chain Attack</a></li>
     
-      <li><a href="https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next" target="_blank">https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next</a></li>
+      <li><a href="https://www.theregister.com/special-features/2026/03/24/1k-cloud-environments-infected-via-trivy-attack/5226043" target="_blank">1K+ cloud environments infected following Trivy supply chain attack</a></li>
+    
+      <li><a href="https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next" target="_blank">Five Supply Chain Attacks in Twelve Days</a></li>
     
   </ul>
   

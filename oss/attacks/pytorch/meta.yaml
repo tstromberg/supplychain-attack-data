@@ -3,9 +3,18 @@
   title: PyTorch nightly builds compromised via malicious dependency
   synopsis: PyTorch nightly builds were compromised when a malicious torchtriton package
     was uploaded to PyPI and won dependency resolution over the intended internal
-    package. The poisoned dependency executed during installation, exfiltrating sensitive
-    build environment data and showing how one namespace collision can bend a trusted
-    ML build.
+    package hosted on PyTorch's nightly index. Linux users who installed nightly
+    builds with pip between December 25 and December 30, 2022 could receive torchtriton
+    2.0.0 from PyPI. The malicious ELF collected host, environment, git, SSH, and
+    home-directory data and exfiltrated it through encrypted DNS queries.
+  story: |
+    The PyTorch compromise was dependency confusion in a high-value machine-learning stack. PyTorch nightly builds depended on torchtriton, an internal package served from PyTorch's own index. Because pip gave PyPI precedence in the mixed-index install flow, an attacker could publish the same package name publicly and win resolution.
+
+    On December 26, 2022, the attacker published torchtriton 2.0.0 to PyPI. Checkmarx reported that the public package copied the legitimate project and added two changes: a malicious ELF binary under `triton/runtime/triton` and Python glue in `__init__.py` to execute it. The package also used starjacking to borrow legitimacy from the real repository.
+
+    The binary targeted x64 Linux systems. It collected nameserver configuration, hostname, username, working directory, environment variables, `/etc/hosts`, `/etc/passwd`, `.gitconfig`, `.ssh`, and the first 1,000 files under the user's home directory. Exfiltration went through encrypted DNS queries to `*.h4ck.cfd` using `wheezy.io`.
+
+    PyTorch removed affected nightly packages, replaced the dependency with pytorch-triton, and registered a dummy PyPI package to prevent the same namespace collision. Stable PyTorch packages were not affected. The incident became a reference case for PyPI dependency confusion against mixed public and project-hosted package indexes.
   start_date: 2022-12-25
   end_date: 2022-12-30
   target:
@@ -13,8 +22,8 @@
     kind: library
     repo: https://github.com/pytorch/pytorch
   actor:
-    name: Individual Hacker
-    kind: person
+    name: Unknown
+    kind: unknown
   language: Python
   method:
     cause: malicious_dependency
@@ -24,15 +33,22 @@
   impact:
     types:
     - data_exfiltration
+    - credential_theft
   artifacts:
-  - id: pytorch
-    name: pytorch
+  - id: torchtriton
+    name: torchtriton
+    package: torchtriton
     ecosystem: pypi
     kind: source_archive
     repo: https://github.com/pytorch/pytorch
     start_date: 2022-12-25
     end_date: 2022-12-30
+    versions:
+    - 2.0.0
+    - 2.0.0.post1
     locations:
+    - uri: https://pypi.org/project/torchtriton/2.0.0/
+      role: distribution
     - uri: https://pypi.org/project/torchtriton/2.0.0.post1/
       role: distribution
     - uri: https://pypi.org/simple/torchtriton/
@@ -43,9 +59,42 @@
       role: mirror
     hashes:
     - sha256:919118939367690c239923b9748520c261503865094823459177886619378916
+    indicators:
+    - kind: file
+      value: triton/runtime/triton
+    - kind: file
+      value: __init__.py
+    - kind: file
+      value: /etc/resolv.conf
+    - kind: file
+      value: /etc/hosts
+    - kind: file
+      value: /etc/passwd
+    - kind: file
+      value: $HOME/.gitconfig
+    - kind: file
+      value: $HOME/.ssh/
+    - kind: domain
+      value: h4ck.cfd
+    - kind: domain
+      value: wheezy.io
+    - kind: observable
+      value: Encrypted DNS exfiltration to *.h4ck.cfd through wheezy.io.
+    - kind: observable
+      value: Starjacking metadata pointed at the legitimate PyTorch Triton repository.
     notes:
     - Affected PyTorch scope covered nightly builds between 2022-12-25 and 2022-12-30.
+    - Stable PyTorch releases were not affected.
+    - The attacker later claimed the incident was security research gone wrong; the
+      record keeps actor attribution unknown.
   references:
   - url: https://pytorch.org/blog/security-alert/
+    title: PyTorch dependency confusion security alert
   - url: https://blog.checkpoint.com/research/supply-chain-attack-on-pytorch-dependency-confusion-via-malicious-packages/
+    title: Supply Chain Attack on PyTorch - Dependency Confusion via Malicious Packages
   - url: https://blog.sonatype.com/pytorch-hijacked-dependency-confusion-2.0
+    title: PyTorch dependency confusion 2.0
+  - url: https://www.theregister.com/security/2023/01/04/pytorch-dependency-poisoned-with-malicious-code/570226
+    title: PyTorch dependency poisoned with malicious code
+  - url: https://zero.checkmarx.com/py-torch-a-leading-ml-framework-was-poisoned-with-malicious-dependency-e30f88242964
+    title: PyTorch, a Leading ML Framework, Was Poisoned with Malicious Dependency

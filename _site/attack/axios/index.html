@@ -30,8 +30,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">A direct npm account takeover of the lead maintainer bypassed OIDC trusted publishing and turned a routine axios release into an installation-time trap. Version 1.14.1 carried a malicious postinstall hook that pulled a multi-platform RAT through node_modules/plain-crypto-js, letting dependency resolution become the quiet delivery rail for remote access.</p>
+  <p class="synopsis">A compromised axios maintainer account published malicious npm versions 1.14.1 and 0.30.4 on March 31, 2026. Both releases injected plain-crypto-js 4.2.1, whose install path delivered a multi-platform RAT and exposed machines that installed the brief releases. The package versions were live for about three hours before removal; affected systems were advised to remove the dependency and rotate secrets.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The axios compromise was short, but it sat on a very large dependency graph. On March 31, 2026, an attacker used the lead maintainer&#39;s npm access to publish axios 1.14.1 and 0.30.4. The project later described the entry point as a compromised maintainer machine reached through targeted social engineering and RAT malware.</p>
+    
+      <p>The malicious axios releases did not need to rewrite the library&#39;s public API. They added a dependency on plain-crypto-js 4.2.1, moving the payload into dependency resolution and install-time execution. A normal fresh install during the window could pull the poisoned axios version, then pull the malicious helper package from npm.</p>
+    
+      <p>The payload was a remote access trojan for macOS, Windows, and Linux. The postmortem told affected users to inspect lockfiles for axios 1.14.1, axios 0.30.4, or plain-crypto-js, remove the malicious dependency, check for traffic to sfrclak[.]com or 142.11.206.73 on port 8000, and rotate every secret available to the affected machine or CI runner.</p>
+    
+      <p>The timeline was measured in hours: axios 1.14.1 appeared at 00:21 UTC, axios 0.30.4 around 01:00 UTC, community detections followed almost immediately, and npm removed the malicious axios versions by 03:15 UTC. The project response moved toward immutable releases, OIDC publishing, stronger GitHub Actions hygiene, and a release process less dependent on one personal account.</p>
+    
+  </div>
   
 
   
@@ -75,6 +88,32 @@
           </td>
         </tr>
         
+        <tr>
+          <td>
+            <strong>plain-crypto-js</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-03-30<br>to 2026-03-31</td>
+          <td>
+            
+              <code>4.2.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
       </tbody>
     </table>
   </div>
@@ -92,9 +131,11 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next" target="_blank">https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next</a></li>
+      <li><a href="https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next" target="_blank">Five Supply Chain Attacks in Twelve Days</a></li>
     
-      <li><a href="https://socket.dev/blog/axios-supply-chain-attack-reaches-openai-macos-signing-pipeline-forces-certificate-rotation" target="_blank">https://socket.dev/blog/axios-supply-chain-attack-reaches-openai-macos-signing-pipeline-forces-certificate-rotation</a></li>
+      <li><a href="https://socket.dev/blog/axios-supply-chain-attack-reaches-openai-macos-signing-pipeline-forces-certificate-rotation" target="_blank">Axios Supply Chain Attack Reaches OpenAI macOS Signing Pipeline, Forces Certificate Rotation</a></li>
+    
+      <li><a href="https://github.com/axios/axios/issues/10636" target="_blank">Post Mortem: axios npm supply chain compromise</a></li>
     
   </ul>
   

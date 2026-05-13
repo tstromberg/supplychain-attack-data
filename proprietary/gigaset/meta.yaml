@@ -1,0 +1,102 @@
+---
+- id: gigaset-android-update-service
+  title: Gigaset Android update service distributed malware
+  synopsis: Older Gigaset Android phones received malware through the pre-installed
+    Update app after an external update service server was compromised. Reports began
+    around late March and early April 2021, with Gigaset saying the infection was
+    stopped on April 7. The malicious chain used com.redstone.ota.ui to reinstall
+    downloader and SMS malware such as gem, smart, xiaoan, and com.yhn4621.ujm0317
+    after users removed them.
+  story: |
+    The Gigaset incident used Android maintenance software. The package `com.redstone.ota.ui` was a pre-installed system updater, not an app a user had chosen from a store. On affected older phones, that trusted update path reinstalled malware after users removed it.
+
+    Malwarebytes identified the updater as Android/PUP.Riskware.Autoins.Redstone and reported that it installed Android/Trojan.Downloader.Agent.WAGD payloads with package names beginning `com.wagd.`. Users saw browsers opening to game sites, unwanted apps returning after deletion, and messages sent through WhatsApp. Some devices also received Android/Trojan.SMS.Agent.YHN4, adding SMS abuse to the chain.
+
+    Gigaset later said older GS100, GS160, GS170, GS180, GS270, GS270 plus, GS370, and GS370 plus lines were potentially affected, while newer listed models were not. The company attributed the malware installation to a compromised server belonging to an external update service provider and said the infection path was stopped on April 7, 2021.
+  start_date: 2021-03-27
+  end_date: 2021-04-07
+  target:
+    name: Gigaset Android update service
+    kind: mobile_update_service
+    website: https://www.gigaset.com
+  actor:
+    name: Unknown
+    kind: unknown
+  language: Android
+  method:
+    cause: update_infrastructure_compromise
+    phase: distribution
+    motive: malware_distribution
+    transitive: false
+  impact:
+    types:
+    - malware_distribution
+    - downloader
+    - sms_abuse
+    - adware
+    users: 0
+  artifacts:
+  - id: gigaset-update-app
+    name: Gigaset Android Update app
+    package: com.redstone.ota.ui
+    ecosystem: android
+    kind: system_app
+    website: https://www.gigaset.com
+    start_date: 2021-03-27
+    end_date: 2021-04-07
+    locations:
+    - uri: pkg://android/com.redstone.ota.ui
+      role: distribution
+    - uri: https://www.malwarebytes.com/blog/news/2021/04/pre-installed-auto-installer-threat-found-on-android-mobile-devices-in-germany
+      role: mirror
+    - uri: https://www.bleepingcomputer.com/news/security/gigaset-android-phones-infected-by-malware-via-hacked-update-server/
+      role: mirror
+    indicators:
+    - kind: package
+      value: com.redstone.ota.ui
+    - kind: path
+      value: /system/priv-app/ThirdPartyRSOTA/ThirdPartyRSOTA.apk
+    - kind: path
+      value: /system/app/Rsota/Rsota.apk
+    - kind: malware
+      value: Android/PUP.Riskware.Autoins.Redstone
+    - kind: malware
+      value: Android/Trojan.Downloader.Agent.WAGD
+    - kind: malware
+      value: Android/Trojan.SMS.Agent.YHN4
+    - kind: package
+      value: com.wagd.gem
+    - kind: package
+      value: com.wagd.smarter
+    - kind: package
+      value: com.wagd.xiaoan
+    - kind: package
+      value: com.yhn4621.ujm0317
+    - kind: app
+      value: Gem
+    - kind: app
+      value: Smart
+    - kind: app
+      value: Xiaoan
+    - kind: app
+      value: asenf
+    - kind: app
+      value: Tayase
+    notes:
+    - Gigaset said only some devices from older product lines were infected and that
+      affected devices were those where past software updates had not been carried
+      out by the user.
+    - Potentially affected Gigaset lines were GS100, GS160, GS170, GS180, GS270,
+      GS270 plus, GS370, and GS370 plus.
+    - Malwarebytes also observed Android/PUP.Riskware.Autoins.Redstone on Siemens
+      GS270, Siemens GS160, Alps P40pro, and Alps S20pro+ devices.
+    - Gigaset said GS110, GS185, GS190, GS195, GS195LS, GS280, GS290, GX290, GX290plus,
+      GX290 PRO, GS3, and GS4 were not affected according to its information at
+      the time.
+  references:
+  - url: https://www.malwarebytes.com/blog/news/2021/04/pre-installed-auto-installer-threat-found-on-android-mobile-devices-in-germany
+    title: Pre-installed auto installer threat found on Android mobile devices in Germany
+  - url: https://www.theregister.com/2021/04/07/gigaset_supply_chain_malware_android_phones/
+    title: Another supply-chain attack? Android maker Gigaset injects malware into victims' phones via poisoned update
+  - url: https://www.bleepingcomputer.com/news/security/gigaset-android-phones-infected-by-malware-via-hacked-update-server/
+    title: Gigaset Android phones infected by malware via hacked update server

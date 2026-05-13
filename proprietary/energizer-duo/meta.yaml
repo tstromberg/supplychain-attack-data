@@ -1,0 +1,83 @@
+---
+- id: energizer-duo-usb-charger
+  title: Energizer DUO charger software installed Arucer backdoor
+  synopsis: Energizer DUO USB battery charger software for Windows installed a backdoor
+    DLL named Arucer.dll from the official charger-monitoring software path. CERT/CC
+    disclosed the issue on March 5, 2010. The DLL listened on TCP port 7777, could
+    list directories, transfer files, and execute programs, and persisted through
+    a Run key launched by rundll32.exe when the charger software was first used.
+  story: |
+    Energizer DUO made a small promise: plug a USB battery charger into a Windows PC and watch the charge status. The optional vendor software carried more than that. Its installer placed `UsbCharger.dll` beside the application and `Arucer.dll` into `system32`, then the legitimate charger DLL started the second one through `rundll32.exe`.
+
+    The payload was not a stray toolbar or noisy adware. CERT/CC described `Arucer.dll` as a backdoor listening on `7777/tcp`, with commands to list directories, send and receive files, and execute programs under the logged-on user's privileges. If the user allowed the Windows Firewall prompt for "Run DLL as an App," rundll32.exe itself could be added to the firewall exceptions list.
+
+    Energizer removed the download site, discontinued sale of the DUO Charger model CHUSB, and told Windows users to uninstall the software and delete the remaining DLL. The Arucer file carried a May 10, 2007 timestamp, but public reporting treated that as a clue, not proof of the full exposure window.
+  start_date: 2010-03-05
+  end_date: 2010-03-05
+  target:
+    name: Energizer DUO USB charger software
+    kind: desktop_utility
+    website: https://www.energizer.com
+  actor:
+    name: Unknown
+    kind: unknown
+  language: Windows binary
+  method:
+    cause: compromised_installer
+    phase: distribution
+    motive: remote_access
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_access
+    - data_theft
+    users: 0
+  artifacts:
+  - id: energizer-usbcharger
+    name: Energizer UsbCharger software
+    kind: binary_archive
+    website: https://www.energizer.com
+    start_date: 2010-03-05
+    end_date: 2010-03-05
+    locations:
+    - uri: http://www.energizer.com/usbcharger/
+      role: distribution
+    - uri: http://www.energizerrecharge.eu/en/range/chargers/usb
+      role: distribution
+    - uri: https://www.kb.cert.org/vuls/id/154421
+      role: mirror
+    hashes:
+    - md5:1070be3e60a1868d2cd62fc90d76c861
+    - sha1:d102b1d2538d8771be85403272e5a22a4b3f81ad
+    indicators:
+    - kind: cve
+      value: CVE-2010-0103
+    - kind: file
+      value: UsbCharger.dll
+    - kind: file
+      value: Arucer.dll
+    - kind: path
+      value: C:\Windows\system32\Arucer.dll
+    - kind: registry
+      value: HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+    - kind: port
+      value: 7777/tcp
+    - kind: malware
+      value: Trojan-Arugizer
+    - kind: product
+      value: Energizer DUO Charger Model CHUSB
+    - kind: observable
+      value: UsbCharger.dll executed Arucer.dll through rundll32.exe and configured
+        startup persistence.
+    notes:
+    - CERT/CC listed the Arucer.dll file version as 1.0.0.1 with a 2007-05-10 file
+      date; public sources did not prove the complete distribution window.
+    - Removing the Energizer UsbCharger software removed startup execution, but CERT/CC
+      said Arucer.dll could remain in system32 and might require a restart before
+      deletion.
+  references:
+  - url: https://www.kb.cert.org/vuls/id/154421
+    title: Energizer DUO USB battery charger software allows unauthorized remote system access
+  - url: https://www.theregister.com/2010/03/08/energizer_trojan/
+    title: Energizer Duo software suffers backdoor Trojan bother

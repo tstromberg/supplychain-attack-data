@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pgserve npm CanisterSprawl credential stealer</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>pgserve npm CanisterSprawl credential stealer</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> pgserve · <a href="https://github.com/iarna/pgserve" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-04-21 to 2026-04-22</div>
+    <div class="meta-item"><strong>Actor:</strong> TeamPCP (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, self_propagation</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+    <div class="meta-item"><strong>Campaigns:</strong>
+      
+        <a href="/campaign/teampcp-2026/">TeamPCP 2026 Package Compromise Campaign</a>
+      
+    </div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">On April 21, 2026, malicious pgserve npm versions 1.1.11, 1.1.12, and 1.1.13 added a postinstall loader that harvested developer and CI secrets, encrypted them with RSA-4096 and AES-256, and exfiltrated to an Internet Computer Protocol canister. The payload could propagate through npm publish tokens and PyPI tokens, turning an embedded PostgreSQL development package into a cross-ecosystem credential theft worm.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>pgserve was a small, convenient development dependency: an embedded PostgreSQL server meant to drop into Node.js projects with little ceremony. The malicious versions changed that trust boundary at install time. Versions 1.1.11, 1.1.12, and 1.1.13 were published to npm on April 21, 2026 without matching upstream git tags.</p>
+    
+      <p>The package change was blunt and effective. Compared with the last legitimate release, 1.1.10, the malicious tarballs added scripts/check-env.js and scripts/public.pem, then wired package.json to run a postinstall command. The command ended with `|| true`, so an error in the malware would not break the install or warn the developer with a failed dependency.</p>
+    
+      <p>The injected script harvested environment variables, package-manager tokens, SSH keys, cloud credentials, Kubernetes and database material, crypto wallets, and browser password stores. Before transmission, it used a hybrid RSA-4096 and AES-256 scheme, then exfiltrated primarily to an Internet Computer Protocol canister and secondarily to a webhook if the right environment key was present.</p>
+    
+      <p>The propagation logic made this more than a theft implant. If it found an npm publish token, it could enumerate packages the victim could publish, copy its loader and public key into each package, bump versions, and publish again. If it found a PyPI token, it attempted Python-package infection using .pth execution, crossing from npm into Python packaging.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>pgserve</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            <br><a href="https://github.com/iarna/pgserve" target="_blank">https://github.com/iarna/pgserve</a>
+          </td>
+          <td>2026-04-21<br>to 2026-04-22</td>
+          <td>
+            
+              <code>1.1.11</code><br><code>1.1.12</code><br><code>1.1.13</code>
+            
+          </td>
+          <td>
+            
+              <code>1.1.10</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.stepsecurity.io/blog/pgserve-compromised-on-npm-malicious-versions-harvest-credentials" target="_blank">CanisterSprawl: pgserve Compromised on npm</a></li>
+    
+      <li><a href="https://github.com/iarna/pgserve/issues/25" target="_blank">Disclosure issue for malicious pgserve npm releases</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

@@ -38,6 +38,8 @@
     
       <p>In November 2003, the Linux kernel was maintained in BitKeeper, with a separate CVS mirror available for developers who could not or would not use BitKeeper directly. An attacker modified the CVS-side `kernel/exit.c` history on kernel.bkbits.net instead of landing a real BitKeeper changeset. That distinction mattered: the poisoned revisions appeared in the mirror, but not in the authoritative development tree used for mainline integration.</p>
     
+      <p>The change was small enough to be read and large enough to matter. It lived in `kernel/exit.c`, in the wait path, and looked like an error check. The planted CVS revisions lacked normal BitKeeper logical-change backlinks, which made the source-control metadata as important as the C code.</p>
+    
       <p>The inserted code checked for `options == (__WCLONE|__WALL)` and then evaluated `current-&gt;uid = 0`, turning what looked like a comparison into an assignment that would make the caller root. BitMover&#39;s conversion checks caught the fraud quickly because normal CVS mirror entries carried logical-change backlinks to BitKeeper changesets, while the planted revisions did not. The incident became an early, concrete example of why source-control provenance matters as much as code review.</p>
     
   </div>

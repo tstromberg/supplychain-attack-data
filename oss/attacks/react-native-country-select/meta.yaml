@@ -4,12 +4,18 @@
   campaigns:
   - glassworm-march-2026
   synopsis: The astroonauta npm account takeover also compromised react-native-country-select,
-    a direct dependency of react-native-international-phone-number. The first malicious
-    release used a visible preinstall hook; after deprecation, the attacker retained
-    access and republished through a transitive dependency chain that resolved to
-    @usebioerhold8733/s-format. That chain executed the same detached JavaScript malware
-    and Solana blockchain C2 used in the first wave. During the incident, @latest
-    resolved to compromised 0.4.2, exposing users of both packages.
+    a direct dependency of react-native-international-phone-number. Aikido reported
+    0.3.91 was published on March 16, 2026 at 10:54:18 UTC with a new preinstall
+    hook and byte-identical install.js loader. After deprecation, the attacker retained
+    access and republished through a transitive dependency chain ending in @usebioerhold8733/s-format.
+    The malware used Solana and Google Calendar indirection to deliver a Windows
+    credential and wallet stealer with persistence.
+  story: |
+    The first react-native-country-select payload was small at the package boundary and large after execution. Version 0.3.91 added a preinstall hook that ran node install.js before npm finished the install. Aikido found the adjacent 0.3.9 release clean, making the change narrow and easy to describe: one new loader file and one lifecycle hook.
+
+    The loader reached to Solana RPC, recovered a transaction memo, decoded a URL, and fetched a second stage. The recovered chain continued through AES-decrypted JavaScript and a Google Calendar URL used as another indirection point before fetching more content from attacker infrastructure. The same install.js loader hash appeared in both React Native packages compromised that morning.
+
+    The later payload was Windows-focused theft code, not a harmless beacon. It set persistence with schtasks and an HKCU Run key, wrote an init.json guard, downloaded Node.js runtimes into AppData, walked browser profile and wallet storage, killed browser processes, stole npm and GitHub credentials, and exfiltrated collected archives. StepSecurity later tracked the attacker returning with additional releases that hid delivery behind transitive dependencies.
   start_date: 2026-03-16
   end_date: 2026-03-18
   target:
@@ -54,6 +60,48 @@
       role: distribution
     - uri: https://www.npmjs.com/package/@usebioerhold8733/s-format/v/2.0.4
       role: distribution
+    hashes:
+    - sha256:59221aa9623d86c930357dba7e3f54138c7ccbd0daa9c483d766cd8ce1b6ad26
+    indicators:
+    - kind: file
+      value: install.js
+    - kind: lifecycle_hook
+      value: preinstall node install.js
+    - kind: observable
+      value: Solana RPC getSignaturesForAddress dead-drop lookup.
+    - kind: observable
+      value: Russian locale and timezone exclusion checks.
+    - kind: url
+      value: hxxp://45[.]32[.]150[.]251/3e4Tg8V%2F8aCmOJKipASADg%3D%3D
+    - kind: url
+      value: hxxps://calendar[.]app[.]google/2NkrcKKj4T6Dn4uK6
+    - kind: domain
+      value: socket.network
+    - kind: domain
+      value: n.xyz
+    - kind: domain
+      value: p.link
+    - kind: ip
+      value: 45.32.150.251
+    - kind: ip
+      value: 217.69.3.152
+    - kind: file
+      value: init.json
+    - kind: persistence
+      value: schtasks task UpdateApp
+    - kind: persistence
+      value: HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+    notes:
+    - Aikido reported react-native-country-select@0.3.91 was published on March
+      16, 2026 at 10:54:18 UTC and had 9,072 weekly downloads and 42,589 monthly
+      downloads when checked that day.
+    - StepSecurity later tracked additional malicious releases, including transitive
+      delivery through @agnoliaarisian7180/string-argv and @usebioerhold8733/s-format.
   references:
   - url: https://www.stepsecurity.io/blog/malicious-npm-releases-found-in-popular-react-native-packages---130k-monthly-downloads-compromised
+    title: Malicious npm Releases Found in Popular React Native Packages - 130K Monthly
+      Downloads Compromised
   - url: https://github.com/AstrOOnauta/react-native-country-select/issues/11
+    title: Malicious release report for react-native-country-select
+  - url: https://www.aikido.dev/blog/glassworm-strikes-react-packages-phone-numbers
+    title: Glassworm Strikes Popular React Native Phone Number Packages

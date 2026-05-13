@@ -9,6 +9,14 @@
     later versions (4.2.3-4.2.4) added it to TypeScript source so the backdoor compiled
     cleanly into builds. Aikido Intel detected the publishes and Ripple released clean
     v4.2.5 within ~24 hours.
+  story: |
+    xrpl.js sits close to money. It is the official JavaScript and TypeScript SDK for building against the XRP Ledger, including wallet handling, key management, payments, escrow, and exchange features. A malicious release in that package does not need broad system access to be dangerous; it needs only to see the secret material developers ask the library to handle.
+
+    On April 21, 2025, five npm versions were published with private-key stealing code: 4.2.1, 4.2.2, 4.2.3, 4.2.4, and 2.14.2. The official advisory says the 4.x versions were compromised and designed to exfiltrate private keys, while 2.14.2 was also malicious but less likely to exploit because it was not compatible with other 2.x releases.
+
+    The attacker iterated. Early versions injected malicious code into compiled JavaScript; later ones moved the change into TypeScript source so it would compile naturally into the distributed build. The payload posted wallet seed phrases, mnemonics, and private keys to attacker infrastructure when Wallet objects were created or derived.
+
+    The project patched with 4.2.5 and 2.14.3 and told affected users to treat keys as exposed. For XRP accounts, that means moving funds to secure wallets, rotating keys where possible, and disabling a potentially compromised master key. The Register noted the package had reached more than 186,000 weekly downloads in April, a measure of exposure rather than confirmed theft.
   start_date: 2025-04-21
   end_date: 2025-04-22
   target:
@@ -43,10 +51,48 @@
     - 4.2.3
     - 4.2.4
     - 2.14.2
+    fixed_versions:
+    - 4.2.5
+    - 2.14.3
     locations:
+    - uri: https://www.npmjs.com/package/xrpl/v/4.2.1
+      role: distribution
+    - uri: https://www.npmjs.com/package/xrpl/v/4.2.2
+      role: distribution
+    - uri: https://www.npmjs.com/package/xrpl/v/4.2.3
+      role: distribution
+    - uri: https://www.npmjs.com/package/xrpl/v/4.2.4
+      role: distribution
+    - uri: https://www.npmjs.com/package/xrpl/v/2.14.2
+      role: distribution
     - uri: https://github.com/XRPLF/xrpl.js
       role: mirror
+    indicators:
+    - kind: cve
+      value: CVE-2025-32965
+    - kind: url
+      value: https://0x9c.xyz/xc
+    - kind: observable
+      value: Exfiltration of wallet seed phrases, mnemonics, and private keys when
+        Wallet objects were instantiated or derived.
+    - kind: observable
+      value: 4.2.1 and 4.2.2 injected payload into compiled JavaScript; 4.2.3 and
+        4.2.4 moved the payload into TypeScript source.
+    notes:
+    - The GitHub advisory recommends upgrading to 4.2.5 or 2.14.3 and rotating any
+      private keys or secrets used with affected systems.
+    - The Register reported xrpl weekly downloads exceeded 186,000 in April 2025;
+      this is exposure context, not a confirmed victim count.
   references:
   - url: https://www.aikido.dev/blog/xrp-supplychain-attack-official-npm-package-infected-with-crypto-stealing-backdoor
+    title: XRP Supply Chain Attack - Official npm Package Infected With Crypto-Stealing
+      Backdoor
   - url: https://thehackernews.com/2025/04/xrp-supply-chain-attack-official-npm.html
+    title: XRP Supply Chain Attack - Official npm Package Infected With Crypto-Stealing
+      Backdoor
   - url: https://www.bleepingcomputer.com/news/security/official-xrp-ledger-npm-package-backdoored-to-steal-private-keys/
+    title: Official XRP Ledger npm package backdoored to steal private keys
+  - url: https://www.theregister.com/security/2025/04/23/ripple-npm-supply-chain-attack-hunts-for-private-keys/382324
+    title: Ripple NPM supply chain attack hunts for private keys
+  - url: https://github.com/XRPLF/xrpl.js/security/advisories/GHSA-33qr-m49q-rxfx
+    title: Compromised xrpl.js versions 4.2.1, 4.2.2, 4.2.3, 4.2.4, and 2.14.2

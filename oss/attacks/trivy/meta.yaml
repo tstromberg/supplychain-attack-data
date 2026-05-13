@@ -53,7 +53,9 @@
     - Trivy v0.69.2 was the restored release after the takeover.
   references:
   - url: https://www.stepsecurity.io/blog/hackerbot-claw-github-actions-exploitation
+    title: hackerbot-claw GitHub Actions Exploitation
   - url: https://github.com/aquasecurity/trivy/discussions/10265
+    title: Official information about Trivy repository takeover incident
 - id: trivy-second-compromise
   title: Trivy v0.69.4 Release and Action Compromise
   synopsis: After incomplete containment of the February Trivy takeover, compromised
@@ -64,6 +66,14 @@
     the typosquatted domain scan.aquasecurtiy.org or fallback public tpcp-docs repositories.
     Compromised Docker Hub images followed on March 22. Aqua deleted affected tags,
     released fixed action versions, and published GHSA-69fq-xp46-6x23 / CVE-2026-33634.
+  story: |
+    The second Trivy compromise was a containment failure with a long tail. After the February takeover, attackers still had usable access. On March 19, 2026, they used compromised credentials to publish Trivy v0.69.4 artifacts and to change action tags that existing CI/CD workflows already trusted.
+
+    The delivery path was not one file. It included the Trivy release, `trivy-action`, `setup-trivy`, and later Docker Hub images for 0.69.4, 0.69.5, and 0.69.6. Many workflows referenced mutable action tags instead of pinned commits, so force-pushed tags changed code under stable-looking configuration.
+
+    The payload read GitHub Actions runner memory and process environments, collected developer and cloud secrets, encrypted the archive, and tried to exfiltrate it to `scan.aquasecurtiy.org` or fallback public repositories. Trivy was valuable to the attacker because it already ran where secrets live: inside build and deployment pipelines.
+
+    The Register reported Mandiant's estimate of more than 1,000 impacted SaaS environments, with researchers warning that the number could grow. Aqua removed affected tags, released fixed action versions, and published GHSA-69fq-xp46-6x23. The incident then bled into adjacent tools, including LiteLLM, through secrets stolen from CI/CD.
   start_date: 2026-03-19
   end_date: 2026-03-23
   target:
@@ -82,7 +92,7 @@
   impact:
     types:
     - credential_theft
-    users: 0
+    users: 1000
   locations:
   - uri: https://github.com/aquasecurity/trivy/releases/tag/v0.69.4
     role: distribution
@@ -147,6 +157,9 @@
     - Aqua's disclosure window covered Trivy v0.69.4 release artifacts, including
       distribution paths such as GHCR, ECR Public, Docker Hub, deb, rpm, and get.trivy.dev;
       Docker Hub tags are also tracked as their own artifact group.
+    - The Register reported Mandiant's estimate of more than 1,000 impacted SaaS
+      environments from the wider Trivy supply-chain attack; this is recorded as
+      a lower-bound impact count rather than an exact user count.
   - id: aquasec-trivy
     name: Trivy Docker images
     package: aquasec/trivy
@@ -218,8 +231,16 @@
       lower bound is not recorded.
   references:
   - url: https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release
+    title: Trivy Compromised a Second Time - Malicious v0.69.4 Release
   - url: https://www.stepsecurity.io/blog/canisterworm-how-a-self-propagating-npm-worm-is-spreading-backdoors-across-the-ecosystem
+    title: CanisterWorm - How a Self-Propagating npm Worm Is Spreading Backdoors Across the Ecosystem
   - url: https://github.com/advisories/GHSA-69fq-xp46-6x23
+    title: 'GitHub Advisory: Trivy supply chain compromise'
   - url: https://github.com/aquasecurity/trivy/discussions/10425
+    title: Trivy v0.69.4 supply chain compromise discussion
   - url: https://socket.dev/blog/trivy-docker-images-compromised
+    title: Trivy Docker Images Compromised in Supply Chain Attack
+  - url: https://www.theregister.com/special-features/2026/03/24/1k-cloud-environments-infected-via-trivy-attack/5226043
+    title: 1K+ cloud environments infected following Trivy supply chain attack
   - url: https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next
+    title: Five Supply Chain Attacks in Twelve Days

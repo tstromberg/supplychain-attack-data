@@ -250,16 +250,25 @@
   synopsis: The May 2026 Checkmarx record tracks the Jenkins AST plugin rather than
     folding it into the March or April waves. A malicious 2026.5.09 release reached
     the Jenkins Marketplace, putting build pipelines at risk through a trusted scanner
-    plugin. Checkmarx advised users to avoid the poisoned release and remain on version
-    2.0.13-829.vc72453fa_1c16 or earlier while clean distribution was restored.
-  start_date: 2026-05-09
-  end_date: 2026-05-10
+    plugin. Checkmarx's official incident update lists the exposure window from
+    2026-05-09 01:25 UTC to 2026-05-10 08:47 UTC and advises users to avoid the
+    poisoned release and verify known-good plugin versions.
+  story: |
+    TeamPCP returned to Checkmarx through a channel built for trust: the Jenkins AST Scanner plugin. Checkmarx said a modified version of the plugin was published to the Jenkins Marketplace, where Jenkins controllers could pull it as a normal security-scanning integration. The compromised version was 2026.5.09.
+
+    The impact was not limited to the plugin process itself. A Jenkins scanner plugin runs inside CI/CD infrastructure, close to source code, environment variables, credentials stores, cloud tokens, Kubernetes material, and deployment secrets. That makes a backdoored security tool a direct path into the systems it was meant to inspect.
+
+    Public reporting also described GitHub-side defacement. The plugin repository was renamed with a TeamPCP taunt and its description claimed Checkmarx failed to rotate secrets, matching the actor's habit of pairing payload delivery with public humiliation. The incident followed March and April Checkmarx artifact compromises, so this record stays separate by date and artifact scope while preserving the repeated-access pattern.
+
+    Checkmarx published malicious artifact hashes for the HPI, JAR, and POM files and told users to ensure they were on 2.0.13-829.vc72453fa_1c16 from December 17, 2025 or an earlier safe version while clean releases were restored. Jenkins update metadata later showed clean May 9 releases 2.0.13-847.v08c0072b_2fd5 and 2.0.13-848.v76e89de8a_053.
+  start_date: 2026-05-09T01:25:00Z
+  end_date: 2026-05-10T08:47:00Z
   target:
-    name: checkmarx-may-2026
+    name: Checkmarx Jenkins AST Scanner
     kind: plugin
     repo: https://plugins.jenkins.io/checkmarx-ast-scanner
   actor:
-    name: Advanced Persistent Threat
+    name: TeamPCP
     kind: group
   language: Java
   method:
@@ -281,8 +290,8 @@
     ecosystem: jenkins marketplace
     kind: plugin
     repo: https://plugins.jenkins.io/checkmarx-ast-scanner
-    start_date: 2026-05-09
-    end_date: 2026-05-10
+    start_date: 2026-05-09T01:25:00Z
+    end_date: 2026-05-10T08:47:00Z
     versions:
     - 2026.5.09
     locations:
@@ -292,10 +301,43 @@
     - sha256:01ff1e56fd59a8fa525d97e670f7f297a1a204331b89b2cd4e36a9abc6419203
     - sha256:f50a96d26a5b0beb29de4127e82b2bf350c21511e5a43d286e43f798dc6cd53f
     - sha256:3ddb8967919a801b3c383e58cddceab21138134c6a26560d99e2672e86f36f2a
+    indicators:
+    - kind: file
+      value: checkmarx-ast-scanner-2026.5.09.hpi
+    - kind: file
+      value: checkmarx-ast-scanner-2026.5.09.jar
+    - kind: file
+      value: checkmarx-ast-scanner-2026.5.09.pom
+    - kind: observable
+      value: Jenkins Marketplace release version 2026.5.09.
+    - kind: observable
+      value: GitHub repository renamed to Checkmarx-Fully-Hacked-by-TeamPCP-and-Their-Customers-Should-Cancel-Now.
+    - kind: observable
+      value: Repository description changed to "Checkmarx fails to rotate secrets
+        again. with love - TeamPCP."
+    - kind: observable
+      value: Dune-themed cx-plugins-releases repositories with "A Mini Shai-Hulud
+        has Appeared" descriptions.
     references:
     - url: https://checkmarx.com/blog/ongoing-security-updates/
+      title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+    - url: https://plugins.jenkins.io/checkmarx-ast-scanner/releases/
+      title: Checkmarx AST Scanner Jenkins Plugin Releases
     notes:
     - Checkmarx's guidance named 2.0.13-829.vc72453fa_1c16 or earlier as the version
       line to stay on while the malicious release was avoided.
+    - Checkmarx listed the exposure window as 2026-05-09 01:25:00 UTC to 2026-05-10
+      08:47:00 UTC.
+    - Jenkins update metadata later listed clean releases 2.0.13-847.v08c0072b_2fd5
+      and 2.0.13-848.v76e89de8a_053, both released on May 9, 2026.
   references:
   - url: https://checkmarx.com/blog/ongoing-security-updates/
+    title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+  - url: https://socradar.io/blog/checkmarx-jenkins-plugin-teampcp-backdoor/
+    title: Checkmarx Jenkins Plugin Backdoored in New TeamPCP Supply Chain Attack
+  - url: https://www.theregister.com/devops/2026/05/11/checkmarx-tackles-another-teampcp-intrusion-as-jenkins-plugin-sabotaged/5237780
+    title: Checkmarx tackles another TeamPCP intrusion as Jenkins plugin sabotaged
+  - url: https://updates.jenkins.io/download/plugins/checkmarx-ast-scanner/
+    title: Checkmarx AST Scanner Jenkins Update Metadata
+  - url: https://plugins.jenkins.io/checkmarx-ast-scanner/releases/
+    title: Checkmarx AST Scanner Jenkins Plugin Releases

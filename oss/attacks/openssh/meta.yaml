@@ -9,7 +9,11 @@
   story: |
     At the end of July 2002, source archives for OpenSSH were replaced on the OpenBSD FTP server and potentially propagated by the normal mirror network. The affected files were `openssh-3.4p1.tar.gz`, `openssh-3.4.tgz`, and `openssh-3.2.2p1.tar.gz`; the project replaced them with clean originals at 13:00 UTC on August 1.
 
+    The attacker changed source distribution, not the SSH protocol. The tainted archives carried `bf-test.c`, and the build system compiled and executed it during `configure`. A system could be compromised by building OpenSSH even if it never deployed the resulting daemon.
+
     The payload lived in `bf-test.c` and executed during the build, not when a running SSH daemon handled traffic. Once compiled, it attempted hourly outbound connections to an IRC-style port and could execute attacker-supplied commands as the build user. CERT's advisory treated any host that built the trojaned source as compromised and told mirrors, redistributors, and administrators to verify signatures and checksums rather than trusting timestamps or file sizes.
+
+    The detection path was ordinary package hygiene. Isosceles notes that FreeBSD ports already had expected checksums, so a developer building the tainted archive saw a mismatch. The short exposure window prevented broader compromise, but the attack showed that replacing source archives on trusted infrastructure was enough to reach high-value Unix systems.
   start_date: 2002-07-30
   end_date: 2002-08-01
   target:
@@ -52,8 +56,17 @@
     commits:
     - None
     indicators:
+    - kind: file
+      value: bf-test.c
+    - kind: command
+      value: configure
+    - kind: port
+      value: 6667/tcp
     - kind: observable
       value: ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.4p1.tar.gz
+    - kind: observable
+      value: Compiling the tainted source executed the build-time backdoor before
+        the resulting sshd binary was installed.
   - id: openssh-3-4
     name: openssh
     kind: tar_archive
@@ -93,6 +106,10 @@
   references:
   - url: https://www.openssh.com/txt/trojan.adv
     title: OpenSSH Security Advisory adv.trojan
+  - url: https://marc.info/?l=bugtraq&m=102821663814127&w=2
+    title: 'Bugtraq: OpenSSH Security Advisory - Trojaned Distribution Files'
+  - url: https://blog.isosceles.com/openssh-backdoors/
+    title: OpenSSH Backdoors
   - url: https://groups.google.com/g/comp.security.announce/c/Y7V0PyvQXJ8
     title: CERT Advisory CA-2002-24 Trojan Horse OpenSSH Distribution
   - url: https://sourceware.org/legacy-ml/cygwin/2002-08/msg00102.html

@@ -1,0 +1,85 @@
+---
+- id: fishpig-magento-rekoobe
+  title: FishPig Magento extensions distributed ReKoobe
+  synopsis: FishPig's paid Magento 2 extension distribution was compromised in 2022,
+    and altered extension code downloaded the ReKoobe Linux backdoor from FishPig
+    infrastructure when a logged-in Magento staff user visited the FishPig control
+    panel. The attack primarily affected paid FishPig modules, while free GitHub-hosted
+    extensions appeared clean. Sansec reported the distribution server was compromised
+    by August 19; FishPig said products may have been altered as early as August 6.
+  story: |
+    FishPig sold Magento extensions that integrated Adobe Commerce and Magento stores with WordPress. That made its paid module distribution path a natural bridge into ecommerce servers: administrators installed the extension to run their storefront, then trusted the module's license checks and backend control panel code as part of normal operations.
+
+    The attackers changed License.php, a file normally involved in FishPig license validation. When a logged-in Magento staff user opened the FishPig control panel, the altered code fetched lic.png from license.fishpig.co.uk, saved it as lic.bin, made it executable, ran it with the store's admin domain, and removed the temporary file. The innocent-looking license asset was the ReKoobe Linux backdoor.
+
+    ReKoobe used /tmp/.varnish7684 as a guard file, deleted its files after launch, stayed resident in memory, and disguised itself as common system processes such as cron, udevd, auditd, rsyslogd, or dbus-daemon. Sansec reported the malware waited for commands from 46.183.217.223 in Latvia, giving attackers remote control over affected ecommerce servers.
+
+    The date boundary is imprecise but important. Sansec said the FishPig distribution server was compromised on or before August 19, 2022, while The Register cited FishPig's disclosure that products were altered as early as August 6. FishPig recommended customers reinstall all paid modules, scan servers, and restart hosts to kill hidden in-memory processes.
+  start_date: 2022-08-06
+  end_date: 2022-09-13
+  target:
+    name: FishPig Magento extensions
+    kind: extension
+    website: https://fishpig.co.uk
+  actor:
+    name: Unknown
+    kind: unknown
+  language: PHP
+  method:
+    cause: vendor_server_compromise
+    phase: distribution
+    motive: remote_access
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_access
+    - system_compromise
+    users: 0
+  artifacts:
+  - id: fishpig-paid-magento-extensions
+    name: FishPig paid Magento 2 extensions
+    kind: source_archive
+    website: https://fishpig.co.uk
+    start_date: 2022-08-06
+    end_date: 2022-09-13
+    locations:
+    - uri: https://fishpig.co.uk/magento-2/extensions/
+      role: distribution
+    - uri: https://fishpig.co.uk/magento/wordpress-integration/
+      role: distribution
+    - uri: https://sansec.io/research/rekoobe-fishpig-magento
+      role: mirror
+    indicators:
+    - kind: file
+      value: License.php
+    - kind: file
+      value: lic.bin
+    - kind: file
+      value: /tmp/.varnish7684
+    - kind: url
+      value: https://license.fishpig.co.uk/image/dev/lic.png
+    - kind: ip
+      value: 46.183.217.223
+    - kind: malware
+      value: ReKoobe
+    - kind: process
+      value: /usr/sbin/cron -f
+    - kind: process
+      value: /sbin/udevd -d
+    - kind: process
+      value: auditd
+    - kind: process
+      value: dbus-daemon --system
+    notes:
+    - Sansec reported malware in FishPig Magento Security Suite and several other
+      FishPig Magento 2 extensions, and said all paid FishPig extensions were likely
+      compromised.
+    - Free FishPig extensions hosted on GitHub appeared not to be affected.
+    - Sansec reported more than 200,000 downloads for FishPig software on Packagist;
+      the number of paid-extension customers affected was unknown.
+  references:
+  - url: https://sansec.io/research/rekoobe-fishpig-magento
+    title: Magento vendor Fishpig hacked, backdoors added
+  - url: https://www.theregister.com/security/2022/09/15/wordpress-sites-backdoored-after-fishpig-supply-chain-attack/683306
+    title: WordPress-powered sites backdoored after FishPig suffers supply chain attack

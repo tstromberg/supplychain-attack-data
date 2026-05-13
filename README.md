@@ -15,7 +15,7 @@ This repository only includes cases where an open-source project or commercial p
 
 - Campaigns describe shared actor, tooling, infrastructure, and timeline across multiple attacks. OSS campaigns live under `oss/campaigns/`; attacks link to them with `campaigns:`
 - Attacks describe one compromised trust boundary: a vendor, maintainer account, project organization, provider, registry account, release pipeline, or official distribution surface
-- `title` is the short display name. `synopsis` is a 40-110 word summary focused on what happened and why it mattered. Optional `story` is a longer 2-4 paragraph block for chronology, impact, tradecraft, discovery, and response details that would make the synopsis too dense
+- `title` is the short display name. `synopsis` is a 40-110 word summary focused on what happened and why it mattered. Optional `story` is a longer 3-4 paragraph block for attack method, delivery method, code or artifact changes, impact, discovery, and response details that would make the synopsis too dense. Write stories in a concise, technical, straightforward voice: short sentences, concrete nouns, active verbs, no hype, no metaphor, no invented drama
 - Artifacts live under `artifacts:` inside an attack. Use them for concrete packages, plugins, actions, images, releases, installers, source archives, artifact-specific dates, hashes, and artifact-specific impact counts
 - Targets and artifacts can include `website:` and `repo:` for official project, package, vendor, or product locations
 - `locations:` records durable artifact locations only. Use `role: distribution` for the trusted path that served the affected artifact, and `role: mirror` for archived copies, sample pages, VirusTotal entries, or other places a copy can be found later. Do not store reachability or freshness status in canonical data
@@ -29,11 +29,13 @@ Example story format:
 
 ```yaml
 story: |
-  First paragraph: how the attacker reached the trusted distribution path and what users received.
+  First paragraph: state how the attacker reached the trusted distribution path and what users received.
 
-  Second paragraph: what the payload did, what systems or people were exposed, and why the impact mattered.
+  Second paragraph: state how the malicious artifact was delivered and what code, build logic, package metadata, installer, update, or release asset changed.
 
-  Third paragraph, when useful: discovery, remediation, attribution limits, or how this record relates to a broader campaign.
+  Third paragraph: state what the payload did, what systems or people were exposed, and why the impact mattered.
+
+  Fourth paragraph, when useful: state discovery, remediation, attribution limits, or how this record relates to a broader campaign.
 ```
 
 ## OSS Pwn Count

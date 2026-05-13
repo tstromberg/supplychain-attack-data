@@ -1,11 +1,20 @@
 ---
 - id: 3cx
-  title: 3CX app updates delivered multi-stage malware.
+  title: 3CX app updates delivered multi-stage malware
   synopsis: Attackers compromised 3CX's build process and shipped malware through
     signed Desktop App updates for Windows and macOS to a customer base spanning hundreds
     of thousands of organizations. The breach cascaded from another supply-chain attack,
-    X_TRADER, and turned 3CX into a downstream delivery system for data theft, reconnaissance,
-    and follow-on payloads inside enterprise networks.
+    X_TRADER, and turned 3CX into a downstream delivery system for SUDDENICON,
+    ICONICSTEALER, and follow-on payloads inside enterprise networks. Mandiant tracked
+    the activity as UNC4736, a suspected North Korean nexus cluster.
+  story: |
+    The 3CX incident is the cleanest modern example of one supply-chain attack becoming another. Mandiant found that the first known intrusion path into 3CX came from a trojanized X_TRADER installer downloaded from Trading Technologies' legitimate website. That earlier compromise installed VEILEDSIGNAL, giving the attacker a foothold that eventually reached 3CX's build environment.
+
+    Once inside 3CX, the actor compromised both Windows and macOS build systems. The Windows side used TAXHAUL and COLDCAT in the build environment, while the macOS build server carried POOLRAT. Signed 3CX Desktop App installers then became the distribution channel, carrying malicious code through normal vendor downloads and updates.
+
+    The shipped Desktop App malware ran SUDDENICON, which pulled command-and-control data from encrypted icon files hosted on GitHub. The decrypted infrastructure was then used to retrieve ICONICSTEALER, a dataminer focused on browser and application configuration data. Mandiant tied the activity to UNC4736, assessed as a suspected North Korean cluster with overlap to financially motivated AppleJeus activity.
+
+    The early response added another lesson. The Register reported that SentinelOne saw suspicious activity on March 22, 2023, but 3CX treated the alert as a likely false positive after VirusTotal checks came back clean. CrowdStrike reporting on March 29 forced the issue into the open, and 3CX told customers to move to the PWA while the desktop app was investigated.
   start_date: 2022-12-07
   end_date: 2023-03-30
   target:
@@ -13,8 +22,9 @@
     kind: application
     website: https://3cx.com
   actor:
-    name: Nation-state
+    name: UNC4736
     kind: state
+    country: North Korea
   language: C
   method:
     cause: build_system_compromise
@@ -46,6 +56,8 @@
     role: mirror
   - uri: https://www.securelist.com/the-3cx-incident-what-we-know/109371/
     role: mirror
+  - uri: https://cloud.google.com/blog/topics/threat-intelligence/3cx-software-supply-chain-compromise
+    role: mirror
   artifacts:
   - id: 3cxdesktopapp-windows
     name: 3CX Desktop App for Windows
@@ -66,6 +78,26 @@
     hashes:
     - sha256:53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4
     - sha256:2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43
+    indicators:
+    - kind: malware
+      value: SUDDENICON
+    - kind: malware
+      value: ICONICSTEALER
+    - kind: malware
+      value: TAXHAUL
+    - kind: malware
+      value: COLDCAT
+    - kind: string
+      value: 3jB(2bsG#@c7
+    - kind: string
+      value: __tutma
+    - kind: domain
+      value: pbxphonenetwork.com
+    - kind: domain
+      value: msedgepackageinfo.com
+    - kind: observable
+      value: SUDDENICON retrieved encrypted icon files hosted on GitHub to obtain
+        command-and-control servers.
   - id: 3cxdesktopapp-macos
     name: 3CX Desktop App for macOS
     package: 3CXDesktopApp
@@ -87,7 +119,61 @@
     hashes:
     - sha256:e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be
     - sha256:7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5
+    indicators:
+    - kind: malware
+      value: POOLRAT
+    - kind: malware
+      value: SIMPLESEA
+    - kind: domain
+      value: journalide.org
+    - kind: observable
+      value: Mandiant determined the macOS build server carried POOLRAT rather than
+        a new SIMPLESEA family.
+  - id: x-trader
+    name: X_TRADER installer
+    package: X_TRADER
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://www.tradingtechnologies.com
+    start_date: 2022-04-01
+    end_date: 2022-12-07
+    versions:
+    - 7.17.90p608
+    locations:
+    - uri: https://www.tradingtechnologies.com
+      role: distribution
+    hashes:
+    - md5:ef4ab22e565684424b4142b1294f1f4d
+    indicators:
+    - kind: file
+      value: X_TRADER_r7.17.90p608.exe
+    - kind: file
+      value: Setup.exe
+    - kind: malware
+      value: VEILEDSIGNAL
+    - kind: malware
+      value: SIGFLIP
+    - kind: malware
+      value: DAVESHELL
+    - kind: string
+      value: FEEDFACE
+    - kind: string
+      value: 3jB(2bsG#@c7
+    - kind: url
+      value: www.tradingtechnologies[.]com/trading/order-management
+    notes:
+    - Mandiant identified the trojanized X_TRADER installer as the initial intrusion
+      vector into 3CX's network, making this a supply-chain attack that led to another
+      supply-chain attack.
   references:
   - url: https://www.mandiant.com/resources/blog/3cx-software-supply-chain-compromise
+    title: 3CX Software Supply Chain Compromise
+  - url: https://cloud.google.com/blog/topics/threat-intelligence/3cx-software-supply-chain-compromise
+    title: 3CX Software Supply Chain Compromise Initiated by a Prior Software Supply
+      Chain Compromise
   - url: https://www.volexity.com/blog/2023/03/30/3cx-supply-chain-compromise-leads-to-iconic-incident/
+    title: 3CX Supply Chain Compromise Leads to ICONIC Incident
   - url: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-090a
+    title: CISA Alert AA23-090A - Supply Chain Compromise of 3CX Desktop App
+  - url: https://www.theregister.com/security/2023/04/03/3cx-decided-supply-chain-attack-indicator-was-false-positive/1134697
+    title: 3CX thought supply chain attack was a false positive

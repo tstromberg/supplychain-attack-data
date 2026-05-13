@@ -1,0 +1,90 @@
+---
+- id: buffalo-japan-bankeiya
+  title: Buffalo Japan driver downloads distributed Bankeiya
+  synopsis: On May 27, 2014, Buffalo Japan's official download site served ten modified
+    Windows firmware, driver, and utility installers for wireless LAN, NAS, external
+    disk, accelerator, and Bluetooth mouse products. The trojanized installers delivered
+    Infostealer.Bankeiya.B, a Japanese online-banking credential stealer. Buffalo
+    removed the files the same day; Symantec reported 856 downloads from 540 unique
+    IP addresses during the 6:16 to 13:00 Japan-time exposure window.
+  story: |
+    Buffalo's compromise was narrow in time and broad in product surface. For several hours on May 27, 2014, customers downloading official Windows utilities and drivers from Buffalo Japan could receive modified installers instead of clean vendor software. The affected set crossed routers, wireless LAN tools, NAS firmware, external drive software, and Bluetooth mouse drivers.
+
+    The attacker used installer trust as the delivery mechanism. Symantec described two variants: one modified a self-extracting setup archive so a malicious DLL ran during installation and downloaded Infostealer.Bankeiya.B; the other wrapped a legitimate Buffalo installer inside malware made to look like the installer. Either way, the user action was normal: download from the vendor and run setup.
+
+    Bankeiya.B targeted Japanese online banking users on Windows XP, Vista, and 7, monitoring browser sessions in Chrome, Firefox, and Internet Explorer. Buffalo told affected users not to use internet banking until their systems were disinfected, and antivirus vendors detected the trojan. The short window limited spread, but the official download itself had been replaced.
+  start_date: 2014-05-27
+  end_date: 2014-05-27
+  target:
+    name: Buffalo Japan download site
+    kind: distribution_site
+    website: https://www.buffalo.jp
+  actor:
+    name: Unknown
+    kind: unknown
+  language: Windows binary
+  method:
+    cause: vendor_server_compromise
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - banking_trojan
+    users: 540
+  artifacts:
+  - id: buffalo-windows-installers
+    name: Buffalo Windows driver, firmware, and utility installers
+    kind: binary_archive
+    website: https://www.buffalo.jp
+    start_date: 2014-05-27
+    end_date: 2014-05-27
+    locations:
+    - uri: https://www.buffalo.jp/support/download/
+      role: distribution
+    - uri: http://buffalo.jp/support_s/20140602_2.html
+      role: mirror
+    - uri: https://www.theregister.com/security/2014/06/04/dodgy-installer-drops-trojan-in-japanese-buffalo-update/961266
+      role: mirror
+    indicators:
+    - kind: malware
+      value: Infostealer.Bankeiya.B
+    - kind: file
+      value: airnavi2_160.exe
+    - kind: file
+      value: airnavilite-1330.exe
+    - kind: file
+      value: airnavi-1272.exe
+    - kind: file
+      value: airnavi-1040.exe
+    - kind: file
+      value: airnavi-1030.exe
+    - kind: file
+      value: kokiinst-160.exe
+    - kind: file
+      value: drivenavi_cbu2_100.exe
+    - kind: file
+      value: ls_series-168.exe
+    - kind: file
+      value: hp6v131.exe
+    - kind: file
+      value: bsbt4d09bk_21630.exe
+    - kind: observable
+      value: Modified self-extracting setup.exe RAR installer executed a malicious DLL.
+    - kind: observable
+      value: Wrapped legitimate Buffalo installer dropped a trojan component that
+        downloaded Infostealer.Bankeiya.B.
+    notes:
+    - Buffalo reported the affected download window as May 27, 2014 from 06:16 to
+      13:00 Japan time.
+    - Symantec reported 856 downloads from 540 unique IP addresses.
+    - The affected files covered wireless LAN products, NAS firmware, external hard
+      disk utilities, an HP6 cache-control utility, and Bluetooth mouse adapter drivers.
+  references:
+  - url: https://www.theregister.com/security/2014/06/04/dodgy-installer-drops-trojan-in-japanese-buffalo-update/961266
+    title: Dodgy installer drops Trojan in Japanese Buffalo update
+  - url: https://www.csoonline.com/article/547382/hackers-distribute-banking-malware-through-buffalo-site-in-japan.html
+    title: Hackers distribute banking malware through Buffalo site in Japan
+  - url: https://internet.watch.impress.co.jp/docs/news/651306.html
+    title: Buffalo discloses tampered download files and malware infection risk

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>event-stream dependency steals Bitcoin wallets.</title>
+  <title>event-stream dependency compromise targets Copay wallets</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>event-stream dependency steals Bitcoin wallets.</h1>
+  <h1>event-stream dependency compromise targets Copay wallets</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> event-stream · <a href="https://github.com/dominictarr/event-stream" target="_blank">repo</a></div>
@@ -30,8 +30,19 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The &#39;event-stream&#39; npm package maintainership was transferred via social engineering to an attacker who then added &#39;flatmap-stream@0.1.1&#39; as a dependency in &#39;event-stream@3.3.6&#39;. This new dependency contained obfuscated, malicious code specifically designed to steal cryptocurrency (Bitcoin, Bitcoin Cash) from users of the Copay Dash wallet application by exfiltrating wallet data and private keys if balances exceeded certain thresholds.</p>
+  <p class="synopsis">The event-stream npm package maintainership was transferred to an attacker using the handle right9ctrl. The attacker published event-stream 3.3.6 with a new dependency on flatmap-stream, then published flatmap-stream 0.1.1 with obfuscated code targeting BitPay&#39;s Copay wallet builds. The payload decrypted only in the intended downstream context and tried to steal Bitcoin and Bitcoin Cash wallet data from affected Copay users.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>event-stream began as a maintainer transfer. Dominic Tarr gave publish rights to the right9ctrl account after the new maintainer offered to help with an old package. On September 9, 2018, right9ctrl published event-stream 3.3.6 with a new dependency on `flatmap-stream`.</p>
+    
+      <p>The malicious code was not in the visible event-stream source. It was in `flatmap-stream@0.1.1`, published in October 2018. The code was obfuscated, loaded encrypted data, and decrypted only when used inside the Copay build path. During Copay packaging it modified JavaScript that could leak wallet data and private keys.</p>
+    
+      <p>FallingSnow opened the public GitHub issue on November 20, 2018. Analysis in the thread identified Copay-related libraries as the target and recommended checking for `flatmap-stream@0.1.1`. npm removed the malicious packages, took control of `event-stream`, and advised users to move back to event-stream 3.3.4 or use remediated downstream builds.</p>
+    
+  </div>
   
 
   
@@ -53,7 +64,7 @@
           <td>
             <strong>event-stream</strong>
             
-            <br><span>source_archive</span>
+            <br><span>npm · source_archive</span>
             
             <br><a href="https://github.com/dominictarr/event-stream" target="_blank">https://github.com/dominictarr/event-stream</a>
           </td>
@@ -61,6 +72,32 @@
           <td>
             
               <code>3.3.6</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>flatmap-stream</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2018-10-05<br>to 2018-11-26</td>
+          <td>
+            
+              <code>0.1.1</code>
             
           </td>
           <td>
@@ -92,13 +129,15 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://github.com/dominictarr/event-stream/issues/116" target="_blank">https://github.com/dominictarr/event-stream/issues/116</a></li>
+      <li><a href="https://github.com/dominictarr/event-stream/issues/116" target="_blank">I don&#39;t know what to say</a></li>
     
-      <li><a href="https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident" target="_blank">https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident</a></li>
+      <li><a href="https://www.zdnet.com/article/hacker-backdoors-popular-javascript-library-to-steal-bitcoin-funds/" target="_blank">Hacker backdoors popular JavaScript library to steal Bitcoin funds</a></li>
     
-      <li><a href="https://www.npmjs.com/advisories/737" target="_blank">https://www.npmjs.com/advisories/737</a></li>
+      <li><a href="https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident" target="_blank">Details about the event-stream incident</a></li>
     
-      <li><a href="https://github.com/advisories/GHSA-9x64-5r7x-2q53" target="_blank">https://github.com/advisories/GHSA-9x64-5r7x-2q53</a></li>
+      <li><a href="https://www.npmjs.com/advisories/737" target="_blank">Malicious Package in flatmap-stream</a></li>
+    
+      <li><a href="https://github.com/advisories/GHSA-9x64-5r7x-2q53" target="_blank">GitHub Advisory: Malicious Package in flatmap-stream</a></li>
     
   </ul>
   

@@ -1,21 +1,30 @@
 ---
 - id: solana-web3-js
   title: "@solana/web3.js NPM package compromised stealing private keys"
-  synopsis: Attackers compromised an NPM publish-access account, reportedly via spear-phishing
-    a maintainer. They published malicious versions (1.95.6, 1.95.7) of the widely
-    used `@solana/web3.js` package to NPM. The injected code captured private keys
-    handled by dependent applications (especially bots or backend systems) and exfiltrated
-    them to an attacker's server (`sol-rpc.xyz`), enabling cryptocurrency theft estimated
-    around $160k USD.
-  start_date: 2024-12-02
+  synopsis: Attackers compromised an npm publish-access account and published malicious
+    @solana/web3.js versions 1.95.6 and 1.95.7 on December 3, 2024. The injected
+    code added credential-stealing behavior to private-key handling paths and exfiltrated
+    material to sol-rpc.xyz. The advisory warned that server-side applications,
+    bots, and private-key-handling systems were at risk, while noncustodial wallets
+    that did not expose private keys were generally not affected.
+  story: |
+    @solana/web3.js is the canonical Solana SDK for JavaScript clients and server-side systems. Many bots, backends, and automation tools use it near signing keys. A poisoned npm release therefore created a direct route to wallet material.
+
+    On December 3, 2024, malicious versions 1.95.6 and 1.95.7 were published to npm. The official advisory says a publish-access account was compromised and that the affected releases were available for several hours before removal. The safe upgrade path was 1.95.8.
+
+    The added code targeted key-handling flows. Socket and other researchers described an `addToQueue` exfiltration function and calls from private-key related code paths. The destination domain was sol-rpc.xyz, an attacker-controlled endpoint designed to look plausible in the Solana ecosystem.
+
+    The highest-risk systems were those that passed private keys directly through the library: bots, backend services, and custodial tooling. The Register reported theft estimates around $160,000 and noted the package's large weekly download base, but the artifact record keeps confirmed malicious versions separate from broad ecosystem exposure.
+  start_date: 2024-12-03T15:20:00Z
   end_date: 2024-12-03
   target:
     name: "@solana/web3.js"
     kind: library
+    repo: https://github.com/solana-labs/solana-web3.js
   actor:
-    name: Cybercriminal Gang
-    kind: group
-  language: Javascript
+    name: Unknown
+    kind: unknown
+  language: JavaScript
   method:
     cause: compromised_account_credentials
     phase: distribution
@@ -23,17 +32,23 @@
     transitive: false
   impact:
     types:
+    - credential_theft
     - financial_exploitation
-    users: 400000
+    users: 500000
   artifacts:
   - id: solana-web3-js
     name: "@solana/web3.js"
+    package: "@solana/web3.js"
+    ecosystem: npm
     kind: source_archive
-    start_date: 2024-12-02
+    repo: https://github.com/solana-labs/solana-web3.js
+    start_date: 2024-12-03T15:20:00Z
     end_date: 2024-12-03
     versions:
     - 1.95.6
     - 1.95.7
+    fixed_versions:
+    - 1.95.8
     locations:
     - uri: https://registry.npmjs.org/@solana/web3.js/-/web3.js-1.95.6.tgz
       role: distribution
@@ -45,9 +60,37 @@
       role: mirror
     hashes:
     - sha256:cd9e0af30eee5b6935335e7969f9866d595b0c5301e15a2be54c9373f067f9d3
+    indicators:
+    - kind: cve
+      value: CVE-2024-54134
+    - kind: domain
+      value: sol-rpc.xyz
+    - kind: url
+      value: https://sol-rpc.xyz
+    - kind: function
+      value: addToQueue
+    - kind: observable
+      value: Private key, seed, or signing material sent to attacker-controlled endpoint.
+    notes:
+    - The GitHub advisory marks 1.95.6 and 1.95.7 as affected and 1.95.8 as patched.
+    - Socket reported the malicious releases were live for roughly five hours on
+      December 3, 2024. The Register reported theft estimates around $160,000.
+    - The impact users value records broad weekly download exposure reported in
+      public coverage, not confirmed victim count.
   references:
   - url: https://nvd.nist.gov/vuln/detail/CVE-2024-54134
+    title: CVE-2024-54134
   - url: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-54134
+    title: MITRE CVE-2024-54134
   - url: https://thehackernews.com/2024/12/researchers-uncover-backdoor-in-solanas.html
+    title: Researchers Uncover Backdoor in Solana's Web3.js npm Library
   - url: https://www.cyfrin.io/blog/critical-security-alert-solana-web3-js-library-compromise
+    title: Critical Security Alert - Solana Web3.js Library Compromise
   - url: https://github.com/solana-labs/solana-web3.js/releases/tag/v1.95.8
+    title: "@solana/web3.js v1.95.8 release"
+  - url: https://www.theregister.com/security/2024/12/05/solana-javascript-sdk-backdoored-to-steal-keys-funds/1065507
+    title: Solana JavaScript SDK backdoored to steal keys and funds
+  - url: https://github.com/advisories/GHSA-jcxm-7wvp-g6p5
+    title: "@solana/web3.js private key leakage advisory"
+  - url: https://socket.dev/blog/supply-chain-attack-solana-web3-js-library
+    title: Supply Chain Attack - Solana Web3.js Library

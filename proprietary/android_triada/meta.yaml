@@ -1,43 +1,126 @@
 ---
 - id: android-triada
-  title: Android firmware shipped with sophisticated Triada trojan.
-  synopsis: The complex, modular Triada trojan was repeatedly found pre-installed
-    deep within the firmware (sometimes infecting core Android processes like Zygote
-    or system libraries) of numerous, often budget or counterfeit, Android devices.
-    This likely occurred via supply chain compromise during manufacturing or firmware
-    integration, granting attackers persistent, high-privilege access for credential
-    theft, app modification, financial fraud, and further malware delivery.
-  start_date: 2016-01-01
-  end_date: Ongoing
+  title: Android firmware shipped with preinstalled Triada backdoor
+  synopsis: >-
+    Triada moved from an advanced Android trojan into the firmware supply chain for
+    low-cost Android devices. Public reporting from Dr.Web, Google, and Kaspersky
+    described variants embedded before sale, including a backdoored Android framework
+    log function that could install modules from system context. The impact was
+    deeper than an unwanted app: users received devices whose trusted base image
+    could download payloads, display ads, install software, and survive normal removal.
+  story: |
+    Triada began as a modular Android trojan that abused root privileges and tried to run inside core Android processes. Later variants moved into firmware images before sale. Users received devices that already contained the malware.
+
+    Google and Dr.Web described a preinstalled backdoor variant in which Android framework behavior was modified. The backdoored framework log path could load Triada code from system context, giving the malware privileged access to application installation and ad delivery. The device appeared new, but the base image was already compromised.
+
+    The suspected insertion point was not the Android Open Source Project itself. It was the commercial layer where device makers and partners customize firmware images before shipping. A factory reset does not remove malware from the system partition, and ordinary users cannot distinguish a clean build image from a compromised one.
+
+    This record keeps the early OEM/firmware-supply-chain Triada cases separate from the 2025 counterfeit-smartphone wave. They share malware lineage and tactics, but the public facts are different: older reports centered on legitimate low-cost device firmware and partner customization, while the later Kaspersky report described fake devices sold through online marketplaces.
+  start_date: 2016-01-20
+  end_date: 2019-06-06
   target:
-    name: Android/Triada
+    name: Android OEM firmware supply chain
     kind: firmware
+    website: https://source.android.com
   actor:
     name: Cybercriminal group
     kind: group
+  language: Android
   method:
-    cause: manufacturing_compromise
-    phase: ci_cd
+    cause: firmware_supply_chain_compromise
+    phase: manufacturing
     motive: financial_gain_credential_theft_account_takeover
     transitive: false
   impact:
     types:
     - backdoor
     - rootkit
-    - data_theft
+    - malware_distribution
     - credential_theft
     - fraud
-    users: 1000000
+    users: 0
   artifacts:
-  - id: android-triada
-    name: Android/Triada
-    kind: hardware
-    start_date: 2016-01-01
-    end_date: Ongoing
+  - id: triada-oem-firmware
+    name: Android firmware with preinstalled Triada
+    kind: firmware
+    start_date: 2016-01-20
+    end_date: 2019-06-06
     locations:
     - uri: pkg://android/com.android.system.DataStorage
       role: distribution
+    - uri: https://source.android.com/static/docs/security/overview/reports/Google_Android_Security_2018_Report_Final.pdf
+      role: mirror
+    indicators:
+    - kind: malware
+      value: Android/Triada
+    - kind: observable
+      value: Backdoored Android framework log function installed Triada modules from
+        system context.
+    - kind: observable
+      value: Malware embedded in the system image survived ordinary app removal and
+        factory reset workflows.
+    notes:
+    - Public reporting identifies the insertion point as the firmware customization
+      and partner supply chain, not the Android Open Source Project itself.
+    - User impact is left at zero because public sources describe broad exposure
+      but do not give one reliable count for the early OEM-firmware cases.
+  references:
+  - url: https://source.android.com/static/docs/security/overview/reports/Google_Android_Security_2018_Report_Final.pdf
+    title: Android Security and Privacy 2018 Year in Review
+  - url: https://news.drweb.com/show/?i=10451
+    title: Android.Triada.231 comes pre-installed on Android smartphones
+  - url: https://www.kaspersky.com/blog/trojan-in-fake-smartphones/53331/
+    title: Triada - a Trojan pre-installed on Android smartphones out of the box
+- id: android-triada-counterfeit-smartphones-2025
+  title: Counterfeit Android smartphones shipped with Triada.z firmware backdoor
+  synopsis: Kaspersky disclosed a 2025 Triada wave embedded in counterfeit Android
+    smartphone firmware before sale. The infected system framework loaded binder.so
+    into Zygote, placed modules into every app process, and delivered credential
+    theft, messaging compromise, browser redirection, SMS abuse, reverse proxying,
+    and crypto-stealing modules. Kaspersky telemetry detected more than 4,500 infected
+    devices between March 13 and April 15, 2025, with stolen cryptocurrency exceeding
+    $264,000.
+  story: |
+    Kaspersky found fake smartphones sold through online marketplaces with Triada.z embedded in firmware. The firmware fingerprints differed from official firmware by a single final letter. The devices were counterfeit and already infected when sold.
+
+    The infected `boot-framework.oat` caused a malicious native library, `binder.so`, to load into Zygote, the parent process for Android applications. From there, Triada placed modules into every launched app process and could tailor behavior to the active package.
+
+    The payload set was broad. Kaspersky documented modules for Telegram, Instagram, browsers, WhatsApp, LINE, Skype, TikTok, Facebook, SMS, calls, reverse proxying, and cryptocurrency theft. The crypto module could replace wallet addresses and QR codes, while messaging modules stole tokens, filtered verification messages, and hid traces.
+
+    This is modeled as a separate attack from the earlier Android Triada firmware cases because the distribution evidence is different. The 2025 reporting points to counterfeit devices from online marketplaces, over 4,500 Kaspersky detections from March 13 to April 15, and attacker wallets holding more than $264,000 traced to the campaign since June 13, 2024.
+  start_date: 2024-06-13
+  end_date: 2025-04-25
+  target:
+    name: Counterfeit Android smartphone firmware
+    kind: firmware
+  actor:
+    name: Unknown
+    kind: unknown
+  language: Android
+  method:
+    cause: counterfeit_firmware_compromise
+    phase: manufacturing
+    motive: financial_gain_credential_theft_account_takeover
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - rootkit
+    - credential_theft
+    - cryptocurrency_theft
+    - sms_abuse
+    - proxy
+    users: 4500
+  artifacts:
+  - id: triada-z-counterfeit-firmware
+    name: Counterfeit Android firmware with Triada.z
+    kind: firmware
+    start_date: 2024-06-13
+    end_date: 2025-04-25
+    locations:
     - uri: https://securelist.com/triada-trojan-modules-analysis/116380/#indicators-of-compromise
+      role: mirror
+    - uri: https://bazaar.abuse.ch/browse.php?search=tag%3ATriada
       role: mirror
     - uri: https://raw.githubusercontent.com/adrdotocet/ott/main/api.json
       role: mirror
@@ -45,22 +128,46 @@
       role: mirror
     - uri: https://raw.githubusercontent.com/adrdotocet3/ott/main/api.json
       role: mirror
-    - uri: https://bazaar.abuse.ch/browse.php?search=tag%3ATriada
-      role: mirror
     hashes:
     - md5:f468a29f836d2bba7a2b1a638c5bebf0
     - md5:89c3475be8dba92f4ee7de0d981603c1
     - md5:fce117a9d7c8c73e5f56bda7437bdb28
     - md5:308e35fb48d98d9e466e4dfd1ba6ee73
     indicators:
+    - kind: malware
+      value: Backdoor.AndroidOS.Triada.z
+    - kind: file
+      value: /system/framework/arm/binder.so
+    - kind: file
+      value: /system/framework/arm64/binder.so
+    - kind: file
+      value: boot-framework.oat
+    - kind: file
+      value: /data/data/%PACKAGE%/mms-core.jar
+    - kind: file
+      value: systemlibarm64_%N%.jar
+    - kind: domain
+      value: g.sxim.me
+    - kind: build_fingerprint
+      value: TGPMIXN
+    - kind: build_fingerprint
+      value: TGPMIXM
     - kind: observable
-      value: Embedded in firmware of counterfeit/unbranded Android devices during
-        manufacturing.
+      value: Infected firmware fingerprint differed from the official fingerprint
+        by a single final letter.
+    - kind: observable
+      value: Modules targeted Telegram, Instagram, browsers, WhatsApp, LINE, Skype,
+        TikTok, Facebook, SMS, calls, reverse proxying, and cryptocurrency flows.
     notes:
-    - Affected Android Triada scope covered numerous budget, unbranded, and counterfeit
-      Android device firmware builds.
+    - Kaspersky telemetry detected more than 4,500 infected devices worldwide between
+      March 13 and April 15, 2025; the actual count may be higher because of the
+      distribution method.
+    - Open-source wallet analysis found more than $264,000 in cryptocurrency stolen
+      into attacker-controlled wallets since June 13, 2024.
+    - The highest detection counts reported by Kaspersky were in Russia, the United
+      Kingdom, the Netherlands, Germany, and Brazil.
   references:
   - url: https://securelist.com/triada-trojan-modules-analysis/116380/
-  - url: https://source.android.com/docs/security/reports/Google_Android_Security_2018_Report_Final.pdf
-  - url: https://thehackernews.com/2025/04/triada-malware-preloaded-on-counterfeit.html
-  - url: https://news.drweb.com/show/?i=10451
+    title: Triada strikes back
+  - url: https://www.kaspersky.com/blog/trojan-in-fake-smartphones/53331/
+    title: Trojan embedded in fake Android smartphones

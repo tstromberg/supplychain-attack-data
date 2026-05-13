@@ -12,6 +12,14 @@
     pods to backdoor cluster nodes. The incident is historically important as a stealthy
     Python-packaging abuse case where the second release executed even when LiteLLM
     itself was never imported.
+  story: |
+    LiteLLM was a downstream hit from the Trivy compromise. According to LiteLLM maintainers, a bad Trivy scanner ran in the project's CI/CD pipeline and exposed the PyPI publishing token. The attacker used that token to publish LiteLLM 1.82.7 and 1.82.8 to PyPI.
+
+    The delivery path was direct Python package installation. The Register and LiteLLM maintainers identified `litellm_init.pth` in the compromised packages; Python processes `.pth` files at interpreter startup, so version 1.82.8 could execute before an application imported LiteLLM. The official LiteLLM Proxy Docker path was reported not impacted because it pinned dependencies and did not use the compromised PyPI packages.
+
+    The payload collected environment, SSH, cloud, Kubernetes, package-manager, CI/CD, and wallet secrets. It encrypted the archive using the TeamPCP RSA/AES pattern and wrote the stolen material as `tpcp.tar.gz`. Where Kubernetes permissions allowed, the malware also attempted privileged pod deployment for node access.
+
+    BerriAI removed the affected PyPI releases, deleted publishing tokens, rotated maintainer accounts, paused new releases, and engaged Mandiant while reviewing repositories and CI/CD. PyPA's advisory told anyone who installed and ran the affected package to assume credentials available to the LiteLLM environment were exposed and rotate them from clean systems.
   start_date: 2026-03-24
   end_date: 2026-03-24
   target:
@@ -50,9 +58,29 @@
       role: distribution
     hashes:
     - sha256:71e35aef03099cd1f2d6446734273025a163597de93912df321ef118bf135238
+    indicators:
+    - kind: file
+      value: litellm_init.pth
+    - kind: file
+      value: tpcp.tar.gz
+    notes:
+    - LiteLLM maintainers said the official LiteLLM Proxy Docker deployment path
+      was not impacted; the recorded affected scope is direct PyPI installation
+      of versions 1.82.7 and 1.82.8.
   references:
   - url: https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next
+    title: Five Supply Chain Attacks in Twelve Days
   - url: https://docs.litellm.ai/blog/security-update-march-2026
+    title: LiteLLM Security Update - March 2026
   - url: https://cycode.com/blog/lite-llm-supply-chain-attack/
+    title: LiteLLM Supply Chain Attack
   - url: https://www.stepsecurity.io/blog/litellm-credential-stealer-hidden-in-pypi-wheel
+    title: LiteLLM Credential Stealer Hidden in PyPI Wheel
   - url: https://github.com/BerriAI/litellm/issues/24512
+    title: 'Security: Supply Chain Incident'
+  - url: https://www.theregister.com/security/2026/03/24/litellm-infected-with-credential-stealing-code-via-trivy/5223422
+    title: LiteLLM loses game of Trivy pursuit, gets compromised
+  - url: https://news.ycombinator.com/item?id=47502858
+    title: 'Hacker News: LiteLLM maintainer update on compromised PyPI packages'
+  - url: https://github.com/BerriAI/litellm/discussions/24575
+    title: 'Security: Supply Chain Incident - Friday Townhall'

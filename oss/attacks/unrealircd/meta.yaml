@@ -5,11 +5,17 @@
     project mirrors around November 10, 2009 and remained exposed until June 12,
     2010. The injected code disguised itself behind DEBUGMODE3 logic and executed
     arbitrary commands with the daemon user's privileges when a client sent input
-    beginning with AB.
+    beginning with AB. The project forum notice identified the bad tarball MD5 as
+    752e46f2d873c1679fa99de3f52a274d and said Windows binaries, CVS, and earlier
+    versions were not affected.
   story: |
-    Around November 10, 2009, UnrealIRCd 3.2.8.1 source mirrors were replaced with a tarball containing a backdoor. The substitution was not discovered until June 12, 2010, leaving a seven-month window in which users who built the IRC server from project mirrors could deploy attacker-modified source. LWN noted that official Windows binaries were not affected, but the project had not yet provided signatures that would have made the swap easier to detect.
+    Around November 10, 2009, UnrealIRCd 3.2.8.1 source mirrors were replaced with a tarball containing a backdoor. The substitution was not discovered until June 12, 2010, leaving a seven-month window in which users who built the IRC server from project mirrors could deploy attacker-modified source. The project forum notice said official Windows binaries, CVS, 3.2.8, and earlier releases were not affected.
 
-    The source change was disguised as `DEBUGMODE3` logic. When input began with `AB`, `DEBUGMODE3_INFO` matched and `DEBUG3_LOG` ultimately called `system()`, executing the rest of the client-supplied command as the user running the daemon. The DailyDave thread preserved the attacker-facing lore around the trigger, while LWN captured the larger lesson: unsigned source distribution left a project mirror network able to turn ordinary build practice into remote command execution.
+    The delivery was source distribution through project mirrors. The changed archive built a daemon that behaved normally until it received the trigger. That made detection depend on source comparison, signatures, or runtime knowledge of the magic input.
+
+    The source change was disguised as `DEBUGMODE3` logic. When input began with `AB`, `DEBUGMODE3_INFO` matched and `DEBUG3_LOG` ultimately called `system()`, executing the rest of the client-supplied command as the user running the daemon. The project told users to grep include/struct.h for `DEBUG3_DOLOG_SYSTEM`; two matching lines meant the running tree was trojanized.
+
+    The response was a lesson in distribution hygiene. The project restored the good April 2009 archive, published MD5s for good and bad files, told affected administrators to re-download, verify, recompile, and restart, and said it would re-implement PGP/GPG signing. The Register captured the blunt public takeaway: source mirrors can become the attack if releases are not routinely checked and signed.
   start_date: 2009-11-10
   end_date: 2010-06-12
   target:
@@ -48,7 +54,7 @@
     - uri: https://seclists.org/dailydave/2010/q2/56
       role: mirror
     hashes:
-    - md5:e5a4f00a16455005a45d969992173911
+    - md5:752e46f2d873c1679fa99de3f52a274d
     indicators:
     - kind: observable
       value: ftp://ftp.unrealircd.com/Unreal3.2.8.1.tar.gz
@@ -56,11 +62,26 @@
       value: AB
     - kind: file
       value: DEBUGMODE3
+    - kind: file
+      value: include/struct.h
+    - kind: observable
+      value: grep DEBUG3_DOLOG_SYSTEM include/struct.h returns DEBUG3_LOG and DEBUG3_DOLOG_SYSTEM
+        system() macros on trojanized source trees.
+    notes:
+    - The project forum notice lists md5:7b741e94e867c0a7370553fd01506c66 as the
+      clean Unreal3.2.8.1.tar.gz checksum; clean checksums are kept in notes rather
+      than artifact hashes.
+    - Official precompiled Windows binaries, CVS, 3.2.8, and earlier versions were
+      reported unaffected by the project.
   references:
+  - url: https://forums.unrealircd.org/viewtopic.php?t=6562
+    title: Some versions of Unreal3.2.8.1.tar.gz contain a backdoor
   - url: https://www.rapid7.com/db/modules/exploit/unix/irc/unreal_ircd_3281_backdoor/
     title: UnrealIRCD 3.2.8.1 Backdoor Command Execution
   - url: https://lwn.net/Articles/392201/
     title: A backdoor in UnrealIRCd
+  - url: https://www.theregister.com/software/2010/06/14/linux-irc-server-leaves-backdoor-open/1373423
+    title: Linux IRC server leaves backdoor open
   - url: https://arstechnica.com/information-technology/2010/06/unreal-ircd-backdoored-for-months/
     title: UnrealIRCd backdoored for months
   - url: https://seclists.org/dailydave/2010/q2/56

@@ -6,6 +6,12 @@
     to point to a poisoned version of the Colorama package hosted on a typosquatted
     domain (files.pypihosted.org). The malware stole credentials, discord tokens,
     and cryptocurrency data.
+  story: |
+    The Top.gg attack used source control as the first distribution step. Attackers hijacked a maintainer's GitHub account with stolen browser cookies, bypassing MFA, and committed a change to the official python-sdk repository. The change looked like dependency plumbing: requirements.txt pointed at a Colorama package on a fake Python-hosting domain.
+
+    That small dependency edit routed installers away from the real package path. Checkmarx reported the fake infrastructure used files.pypihosted.org, a domain chosen to resemble legitimate PyPI file hosting. Users installing from the official Top.gg repository could therefore receive malware through the dependency resolver.
+
+    The malware focused on developer and Discord credentials, browser data, and cryptocurrency material. Checkmarx estimated more than 170,000 users were affected by the wider campaign using fake Python infrastructure. This record keeps the Top.gg SDK scope separate because the compromised source repository and dependency-file edit are specific and verifiable.
   start_date: 2024-03-01
   end_date: 2024-03-31
   target:
@@ -37,5 +43,18 @@
     locations:
     - uri: https://github.com/top-gg/python-sdk
       role: mirror
+    indicators:
+    - kind: file
+      value: requirements.txt
+    - kind: domain
+      value: files.pypihosted.org
+    - kind: package
+      value: Colorama
+    - kind: observable
+      value: GitHub account hijack using stolen browser cookies to bypass MFA.
+    - kind: observable
+      value: requirements.txt changed to install poisoned Colorama from fake Python
+        package infrastructure.
   references:
   - url: https://checkmarx.com/blog/over-170k-users-affected-by-attack-using-fake-python-infrastructure/
+    title: Over 170K Users Affected by Attack Using Fake Python Infrastructure

@@ -18,14 +18,14 @@
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> tj-actions_changed-files · <a href="https://github.com/tj-actions/changed-files" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2025-03-14 to 2025-03-15 (1 day)</div>
-    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> library</div>
     <div class="meta-item"><strong>Language:</strong> Shell</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
     <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
-    <div class="meta-item"><strong>Impact:</strong> data_exfiltration</div>
-    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Impact:</strong> data_exfiltration, credential_theft</div>
+    <div class="meta-item"><strong>User Impact:</strong> 23000</div>
     <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
     <div class="meta-item"><strong>Campaigns:</strong>
       
@@ -35,8 +35,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">A maintainer&#39;s personal access token (PAT) with repository write access was leaked from a compromised development environment. This potentially allowed attackers to modify the code of several `tj-actions`, including `changed-files`, used in GitHub Actions workflows. Such modifications could exfiltrate secrets or execute malicious code within users&#92;&#39; CI/CD pipelines.</p>
+  <p class="synopsis">Attackers used a token stolen through the reviewdog/action-setup compromise to rewrite tj-actions/changed-files tags to a malicious commit. The payload fetched memdump.py from a GitHub Gist, scanned GitHub Actions runner memory for secrets, and printed double-base64 encoded secret material into workflow logs. More than 23,000 repositories used the action; public repositories were most exposed because logs could reveal AWS keys, GitHub PATs, npm tokens, and private keys.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>tj-actions/changed-files was trusted for a mundane CI task: finding which files changed in a workflow. The attacker turned that trust into a broad secret-exposure path by moving mutable action tags to a malicious commit. Workflows using tag references such as version tags could silently execute the attacker&#39;s code.</p>
+    
+      <p>The payload was direct. It embedded base64 shell, fetched memdump.py from a GitHub Gist, ran it against the GitHub Actions Runner Worker process, searched memory for values marked as secrets, and printed the result to the workflow log as double-encoded base64. There was no separate command-and-control server observed for the broad tj-actions phase; the log became the leak surface.</p>
+    
+      <p>Unit 42 tied the tj-actions compromise to reviewdog/action-setup and a targeted Coinbase phase. A token obtained through the reviewdog path gave write access to tj-actions/changed-files. After Coinbase removed the vulnerable workflow, the attacker replaced all changed-files tags with the malicious commit, widening the impact to any repository that ran the action during the exposure window.</p>
+    
+      <p>The practical blast radius depended on repository visibility and workflow privileges. Public repositories could expose secrets directly through public logs; private repositories still had to treat secrets as compromised. Wiz reported exposed AWS keys, GitHub PATs, npm tokens, private RSA keys, and other sensitive material in affected public repositories.</p>
+    
+  </div>
   
 
   
@@ -97,15 +110,21 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-30066" target="_blank">https://nvd.nist.gov/vuln/detail/CVE-2025-30066</a></li>
+      <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-30066" target="_blank">CVE-2025-30066</a></li>
     
-      <li><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-30066" target="_blank">https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-30066</a></li>
+      <li><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-30066" target="_blank">MITRE CVE-2025-30066</a></li>
     
-      <li><a href="https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction" target="_blank">https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction</a></li>
+      <li><a href="https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction" target="_blank">Supply Chain Compromise of tj-actions/changed-files and reviewdog/action-setup</a></li>
     
-      <li><a href="https://www.wiz.io/blog/github-action-tj-actions-changed-files-supply-chain-attack-cve-2025-30066" target="_blank">https://www.wiz.io/blog/github-action-tj-actions-changed-files-supply-chain-attack-cve-2025-30066</a></li>
+      <li><a href="https://www.wiz.io/blog/github-action-tj-actions-changed-files-supply-chain-attack-cve-2025-30066" target="_blank">GitHub Action tj-actions/changed-files supply chain attack</a></li>
     
-      <li><a href="https://www.stepsecurity.io/blog/harden-runner-detection-tj-actions-changed-files-action-is-compromised" target="_blank">https://www.stepsecurity.io/blog/harden-runner-detection-tj-actions-changed-files-action-is-compromised</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/harden-runner-detection-tj-actions-changed-files-action-is-compromised" target="_blank">Harden-Runner detection - tj-actions/changed-files Action is compromised</a></li>
+    
+      <li><a href="https://github.com/tj-actions/changed-files/issues/2464#issuecomment-2727020537" target="_blank">tj-actions/changed-files issue reporting malicious changed-files commit</a></li>
+    
+      <li><a href="https://www.theregister.com/security/2025/03/17/github-supply-chain-attack-spills-secrets-from-23k-projects/1192629" target="_blank">GitHub supply chain attack spills secrets from 23,000 projects</a></li>
+    
+      <li><a href="https://unit42.paloaltonetworks.com/github-actions-supply-chain-attack/" target="_blank">GitHub Actions Supply Chain Attack</a></li>
     
   </ul>
   

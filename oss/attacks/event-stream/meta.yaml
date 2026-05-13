@@ -1,12 +1,18 @@
 ---
 - id: event-stream
-  title: event-stream dependency steals Bitcoin wallets.
-  synopsis: The 'event-stream' npm package maintainership was transferred via social
-    engineering to an attacker who then added 'flatmap-stream@0.1.1' as a dependency
-    in 'event-stream@3.3.6'. This new dependency contained obfuscated, malicious code
-    specifically designed to steal cryptocurrency (Bitcoin, Bitcoin Cash) from users
-    of the Copay Dash wallet application by exfiltrating wallet data and private keys
-    if balances exceeded certain thresholds.
+  title: event-stream dependency compromise targets Copay wallets
+  synopsis: The event-stream npm package maintainership was transferred to an attacker
+    using the handle right9ctrl. The attacker published event-stream 3.3.6 with a
+    new dependency on flatmap-stream, then published flatmap-stream 0.1.1 with obfuscated
+    code targeting BitPay's Copay wallet builds. The payload decrypted only in the
+    intended downstream context and tried to steal Bitcoin and Bitcoin Cash wallet
+    data from affected Copay users.
+  story: |
+    event-stream began as a maintainer transfer. Dominic Tarr gave publish rights to the right9ctrl account after the new maintainer offered to help with an old package. On September 9, 2018, right9ctrl published event-stream 3.3.6 with a new dependency on `flatmap-stream`.
+
+    The malicious code was not in the visible event-stream source. It was in `flatmap-stream@0.1.1`, published in October 2018. The code was obfuscated, loaded encrypted data, and decrypted only when used inside the Copay build path. During Copay packaging it modified JavaScript that could leak wallet data and private keys.
+
+    FallingSnow opened the public GitHub issue on November 20, 2018. Analysis in the thread identified Copay-related libraries as the target and recommended checking for `flatmap-stream@0.1.1`. npm removed the malicious packages, took control of `event-stream`, and advised users to move back to event-stream 3.3.4 or use remediated downstream builds.
   start_date: 2018-09-09
   end_date: 2018-11-26
   target:
@@ -29,6 +35,8 @@
   artifacts:
   - id: event-stream
     name: event-stream
+    package: event-stream
+    ecosystem: npm
     kind: source_archive
     repo: https://github.com/dominictarr/event-stream
     start_date: 2018-09-09
@@ -38,23 +46,71 @@
     locations:
     - uri: https://registry.npmjs.org/event-stream/-/event-stream-3.3.6.tgz
       role: distribution
-    - uri: https://registry.npmjs.org/flatmap-stream/-/flatmap-stream-0.1.1.tgz
-      role: distribution
     - uri: https://www.npmjs.com/advisories/737
       role: mirror
     - uri: https://github.com/advisories/GHSA-9x64-5r7x-2q53
       role: mirror
     - uri: https://github.com/dominictarr/event-stream/commit/e3163361fed01384c986b9b4c18feb1fc42b8285
       role: mirror
+    commits:
+    - e3163361fed01384c986b9b4c18feb1fc42b8285
+    indicators:
+    - kind: account
+      value: right9ctrl
+    - kind: dependency
+      value: flatmap-stream
+    - kind: observable
+      value: event-stream 3.3.6 added flatmap-stream as a dependency through an authorized
+        maintainer publish.
+  - id: flatmap-stream
+    name: flatmap-stream
+    package: flatmap-stream
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2018-10-05
+    end_date: 2018-11-26
+    versions:
+    - 0.1.1
+    locations:
+    - uri: https://registry.npmjs.org/flatmap-stream/-/flatmap-stream-0.1.1.tgz
+      role: distribution
+    - uri: https://www.npmjs.com/advisories/737
+      role: mirror
+    - uri: https://github.com/advisories/GHSA-9x64-5r7x-2q53
+      role: mirror
     - uri: https://gist.github.com/ActualSize/ff5e2f52f9870d1158884129bb01084d
       role: mirror
     hashes:
     - sha1:10084752f5c006eb49b4abff6ff57d3a8abb5246
     - sha256:a9c97713c80d0ceb8f28038890af2a0d5f28a037726ed98e46cfa5e851ffec0d
-    commits:
-    - e3163361fed01384c986b9b4c18feb1fc42b8285
+    indicators:
+    - kind: file
+      value: index.min.js
+    - kind: package
+      value: copay
+    - kind: organization
+      value: BitPay
+    - kind: cryptocurrency
+      value: Bitcoin
+    - kind: cryptocurrency
+      value: Bitcoin Cash
+    - kind: observable
+      value: Obfuscated payload decrypted only in the intended Copay build context.
+    - kind: observable
+      value: Users were advised to run npm ls event-stream flatmap-stream and check
+        for flatmap-stream 0.1.1.
+    notes:
+    - The payload targeted Copay-related builds rather than every event-stream consumer.
+    - ZDNet reported that event-stream had more than two million weekly downloads
+      at the time.
   references:
   - url: https://github.com/dominictarr/event-stream/issues/116
+    title: I don't know what to say
+  - url: https://www.zdnet.com/article/hacker-backdoors-popular-javascript-library-to-steal-bitcoin-funds/
+    title: Hacker backdoors popular JavaScript library to steal Bitcoin funds
   - url: https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident
+    title: Details about the event-stream incident
   - url: https://www.npmjs.com/advisories/737
+    title: Malicious Package in flatmap-stream
   - url: https://github.com/advisories/GHSA-9x64-5r7x-2q53
+    title: 'GitHub Advisory: Malicious Package in flatmap-stream'

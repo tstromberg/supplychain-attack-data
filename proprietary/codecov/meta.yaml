@@ -6,6 +6,14 @@
     environment variables from customer CI/CD jobs, pulling credentials, tokens, and
     keys from build systems. Its impact came from position; one trusted coverage script
     quietly crossed many private software pipelines.
+  story: |
+    Codecov was a CI/CD supply-chain compromise with a small code change and a large trust boundary. Attackers obtained a Google Cloud Storage key exposed through Codecov's Docker image creation process. With that key, they periodically altered the hosted Bash Uploader beginning January 31, 2021.
+
+    The delivery path was ordinary build automation. Customers invoked `https://codecov.io/bash`, the raw GitHub uploader, or the S3-hosted script from CI jobs to publish coverage reports. The compromised uploader added a curl-based exfiltration line that sent Git remotes and environment variables to attacker infrastructure.
+
+    The payload did not need to run on developer laptops. It ran where secrets were dense: CI workers. Environment variables could include cloud credentials, deploy keys, package tokens, GitHub tokens, signing material, and service credentials. BleepingComputer reported Reuters-sourced claims that hundreds of customer networks were breached, while Codecov's customer base exceeded 29,000 organizations.
+
+    A customer noticed a checksum mismatch on April 1, 2021, ending a two-month detection gap. Codecov disclosed the incident on April 15 and urged customers to rotate credentials and audit CI systems. The hard lesson was simple: fetching a mutable shell script at build time converts a coverage upload helper into a privileged remote code path.
   start_date: 2021-01-31
   end_date: 2021-04-01
   target:
@@ -26,6 +34,10 @@
     types:
     - credential_theft
     - data_theft
+  notes:
+  - BleepingComputer reported Reuters-sourced claims that hundreds of customer networks
+    were breached, and noted Codecov had more than 29,000 customers. This record
+    does not encode those figures as exact victim counts.
   artifacts:
   - id: codecov
     name: codecov
@@ -47,9 +59,23 @@
       role: mirror
     - uri: https://github.com/codecov/codecov-bash/commit/373961d648b96a1402514e4e457746d67f782a83
       role: mirror
+    - uri: https://gist.github.com/davidrans/ca6e9ffa5865983d9f6aa00b7a4a1d10#file-bash-compromised-L525
+      role: mirror
     hashes:
     - sha256:6730a44f191168573710105178477116f718333b6de1f008ff811066c424bb59
     commits:
     - 373961d648b96a1402514e4e457746d67f782a83
+    indicators:
+    - kind: observable
+      value: curl-based exfiltration from Bash Uploader line 525
+    - kind: observable
+      value: git remote data and environment variables sent to attacker infrastructure
   references:
   - url: https://about.codecov.io/security-update/
+    title: Codecov Security Update
+  - url: https://about.codecov.io/apr-2021-post-mortem/
+    title: Post-Mortem / Root Cause Analysis - April 2021
+  - url: https://www.bleepingcomputer.com/news/security/hundreds-of-networks-reportedly-hacked-in-codecov-supply-chain-attack/
+    title: Hundreds of networks reportedly hacked in Codecov supply-chain attack
+  - url: https://gist.github.com/davidrans/ca6e9ffa5865983d9f6aa00b7a4a1d10
+    title: Codecov Bash Uploader compromised sample

@@ -38,6 +38,8 @@
     
       <p>Around 20:00 UTC on November 28, 2010, attackers compromised ProFTPD&#39;s main distribution server, `ftp.proftpd.org`, which also acted as the project&#39;s rsync source for official mirrors. They replaced ProFTPD 1.3.3c source archives with modified copies, so anyone downloading from the official site or mirrors through December 2 could receive poisoned source through the normal project channel.</p>
     
+      <p>Delivery happened twice: first through the source archive, then through the build. The modified `configure` path compiled `tests/tests.c` and ran it, so a builder could call out before a daemon was installed. The runtime daemon carried a separate patch in `src/help.c`.</p>
+    
       <p>The backdoor had two faces. At build time, the modified `configure` script compiled and ran `tests/tests.c`, which attempted an HTTP callback to 212.26.42.47 on port 9090. At runtime, a patch in `src/help.c` gave unauthenticated users root shell execution when they issued `HELP ACIDBITCHEZ`. The published diff and hashes turned the incident into a compact lesson in source-release trust: a project server, a mirror network, and a small source patch were enough to turn a widely deployed FTP daemon into a root shell.</p>
     
   </div>
