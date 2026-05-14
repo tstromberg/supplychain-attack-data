@@ -6,13 +6,13 @@
     The code shipped through the official extension release, but a syntax error prevented
     execution.
   story: |
-    AWS investigated the Amazon Q Developer for VS Code extension in July 2025 and found that its CodeBuild configuration exposed a GitHub token with too much repository access. The token let the attacker commit code into the open-source repository.
+    AWS investigated the Amazon Q Developer for VS Code extension in July 2025 and found that its CodeBuild configuration exposed a GitHub token with too much repository access. AWS's AWS-2025-015 bulletin says the finding came from the related AWS-2025-016 CodeBuild investigation and that the token let the attacker commit code into the extension's open-source repository.
 
     The malicious change was automatically included in Amazon Q Developer for VS Code 1.84.0. It targeted the assistant's code-context path rather than a normal binary payload: the injected content acted as a prompt intended to make the agent perform destructive local and AWS actions.
 
     AWS said the malicious code was distributed with the extension but did not execute because of a syntax error. ReversingLabs and later case-study writeups framed the incident as a near miss because Amazon Q can operate with local files and cloud resources available to the developer.
 
-    AWS revoked and replaced credentials, removed the malicious code, removed 1.84.0 from distribution channels, and released 1.85.0. Existing 1.84.0 installations still contained the inert malicious code and were directed to upgrade.
+    AWS published AWS-2025-015 on July 23, 2025 and updated it on July 25, 2025. AWS revoked and replaced credentials, removed the malicious code, removed 1.84.0 from distribution channels, and released 1.85.0. Existing 1.84.0 installations still contained the inert malicious code, so AWS directed customers to remove 1.84.0 from use and update to 1.85.0, including forked or derivative copies.
   start_date: 2025-07-25
   end_date: 2025-07-25
   target:
@@ -59,13 +59,19 @@
       value: CVE-2025-8217
     - kind: ghsa
       value: GHSA-7g7f-ff96-5gcw
+    - kind: aws_security_bulletin
+      value: AWS-2025-015
     - kind: observable
       value: Malicious prompt-injection code was present in Amazon Q Developer for
         VS Code 1.84.0 but failed to execute because of a syntax error.
     notes:
     - AWS reported no changes to services or customer environments because the malicious
       code did not execute.
+    - AWS directed customers to remove Amazon Q Developer for VS Code 1.84.0 from
+      use and update to 1.85.0, including forked or derivative copies.
   references:
+  - url: https://aws.amazon.com/security/security-bulletins/AWS-2025-015/
+    title: "Security Update for Amazon Q Developer Extension for Visual Studio Code (Version #1.84)"
   - url: https://github.com/aws/aws-toolkit-vscode/security/advisories/GHSA-7g7f-ff96-5gcw
     title: Malicious script injected into Amazon Q Developer for Visual Studio Code
       Extension

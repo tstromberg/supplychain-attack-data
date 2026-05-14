@@ -46,7 +46,7 @@ type Entry struct {
 	Impact     Impact      `yaml:"impact"`
 	Locations  []Location  `yaml:"locations"`
 	Indicators []Indicator `yaml:"indicators"`
-	Hashes     []string    `yaml:"hashes"`
+	Hashes     HashList    `yaml:"hashes"`
 	Commits    []string    `yaml:"commits"`
 	Artifacts  []Artifact  `yaml:"artifacts"`
 	References []Reference `yaml:"references"`
@@ -63,6 +63,7 @@ type Campaign struct {
 	EndDate    string      `yaml:"end_date"`
 	Actor      Actor       `yaml:"actor"`
 	Impact     Impact      `yaml:"impact"`
+	Indicators []Indicator `yaml:"indicators"`
 	References []Reference `yaml:"references"`
 	Notes      []string    `yaml:"notes"`
 	SourcePath string      `yaml:"-"`
@@ -107,7 +108,7 @@ type Artifact struct {
 	Versions      []string    `yaml:"versions"`
 	FixedVersions []string    `yaml:"fixed_versions"`
 	Locations     []Location  `yaml:"locations"`
-	Hashes        []string    `yaml:"hashes"`
+	Hashes        HashList    `yaml:"hashes"`
 	Commits       []string    `yaml:"commits"`
 	Indicators    []Indicator `yaml:"indicators"`
 	Evidence      []Evidence  `yaml:"evidence"`
@@ -129,6 +130,60 @@ type Evidence struct {
 	Kind string `yaml:"kind"`
 	Path string `yaml:"path"`
 	Role string `yaml:"role"`
+}
+
+type HashList []string
+
+func (hashes *HashList) UnmarshalYAML(value *yaml.Node) error {
+	if value.Kind == yaml.SequenceNode {
+		result := make([]string, 0, len(value.Content))
+		for _, item := range value.Content {
+			decoded, err := decodeHashEntry(item)
+			if err != nil {
+				return err
+			}
+			if decoded != "" {
+				result = append(result, decoded)
+			}
+		}
+		*hashes = result
+		return nil
+	}
+
+	decoded, err := decodeHashEntry(value)
+	if err != nil {
+		return err
+	}
+	if decoded == "" {
+		*hashes = nil
+	} else {
+		*hashes = []string{decoded}
+	}
+	return nil
+}
+
+func decodeHashEntry(value *yaml.Node) (string, error) {
+	switch value.Kind {
+	case yaml.ScalarNode:
+		return strings.TrimSpace(value.Value), nil
+	case yaml.MappingNode:
+		if len(value.Content) != 2 {
+			return "", fmt.Errorf("hash entry must be a string or one-key map")
+		}
+		algorithm := strings.TrimSpace(value.Content[0].Value)
+		digest := strings.TrimSpace(value.Content[1].Value)
+		if algorithm == "" || digest == "" {
+			return "", fmt.Errorf("hash entry map must set algorithm and digest")
+		}
+		return algorithm + ":" + digest, nil
+	case yaml.AliasNode:
+		if value.Alias == nil {
+			return "", nil
+		}
+		return decodeHashEntry(value.Alias)
+	default:
+		return "", fmt.Errorf("hash entry must be a string or one-key map")
+	}
 }
 
 type Reference struct {
@@ -341,7 +396,7 @@ func validateEntry(entry Entry, campaignIDs map[string]bool) []issue {
 	issues = append(issues, validateURL(entry.SourcePath, entry.ID, "target.website", entry.Target.Website)...)
 	issues = append(issues, validateURL(entry.SourcePath, entry.ID, "target.repo", entry.Target.Repo)...)
 	issues = append(issues, validateImpact(entry.SourcePath, entry.ID, "impact", entry.Impact)...)
-	issues = append(issues, validateHashes(entry.SourcePath, entry.ID, "hashes", entry.Hashes)...)
+	issues = append(issues, validateHashes(entry.SourcePath, entry.ID, "hashes", []string(entry.Hashes))...)
 	issues = append(issues, validateVersions(entry.SourcePath, entry.ID, "versions", nil)...)
 	if len(entry.Campaigns) > 1 {
 		issues = append(issues, issue{"error", "campaigns", strings.Join(entry.Campaigns, ","), entry.SourcePath, entry.ID, "attack records must be associated with at most one campaign"})
@@ -391,7 +446,7 @@ func validateArtifact(entry Entry, artifact Artifact, field string) []issue {
 	issues = append(issues, validateURL(entry.SourcePath, entry.ID, field+".repo", artifact.Repo)...)
 	issues = append(issues, validateVersions(entry.SourcePath, entry.ID, field+".versions", artifact.Versions)...)
 	issues = append(issues, validateVersions(entry.SourcePath, entry.ID, field+".fixed_versions", artifact.FixedVersions)...)
-	issues = append(issues, validateHashes(entry.SourcePath, entry.ID, field+".hashes", artifact.Hashes)...)
+	issues = append(issues, validateHashes(entry.SourcePath, entry.ID, field+".hashes", []string(artifact.Hashes))...)
 	issues = append(issues, validateLocations(entry.SourcePath, entry.ID, field+".locations", artifact.Locations)...)
 	issues = append(issues, validateIndicators(entry.SourcePath, entry.ID, field+".indicators", artifact.Indicators)...)
 	issues = append(issues, validateEvidence(entry.SourcePath, entry.ID, field+".evidence", artifact.Evidence)...)
@@ -424,6 +479,7 @@ func validateCampaign(campaign Campaign) []issue {
 	issues = append(issues, validateDate(campaign.SourcePath, campaign.ID, "start_date", campaign.StartDate)...)
 	issues = append(issues, validateDate(campaign.SourcePath, campaign.ID, "end_date", campaign.EndDate)...)
 	issues = append(issues, validateImpact(campaign.SourcePath, campaign.ID, "impact", campaign.Impact)...)
+	issues = append(issues, validateIndicators(campaign.SourcePath, campaign.ID, "indicators", campaign.Indicators)...)
 	issues = append(issues, validateReferences(campaign.SourcePath, campaign.ID, "references", campaign.References)...)
 	return issues
 }
@@ -749,7 +805,7 @@ func artifactRows(entry Entry) [][]string {
 			strings.Join(artifact.Versions, ", "),
 			strings.Join(artifact.FixedVersions, ", "),
 			strings.Join(append(entry.Commits, artifact.Commits...), ", "),
-			strings.Join(append(entry.Hashes, artifact.Hashes...), ", "),
+			strings.Join(append([]string(entry.Hashes), []string(artifact.Hashes)...), ", "),
 			joinLocations(append(entry.Locations, artifact.Locations...)),
 			joinIndicators(append(entry.Indicators, artifact.Indicators...)),
 			joinEvidence(artifact.Evidence),
