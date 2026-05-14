@@ -1,0 +1,98 @@
+- id: node-ipc-2026
+  title: node-ipc npm account shipped credential stealer
+  synopsis: >-
+    Three malicious node-ipc npm releases were published on May 14, 2026, adding an
+    obfuscated runtime payload that attempted to collect developer, cloud, SSH, and
+    CI/CD secrets.
+  story: |
+    This was a new node-ipc supply-chain event, separate from the 2022 protestware incident. On 2026-05-14, the npm package received three new releases across active and legacy version lines: 12.0.1, 9.2.3, and 9.1.6.
+
+    StepSecurity reported the releases as malicious and said the payload fired when the package was required at runtime, then attempted to exfiltrate cloud credentials, SSH keys, and CI/CD secrets to external command-and-control infrastructure. Socket independently described the same event as a developing npm compromise with obfuscated stealer and backdoor behavior.
+
+    Registry metadata showed the releases were published minutes apart by the `atiertant` npm account. Static comparison against 12.0.0 showed the main ESM file unchanged, while `node-ipc.cjs` gained a large obfuscated block appended after the legitimate exports. That made CommonJS consumers the visible execution path in the sampled tarballs.
+
+    The package still looked like node-ipc: the normal package name, repository metadata, README, certificates, and API files were present. The trust break was in the official distribution channel, where a fresh install or permissive semver range could resolve to the malicious release without a downstream code review.
+  start_date: 2026-05-14
+  end_date: 2026-05-14
+  target:
+    name: node-ipc
+    kind: library
+    repo: https://github.com/RIAEvangelist/node-ipc
+  actor:
+    name: Unknown attacker
+    kind: unknown
+  language: JavaScript
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+    - remote_access
+    users: 822257
+  artifacts:
+  - id: node-ipc-2026
+    name: node-ipc malicious npm releases
+    package: node-ipc
+    ecosystem: npm
+    kind: source_archive
+    repo: https://github.com/RIAEvangelist/node-ipc
+    start_date: 2026-05-14
+    end_date: 2026-05-14
+    versions:
+    - 12.0.1
+    - 9.2.3
+    - 9.1.6
+    locations:
+    - uri: https://registry.npmjs.org/node-ipc/-/node-ipc-12.0.1.tgz
+      role: distribution
+    - uri: https://registry.npmjs.org/node-ipc/-/node-ipc-9.2.3.tgz
+      role: distribution
+    - uri: https://registry.npmjs.org/node-ipc/-/node-ipc-9.1.6.tgz
+      role: distribution
+    - uri: https://socket.dev/blog/node-ipc-package-compromised
+      role: mirror
+    - uri: https://www.stepsecurity.io/blog/node-ipc-npm-supply-chain-attack
+      role: mirror
+    hashes:
+    - sha256:78a82d93b4f580835f5823b85a3d9ee1f03a15ee6f0e01b4eac86252a7002981
+    - sha256:c2f4dc64aec4631540a568e88932b61daebbfb7e8281b812fa01b7215f9be9ea
+    - sha256:449e4265979b5fdb2d3446c021af437e815debd66de7da2fe54f1ad93cbcc75e
+    - sha1:fe5d107b9d285327af579259a32977c4f475fa26
+    - sha1:58ae7338960ef525d7c655023d7c81e3ddb283d6
+    - sha1:f5974a9774a22a863728b960543f68e7009099ef
+    indicators:
+    - kind: file
+      value: node-ipc.cjs
+    - kind: marker
+      value: __ntw
+    - kind: file
+      value: envs.txt
+    - kind: file
+      value: uname.txt
+    - kind: file
+      value: /etc/hosts
+    - kind: observable
+      value: Obfuscated code appended to the CommonJS bundle after legitimate exports.
+    - kind: observable
+      value: Runtime collection logic references process environment data, host details,
+        /etc/hosts, SSH/config paths, and archive creation before exfiltration.
+    - kind: observable
+      value: npm publish user for all three releases was atiertant.
+    notes:
+    - npm registry publish times were 2026-05-14T14:25:30Z for 12.0.1, 2026-05-14T14:26:01Z
+      for 9.2.3, and 2026-05-14T14:26:25Z for 9.1.6.
+    - The impact user count stores npm's last-week download count for node-ipc, reported
+      for 2026-05-06 through 2026-05-12; it is exposure context, not confirmed victim count.
+    - As of the registry snapshot used for this record, dist-tags pointed latest to 12.0.1,
+      unpublished to 9.2.3, and legacy-9.1 to 9.1.6.
+  references:
+  - url: https://socket.dev/blog/node-ipc-package-compromised
+    title: node-ipc npm Package Compromised in Supply Chain Attack
+  - url: https://www.stepsecurity.io/blog/node-ipc-npm-supply-chain-attack
+    title: 'Active Supply Chain Attack: Malicious node-ipc Versions Published to npm'
+  - url: https://registry.npmjs.org/node-ipc
+    title: node-ipc npm registry metadata
