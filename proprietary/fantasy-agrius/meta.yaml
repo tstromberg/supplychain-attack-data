@@ -1,14 +1,24 @@
----
 - id: fantasy-agrius
-  title: Agrius pushed Fantasy wiper through Israeli diamond-industry software update
-  synopsis: ESET disclosed on 2022-12-07 that the Iran-aligned Agrius APT abused the official update mechanism of an unnamed Israeli software developer whose suite is used in the diamond industry to deploy the Fantasy data wiper alongside the Sandals lateral-movement tool. Credential-harvesting tools were pre-positioned on 2022-02-20; the wiper rollout completed in under three hours on 2022-03-12 across customers in Israel (an IT support services firm, a diamond wholesaler, an HR consulting firm), South Africa (a diamond-industry organisation), and Hong Kong (a jeweler). The vendor did not respond to ESET's notification. Fantasy is a successor to Agrius's earlier Apostle wiper.
+  title: Diamond software delivered Fantasy wiper
+  synopsis: >-
+    Agrius likely abused an Israeli diamond-industry software update channel to deploy
+    Fantasy. The wiper spread with Sandals and destroyed data in South Africa, Israel,
+    and Hong Kong.
+  story: |
+    Agrius used a software supply chain to turn a specialized business tool into a timed wiper delivery path. ESET did not name the Israeli developer, but said all observed victims were customers of its software suite, which served the diamond industry.
+
+    The campaign started with preparation. On February 20, 2022, Agrius deployed credential-harvesting tools at a South African diamond-industry organization. On March 12, it launched the destructive phase. Victims in South Africa, Israel, and Hong Kong executed Fantasy within about two and a half hours.
+
+    Fantasy was built from the Apostle code base but no longer pretended to be ransomware. It overwrote files, deleted them, damaged registry associations, cleared event logs, attempted to wipe fixed drives and the Windows system drive, overwrote the MBR, then rebooted the machine. Recovery was sometimes possible, but the intent was destruction.
+
+    Sandals handled lateral execution. It used SMB and PsExec with harvested credentials to write batch files and launch Fantasy on remote systems. ESET's supply-chain assessment rests on the shared software vendor, the update-like naming, the synchronized execution window, and the wiper's location under the Windows temp path used by the legitimate update flow.
   start_date: 2022-02-20
   end_date: 2022-03-12
   target:
-    name: fantasy-agrius
+    name: Unnamed Israeli diamond-industry software suite
     kind: application
   actor:
-    name: Nation-state
+    name: Agrius
     kind: state
   language: c++
   method:
@@ -19,13 +29,66 @@
   impact:
     types:
     - data_destruction
+    - credential_theft
+    - lateral_movement
+  indicators:
+  - kind: family
+    value: Fantasy
+  - kind: family
+    value: Sandals
+  - kind: family
+    value: Apostle
+  - kind: file
+    value: fantasy35.exe
+  - kind: file
+    value: fantasy45.exe
+  - kind: file
+    value: spchost.exe
+  - kind: file
+    value: host2ip.exe
+  - kind: file
+    value: MiniDump.exe
+  - kind: file
+    value: secretsdump.py
+  - kind: path
+    value: '%SYSTEM%\Windows\Temp'
+  - kind: technique
+    value: PsExec
+  - kind: observable
+    value: Victims executed Fantasy within an approximately 2.5-hour window.
+  - kind: observable
+    value: ESET observed clean updates pushed by the software developer within hours.
   artifacts:
   - id: fantasy-agrius
-    name: fantasy-agrius
+    name: Fantasy wiper through unnamed software update
     kind: binary_archive
     start_date: 2022-02-20
     end_date: 2022-03-12
+    indicators:
+    - kind: file_sha1
+      value: fantasy35.exe 1a62031bbb2c3f55d44f59917fd32e4ed2041224
+    - kind: file_sha1
+      value: fantasy45.exe 820ad7e30b4c54692d07b29361aecd0bb14df3be
+    - kind: file_sha1
+      value: host2ip.exe 1aae62acee3c04a6728f9edc3756fabd6e342252
+    - kind: file_sha1
+      value: MiniDump.exe 5485c627922a71b04d4c78fbc25985cdb163313b
+    - kind: file_sha1
+      value: registry.bat db11cbffe30e0094d6de48259c5a919c1eb57108
+    - kind: file_sha1
+      value: secretsdump.py 3228e6bc8c738781176e65ebbc0eb52020a44866
+    - kind: file_sha1
+      value: spchost.exe b3b1edd6b80af0cdadadd1ee1448056e6e1b3274
+    notes:
+    - ESET believed the wiper was deployed via the developer's software update mechanism
+      based on victim commonality, naming, timing, and execution path evidence.
+    - The affected vendor and software name were not publicly identified.
   references:
-  - url: https://www.welivesecurity.com/2022/12/07/fantasy-new-agrius-wiper-supply-chain-attack/
+  - url: 
+      https://www.welivesecurity.com/2022/12/07/fantasy-new-agrius-wiper-supply-chain-attack/
+    title: Fantasy - a new Agrius wiper deployed through a supply-chain attack
   - url: https://thehackernews.com/2022/12/iranian-agrius-apt-targets-diamond.html
-  - url: https://www.bleepingcomputer.com/news/security/iranian-hackers-deploy-new-fantasy-malware-in-supply-chain-attack/
+    title: Iranian Agrius APT Targets Diamond Industry with Fantasy Wiper
+  - url: 
+      https://www.bleepingcomputer.com/news/security/iranian-hackers-deploy-new-fantasy-malware-in-supply-chain-attack/
+    title: Iranian hackers deploy new Fantasy malware in supply chain attack

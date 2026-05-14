@@ -1,51 +1,104 @@
----
 - id: infestation-survivor-stories-fka-the-war-z
-  title: 'Infestation: Survivor Stories game executable backdoored via supply chain'
-  synopsis: 'Linked to the ShadowHammer/BARIUM APT group (also involved in the ASUS
-    attack), the executable for the online game Infestation: Survivor Stories (formerly
-    The War Z) was reportedly recompiled with malicious code sometime between June
-    and November 2018. This supply chain compromise aimed to surgically target users
-    by their MAC addresses to collect system information. The compromised executables
-    were signed with legitimate digital certificates. This record tracks Infestation:
-    Survivor Stories specifically; related ShadowHammer game and ASUS compromises
-    are tracked separately.'
+  title: Infestation executable carried Winnti backdoor
+  synopsis: >-
+    Electronics Extreme distributed a trojanized Infestation executable. ESET found
+    Winnti backdoor code launched before the game's normal runtime initialization.
+  story: |
+    ESET described Infestation as one of three Asian gaming supply-chain cases that shared the same embedded backdoor. Infestation was the clearest active case: the Thai developer Electronics Extreme was still distributing a trojanized build when ESET published its research.
+
+    The implant ran before the game. Code added near the PE entry point hooked the C runtime initialization path, decrypted an embedded DLL with RC4, launched the backdoor in memory, then resumed normal execution. That shape suggested a build-configuration or build-environment compromise rather than a simple post-download patch.
+
+    The backdoor reported host details, including user name, computer name, Windows version, system language, and a MAC-derived bot identifier. Commands were limited but useful: download a file, download and run a file, run a downloaded binary in memory, or disable callbacks through a registry flag.
+
+    The Infestation-specific C2 used `nw.infestexe.com`, a domain built to look related to the game. ESET also saw a Winnti second stage delivered from related infrastructure. This record stays scoped to Infestation even though the broader ESET report covered two other compromised game or gaming-platform products.
   start_date: 2018-06-01
   end_date: 2018-11-30
   target:
     name: 'Infestation: Survivor Stories (fka The War Z)'
     kind: game
+    website: https://infest.in.th
     country: Global
   actor:
-    name: BARIUM (APT17, Axiom, Deputy Dog, Winnti group)
+    name: Winnti Group
     kind: state
     country: China
   method:
-    cause: build_system_compromise_attackers_had_access_to_source_code_or_injected_malware_during_compilation_leaked_source_code_and_vulnerable_production_servers_also_implicated
+    cause: build_system_compromise
     phase: ci_cd
     motive: espionage
     transitive: false
   impact:
     types:
     - data_theft
+    - remote_access
+    - malware_deployment
+    users: 0
+  indicators:
+  - kind: family
+    value: Winnti
+  - kind: family
+    value: Win32/HackedApp.Winnti
+  - kind: family
+    value: Win32/Winnti.AG
+  - kind: family
+    value: Win64/Winnti.BN
+  - kind: domain
+    value: infestexe.com
+  - kind: domain
+    value: nw.infestexe.com
+  - kind: domain
+    value: api.goallbandungtravel.com
+  - kind: domain
+    value: checkin.travelsanignacio.com
+  - kind: ip
+    value: 138.68.14.195
+  - kind: url
+    value: https://nw.infestexe.com/version/last.php
+  - kind: file
+    value: Infestation.exe
+  - kind: registry
+    value: HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\ImageFlag
+  - kind: command
+    value: DownUrlFile
+  - kind: command
+    value: DownRunUrlFile
+  - kind: command
+    value: RunUrlBinInMem
+  - kind: command
+    value: UnInstall
+  - kind: observable
+    value: Backdoor code ran before standard C runtime initialization.
+  - kind: observable
+    value: Malware skipped systems configured with Russian or Chinese language.
   artifacts:
   - id: infestation-survivor-stories-fka-the-war-z
     name: 'Infestation: Survivor Stories (fka The War Z)'
+    package: Infestation.exe
+    ecosystem: game launcher
     kind: binary_archive
     start_date: 2018-06-01
     end_date: 2018-11-30
     locations:
     - uri: https://securelist.com/operation-shadowhammer/89083/
       role: mirror
-    - uri: https://www.bankinfosecurity.com/shadowhammer-spreads-across-online-gaming-supply-chain-a-12409
+    - uri: 
+        https://www.bankinfosecurity.com/shadowhammer-spreads-across-online-gaming-supply-chain-a-12409
       role: mirror
     indicators:
-    - kind: observable
-      value: Compromised game executables (e.g., Infestation.exe) distributed via
-        official game patches or downloads, potentially through platforms like Steam
-        or direct publisher websites, between June and November 2018.
+    - kind: file_sha1
+      value: payload-8272c1f4 8272c1f41f7c223316c0d78bd3bd5744e25c2e9f
     notes:
-    - Exact affected game executable versions or patches are unknown.
+    - Exact affected game executable versions or patch numbers were not publicly named.
+    - ESET redacted some compromised file hashes at a vendor's request; this record keeps
+      only the Infestation-themed payload hash and C2 details.
   references:
-  - url: https://www.bankinfosecurity.com/shadowhammer-spreads-across-online-gaming-supply-chain-a-12409
+  - url: https://www.welivesecurity.com/2019/03/11/gaming-industry-scope-attackers-asia/
+    title: Gaming industry still in the scope of attackers in Asia
+  - url: 
+      https://www.bankinfosecurity.com/shadowhammer-spreads-across-online-gaming-supply-chain-a-12409
+    title: ShadowHammer Spreads Across Online Gaming Supply Chain
   - url: https://securelist.com/operation-shadowhammer/89083/
-  - url: https://www.reddit.com/r/pcgaming/comments/bh22hd/infestation_survivor_stories_backdoored_with/
+    title: Operation ShadowHammer
+  - url: 
+      https://www.reddit.com/r/pcgaming/comments/bh22hd/infestation_survivor_stories_backdoored_with/
+    title: 'Infestation: Survivor Stories backdoored with malware from hacker group Barium'

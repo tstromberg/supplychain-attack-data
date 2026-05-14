@@ -1,16 +1,19 @@
----
 - id: is
-  title: "'is' npm Package Hijacked (Scavenger Malware)"
+  title: "'is' npm package shipped Scavenger"
   campaigns:
   - npnjs-scam-npm-2025
-  synopsis: 'Attackers running the npnjs.com npm phishing campaign hijacked an old
-    maintainer account for the popular is package and used social engineering to regain
-    package access: after the compromised old maintainer was removed, the attacker
-    convinced current maintainers that npm had removed the account for missing 2FA,
-    leading the account to be re-added. On July 19, 2025, the attackers published
-    is 3.3.1 and 5.0.0. Reporting on the broader campaign describes the payload family
-    as Scavenger, a cross-platform JavaScript loader that stole browser data, environment
-    variables, and SSH keys and established an interactive remote shell via WebSocket.'
+  synopsis: >-
+    The npnjs.com phishing campaign hijacked maintainer access for the popular is
+    package. Attackers used social engineering to regain npm access and ship Scavenger
+    malware through trusted releases.
+  story: |
+    The `is` package compromise followed the npnjs.com phishing pattern. Attackers used social engineering against npm maintainer access, then published malicious versions of a real package with about 2.8 million weekly downloads.
+
+    Socket described `is@5.0.0` as different from the Windows-only Scavenger DLL path seen in related packages. This payload was pure JavaScript and cross-platform, running under Node.js on macOS, Linux, and Windows.
+
+    The loader reconstructed its payload in memory with a custom decoder and executed it through `new Function`. It collected host, OS, CPU, and environment data, then opened a WebSocket channel. Messages from the socket were treated as executable JavaScript, making the install a live remote shell.
+
+    The package is grouped with the broader npm phishing campaign because the method, timing, and maintainer-compromise infrastructure overlap. It remains a distinct record because `is` carried a separate cross-platform JavaScript loader rather than only the Windows DLL family.
   start_date: 2025-07-18
   end_date: 2025-07-22
   target:
@@ -34,6 +37,7 @@
   artifacts:
   - id: is
     name: is
+    package: is
     ecosystem: npm
     kind: source_archive
     repo: https://github.com/sindresorhus/is
@@ -46,6 +50,13 @@
     - uri: https://github.com/sindresorhus/is
       role: mirror
   references:
-  - url: https://www.stepsecurity.io/blog/supply-chain-security-alert-eslint-config-prettier-package-shows-signs-of-compromise
-  - url: https://www.stepsecurity.io/blog/another-npm-supply-chain-attack-the-is-package-compromise
-  - url: https://socket.dev/blog/npm-is-package-hijacked-in-expanding-supply-chain-attack
+  - url: 
+      https://www.stepsecurity.io/blog/supply-chain-security-alert-eslint-config-prettier-package-shows-signs-of-compromise
+    title: Supply Chain Security Alert - eslint-config-prettier Package Shows Signs
+      of Compromise
+  - url: 
+      https://www.stepsecurity.io/blog/another-npm-supply-chain-attack-the-is-package-compromise
+    title: Another npm Supply Chain Attack - The is Package Compromise
+  - url: 
+      https://socket.dev/blog/npm-is-package-hijacked-in-expanding-supply-chain-attack
+    title: npm is Package Hijacked in Expanding Supply Chain Attack

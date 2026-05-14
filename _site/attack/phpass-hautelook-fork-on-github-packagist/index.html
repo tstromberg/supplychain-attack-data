@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>hautelook/phpass library hijacked via GitHub org.</title>
+  <title>hautelook/phpass hijacked through GitHub organization</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,25 +13,38 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>hautelook/phpass library hijacked via GitHub org.</h1>
+  <h1>hautelook/phpass hijacked through GitHub organization</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> phpass (Hautelook fork on GitHub / Packagist)</div>
     <div class="meta-item"><strong>Date:</strong> 2022-05-19 to 2022-05-24 (5 days)</div>
-    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Actor:</strong> Sockpuppets (person)</div>
     <div class="meta-item"><strong>Target Kind:</strong> library</div>
     <div class="meta-item"><strong>Language:</strong> PHP</div>
-    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Cause:</strong> abandoned_namespace_takeover</div>
     <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
-    <div class="meta-item"><strong>Impact:</strong> data_exfiltration</div>
-    <div class="meta-item"><strong>User Impact:</strong> 2500000</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
     <div class="meta-item"><strong>Phase:</strong> source</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The GitHub organization &#39;hautelook&#39;, which maintained a popular fork of the phpass PHP password hashing library, was deleted. An attacker later registered the &#39;hautelook&#39; organization name and created a repository named &#39;phpass&#39; with the same URL as the original. This new repository contained a malicious version of phpass designed to steal AWS credentials by exfiltrating environment variables. Packagist, which mirrored the original GitHub repository, then began serving this malicious version to users who updated the dependency.</p>
+  <p class="synopsis">Attackers re-registered the deleted hautelook GitHub organization and recreated its phpass repository. Packagist then served code from the hostile replacement path.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>hautelook/phpass failed through namespace reuse. The original GitHub organization was deleted after the project moved, but the Packagist package still pointed at the old repository path. An attacker registered the abandoned organization name and recreated the phpass repository.</p>
+    
+      <p>Composer and Packagist trusted the coordinate. Installers resolving hautelook/phpass could fetch from the attacker&#39;s repository because the URL still matched the package metadata. No source forge was needed; the abandoned namespace became the source.</p>
+    
+      <p>The malicious replacement carried code to collect environment data and secrets. Concrete CMS traced exposure through dependency resolution and published a replacement package while Packagist and GitHub removed the hostile repository.</p>
+    
+      <p>This differs from a typosquat. The package name was established, and the attacker took over the exact upstream location that package metadata still referenced. The failure was stale ownership on an official dependency path.</p>
+    
+  </div>
   
 
   
@@ -92,11 +105,17 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking" target="_blank">https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking</a></li>
+      <li><a href="https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking" target="_blank">Supply chain hack phpass repo jacking</a></li>
     
-      <li><a href="https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html" target="_blank">https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html</a></li>
+      <li><a href="https://orca.security/resources/blog/python-supply-chain-attack-ctx-phpass/" target="_blank">Supply Chain Attack: CTX Account Takeover and PHPass Hijack Explained</a></li>
     
-      <li><a href="https://cybersecuritynews.com/attackers-compromised-pypi-package/" target="_blank">https://cybersecuritynews.com/attackers-compromised-pypi-package/</a></li>
+      <li><a href="https://www.crowdstrike.com/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass/" target="_blank">Detecting Poisoned Python Packages: CTX and PHPass</a></li>
+    
+      <li><a href="https://www.sonatype.com/blog/pypi-package-ctx-compromised-are-you-at-risk" target="_blank">PyPI Package &#39;ctx&#39; and PHP Library &#39;phpass&#39; Compromised to Steal Environment Variables</a></li>
+    
+      <li><a href="https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html" target="_blank">PyPI package ctx and PHP library phpass compromised</a></li>
+    
+      <li><a href="https://cybersecuritynews.com/attackers-compromised-pypi-package/" target="_blank">Attackers compromised PyPI package to steal AWS keys</a></li>
     
   </ul>
   

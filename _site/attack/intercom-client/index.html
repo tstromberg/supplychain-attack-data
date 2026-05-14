@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Intercom Node.js SDK Compromise (Mini Shai-Hulud)</title>
+  <title>Intercom Node SDK hit by Mini Shai-Hulud</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Intercom Node.js SDK Compromise (Mini Shai-Hulud)</h1>
+  <h1>Intercom Node SDK hit by Mini Shai-Hulud</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> intercom-client · <a href="https://github.com/intercom/intercom-node" target="_blank">repo</a></div>
@@ -29,14 +29,27 @@
     <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
     <div class="meta-item"><strong>Campaigns:</strong>
       
-        <a href="/campaign/teampcp-2026/">TeamPCP 2026 Package Compromise Campaign</a>
+        <a href="/campaign/teampcp-2026/">TeamPCP package wave stole credentials</a>
       
     </div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The Mini Shai-Hulud/TeamPCP campaign compromised the official intercom-client package on npm. The malicious 7.0.4 release was published on April 30, 2026 at 14:41 UTC via a hijacked GitHub Actions OIDC publishing pipeline and introduced a preinstall hook, setup.mjs loader, and 11.7 MB obfuscated router_runtime.js payload. The payload used Bun v1.3.13, daemonized itself, harvested GitHub, npm, AWS, GCP, Azure, private-key, and generic API credentials, exfiltrated via GitHub private repositories under victim accounts, and attempted worm-style propagation through stolen npm publishing tokens.</p>
+  <p class="synopsis">The Mini Shai-Hulud/TeamPCP campaign compromised the official intercom-client package on npm.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>`intercom-client@7.0.4` was published on 2026-04-30 through a hijacked GitHub Actions OIDC publishing path. StepSecurity treated it as direct evidence that Mini Shai-Hulud was propagating through CI/CD tokens stolen from earlier victims.</p>
+    
+      <p>The package stayed functional but changed shape. Version 7.0.4 added a `preinstall` hook, introduced `setup.mjs`, and shipped an 11.7 MB single-line `router_runtime.js` payload. The clean 7.0.3 release had SLSA provenance; the malicious 7.0.4 release did not.</p>
+    
+      <p>The loader downloaded Bun 1.3.13 and used it to execute the obfuscated payload. The stealer expanded beyond GitHub and npm tokens into AWS metadata, GCP metadata, Azure connection strings, private keys, environment variables, and generic API-key patterns.</p>
+    
+      <p>Exfiltration used GitHub itself. The payload authenticated to `api.github.com`, created a private repository under the victim account, and committed encrypted stolen data there. That made ordinary egress filtering weak: the traffic went to a domain many CI systems already allow.</p>
+    
+  </div>
   
 
   
@@ -97,11 +110,11 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.stepsecurity.io/blog/shai-hulud-worm-pivots-to-multi-cloud-intercom-client-hijacked" target="_blank">https://www.stepsecurity.io/blog/shai-hulud-worm-pivots-to-multi-cloud-intercom-client-hijacked</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/shai-hulud-worm-pivots-to-multi-cloud-intercom-client-hijacked" target="_blank">Shai-Hulud Worm Pivots to Multi-Cloud - intercom-client@7.0.4 Hijacked</a></li>
     
-      <li><a href="https://github.com/intercom/intercom-node/issues/518" target="_blank">https://github.com/intercom/intercom-node/issues/518</a></li>
+      <li><a href="https://github.com/intercom/intercom-node/issues/518" target="_blank">intercom-node issue 518</a></li>
     
-      <li><a href="https://semgrep.dev/blog/2026/malicious-intercom-php-package-spreads-mini-shai-hulud-attack-to-packagist-via-composer-plugin/" target="_blank">https://semgrep.dev/blog/2026/malicious-intercom-php-package-spreads-mini-shai-hulud-attack-to-packagist-via-composer-plugin/</a></li>
+      <li><a href="https://semgrep.dev/blog/2026/malicious-intercom-php-package-spreads-mini-shai-hulud-attack-to-packagist-via-composer-plugin/" target="_blank">Malicious Intercom PHP Package Spreads Mini Shai-Hulud Attack to Packagist via Composer Plugin</a></li>
     
   </ul>
   

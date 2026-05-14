@@ -1,16 +1,18 @@
----
 - id: xinference
-  title: Xinference PyPI Two-Stage Credential Stealer
+  title: Xinference PyPI release stole credentials
   campaigns:
   - teampcp-2026
-  synopsis: 'TeamPCP compromised three consecutive xinference PyPI releases, 2.6.0
-    through 2.6.2, by adding an import-time two-stage Python credential stealer to
-    xinference/__init__.py. The attacker iterated the trigger across releases but
-    kept the same core behavior: collect SSH keys, environment variables, cloud and
-    Kubernetes credentials, package-manager tokens, CI/CD files, shell history, and
-    wallet material, then archive and exfiltrate the results to attacker infrastructure.
-    The incident is notable for its rapid multi-version refinement and for sharing
-    TeamPCP markers and injection patterns with the LiteLLM and Telnyx compromises.'
+  synopsis: >-
+    TeamPCP compromised three consecutive xinference PyPI releases, 2.6.0 through 2.6.2, by
+    adding an import-time two-stage Python credential stealer to xinference/__init__.py.
+  story: |
+    The xinference compromise put malware into the top-level import path of an LLM inference framework. On April 22, 2026, PyPI releases 2.6.0, 2.6.1, and 2.6.2 carried code added to `xinference/__init__.py`.
+
+    Version 2.6.0 ran a base64 payload at module scope. Version 2.6.1 moved the payload into `_install()` and used synchronous `exec()`. Version 2.6.2 kept the function-level hiding but restored detached execution with `subprocess.Popen`.
+
+    The decoded first stage contained the marker `# hacked by teampcp`. It launched a second Python collector, wrote collected data into a temporary file, compressed it as `love.tar.gz`, and posted it to `whereisitat.lucyatemysuperbox.space` with the header `X-QT-SR: 14`.
+
+    The collector targeted the material expected on inference servers: SSH keys, cloud credentials, Kubernetes tokens, Docker auth, `.env` files, shell histories, TLS private keys, and cryptocurrency wallets. StepSecurity noted that this variant lacked the RSA wrapping seen in LiteLLM and Telnyx, leaving a copycat possibility, but the marker, placement, and rapid version iteration match TeamPCP tradecraft.
   start_date: 2026-04-22
   end_date: 2026-04-22
   target:
@@ -18,7 +20,7 @@
     kind: library
     repo: https://github.com/xorbitsai/inference
   actor:
-    name: Advanced Persistent Threat
+    name: TeamPCP
     kind: group
   language: Python
   method:
@@ -53,5 +55,20 @@
     - sha256:f677cd06e0dfbd23b6feb47f31d49cb8fcc88ed0487d30143d36d4f54261e3de
     - sha256:4c5c589f543b1a02251451ab3baaeed7c82851de10fa33f87b95a85e3040c92e
     - sha256:96007d4ee4171e383cecdf7a34b606bfcb78eff435182dc86daa49a17153dcd3
+    indicators:
+    - kind: file
+      value: xinference/__init__.py
+    - kind: file
+      value: love.tar.gz
+    - kind: domain
+      value: whereisitat.lucyatemysuperbox.space
+    - kind: url
+      value: https://whereisitat.lucyatemysuperbox.space/
+    - kind: http_header
+      value: "X-QT-SR: 14"
+    - kind: code
+      value: "# hacked by teampcp"
   references:
-  - url: https://www.stepsecurity.io/blog/teampcp-injects-two-stage-credential-stealer-into-xinference-pypi-package
+  - url: 
+      https://www.stepsecurity.io/blog/teampcp-injects-two-stage-credential-stealer-into-xinference-pypi-package
+    title: TeamPCP Injects Two-Stage Credential Stealer into xinference PyPI Package

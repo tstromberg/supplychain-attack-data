@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sendmail official FTP source distribution trojanized (8.12.6)</title>
+  <title>Sendmail FTP tarball shipped trojan</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Sendmail official FTP source distribution trojanized (8.12.6)</h1>
+  <h1>Sendmail FTP tarball shipped trojan</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> sendmail · <a href="https://ftp.sendmail.org" target="_blank">website</a></div>
@@ -30,7 +30,7 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The official Sendmail FTP server, ftp.sendmail.org, was compromised and the 8.12.6 .tar.gz and .tar.Z source archives were replaced with trojanized versions; HTTP downloads were not believed affected. The malicious code ran during compilation, connected to spatula.aclue.com (66.37.138.99) on TCP/6667, and opened a shell as the build user, compromising build hosts rather than already-running Sendmail daemons.</p>
+  <p class="synopsis">The official Sendmail FTP server, ftp.sendmail.org, was compromised and the 8.12.6 .tar.gz and .tar.Z source archives were replaced with trojanized versions; HTTP downloads were not believed affected.</p>
 
   
   <h2>Story</h2>
@@ -38,9 +38,11 @@
     
       <p>From about September 28 to October 6, 2002, the official Sendmail FTP server distributed trojaned copies of the 8.12.6 source archives. The compromise hit one of the Internet&#39;s default pieces of mail infrastructure: administrators who fetched source from the trusted FTP path could build a backdoored Sendmail without ever touching an exploit against a running daemon.</p>
     
-      <p>The delivery was limited but dangerous. The `.tar.gz` and `.tar.Z` archives on FTP were replaced; HTTP downloads were not believed affected. The malicious code executed during compilation, making the build host the first victim.</p>
+      <p>The delivery was limited but dangerous. The `.tar.gz` and `.tar.Z` archives on FTP were affected; HTTP downloads were not believed affected. The Register later quoted Eric Allman saying the attacker may have modified the FTP program itself so that roughly one in ten downloads received the backdoor while the original package remained untouched.</p>
     
-      <p>The malicious code ran during compilation, forked a process, and connected to `spatula.aclue.com` at 66.37.138.99 on TCP/6667. From there, the attacker could open a shell with the privileges of the build user. CERT emphasized the subtle impact: the exposed system was the build host, and because it initiated the outbound connection, the backdoor could create a tunnel through perimeter controls that would otherwise have blocked inbound access.</p>
+      <p>The code diff shows the backdoor inserted into `libsm/t-shm.c`. It declared `shm64`, called it from the shared-memory test path, decoded an embedded payload into a temporary `test` script, and executed it with `system(&quot;sh ./test 2&gt;/dev/null&quot;)`.</p>
+    
+      <p>That payload forked a process and connected to `spatula.aclue.com` at 66.37.138.99 on TCP/6667. From there, the attacker could open a shell with the privileges of the build user. Analysts also noted that its one-letter command syntax resembled the OpenSSH backdoor from the same year: `A` killed the exploit, `D` executed a command, and `M` put it to sleep.</p>
     
   </div>
   
@@ -108,6 +110,8 @@
       <li><a href="https://seclists.org/bugtraq/2002/Oct/122" target="_blank">Bugtraq: CERT Advisory CA-2002-28 Trojan Horse Sendmail Distribution</a></li>
     
       <li><a href="https://www.exploit-db.com/exploits/21919" target="_blank">Sendmail 8.12.6 Trojan Horse Exploit</a></li>
+    
+      <li><a href="https://www.theregister.com/2002/10/11/sendmail_trojan_looks_familiar/" target="_blank">Sendmail Trojan looks familiar</a></li>
     
       <li><a href="https://web.archive.org/web/20210515121835/https://www.securityfocus.com/bid/5921/info" target="_blank">SecurityFocus BID 5921: Sendmail Trojan Horse Distribution</a></li>
     

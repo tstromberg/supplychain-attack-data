@@ -1,0 +1,78 @@
+- id: shibai-phones
+  title: Knockoff phones shipped Shibai clippers
+  synopsis: >-
+    Low-cost Chinese Android phones shipped with trojanized WhatsApp and Telegram apps
+    that used Shibai to replace cryptocurrency wallet addresses.
+  story: |
+    Doctor Web found low-cost Android smartphones arriving with malicious messenger apps already installed. The phones imitated premium models such as S23 Ultra, S24 Ultra, Note 13 Pro, and P70 Ultra; several affected models were tied to the SHOWJI brand.
+
+    The malicious apps looked like WhatsApp, Telegram, QR scanners, and crypto utilities. Attackers used LSPatch to inject Shibai into otherwise legitimate-looking apps, then altered update flows so the apps could fetch attacker-controlled APKs instead of official updates.
+
+    Shibai watched chat text for Ethereum and Tron wallet patterns. It could show the correct address on the victim's screen while sending the attacker-controlled address to the recipient, or replace an incoming address before the victim saw it.
+
+    The same tooling exfiltrated WhatsApp messages, device data, and images from common folders so attackers could search for wallet recovery phrases. This is modeled separately from Triada.z because the public evidence names different payloads, apps, and device families, even though both abused counterfeit Android device distribution.
+  start_date: 2024-06-01
+  end_date: 2025-04-16
+  target:
+    name: Knockoff Android smartphone firmware
+    kind: firmware
+  actor:
+    name: Unknown
+    kind: unknown
+  language: Android
+  method:
+    cause: firmware_supply_chain_compromise
+    phase: manufacturing
+    motive: cryptocurrency_theft
+    transitive: false
+  impact:
+    types:
+    - cryptocurrency_theft
+    - data_theft
+    - spyware
+    users: 0
+  artifacts:
+  - id: trojanized-whatsapp
+    name: Trojanized WhatsApp
+    package: com.whatsapp
+    ecosystem: android
+    kind: mobile_app
+    start_date: 2024-06-01
+    end_date: 2025-04-16
+    locations:
+    - uri: pkg://android/com.whatsapp
+      role: distribution
+    - uri: https://thehackernews.com/2025/04/chinese-android-phones-shipped-with.html
+      role: mirror
+    indicators:
+    - kind: malware
+      value: Shibai
+    - kind: observable
+      value: LSPatch-injected module searched chat messages for Ethereum and Tron wallet addresses.
+    - kind: observable
+      value: App update flow retrieved APK files from attacker-controlled servers.
+  - id: trojanized-telegram
+    name: Trojanized Telegram
+    package: org.telegram.messenger
+    ecosystem: android
+    kind: mobile_app
+    start_date: 2024-06-01
+    end_date: 2025-04-16
+    locations:
+    - uri: pkg://android/org.telegram.messenger
+      role: distribution
+    - uri: https://thehackernews.com/2025/04/chinese-android-phones-shipped-with.html
+      role: mirror
+    indicators:
+    - kind: malware
+      value: Shibai
+    - kind: observable
+      value: Doctor Web reporting described about 40 modified apps across the affected devices.
+    notes:
+    - Affected device names included S23 Ultra, S24 Ultra, Note 13 Pro, and P70 Ultra; 
+      at least four affected models were manufactured under the SHOWJI brand.
+  references:
+  - url: https://thehackernews.com/2025/04/chinese-android-phones-shipped-with.html
+    title: Chinese Android Phones Shipped with Fake WhatsApp, Telegram Apps Targeting Crypto Users
+  - url: https://securityaffairs.com/176600/malware/chinese-android-phones-shipped-with-malware-laced-whatsapp-telegram-apps.html
+    title: Chinese Android phones shipped with malware-laced WhatsApp, Telegram apps

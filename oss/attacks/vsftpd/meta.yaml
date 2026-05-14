@@ -1,16 +1,16 @@
----
 - id: vsftpd
-  title: vsftpd official distribution site compromised distributing backdoor
-  synopsis: The official vsftpd 2.3.4 source archive was replaced with a backdoored
-    tarball around June 30 to July 1, 2011, and removed on July 3. The malicious
-    code failed the original GPG signature and triggered when an FTP username contained
-    ':)', opening a TCP/6200 shell with the privileges of the running daemon.
+  title: vsftpd distribution site served backdoor
+  synopsis: >-
+    The official vsftpd 2.3.4 source archive was replaced with a backdoored tarball around
+    June 30 to July 1, 2011, and removed on July 3.
   story: |
     In early July 2011, Chris Evans warned that the master vsftpd download for `vsftpd-2.3.4.tar.gz` had been replaced with a backdoored tarball. Rapid7's Metasploit module later placed the introduction window between June 30 and July 1, with removal on July 3. The bad archive had SHA-256 `2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5`, and its detached GPG signature failed against Evans' signing key.
 
     The delivery was the official source archive. The code change did not need a vulnerable parser or malformed FTP command. It changed the daemon being built, and the failed detached signature was the clean technical signal that the archive and release key no longer matched.
 
-    The payload was blunt and memorable. If an FTP username contained `:)`, the server attempted to spawn a shell listener on TCP/6200. There was no installation beacon, which meant the attacker likely needed download logs, broad scanning, or prior knowledge of targets to find victims. Evans moved the project download to a more trusted host and published the warning with a diff reference so administrators could verify both source integrity and runtime exposure.
+    The payload was blunt and memorable. The diff showed `str.c` checking for the byte sequence `0x3a 0x29`, the ASCII smiley `:)`, and calling `vsf_sysutil_extra()`. The added function in `sysdeputil.c` created a TCP listener on port 6200, accepted a connection, duplicated it onto standard input, output, and error, then executed `/bin/sh`.
+
+    There was no installation beacon, which meant the attacker likely needed download logs, broad scanning, or prior knowledge of targets to find victims. Evans moved the project download to a more trusted host and published the warning with a diff reference so administrators could verify both source integrity and runtime exposure.
   start_date: 2011-06-30
   end_date: 2011-07-03
   target:
@@ -42,15 +42,23 @@
     locations:
     - uri: ftp://vsftpd.beasts.org/users/cevans/vsftpd-2.3.4.tar.gz
       role: distribution
+    - uri: https://security.appspot.com/downloads/vsftpd-2.3.4.tar.gz
+      role: mirror
+    - uri: https://pastebin.com/AetT9sS5
+      role: mirror
     - uri: https://web.archive.org/web/20210228222523/https://pastebin.com/AetT9sS5
       role: mirror
-    - uri: https://web.archive.org/web/20210127090552/https://scarybeastsecurity.blogspot.com/2011/07/alert-vsftpd-download-backdoored.html
+    - uri: 
+        https://web.archive.org/web/20210127090552/https://scarybeastsecurity.blogspot.com/2011/07/alert-vsftpd-download-backdoored.html
+      role: mirror
+    - uri: https://github.com/DoctorKisow/vsftpd-2.3.4
       role: mirror
     - uri: https://www.rapid7.com/db/modules/exploit/unix/ftp/vsftpd_234_backdoor/
       role: mirror
     - uri: https://packetstormsecurity.com/files/154237/vsftpd-2.3.4-Backdoor.html
       role: mirror
-    - uri: https://github.com/kennetham/The_Practical_Guide_for_Information_System_Security/blob/master/backdoor_vsftpd_234.c
+    - uri: 
+        https://github.com/kennetham/The_Practical_Guide_for_Information_System_Security/blob/master/backdoor_vsftpd_234.c
       role: mirror
     hashes:
     - md5:a2bfd376c14ec3a83553c0c1aac0d1ff
@@ -63,14 +71,31 @@
       value: 'FTP username containing :)'
     - kind: observable
       value: tcp/6200
+    - kind: file
+      value: str.c
+    - kind: file
+      value: sysdeputil.c
+    - kind: function
+      value: vsf_sysutil_extra
+    - kind: command
+      value: /bin/sh
   references:
-  - url: https://scarybeastsecurity.blogspot.com/2011/07/alert-vsftpd-download-backdoored.html
+  - url: 
+      https://scarybeastsecurity.blogspot.com/2011/07/alert-vsftpd-download-backdoored.html
     title: 'Alert: vsftpd download backdoored'
-  - url: https://web.archive.org/web/20210127090552/https://scarybeastsecurity.blogspot.com/2011/07/alert-vsftpd-download-backdoored.html
+  - url: 
+      https://web.archive.org/web/20210127090552/https://scarybeastsecurity.blogspot.com/2011/07/alert-vsftpd-download-backdoored.html
     title: 'Archived: Alert: vsftpd download backdoored'
   - url: https://www.rapid7.com/db/modules/exploit/unix/ftp/vsftpd_234_backdoor/
     title: VSFTPD 2.3.4 Backdoor Command Execution
   - url: https://web.archive.org/web/20210228222523/https://pastebin.com/AetT9sS5
     title: Archived vsftpd 2.3.4 backdoor diff
-  - url: https://www.computerworld.com/article/2518230/vsftpd-developer-confirms-backdoor-in-version-2-3-4.html
+  - url: https://pastebin.com/AetT9sS5
+    title: vsftpd 2.3.4 backdoor diff
+  - url: https://github.com/DoctorKisow/vsftpd-2.3.4
+    title: 'GitHub: DoctorKisow/vsftpd-2.3.4'
+  - url: https://github.com/advisories/GHSA-qf3g-hgw2-8r8h
+    title: 'GitHub Advisory Database: CVE-2011-2523'
+  - url: 
+      https://www.computerworld.com/article/2518230/vsftpd-developer-confirms-backdoor-in-version-2-3-4.html
     title: vsftpd developer confirms backdoor in version 2.3.4

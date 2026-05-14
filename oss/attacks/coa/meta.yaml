@@ -1,10 +1,8 @@
----
 - id: coa
-  title: coa NPM package maintainer hijack distributes malware
-  synopsis: Attackers compromised maintainer credentials for the coa command-line
-    argument parser and published malicious versions with Windows-focused password-stealing
-    malware. The package's quiet place in dependency trees amplified the blast radius,
-    pulling downstream consumers such as rc into the same poisoned npm current.
+  title: coa npm hijack shipped malware
+  synopsis: >-
+    Attackers compromised maintainer credentials for the coa command-line argument parser
+    and published malicious versions with Windows-focused password-stealing malware.
   story: |
     coa was a small command-line option parser with a large dependency shadow. On November 4, 2021, attackers used compromised maintainer access to publish multiple malicious versions across active release lines. The packages arrived through the registry as legitimate coa releases.
 
@@ -18,8 +16,8 @@
     kind: library
     repo: https://github.com/veged/coa
   actor:
-    name: Individual Hacker
-    kind: person
+    name: UNC3379
+    kind: group
   language: Javascript
   method:
     cause: compromised_account_credentials
@@ -29,9 +27,13 @@
   impact:
     types:
     - data_exfiltration
+    - credential_theft
+    - remote_access
   artifacts:
   - id: coa
     name: coa
+    package: coa
+    ecosystem: npm
     kind: source_archive
     repo: https://github.com/veged/coa
     start_date: 2021-11-04
@@ -63,10 +65,39 @@
     hashes:
     - sha256:cd2adb9c16e3c5373f77c4288ab017be03c3a7f8320a2506e9129a402c0c69d6
     - sha256:dc7a59c2d600db8f748f0a722e363527e3332a0fd7ffd7d24342a7de6125e9e0
+    - md5:9c6664390b305a8aeeec859ab8169095
+    indicators:
+    - kind: file
+      value: compile.js
+    - kind: file
+      value: package.json
+    - kind: file
+      value: sdd.dll
+    - kind: lifecycle_hook
+      value: preinstall
+    - kind: domain
+      value: pastorcryptograph.at
+    - kind: ip
+      value: 185.117.90.36
+    - kind: ip
+      value: 193.42.36.59
+    - kind: ip
+      value: 185.106.123.228
+    - kind: ip
+      value: 193.56.146.53
+    - kind: observable
+      value: The compromised package added a preinstall hook that ran compile.js before
+        normal installation.
+    notes:
+    - The GitHub issue reported the compromised versions were present on npm from
+      2021-11-04 14:12 CET until 15:24 CET.
   references:
   - url: https://github.com/advisories/GHSA-73qr-pfmq-6rp8
     title: 'GitHub Advisory: Embedded malware in coa'
   - url: https://github.com/veged/coa/issues/99
     title: Last release contains malicious code
-  - url: https://therecord.media/malware-found-in-coa-and-rc-two-npm-packages-with-23m-weekly-downloads/
+  - url: 
+      https://therecord.media/malware-found-in-coa-and-rc-two-npm-packages-with-23m-weekly-downloads/
     title: Malware found in coa and rc, two npm packages with 23M weekly downloads
+  - url: https://cloud.google.com/blog/topics/threat-intelligence/supply-chain-node-js/
+    title: 'No Unaccompanied Miners: Supply Chain Compromises Through Node.js Packages'

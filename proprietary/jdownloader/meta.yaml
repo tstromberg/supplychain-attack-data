@@ -1,7 +1,16 @@
----
 - id: jdownloader
-  title: JDownloader Website CMS Compromise (2026)
-  synopsis: Attackers compromised the jdownloader.org CMS and replaced selected installer links with redirects to malicious third-party binaries. The Windows alternative installer and Linux shell installer were affected; signed in-app updates and third-party mirrors were not. Probing began around May 5, 2026, full manipulation started May 6, and the site returned with verified clean links on May 8-9.
+  title: JDownloader CMS served trojanized installer
+  synopsis: >-
+    Attackers changed selected JDownloader website links to malicious third-party files.
+    The real installers and RSA-signed in-app updater were not modified.
+  story: |
+    JDownloader treated the incident as a website-content compromise, not a build compromise. Attackers used the jdownloader.org CMS to change selected download links, so users who chose the Windows "Download Alternative Installer" path or the Linux shell installer could receive unrelated malicious files.
+
+    The scope was narrow. The vendor said genuine installer packages were not modified, the underlying host filesystem was not reached, and personal data was not accessed. The signed in-app updater was outside the path and continued to verify updates with RSA signatures.
+
+    The risk window ran from shortly after midnight UTC on 2026-05-06 through 2026-05-07. The team was alerted at 17:06 UTC on 2026-05-07, shut the site down at 17:24 UTC, removed the malicious link targets, restored legitimate links, and kept the site offline until further verification was complete.
+
+    The useful evidence is the substituted artifact set. JDownloader published exact byte sizes and SHA-256 hashes for one Linux shell installer substitute and seven Windows executable substitutes. Those hashes identify the bad files, not JDownloader's clean release packages.
   start_date: 2026-05-06
   end_date: 2026-05-07
   target:
@@ -33,7 +42,8 @@
     hashes:
     - sha256:6d975c05ef7a164707fa359284a31bfe0b1681fe0319819cb9e2c4eec2a1a8af
     notes:
-    - 'Observed malicious substitute file size: 7,934,496 bytes. JDownloader stated the genuine installer packages were not modified; CMS-managed website links were redirected.'
+    - 'Observed malicious substitute file size: 7,934,496 bytes. JDownloader stated the genuine
+      installer packages were not modified; CMS-managed website links were redirected.'
   - id: jdownloader2setup-windows-amd64-v11-0-30-exe
     name: Windows x64 alternative installer substitute
     package: JDownloader2Setup_windows-amd64_v11_0_30.exe
@@ -120,3 +130,4 @@
     - 'Observed malicious substitute file size: 62,498,304 bytes.'
   references:
   - url: https://jdownloader.org/incident_8.5.2026.html
+    title: Website installer incident - May 2026

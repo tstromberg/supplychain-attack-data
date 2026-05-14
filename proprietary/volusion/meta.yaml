@@ -1,10 +1,16 @@
----
 - id: volusion-via-google-cloud-storage-script
-  title: Volusion e-commerce sites skimmed via script.
-  synopsis: Over 29,500 e-commerce websites hosted on the Volusion platform were compromised
-    when a malicious JavaScript file (volusion.js), hosted on a Google Cloud Storage
-    bucket (storage.googleapis.com/volusionapi/resources/) used by Volusion, was modified.
-    This script skimmed credit card information, exfiltrating it to gogogolo.com.
+  title: Volusion storefront script skimmed payments
+  synopsis: >-
+    A Volusion-hosted script in Google Cloud Storage was modified with Magecart code.
+    Roughly 29,500 storefronts inherited the payment skimmer.
+  story: |
+    Volusion served common storefront JavaScript from a Google Cloud Storage bucket. In October 2019, attackers modified `volusion.js`, a script loaded by merchants on the hosted ecommerce platform.
+
+    The injected code loaded a skimmer from `gogogolo.com`. On checkout pages, it collected payment-card data and sent it to attacker infrastructure. Customers saw the merchant storefront; the compromised dependency lived underneath it.
+
+    Trend Micro reported more than 29,500 affected Volusion-hosted sites. The scale came from centralization: one platform script was reused across many stores, so one storage-object compromise became many checkout compromises.
+
+    This record is scoped to the hosted Volusion script, not to individual merchant breaches. The artifact was a production JavaScript dependency served from Volusion-controlled cloud storage.
   start_date: 2019-10-07
   end_date: 2019-10-09
   target:
@@ -27,17 +33,29 @@
   artifacts:
   - id: volusion-via-google-cloud-storage-script
     name: Volusion (via Google Cloud Storage script)
+    package: volusion.js
+    ecosystem: hosted javascript
     kind: source_archive
     website: https://storage.googleapis.com
     start_date: 2019-10-07
     end_date: 2019-10-09
     locations:
-    - uri: https://blog.trendmicro.com/trendlabs-security-intelligence/volusion-platform-compromised-by-magecart-attackers-to-skim-credit-card-details/
+    - uri: https://storage.googleapis.com/volusionapi/resources/volusion.js
+      role: distribution
+    - uri: 
+        https://blog.trendmicro.com/trendlabs-security-intelligence/volusion-platform-compromised-by-magecart-attackers-to-skim-credit-card-details/
       role: mirror
     indicators:
-    - kind: observable
+    - kind: url
       value: "//storage.googleapis.com/volusionapi/resources/volusion.js"
-    - kind: observable
-      value: 'hxxps://www[.]gogogolo[.]com/pixel/pixel.js # Skimmer exfiltration domain'
+    - kind: url
+      value: hxxps://www[.]gogogolo[.]com/pixel/pixel.js
+    - kind: domain
+      value: gogogolo.com
+    - kind: family
+      value: Magecart
   references:
-  - url: https://blog.trendmicro.com/trendlabs-security-intelligence/volusion-platform-compromised-by-magecart-attackers-to-skim-credit-card-details/
+  - url: 
+      https://blog.trendmicro.com/trendlabs-security-intelligence/volusion-platform-compromised-by-magecart-attackers-to-skim-credit-card-details/
+    title: Volusion platform compromised by Magecart attackers to skim credit card
+      details

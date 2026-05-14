@@ -1,9 +1,19 @@
----
 - id: ctrl-tinycolor
-  title: "@ctrl/tinycolor NPM Package Compromise (Shai-Hulud)"
+  title: "@ctrl/tinycolor hit by Shai-Hulud"
   campaigns:
   - shai-hulud-npm-2025
-  synopsis: An attacker targeted a shared repository (angulartics2) where the maintainer had admin rights. They pushed a malicious branch (Shai-Hulud) containing a GitHub Actions workflow that immediately ran, exfiltrating a static npm token with broad publish rights. The attacker then published malicious versions of approximately 20 packages, including @ctrl/tinycolor, containing a malicious postinstall script.
+  synopsis: >-
+    An attacker targeted a shared repository (angulartics2) where the maintainer had admin
+    rights. They pushed a malicious branch (Shai-Hulud) containing a GitHub Actions workflow
+    that immediately ran, exfiltrating a static npm token with broad publish rights.
+  story: |-
+    @ctrl/tinycolor was not compromised through its own repository. The maintainer still had admin rights on a shared repository, angulartics2, which held an npm token with broad publish authority.
+
+    An attacker force-pushed a Shai-Hulud branch to that shared repository. Because the actor had admin-level access, the malicious GitHub Actions workflow ran without pull request review and exfiltrated the npm token.
+
+    The stolen token was enough. The attacker published malicious versions of @ctrl/tinycolor and other packages, and the bad releases carried the Shai-Hulud postinstall payload. @ctrl/tinycolor mattered most because it had roughly two million weekly downloads.
+
+    npm and GitHub removed the malicious versions quickly. The maintainer revoked tokens, republished clean packages to flush caches, and moved toward tighter publishing controls with package-scoped tokens and Trusted Publishing.
   start_date: 2025-09-15
   end_date: 2025-09-15
   target:
@@ -21,6 +31,8 @@
   impact:
     types:
     - code_execution
+    - credential_theft
+    - self_propagation
     users: 2000000
   artifacts:
   - id: ctrl-tinycolor
@@ -32,7 +44,20 @@
     versions:
     - 4.1.1
     - 4.1.2
+    locations:
+    - uri: https://www.npmjs.com/package/@ctrl/tinycolor/v/4.1.1
+      role: distribution
+    - uri: https://www.npmjs.com/package/@ctrl/tinycolor/v/4.1.2
+      role: distribution
     hashes:
     - sha256:46faab8ab153fae6e80e7cca38eab363075bb524edd79e42269217a083628f09
+    indicators:
+    - kind: branch
+      value: Shai-Hulud
+    - kind: repository
+      value: angulartics2
   references:
   - url: https://sigh.dev/posts/ctrl-tinycolor-post-mortem/
+    title: '@ctrl/tinycolor supply chain attack post-mortem'
+  - url: https://www.wiz.io/blog/shai-hulud-npm-supply-chain-attack
+    title: Shai-Hulud npm supply chain attack

@@ -1,0 +1,262 @@
+---
+- id: ammyy-admin-2015
+  title: Ammyy site served banking malware
+  synopsis: >-
+    Ammyy's official website served installers that bundled Ammyy Admin with
+    multiple malware families. The payloads included Lurk, Corebot, Buhtrap,
+    Ranbyus, and Netwire RAT.
+  story: |
+    Ammyy Admin was a legitimate remote desktop tool, widely used and widely abused. In late October and early November 2015, its official website became a malware distribution point. Visitors who expected the remote-access tool received a bundle with the real product and a criminal payload.
+
+    ESET reported five malware families in one short window. Lurk appeared on October 26, Corebot on October 29, Buhtrap on October 30, and Ranbyus and Netwire RAT on November 2. The droppers were the same across payload changes, suggesting the website compromise was a service: access to the download path could be rented or handed to different groups.
+
+    The method was simple and effective. Attackers changed the server-side delivery path so the official download carried more than the product. Administrators and support users were natural victims because they expected remote-access software to look unusual to security tools.
+
+    The impact was theft and access. Lurk and Buhtrap targeted banking. Corebot and Ranbyus carried credential and financial-theft capability. Netwire provided remote control. The trusted vendor site did the hard work of delivery.
+  start_date: 2015-10-26
+  end_date: 2015-11-02
+  target:
+    name: Ammyy Admin
+    kind: application
+    website: https://www.ammyy.com
+  actor:
+    name: Unknown cybercriminal actors
+    kind: group
+  method:
+    cause: website_compromise
+    phase: distribution
+    motive: financial_gain_data_theft
+    transitive: false
+  impact:
+    types:
+    - banking_trojan
+    - credential_theft
+    - remote_access
+    - data_theft
+  artifacts:
+  - id: ammyy-admin-installer
+    name: Ammyy Admin official installer
+    package: Ammyy Admin
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://www.ammyy.com
+    start_date: 2015-10-26
+    end_date: 2015-11-02
+    locations:
+    - uri: https://www.ammyy.com/AA_v3.exe
+      role: distribution
+    indicators:
+    - kind: malware
+      value: Lurk
+    - kind: malware
+      value: Corebot
+    - kind: malware
+      value: Buhtrap
+    - kind: malware
+      value: Ranbyus
+    - kind: malware
+      value: Netwire RAT
+    - kind: file
+      value: AA_v3.exe
+    notes:
+    - Exact affected Ammyy Admin product build was not reported in the cited public
+      sources; file scope is recorded as the official AA_v3.exe download path.
+  references:
+  - url: https://www.eset.com/afr/about/newsroom/press-releases-afr/research/operation-buhtrap-ammyy00/
+    title: ESET Uncovers Compromise of Ammyy's Remote Desktop Software Website
+  - url: https://informationsecuritybuzz.com/compromise-of-ammyys-remote-desktop-software-website/
+    title: Compromise of Ammyy Remote Desktop Software Website
+
+- id: ammyy-admin-2016
+  title: Ammyy download bundled Lurk
+  synopsis: >-
+    Ammyy's official download path repeatedly delivered an unsigned NSIS wrapper
+    that installed Ammyy Admin and malware. Lurk later gave way to Fareit after
+    arrests of suspected Lurk operators.
+  story: |
+    In 2016, Kaspersky connected Lurk infections to recent Ammyy Admin downloads. The common point was not spam or exploit kits. It was the official Ammyy website, where users obtained a remote administration tool and received spyware with it.
+
+    The poisoned download was an unsigned NSIS archive. When executed, it wrote and launched two files: a digitally signed legitimate Ammyy Admin installer, `aa_v3.exe`, and a malicious `ammyysvc.exe` detected as `Trojan-Spy.Win32.Lurk`. The screen still looked like a normal installer.
+
+    The server-side delivery script had been modified. Kaspersky said it warned Ammyy after the first discovery and again during three February recurrences; the malicious code was removed, then returned. In early April, a modified dropper checked whether the victim belonged to a corporate network before launching Lurk.
+
+    On June 1, the payload changed from Lurk to `Trojan-PSW.Win32.Fareit`, the same day Russian authorities announced arrests tied to Lurk. Kaspersky read that as evidence of a market: whoever controlled the Ammyy download path could sell placement in the dropper.
+  start_date: 2016-02-01
+  end_date: 2016-06-01
+  target:
+    name: Ammyy Admin
+    kind: application
+    website: https://www.ammyy.com
+  actor:
+    name: Unknown cybercriminal actors
+    kind: group
+  method:
+    cause: website_compromise
+    phase: distribution
+    motive: financial_gain_data_theft
+    transitive: false
+  impact:
+    types:
+    - banking_trojan
+    - credential_theft
+    - spyware
+    - data_theft
+  artifacts:
+  - id: ammyy-admin-nsis-wrapper
+    name: Ammyy Admin NSIS wrapper
+    package: Ammyy Admin
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://www.ammyy.com
+    start_date: 2016-02-01
+    end_date: 2016-06-01
+    locations:
+    - uri: https://www.ammyy.com/AA_v3.exe
+      role: distribution
+    hashes:
+    - md5:d93b214c093a9f1e07248962aeb74fc8
+    - md5:fa3f9938845ec466993a0d89517fe4bd
+    - md5:c6847f43c3f55a9536ddcd34b9826c67
+    - md5:5811244c03a0a074e56f44b545a14406
+    - md5:ef231c83ca2952b52f221d957c3a0b93
+    - md5:cfd5093cb2bb3349616d9875176146c1
+    - md5:2f3259f58a33176d938cbd9bc342fddd
+    - md5:186789b35dfcdfebfe7f0d4106b1996f
+    - md5:e483c477f78119af953995672e42b292
+    - md5:b084c2099ce31dd8d3e9d34f31cd606d
+    indicators:
+    - kind: file
+      value: aa_v3.exe
+    - kind: file
+      value: ammyysvc.exe
+    - kind: malware
+      value: Lurk
+    - kind: malware
+      value: Fareit
+    - kind: detection
+      value: Trojan-Spy.Win32.Lurk
+    - kind: detection
+      value: Trojan-PSW.Win32.Fareit
+    - kind: api
+      value: GetComputerNameExA
+    notes:
+    - Start date is approximate; Kaspersky described discovery in early February
+      2016 and repeated recurrences through June 1.
+  references:
+  - url: https://securelist.com/lurk-a-danger-where-you-least-expect-it/75384/
+    title: 'Lurk: a danger where you least expect it'
+  - url: https://cert.gov.az/en/articles/trojanized-remote-access-tool-spreads-malware
+    title: Trojanized Remote-Access Tool Spreads Malware
+  - url: https://www.quickheal.com/blogs/alert-ransomware-is-being-spread-through-the-ammyy-admin-website/
+    title: Alert! Ransomware is Being Spread through the Ammyy Admin Website
+
+- id: ammyy-admin-2018
+  title: Ammyy download carried Kasidet
+  synopsis: >-
+    Ammyy's official site again served a trojanized Ammyy Admin download. The
+    SmartInstaller wrapper dropped Kasidet, using a World Cup-themed command
+    server as cover.
+  story: |
+    The Ammyy pattern returned in June 2018. ESET observed the official site serving a poisoned Ammyy Admin download from shortly after midnight on June 13 until the morning of June 14. The legitimate remote-access tool remained present; the wrapper added the malware.
+
+    The installer was named `AA_v3.exe`, as before. Attackers used SmartInstaller to build a new binary that dropped `Ammyy_Service.exe` before installing Ammyy Admin. That file carried Win32/Kasidet, a multipurpose bot and banking malware sold in criminal markets.
+
+    Kasidet searched for files likely to contain passwords or cryptocurrency wallet material, including `wallet.dat`, `pass.txt`, and `passwords.txt`. It also reported running processes tied to wallets, password managers, remote desktop tools, and administration tools, including Electrum, Exodus, KeePass, PuTTY, WinSCP, Xshell, Radmin, and vSphere.
+
+    The command server was `fifa2018start.info`, a name chosen to blend into World Cup noise. The attack was short, but the lesson was familiar: a vendor download for a remote-administration tool gives criminals both reach and plausible cover.
+  start_date: 2018-06-13
+  end_date: 2018-06-14
+  target:
+    name: Ammyy Admin
+    kind: application
+    website: https://www.ammyy.com
+  actor:
+    name: Unknown cybercriminal actors
+    kind: group
+  method:
+    cause: website_compromise
+    phase: distribution
+    motive: financial_gain_data_theft
+    transitive: false
+  impact:
+    types:
+    - banking_trojan
+    - credential_theft
+    - cryptocurrency_theft
+    - data_theft
+  artifacts:
+  - id: ammyy-admin-smartinstaller-wrapper
+    name: Ammyy Admin SmartInstaller wrapper
+    package: Ammyy Admin
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://www.ammyy.com
+    start_date: 2018-06-13
+    end_date: 2018-06-14
+    locations:
+    - uri: https://www.ammyy.com/AA_v3.exe
+      role: distribution
+    hashes:
+    - sha1:6d11ea2d7dc9304e8e28e418b1dacff7809bdc27
+    - sha1:6fb4212b81cd9917293523f9e0c716d2ca4693d4
+    - sha1:675aca2c0a3e1eeb08d5919f2c866059798e6e93
+    indicators:
+    - kind: file
+      value: AA_v3.exe
+    - kind: file
+      value: Ammyy_Service.exe
+    - kind: malware
+      value: Kasidet
+    - kind: detection
+      value: Win32/Kasidet
+    - kind: file_sha1
+      value: Win32/Kasidet efe562f61be0b5d497f3aa9cf27c03ea212a53c9
+    - kind: file_sha1
+      value: Win32/Kasidet 9f9b8a102dd84abf1349a82e4021884842dc22dd
+    - kind: file_sha1
+      value: Win32/Kasidet 4b4498b5afdaa4b9a2a2195b8b7e376be10c903e
+    - kind: domain
+      value: fifa2018start.info
+    - kind: url
+      value: http://fifa2018start.info/panel/tasks.php
+    - kind: file_pattern
+      value: bitcoin
+    - kind: file_pattern
+      value: pass.txt
+    - kind: file_pattern
+      value: passwords.txt
+    - kind: file_pattern
+      value: wallet.dat
+    - kind: process_match
+      value: armoryqt
+    - kind: process_match
+      value: bitcoin
+    - kind: process_match
+      value: exodus
+    - kind: process_match
+      value: electrum
+    - kind: process_match
+      value: jaxx
+    - kind: process_match
+      value: keepass
+    - kind: process_match
+      value: kitty
+    - kind: process_match
+      value: mstsc
+    - kind: process_match
+      value: multibit
+    - kind: process_match
+      value: putty
+    - kind: process_match
+      value: radmin
+    - kind: process_match
+      value: vsphere
+    - kind: process_match
+      value: winscp
+    - kind: process_match
+      value: xshell
+  references:
+  - url: https://www.welivesecurity.com/2018/07/11/ammyy-admin-compromised-malware-world-cup-cover/
+    title: Ammyy Admin compromised with malware again; World Cup used as cover
+  - url: https://www.ammyy.com/en/admin_mu.html
+    title: Ammyy Admin - cases of malicious use. Official WARNING.

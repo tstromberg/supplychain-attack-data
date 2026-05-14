@@ -1,10 +1,16 @@
----
 - id: passwordstate
-  title: Passwordstate update pushed Moserpass credential stealer.
-  synopsis: Passwordstate's enterprise password manager update mechanism was compromised
-    by an unknown actor. For about 28 hours, it distributed a malicious update containing
-    Moserpass, malware built to exfiltrate system details and stored Passwordstate
-    credential data from the very vault trusted to protect secrets.
+  title: Passwordstate update delivered Moserpass
+  synopsis: >-
+    Click Studios' Passwordstate in-place updater served a malformed upgrade that loaded
+    Moserpass. The malware harvested system data and selected password records.
+  story: |
+    Passwordstate was an on-premises enterprise password manager. Its value was also its risk: administrators used it to store firewall, VPN, infrastructure, application, and service credentials. In April 2021, attackers turned its trusted in-place update path into a credential collection path.
+
+    Click Studios said the initial compromise modified an upgrade director file on `www.clickstudios.com.au`. Manual upgrades were not believed affected. In-place upgrades performed between April 20, 2021 at 20:33 UTC and April 22, 2021 at 00:30 UTC could receive a malformed `Passwordstate_upgrade.zip` from infrastructure not controlled by Click Studios.
+
+    The malformed package loaded a modified `Moserware.SecretSplitter.dll`, about 65 KB in size. That DLL downloaded `upgrade_service_upgrade.zip` from `passwordstate-18ed2.kxcdn.com`, decrypted an in-memory .NET assembly, and started a background thread. The payload did not need to break Passwordstate's vault model in the abstract. It ran inside the application environment.
+
+    The malware collected host and process details, running services, Passwordstate proxy credentials, and selected password-table fields including title, username, description, notes, URL, generic fields, and password. Click Studios told affected customers to apply a hotfix, stop and restart Passwordstate and IIS, and reset stored passwords, prioritizing externally facing systems first. A later fake-hotfix phishing wave is kept as related context, not as a separate supply-chain artifact, because it was delivered by email rather than Passwordstate's official update path.
   start_date: '2021-04-20T20:33:00Z'
   end_date: '2021-04-22T00:30:00Z'
   target:
@@ -23,7 +29,6 @@
     types:
     - credential_theft
     - data_exfiltration
-    users: 1000
   artifacts:
   - id: passwordstate
     name: Passwordstate
@@ -32,30 +37,78 @@
     start_date: '2021-04-20T20:33:00Z'
     end_date: '2021-04-22T00:30:00Z'
     locations:
-    - uri: https://passwordstate-18667.kxcdn.com/passwordstate/upgrades/Passwordstate_upgrade.zip
+    - uri: 
+        https://passwordstate-18667.kxcdn.com/passwordstate/upgrades/Passwordstate_upgrade.zip
       role: distribution
-    - uri: https://updates.clickstudios.com.au/passwordstate/upgrades/Passwordstate_upgrade.zip
+    - uri: 
+        https://updates.clickstudios.com.au/passwordstate/upgrades/Passwordstate_upgrade.zip
       role: distribution
-    - uri: https://www.virustotal.com/gui/file/502bf5e87e1809e6b2317888fab546aa1d22389922d83bb81a35b602ed12c23e
+    - uri: 
+        https://www.virustotal.com/gui/file/502bf5e87e1809e6b2317888fab546aa1d22389922d83bb81a35b602ed12c23e
       role: mirror
     hashes:
     - sha256:502bf5e87e1809e6b2317888fab546aa1d22389922d83bb81a35b602ed12c23e
     - sha256:e5ca693512ae940f1058ef2ffb6a3cb560661a9e5b78e9fea7a25dee4c7f65a9
     - sha256:3559ef72396bc0bf5e8874cf5710a5aa0eef72c4b27af32e1f72ed5bacf9a271
+    - sha256:f23f9c2aaf94147b2c5d4b39b56514cd67102d3293bdef85101e2c05ee1c3bf9
     indicators:
+    - kind: file
+      value: Passwordstate_upgrade.zip
+    - kind: file
+      value: Moserware.SecretSplitter.dll
+    - kind: file
+      value: upgrade_service_upgrade.zip
+    - kind: path
+      value: C:\inetpub\passwordstate\bin\moserware.secretsplitter.dll
+    - kind: domain
+      value: passwordstate-18ed2.kxcdn.com
+    - kind: domain
+      value: passwordstate-18ed0.kxcdn.com
+    - kind: domain
+      value: passwordstate-18ed1.kxcdn.com
+    - kind: domain
+      value: passwordstate-18ed4.kxcdn.com
+    - kind: domain
+      value: passwordstate-18ed5.kxcdn.com
+    - kind: domain
+      value: passwordstate-8665.kxcdn.com
+    - kind: url
+      value: https://passwordstate-18ed2.kxcdn.com/upgrade_service_upgrade.zip
+    - kind: user_agent
+      value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
+        (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36
     - kind: observable
-      value: 'Original CSIS Group analysis (link dead): https://www.csis.dk/newsroom-blog-overview/2021/moserpass/'
+      value: Modified Moserware.SecretSplitter.dll was about 65 KB.
     - kind: observable
-      value: 'Original ESET IoC link (link dead): https://github.com/eset/malware-ioc/tree/master/moserpass'
+      value: Moserpass posted selected Passwordstate password table fields to attacker 
+        infrastructure and then slept for one day.
     notes:
-    - Affected Passwordstate scope covered in-place upgrades performed between 2021-04-20T20:33Z
-      and 2021-04-22T00:30Z.
+    - Affected Passwordstate scope covered in-place upgrades performed between 
+      2021-04-20T20:33Z and 2021-04-22T00:30Z.
+    - Click Studios said manual upgrades were not compromised and that its own CDN 
+      network was not compromised.
+    - Public reporting cited 29,000 customer organizations and 370,000 security and IT
+      professionals as Passwordstate's exposed customer base, not as confirmed victims.
+    - The later fake-hotfix phishing campaign is recorded as follow-on context only; it
+      was not delivered through the official Passwordstate update mechanism.
   references:
-  - url: 'https://www.csis.dk/newsroom-blog-overview/2021/moserpass/ # CSIS Group
-      analysis (Link confirmed dead, needs alternative)'
-  - url: 'https://www.bleepingcomputer.com/news/security/passwordstate-password-manager-breached-via-supply-chain-attack/
-      # (Link confirmed dead, needs alternative)'
-  - url: 'https://socprime.com/blog/passwordstate-supply-chain-attack-exposes-29k-companies-to-the-risk-of-compromise/
-      # (Link confirmed dead, needs alternative)'
-  - url: 'https://www.clickstudios.com.au/passwordstate-supply-chain-attack-information.html
-      # Original vendor advisory page (Link confirmed dead/server error, needs alternative)'
+  - url: https://kryptera.se/wp-content/uploads/Incident_Management_Advisory-01-20210424.pdf
+    title: Passwordstate Incident Management Advisory
+  - url: https://www.bleepingcomputer.com/news/security/passwordstate-password-manager-hacked-in-supply-chain-attack/
+    title: Passwordstate password manager hacked in supply chain attack
+  - url: https://securityaffairs.com/117221/cyber-crime/passwordstate-supply-chain-attack.html
+    title: A supply chain attack compromised the update mechanism of Passwordstate Password Manager
+  - url: https://arstechnica.com/gadgets/2021/04/hackers-backdoor-corporate-password-manager-and-steal-customer-data/
+    title: Hackers backdoor corporate password manager and steal customer data
+  - url: https://www.bleepingcomputer.com/news/security/passwordstate-hackers-phish-for-more-victims-with-updated-malware/
+    title: Passwordstate hackers phish for more victims with updated malware
+  - url: 
+      https://www.netsec.news/phishing-campaign-impersonates-click-studios-to-deliver-new-moserpass-malware-variant/
+    title: Phishing Campaign Impersonates Click Studios to Deliver New Moserpass Malware Variant
+  - url: https://socprime.com/blog/passwordstate-supply-chain-attack-exposes-29k-companies-to-the-risk-of-compromise/
+    title: Passwordstate Supply Chain Attack Exposes 29K Companies to the Risk of
+      Compromise
+  - url: https://techcrunch.com/2021/08/04/passwordstate-supply-chain-attack/
+    title: Passwordstate customers complain of silence and secrecy after cyberattack
+  - url: https://www.ncert.gov.ph/2021/04/27/passwordstate-password-manager-tool-compromised/
+    title: PasswordState, Password Manager Tool Compromised

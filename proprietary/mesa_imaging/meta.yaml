@@ -1,23 +1,19 @@
----
 - id: mesa-imaging-acquired-by-heptagon-then-ams-osram
-  title: MESA Imaging camera software distributed Havex
-  synopsis: MESA Imaging, a Swiss developer of 3D Time-of-Flight (ToF) cameras and
-    related software used in industrial applications, was another vendor whose website
-    was compromised during the Dragonfly/Havex campaign. Software installers for
-    its camera products were trojanized with Havex, enabling espionage on systems
-    using specialized imaging equipment. The campaign was later attributed in a U.S.
-    indictment to Russia's FSB Center 16. This record tracks the MESA Imaging product
-    scope specifically.
+  title: MESA Imaging software delivered Havex
+  synopsis: >-
+    MESA Imaging, a Swiss developer of 3D Time-of-Flight (ToF) cameras and related software
+    used in industrial applications, was another vendor whose website was compromised during
+    the Dragonfly/Havex campaign.
   story: |
     Havex was not dropped only by phishing mail or drive-by compromise. Dragonfly also turned official industrial software distribution into a delivery system. By compromising ICS and SCADA vendors, the operators made trusted downloads carry the first stage of an intrusion.
 
-    MESA Imaging was one of the vendor scopes publicly associated with that supply-chain phase. Its 3D Time-of-Flight camera software belonged to a narrow industrial niche, which made the compromise useful for finding specialized environments rather than broad consumer machines. The poisoned download looked like product support; the payload made it reconnaissance.
+    MESA Imaging was one of the vendor scopes publicly associated with that supply-chain phase. Netresec identified the affected product as Swiss Ranger 1.0.14.706, the libMesaSR driver installer for MESA's industrial range cameras. The poisoned download looked like product support; the payload made it reconnaissance.
 
     The malware installed a backdoor, reached command-and-control infrastructure, gathered credentials and system details, and could use an OPC scanning module to enumerate industrial control devices. According to the DOJ indictment, the wider Dragonfly/Havex operation infected more than 17,000 unique devices in the United States and abroad, including systems used around power and energy operations.
 
-    The MESA Imaging entry stays separate from eWON and MB Connect Line because the affected artifacts and vendor distribution paths differ. The campaign attribution is shared, but the package scope is not. The 2013-2014 dates reflect the public trojanized-download window for this artifact group, while the indictment describes earlier supplier-level access in the same broader operation.
-  start_date: 2013-01-01
-  end_date: 2014-06-01
+    The MESA Imaging entry stays separate from eWON and MB Connect Line because the affected artifacts and vendor distribution paths differ. The campaign attribution is shared, but the package scope is not. The dates here track the public trojanized-download window reported for this artifact group, while the indictment describes earlier supplier-level access in the same broader operation.
+  start_date: 2013-06-01
+  end_date: 2013-07-31
   target:
     name: MESA Imaging (Acquired by Heptagon, then ams OSRAM)
     kind: application
@@ -37,53 +33,67 @@
     - data_theft
     - remote_access
   artifacts:
-  - id: mesa-imaging-acquired-by-heptagon-then-ams-osram
-    name: MESA Imaging (Acquired by Heptagon, then ams OSRAM)
+  - id: mesa-swissranger-libmesasr
+    name: Swiss Ranger libMesaSR driver
     kind: binary_archive
     website: https://mesa-imaging.ch
-    start_date: 2013-01-01
-    end_date: 2014-06-01
+    start_date: 2013-06-01
+    end_date: 2013-07-31
+    versions:
+    - 1.0.14.706
     locations:
-    - uri: https://www.f-secure.com/documents/996508/1030745/Threat_Intelligence_Report_Havex_an_Energetic_Bear_Targets_ICS_SCADA.pdf
+    - uri: http://www.mesa-imaging.ch/
+      role: distribution
+    - uri: 
+        https://www.netresec.com/?page=Blog&month=2014-10&post=Full-Disclosure-of-Havex-Trojans
       role: mirror
-    - uri: https://web.archive.org/web/20190717022917/https://www.symantec.com/content/en/us/enterprise/media/security_response/whitepapers/dragonfly-threat-against-energy-sector-systems.pdf
+    - uri: 
+        https://www.f-secure.com/documents/996508/1030745/Threat_Intelligence_Report_Havex_an_Energetic_Bear_Targets_ICS_SCADA.pdf
+      role: mirror
+    - uri: 
+        https://web.archive.org/web/20190717022917/https://www.symantec.com/content/en/us/enterprise/media/security_response/whitepapers/dragonfly-threat-against-energy-sector-systems.pdf
       role: mirror
     - uri: https://www.cisa.gov/news-events/ics-alerts/ics-alert-14-176-02a
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/09a35ac2f7f9ca156c3a2ab2466c029976535390099101632e904a7ca3f6764d
-      role: mirror
     hashes:
-    - sha256:09a35ac2f7f9ca156c3a2ab2466c029976535390099101632e904a7ca3f6764d
-    - sha256:4a1a783a11c1a2a9d5915717b16ebb5012c685f4457a08246666d7d2f7dcb238
-    - md5:f691c8f16e290f829710ff0a18ff2532
+    - md5:e027d4395d9ac9cc980d6a91122d2d83
+    - sha256:398a69b8be2ea2b4a6ed23a55459e0469f657e6c7703871f63da63fb04cefe90
     indicators:
+    - kind: file
+      value: SwissrangerSetup1.0.14.706.exe
+    - kind: malware
+      value: Sysmain RAT
     - kind: observable
-      value: Trojanized MESA Imaging camera software installers (e.g., for SR4000
-        series cameras), downloaded from mesa-imaging.ch during 2013-2014.
-    - kind: observable
-      value: Havex backdoor contacted command-and-control infrastructure after
+      value: Havex backdoor contacted command-and-control infrastructure after 
         execution.
     - kind: observable
-      value: Havex OPC-scanning component looked for ICS and SCADA devices after
+      value: Havex OPC-scanning component looked for ICS and SCADA devices after 
         infection.
     notes:
-    - Affected scope covered specific MESA Imaging software installers available during
-      the compromise period.
-    - The DOJ indictment describes more than 17,000 infected devices across the broader
-      Dragonfly/Havex campaign; this record does not assign that whole count to MESA
+    - Netresec reported six weeks of exposure in June and July 2013, citing Symantec.
+    - The DOJ indictment describes more than 17,000 infected devices across the broader 
+      Dragonfly/Havex campaign; this record does not assign that whole count to MESA 
       Imaging.
   references:
-  - url: https://www.f-secure.com/documents/996508/1030745/Threat_Intelligence_Report_Havex_an_Energetic_Bear_Targets_ICS_SCADA.pdf
+  - url: 
+      https://www.netresec.com/?page=Blog&month=2014-10&post=Full-Disclosure-of-Havex-Trojans
+    title: Full Disclosure of Havex Trojans
+  - url: 
+      https://www.f-secure.com/documents/996508/1030745/Threat_Intelligence_Report_Havex_an_Energetic_Bear_Targets_ICS_SCADA.pdf
     title: Havex Hunts For ICS/SCADA Systems
   - url: https://en.wikipedia.org/wiki/Havex
     title: 'Wikipedia: Havex'
   - url: https://www.cisa.gov/news-events/ics-alerts/ics-alert-14-176-02a
-    title: 'ICS Alert ICS-ALERT-14-176-02A: Ongoing Sophisticated Malware Campaign
-      Compromising ICS'
-  - url: https://web.archive.org/web/20190717022917/https://www.symantec.com/content/en/us/enterprise/media/security_response/whitepapers/dragonfly-threat-against-energy-sector-systems.pdf
+    title: 'ICS Alert ICS-ALERT-14-176-02A: Ongoing Sophisticated Malware Campaign Compromising
+      ICS'
+  - url: https://www.cisa.gov/news-events/ics-advisories/icsa-14-178-01
+    title: 'ICS Advisory ICSA-14-178-01: ICS Focused Malware'
+  - url: 
+      https://web.archive.org/web/20190717022917/https://www.symantec.com/content/en/us/enterprise/media/security_response/whitepapers/dragonfly-threat-against-energy-sector-systems.pdf
     title: 'Dragonfly: Cyberespionage Attacks Against Energy Suppliers'
-  - url: https://www.theregister.com/security/2022/03/25/us-reveals-russian-supply-chain-attack-on-energy-sector/1444847
+  - url: 
+      https://www.theregister.com/security/2022/03/25/us-reveals-russian-supply-chain-attack-on-energy-sector/1444847
     title: US reveals Russian supply-chain attack on energy sector
   - url: https://www.justice.gov/archives/opa/press-release/file/1486836/dl?inline=
-    title: 'Indictment: United States v. Pavel Aleksandrovich Akulov, Mikhail
-      Mikhailovich Gavrilov, and Marat Valeryevich Tyukov'
+    title: 'Indictment: United States v. Pavel Aleksandrovich Akulov, Mikhail Mikhailovich
+      Gavrilov, and Marat Valeryevich Tyukov'

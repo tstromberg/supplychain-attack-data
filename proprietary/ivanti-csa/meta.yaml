@@ -1,0 +1,76 @@
+- id: ivanti-csa-csrf-magic
+  title: Ivanti CSA shipped csrf-magic backdoor
+  synopsis: >-
+    Ivanti EPM Cloud Services Appliance carried a backdoored csrf-magic.php file
+    that enabled unauthenticated PHP code execution. The poisoned code appears to
+    have come from a counterfeit csrf-magic clone, not the official project.
+  story: |
+    CVE-2021-44529 looked like a code injection bug in Ivanti EPM Cloud Services Appliance. The patch told administrators to remove a block in `/opt/landesk/broker/webroot/lib/csrf-magic.php` beginning with `// Obscure Tokens`. That was the tell. The vulnerable code was not a normal parser mistake. It was a backdoor.
+
+    The injected PHP was small and blunt. It decoded obfuscated strings into `str_replace`, `base64_decode`, and `create_function`, then reached an `eval` path. A request with the right cookie shape could concatenate cookie values, base64-decode them, and execute the result. The marker response used `c123`.
+
+    Sonatype traced the likely origin to a counterfeit GitHub repository named like the csrf-magic project. The official csrf-magic source lived elsewhere, and the suspicious commit, `f7f84f887a5f2e19926a2ad3c48614905629d60b`, was not found in the official repo or its mirrors. The best public explanation is simple: a cloned project was poisoned and later consumed by Ivanti.
+
+    The record is therefore modeled as a proprietary distribution incident. The open-source project itself was not shown to be compromised. Ivanti's official appliance distributed the backdoored file, and patch 512 removed it. CISA later listed CVE-2021-44529 as known exploited.
+  start_date: 2014-02-01
+  end_date: 2021-12-02
+  target:
+    name: Ivanti EPM Cloud Services Appliance
+    kind: application
+    website: https://www.ivanti.com
+  actor:
+    name: Unknown attacker
+    kind: unknown
+  language: php
+  method:
+    cause: poisoned_third_party_component
+    phase: dependency
+    motive: remote_access
+    transitive: true
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+  artifacts:
+  - id: ivanti-csa-csrf-magic
+    name: Ivanti CSA csrf-magic.php
+    kind: source_code
+    website: https://www.ivanti.com
+    start_date: 2014-02-01
+    end_date: 2021-12-02
+    fixed_versions:
+    - 4.6.0-512
+    locations:
+    - uri: https://forums.ivanti.com/s/article/SA-2021-12-02
+      role: mirror
+    indicators:
+    - kind: cve
+      value: CVE-2021-44529
+    - kind: path
+      value: /opt/landesk/broker/webroot/lib/csrf-magic.php
+    - kind: file
+      value: csrf-magic.php
+    - kind: string
+      value: // Obscure Tokens
+    - kind: string
+      value: c123
+    - kind: commit
+      value: f7f84f887a5f2e19926a2ad3c48614905629d60b
+    - kind: observable
+      value: The backdoor executed base64-decoded PHP assembled from cookie values.
+    notes:
+    - Public sources do not establish when Ivanti first imported the poisoned component;
+      the start date tracks the reported counterfeit repository commit date.
+    - The issue affected CSA versions before 4.6.0-512; public advisories describe
+      4.6 and earlier versions rather than a clean enumerated version list.
+    - This is not modeled as an OSS project compromise because the official csrf-magic
+      project was not shown to be hijacked.
+  references:
+  - url: https://www.sonatype.com/blog/the-curious-case-of-csrf-magic-a-case-study-in-supply-chain-poisoning
+    title: "The Curious Case of 'csrf-magic': A Case Study in Supply Chain Poisoning"
+  - url: https://www.labs.greynoise.io/grimoire/2024-02-what-is-this-old-ivanti-exploit/
+    title: "Code injection or backdoor: A new look at Ivanti's CVE-2021-44529"
+  - url: https://omls.oregon.gov/pipermail/cdp-development/2024-March/000323.html
+    title: 'CVE-2021-44529: Ivanti Endpoint Manager Cloud Service Appliance Code Injection Vulnerability'
+  - url: https://nvd.nist.gov/vuln/detail/CVE-2021-44529
+    title: 'NVD: CVE-2021-44529'

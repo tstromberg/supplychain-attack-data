@@ -1,14 +1,22 @@
 ---
 - id: vestacp
-  title: VestaCP build system compromise inserted remote backdoor
-  synopsis: Attackers compromised infrastructure related to the Vesta Control Panel,
-    allowing them to inject malicious code into update scripts or packages delivered
-    to users. The malicious code executed commands, collected server passwords (including
-    VestaCP admin and FTP passwords), and sent the stolen data to the attackers' server.
-  start_date: 2018-06-01
-  end_date: 2018-06-12
+  title: VestaCP installer leaked admin passwords
+  synopsis: >-
+    VestaCP's official installer leaked admin passwords and server domains to
+    Vesta infrastructure. Attackers later used that access path to install
+    Linux/ChachaDDoS on customer servers.
+  story: |
+    VestaCP's installer carried malicious code in 2018. The change appeared in commit `a3f0fa1` on May 31 and was removed in commit `ee03eff` on June 13. During that window, new installations exposed the base64-encoded admin password and server domain through the normal install path.
+
+    The leak was quiet because it used Vesta's own infrastructure. ESET traced the relevant line to `vst-install-ubuntu.sh`, where `$codename` contained the password and host name sent to `http://vestacp.com/notify/`. A VestaCP team member later said their infrastructure server had been hacked, likely through an API bug in release `0.9.8-20`, and that attackers changed installation scripts to log admin passwords and IP addresses.
+
+    The impact surfaced months later. Forum users reported VestaCP servers being used for abnormal bandwidth and outbound attacks. One September report showed an attacker using the admin password over SSH to run `creator-x86_64-1` from `/var/tmp` and erase auth logs. Vesta told users to change admin passwords and check for `/usr/bin/dhcprenew`.
+
+    ESET analyzed the malware as Linux/ChachaDDoS. It persisted as `dhcprenew`, hid as `[kworker/1:1]`, downloaded architecture-specific second stages, decrypted them with ChaCha, and ran Lua tasks. Observed tasks performed SYN DDoS attacks. The supply-chain failure was the credential leak; the botnet was the consequence.
+  start_date: 2018-05-31
+  end_date: 2018-06-13
   target:
-    name: vestacp
+    name: VestaCP
     kind: daemon
     website: https://vestacp.com
   actor:
@@ -18,34 +26,136 @@
   method:
     cause: compromised_infrastructure
     phase: distribution
-    motive: credential_theft
+    motive: botnet_ddos
     transitive: false
   impact:
     types:
+    - credential_theft
     - data_exfiltration
+    - ddos
+    - remote_code_execution
   artifacts:
-  - id: vestacp
-    name: vestacp
-    kind: source_archive
+  - id: vestacp-installer
+    name: VestaCP installer scripts
+    package: VestaCP
+    ecosystem: shell script
+    kind: installer_script
     website: https://vestacp.com
-    start_date: 2018-06-01
-    end_date: 2018-06-12
+    repo: https://github.com/outroll/vesta
+    start_date: 2018-05-31
+    end_date: 2018-06-13
     locations:
     - uri: https://vestacp.com/pub/vst-install.sh
       role: distribution
     - uri: https://vestacp.com/pub/vst-install-debian.sh
       role: distribution
-    - uri: https://www.welivesecurity.com/2018/10/18/new-linux-chachaddos-malware-distributed-servers-vestacp-installed/
+    - uri: 
+        https://www.welivesecurity.com/2018/10/18/new-linux-chachaddos-malware-distributed-servers-vestacp-installed/
       role: mirror
     - uri: https://github.com/serghey-rodin/vesta/issues/1499
       role: mirror
     hashes:
     - sha256:b9f1ffcbaf887c8ec4eb260ae1fdc25b07f4849d194388eee0707f9bf23c1bca
     - md5:35e9334ae8aef10c4a97e7cc90ff964d
+    indicators:
+    - kind: cve
+      value: CVE-2018-25117
+    - kind: cwe
+      value: CWE-506
+    - kind: commit
+      value: a3f0fa1501d424477786e3e7150bb05c0b99518f
+    - kind: commit
+      value: ee03eff016e03cb76fac7ae3a0f9d1ef0f8ee35b
+    - kind: file
+      value: vst-install-ubuntu.sh
+    - kind: file
+      value: vst-install-debian.sh
+    - kind: url
+      value: http://vestacp.com/notify/
+    - kind: file
+      value: /usr/bin/dhcprenew
+    - kind: file
+      value: /etc/init.d/dhcprenew
+    - kind: file
+      value: /var/tmp/creator-x86_64-1
+    - kind: process
+      value: '[kworker/1:1]'
+    - kind: malware
+      value: Linux/ChachaDDoS
+    - kind: detection
+      value: Linux/Xorddos.Q
+    - kind: detection
+      value: Linux/Xorddos.R
+    - kind: detection
+      value: Linux/ChachaDDoS
+    - kind: ip
+      value: 45.76.146.8
+    - kind: ip
+      value: 193.201.224.238
+    - kind: ip
+      value: 193.201.224.233
+    - kind: ip
+      value: 193.201.224.202
+    - kind: url
+      value: http://193.201.224.238:8852/RTEGFN01
+    - kind: url
+      value: http://zxcvbmnnfjjfwq.com:8852/RTEGFN01
+    - kind: url
+      value: http://efbthmoiuykmkjkjgt.com:8852/RTEGFN01
+    - kind: domain
+      value: zxcvbmnnfjjfwq.com
+    - kind: domain
+      value: efbthmoiuykmkjkjgt.com
+    - kind: domain
+      value: 9fdmasaxsssaqrk.com
+    - kind: domain
+      value: 10afdmasaxsssaqrk.com
+    - kind: domain
+      value: 8masaxsssaqrk.com
+    - kind: domain
+      value: 7mfsdfasdmkgmrk.com
+    - kind: command
+      value: chmod 0777 /var/tmp/creator-x86_64-1
+    - kind: command
+      value: rm -f /var/log/auth.log /var/log/secure
     notes:
-    - Affected VestaCP scope covered versions receiving updates during the compromise
-      window.
+    - CVE-2018-25117 and VulnCheck describe affected scope as VestaCP commit
+      a3f0fa1 through commit ee03eff.
+    - VestaCP 0.9.8-23 was released in October 2018 to address security flaws found
+      during the later incident response.
   references:
-  - url: https://www.welivesecurity.com/2018/10/18/new-linux-chachaddos-malware-distributed-servers-vestacp-installed/
-  - url: https://github.com/jsmeix/openSUSE-docs-vestacp/commit/21a1431f80e5c791cc3d5bbc8e09fceea0febc9e
+  - url: 
+      https://www.welivesecurity.com/2018/10/18/new-linux-chachaddos-malware-distributed-servers-vestacp-installed/
+    title: VestaCP compromised in a new supply-chain attack
+  - url: https://forum.vestacp.com/viewtopic.php?f=10&t=17641&p=73282
+    title: All VestaCP installations being attacked - Page 4
+  - url: https://forum.vestacp.com/viewtopic.php?f=10&t=17641&start=180#p73907
+    title: All VestaCP installations being attacked - Page 19
+  - url: https://forum.vestacp.com/viewtopic.php?t=16558
+    title: Two servers are hacked today via Vestacp
+  - url: https://forum.vestacp.com/viewtopic.php?f=10&t=16556
+    title: VestaCP April 2018 attack discussion
+  - url: 
+      https://github.com/outroll/vesta/commit/a3f0fa1501d424477786e3e7150bb05c0b99518f#diff-df8da0c91e9086454c60cd468849630dR1256
+    title: VestaCP commit adding compromised installer behavior
+  - url: 
+      https://github.com/outroll/vesta/commit/ee03eff016e03cb76fac7ae3a0f9d1ef0f8ee35b#diff-df8da0c91e9086454c60cd468849630dL1270
+    title: VestaCP commit removing compromised installer behavior
+  - url: https://www.cvedetails.com/cve/CVE-2018-25117/
+    title: CVE-2018-25117 VestaCP Debian Installer Malicious Backdoor Supply Chain
+      Compromise
+  - url: https://nvd.nist.gov/vuln/detail/CVE-2018-25117
+    title: CVE-2018-25117 Detail
+  - url: https://www.vulncheck.com/advisories/vestacp-debian-installer-malicious-backdoor-supply-chain-compromise
+    title: VestaCP Debian Installer Malicious Backdoor Supply Chain Compromise
+  - url: https://hackread.com/vesta-control-panel-servers-ddos-malware-supply-chain-attack/
+    title: Vesta control panel servers infected with DDoS malware after supply chain
+      attack
+  - url: https://debuglies.com/2018/10/24/vesta-control-panel-servers-infected-with-ddos-malware/
+    title: Vesta control panel servers infected with DDoS malware after supply chain
+      attack
+  - url: 
+      https://github.com/jsmeix/openSUSE-docs-vestacp/commit/21a1431f80e5c791cc3d5bbc8e09fceea0febc9e
+    title: openSUSE docs VestaCP reference update
   - url: https://krebsonsecurity.com/2013/06/the-value-of-a-hacked-email-account/
+    title: The Value of a Hacked Email Account

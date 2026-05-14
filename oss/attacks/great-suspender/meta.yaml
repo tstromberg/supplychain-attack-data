@@ -1,13 +1,17 @@
----
 - id: thegreatsuspender
   title: The Great Suspender Chrome extension hijacked
-  synopsis: After original maintainer Dean Oemcke transferred ownership to an anonymous
-    buyer in June 2020, the new owner published v7.1.8 to the Chrome Web Store containing
-    tracking and remote-code-loading functionality that was never present in the open-source
-    repository. The extension intercepted web requests for tracking and ad fraud,
-    and could load arbitrary code from a remote server. Google removed it from the
-    Chrome Web Store and force-disabled it for users on 2021-02-04; Microsoft pulled
-    it from Edge for malware shortly before. Approximately 2 million users were affected.
+  synopsis: >-
+    After original maintainer Dean Oemcke transferred ownership to an anonymous buyer in June
+    2020, the new owner published v7.1.8 to the Chrome Web Store containing tracking and remote-code-loading
+    functionality that was never present in the open-source repository.
+  story: |-
+    The Great Suspender was a browser extension used by millions of Chrome users to unload inactive tabs. In June 2020, the original maintainer transferred control to an anonymous new owner. The source repository and the Chrome Web Store package then began to diverge.
+
+    Version 7.1.8 on the Chrome Web Store loaded remote, obfuscated JavaScript from third-party infrastructure. Community analysis found tracking and request-manipulation behavior, with permissions broad enough to observe and modify web traffic across sites.
+
+    The important distribution fact is that the hostile code was in the store package, not in the public GitHub source. Users who trusted automatic extension updates received code that open-source review of the repository would not explain.
+
+    Microsoft removed the extension from Edge first. Google later removed it from the Chrome Web Store and force-disabled installed copies on February 4, 2021. Users were left recovering suspended tabs and migrating to forks or alternatives.
   start_date: 2020-10-01
   end_date: 2021-02-04
   target:
@@ -41,7 +45,20 @@
     locations:
     - uri: https://github.com/greatsuspender/thegreatsuspender
       role: mirror
+    indicators:
+    - kind: version
+      value: 7.1.8
+    - kind: domain
+      value: owebanalytics.com
+    - kind: observable
+      value: Chrome Web Store package diverged from the public GitHub source.
+    - kind: observable
+      value: Extension loaded obfuscated remote JavaScript with broad web-request permissions.
   references:
   - url: https://github.com/greatsuspender/thegreatsuspender/issues/1263
+    title: 'URGENT: SECURITY: New maintainer is probably malicious'
   - url: https://www.theregister.com/2021/02/05/chrome_extension_great_suspender/
-  - url: https://arstechnica.com/information-technology/2021/02/google-bans-the-great-suspender-chrome-extension-thats-used-by-millions/
+    title: Google banishes The Great Suspender from Chrome extension store
+  - url: 
+      https://arstechnica.com/information-technology/2021/02/google-bans-the-great-suspender-chrome-extension-thats-used-by-millions/
+    title: Google bans The Great Suspender Chrome extension that was used by millions

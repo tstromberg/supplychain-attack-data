@@ -1,10 +1,16 @@
----
 - id: conceptworld
-  title: Conceptworld installers trojanized, data theft.
-  synopsis: Installers for Conceptworld's Notezilla, RecentX, and Copywhiz were compromised
-    on conceptworld.com. The trojanized builds stole browser credentials, crypto wallets,
-    clipboard and keystroke data, then downloaded more payloads. Rapid7 disclosed
-    the issue, and Conceptworld remediated the download path within 12 hours.
+  title: Conceptworld installers dropped dllFake
+  synopsis: >-
+    Conceptworld's official site served trojanized Notezilla, RecentX, and Copywhiz
+    installers. The unsigned builds installed the real apps, then ran dllFake stealers.
+  story: |
+    Conceptworld's download site became the delivery point. Users went to the official domain for Notezilla, RecentX, or Copywhiz and received larger, unsigned installers that still launched the real product setup. The visible install looked ordinary. The compromise ran beside it.
+
+    Rapid7 found the staged files under `%LOCALAPPDATA%\Microsoft\WindowsApps\`. A wrapper started `dllCrt.bat`, which created a hidden scheduled task named `Check dllHourly32`. Three hours later, `dllBus32.exe` launched the main batch logic and began talking to SFTP infrastructure over port 2265.
+
+    The malware family, which Rapid7 calls dllFake, was built for theft and follow-on execution. It collected Chrome and Firefox credentials, targeted cryptocurrency wallets, logged keystrokes, dumped clipboard contents, archived selected local files, and used `curl.exe` and `7z.exe` to move stolen data to attacker servers.
+
+    Rapid7 notified Conceptworld on June 24, 2024. Within 12 hours, Conceptworld removed the malicious installers and replaced them with legitimate signed copies. The record keeps all six installers as separate artifacts because each file has its own hash and could appear independently in endpoint evidence.
   start_date: 2024-06-07
   end_date: 2024-06-24
   target:
@@ -26,6 +32,77 @@
     - cryptocurrency_theft
     - data_theft
     - remote_access
+    - persistence
+  locations:
+  - uri: https://conceptworld.com
+    role: distribution
+  indicators:
+  - kind: family
+    value: dllFake
+  - kind: domain
+    value: conceptworld.com
+  - kind: ip
+    value: 5.180.185.42
+  - kind: ip
+    value: 50.2.108.102
+  - kind: ip
+    value: 50.2.191.154
+  - kind: ip
+    value: 104.140.17.242
+  - kind: ip
+    value: 104.206.2.18
+  - kind: ip
+    value: 104.206.57.117
+  - kind: ip
+    value: 104.206.95.146
+  - kind: ip
+    value: 104.206.220.113
+  - kind: ip
+    value: 170.130.34.114
+  - kind: ip
+    value: 185.137.137.74
+  - kind: ip
+    value: 212.70.149.210
+  - kind: port
+    value: '2265'
+  - kind: file
+    value: dllBus.bat
+  - kind: file
+    value: dllCrt.bat
+  - kind: file
+    value: dllCrt.xml
+  - kind: file
+    value: dllCrt32.exe
+  - kind: file
+    value: dllBus32.exe
+  - kind: file
+    value: Apps.zip
+  - kind: file
+    value: Updt.zip
+  - kind: scheduled_task
+    value: Check dllHourly32
+  - kind: path
+    value: '%LOCALAPPDATA%\Microsoft\WindowsApps\'
+  - kind: file_sha256
+    value: dllBus.bat 1fa84b696b055f614ccd4640b724d90ccad4afc035358822224a02a9e2c12846
+  - kind: file_sha256
+    value: dllCrt.xml cdc1f2430681e9278b3f738ed74954c4366b8eff52c937f185d760c1bbba2f1d
+  - kind: file_sha256
+    value: dllCrt32.exe fdc84cb0845f87a39b29027d6433f4a1bbd8c5b808280235cf867a6b0b7a91eb
+  - kind: file_sha256
+    value: dllCrt.bat a89953915eabe5c4897e414e73f28c300472298a6a8c055fcc956c61c875fd96
+  - kind: file_sha256
+    value: dllBus32.exe 70bce9c228aacbdadaaf18596c0eb308c102382d04632b01b826e9db96210093
+  - kind: file_sha256
+    value: Apps.zip ca6ff18ee006e7ab3cb42fc541b08ce4231dadfab0cce57b1c126db3df9f1297
+  - kind: file_sha256
+    value: dllTemp32.exe 33e4d5eed3527c269467eec2ac57ae94ae34fd1d0a145505a29c51cf8e83f1b9
+  - kind: file_sha256
+    value: dllCache32.exe 03761d9fd24a2530b386c07bf886350ae497e693440a9319903072b93a30c82d
+  - kind: file_sha256
+    value: Updt.zip 6487a0dc9dfbbaa6557af096178a1361e49762a41500aa03f17df5d3b159bf4e
+  - kind: file_sha256
+    value: dllChrome32.exe de4e03288071cdebe5c26913888b135fb2424132856cc892baea9792d6c66249
   artifacts:
   - id: notezillasetup-exe
     name: Notezilla x64 installer
@@ -39,7 +116,7 @@
     - uri: http://conceptworld.com/NotezillaSetup.exe
       role: distribution
     hashes:
-    - sha256:6F49756749D175058F15D5F3C80C8A7D46E80EC3E5EB9FB31F4346ABDB72A0E7
+    - sha256:6f49756749d175058f15d5f3c80c8a7d46e80ec3e5eb9fb31f4346abdb72a0e7
   - id: notezillasetup32-exe
     name: Notezilla x86 installer
     package: NotezillaSetup32.exe
@@ -52,7 +129,7 @@
     - uri: http://conceptworld.com/NotezillaSetup32.exe
       role: distribution
     hashes:
-    - sha256:BFA99C41AECC814DE5B9EB8397A27E516C8B0A4E31EDD9ED1304DA6C996B4AAA
+    - sha256:bfa99c41aecc814de5b9eb8397a27e516c8b0a4e31edd9ed1304da6c996b4aaa
   - id: recentxsetup-exe
     name: RecentX x64 installer
     package: RecentXSetup.exe
@@ -65,7 +142,7 @@
     - uri: http://conceptworld.com/RecentXSetup.exe
       role: distribution
     hashes:
-    - sha256:2EAE4F06F2C376C6206C632AC93F4E8C4B3E0E63ECA3118E883F8AC479B2F852
+    - sha256:4df9b7da9590990230ed2ab9b4c3d399cf770ed7f6c36a8a10285375fd5a292f
   - id: recentxsetup32-exe
     name: RecentX x86 installer
     package: RecentXSetup32.exe
@@ -78,7 +155,7 @@
     - uri: http://conceptworld.com/RecentXSetup32.exe
       role: distribution
     hashes:
-    - sha256:048CAE10558CDDFB2CF0ADE25F1101909BBA58D0A448E0D78590CC5E64E95127
+    - sha256:ebf2b84ed64629242f8d0abfca73344736205249539474e8f57d1d3dbe8ccc41
   - id: copywhizsetup-exe
     name: Copywhiz x64 installer
     package: CopywhizSetup.exe
@@ -91,7 +168,7 @@
     - uri: http://conceptworld.com/CopywhizSetup.exe
       role: distribution
     hashes:
-    - sha256:4DF9B7DA9590990230ED2AB9B4C3D399CF770ED7F6C36A8A10285375FD5A292F
+    - sha256:2eae4f06f2c376c6206c632ac93f4e8c4b3e0e63eca3118e883f8ac479b2f852
   - id: copywhizsetup32-exe
     name: Copywhiz x86 installer
     package: CopywhizSetup32.exe
@@ -104,7 +181,10 @@
     - uri: http://conceptworld.com/CopywhizSetup32.exe
       role: distribution
     hashes:
-    - sha256:EBF2B84ED64629242F8D0ABFCA73344736205249539474E8F57D1D3DBE8CCC41
+    - sha256:048cae10558cddfb2cf0ade25f1101909bba58d0a448e0d78590cc5e64e95127
   references:
   - url: https://thehackernews.com/2024/07/indian-software-firms-products-hacked.html
-  - url: https://www.rapid7.com/blog/post/2024/06/27/supply-chain-compromise-leads-to-trojanized-installers-for-notezilla-recentx-copywhiz/
+    title: Indian Software Firm's Products Hacked to Spread Data-Stealing Malware
+  - url: 
+      https://www.rapid7.com/blog/post/2024/06/27/supply-chain-compromise-leads-to-trojanized-installers-for-notezilla-recentx-copywhiz/
+    title: Supply Chain Compromise Leads to Trojanized Installers for Notezilla, RecentX, Copywhiz

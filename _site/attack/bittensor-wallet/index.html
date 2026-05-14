@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>bittensor-wallet PyPI Private Key Exfiltration Backdoor</title>
+  <title>bittensor-wallet package stole private keys</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>bittensor-wallet PyPI Private Key Exfiltration Backdoor</h1>
+  <h1>bittensor-wallet package stole private keys</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> bittensor-wallet · <a href="https://github.com/opentensor/btwallet" target="_blank">repo</a></div>
@@ -30,8 +30,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">A registry-only malicious release of bittensor-wallet 4.0.2 was uploaded to PyPI and later yanked. The backdoor was compiled into the Rust wallet code so wallet decryption paths exposed coldkey and hotkey material directly to the payload. It used sandbox checks, encrypted stolen key data with an attacker public key, deduplicated repeated unlocks, and exfiltrated through HTTPS, DNS lookups, and DNS tunneling. The release also removed bundled artifact-attestation workflow steps, making it harder to compare the PyPI artifact against the legitimate source release.</p>
+  <p class="synopsis">A registry-only malicious release of bittensor-wallet 4.0.2 was uploaded to PyPI and later yanked. The backdoor was compiled into the Rust wallet code so wallet decryption paths exposed coldkey and hotkey material directly to the payload.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>bittensor-wallet 4.0.2 was a direct attack on key custody. The package is the Rust-backed Python wallet library for Bittensor; its job is to decrypt coldkey and hotkey files so users can sign staking and transfer operations.</p>
+    
+      <p>The malicious release lived on PyPI for about forty-eight hours, from March 15 to March 17, 2026. The source archive carried the backdoor inside the Rust wallet code, not as an obvious sidecar script. The release workflow metadata was also weakened by removing build provenance attestation.</p>
+    
+      <p>The payload hooked keyfile decryption paths in `src/keyfile.rs`. When a wallet key was decrypted, the malware tagged the key type, encrypted the private material with an attacker public key, and attempted exfiltration through HTTPS, DNS TXT lookup, generated domains, and DNS query chunks.</p>
+    
+      <p>The maintainers yanked 4.0.2 after detection. Any keyfile decrypted while that version was installed must be treated as exposed, because the attack sat exactly where plaintext private keys briefly exist.</p>
+    
+  </div>
   
 
   
@@ -92,11 +105,11 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.stepsecurity.io/blog/bittensor-wallet-4-0-2-compromised-on-pypi---backdoor-exfiltrates-private-keys" target="_blank">https://www.stepsecurity.io/blog/bittensor-wallet-4-0-2-compromised-on-pypi---backdoor-exfiltrates-private-keys</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/bittensor-wallet-4-0-2-compromised-on-pypi---backdoor-exfiltrates-private-keys" target="_blank">bittensor-wallet 4.0.2 compromised on PyPI</a></li>
     
-      <li><a href="https://github.com/opentensor/btwallet/issues/183" target="_blank">https://github.com/opentensor/btwallet/issues/183</a></li>
+      <li><a href="https://github.com/opentensor/btwallet/issues/183" target="_blank">Package compromised</a></li>
     
-      <li><a href="https://socket.dev/diff/pypi/package/bittensor-wallet/4.0.1..4.0.2" target="_blank">https://socket.dev/diff/pypi/package/bittensor-wallet/4.0.1..4.0.2</a></li>
+      <li><a href="https://socket.dev/diff/pypi/package/bittensor-wallet/4.0.1..4.0.2" target="_blank">Socket diff for bittensor-wallet 4.0.1 to 4.0.2</a></li>
     
   </ul>
   

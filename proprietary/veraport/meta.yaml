@@ -1,49 +1,104 @@
----
 - id: veraport-wizvera
-  title: VeraPort plugin pushed malware South Korea.
-  synopsis: VeraPort, an integrated installation program by WIZVERA, commonly used
-    in South Korea for secure access to government and financial websites, was abused.
-    Its browser plugin mechanism was compromised or leveraged to prompt users to install
-    malware, sometimes signed with stolen digital certificates, effectively turning
-    a trusted security tool into a malware distribution vector. One of the key English-language
-    references detailing this attack is no longer accessible.
-  start_date: 2020-11-01
-  end_date: 2020-12-31
+  title: VeraPort websites delivered Lazarus malware
+  synopsis: >-
+    Lazarus abused compromised South Korean websites that supported WIZVERA VeraPort.
+    Signed impostor installers were delivered through a trusted security-software workflow.
+  story: |
+    VeraPort is an integration installer used by South Korean government and banking websites to install required browser plug-ins, identity software, and security tools. That made it a trusted distribution path, often with little user interaction once the user visited a supported site.
+
+    ESET did not report a compromise of WIZVERA's own infrastructure. The attack depended on compromised websites that already supported VeraPort, plus VeraPort configuration choices that let software be replaced if it carried a valid digital signature. Lazarus supplied signed malware that looked like legitimate South Korean security software.
+
+    The delivered files used names such as `Delfino.exe` and `MagicLineNPIZ.exe`, with stolen or illegally obtained certificates from ALEXIS SECURITY GROUP and DREAM SECURITY USA. VeraPort validated the signature, but in vulnerable configurations it did not bind the download to an expected publisher or hash.
+
+    This remains in scope as an edge case because a legitimate, required software installation mechanism delivered attacker-controlled binaries from compromised official websites. The record names the trust path carefully: VeraPort was abused as the installer channel; the compromised distribution points were the VeraPort-enabled sites.
+  start_date: 2020-11-16
+  end_date: 2020-11-18
   target:
-    name: VeraPort (WIZVERA)
-    kind: application
+    name: WIZVERA VeraPort-enabled websites
+    kind: distribution_channel
     website: https://wizvera.com
   actor:
-    name: Cybercriminal Gang
+    name: Lazarus Group
     kind: group
   language: Various
   method:
-    cause: compromised_update_plugin_mechanism
+    cause: compromised_website
     phase: distribution
-    motive: espionage_data_theft_financial_gain
+    motive: espionage
     transitive: false
   impact:
     types:
     - backdoor
-    - credential_theft
     - malware_deployment
+    - remote_access
+  indicators:
+  - kind: campaign
+    value: Operation BookCodes
+  - kind: family
+    value: NukeSped
+  - kind: file
+    value: Delfino.exe
+  - kind: file
+    value: MagicLineNPIZ.exe
+  - kind: file
+    value: Btserv.dll
+  - kind: file
+    value: bcyp655.tlb
+  - kind: certificate_subject
+    value: ALEXIS SECURITY GROUP, LLC
+  - kind: certificate_subject
+    value: DREAM SECURITY USA INC
+  - kind: path
+    value: '%Temp%\[12_RANDOM_DIGITS]\'
+  - kind: observable
+    value: VeraPort configuration verified valid digital signatures but could omit 
+      publisher or hash binding.
+  - kind: observable
+    value: ESET said the supply-chain attacks occurred at websites using VeraPort rather
+      than at WIZVERA itself.
   artifacts:
-  - id: veraport-wizvera
-    name: VeraPort (WIZVERA)
+  - id: delfino-exe
+    name: Delfino.exe impostor
     kind: binary_archive
     website: https://wizvera.com
-    start_date: 2020-11-01
-    end_date: 2020-12-31
-    locations:
-    - uri: https://blog.alyac.co.kr/3547 (Korean - details VeraPort related malware
-        distribution)
-      role: mirror
+    start_date: 2020-11-16
+    end_date: 2020-11-18
+    hashes:
+    - sha1:3d311117d09f4a6ad300e471c2fb2b3c63344b1d
     indicators:
+    - kind: certificate_subject
+      value: ALEXIS SECURITY GROUP, LLC
     - kind: observable
-      value: VeraPort software from wizvera.com, whose plugin update mechanism was
-        abused to distribute malware to users in South Korea during late 2020.
+      value: Camouflaged as legitimate South Korean software delivered via VeraPort.
+  - id: magiclinenpiz-exe
+    name: MagicLineNPIZ.exe impostor
+    kind: binary_archive
+    website: https://wizvera.com
+    start_date: 2020-11-16
+    end_date: 2020-11-18
+    hashes:
+    - sha1:3abfec6fc3445759730789d4322b0be73dc695c7
+    indicators:
+    - kind: certificate_subject
+      value: DREAM SECURITY USA INC
+    - kind: observable
+      value: Camouflaged as legitimate South Korean software delivered via VeraPort.
     notes:
-    - Affected scope covered versions active during the compromise period.
+    - ESET reported this sample as one of two signed malware files delivered through the
+      VeraPort abuse chain.
   references:
-  - url: https://blog.alyac.co.kr/3547 (Korean - details VeraPort related malware
-      distribution)
+  - url: 
+      https://www.welivesecurity.com/2020/11/16/lazarus-supply-chain-attack-south-korea/
+    title: Lazarus supply-chain attack in South Korea
+  - url: 
+      https://www.eset.com/in/about/newsroom/press-releases/research/lazarus-misuses-legitimate-security-software-in-a-supply-chain-attack-in-south-korea-eset-research-3/
+    title: Lazarus misuses legitimate security software in a supply-chain attack in South
+      Korea, ESET Research discovers
+  - url: 
+      https://www.scworld.com/news/websites-requiring-security-software-downloads-opened-door-to-supply-chain-attack
+    title: Websites requiring security software downloads opened door to supply chain
+      attack
+  - url: https://threatpost.com/hacked-software-south-korea-supply-chain-attack/161257/
+    title: Hacked Security Software Used in Novel South Korean Supply-Chain Attack
+  - url: https://thehackernews.com/2020/11/trojanized-security-software-hits-south.html
+    title: Trojanized Security Software Hits South Korean Users in Supply-Chain Attack

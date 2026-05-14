@@ -1,14 +1,16 @@
----
 - id: xygeni-action
-  title: Xygeni GitHub Action v5 tag poisoning compromise
-  synopsis: Compromised Xygeni maintainer and GitHub App credentials were used to
-    open malicious pull requests against xygeni/xygeni-action, but branch protections
-    blocked the changes from merging. The attacker instead moved the mutable v5 tag
-    to a malicious PR commit, so workflows pinned to xygeni/xygeni-action@v5 could
-    execute a reverse-shell backdoor without any workflow-file change. Xygeni removed
-    the poisoned tag, rotated credentials, removed the compromised app, and enabled
-    tag protections and release immutability. The vendor reported no main-branch,
-    SaaS, customer-data, or confirmed customer CI compromise.
+  title: Xygeni v5 tag pointed at C2 backdoor
+  synopsis: >-
+    Compromised Xygeni maintainer and GitHub App credentials moved the mutable v5 tag to a
+    backdoored commit. Workflows pinned to xygeni-action@v5 received a C2 reverse shell.
+  story: |
+    On 2026-03-03, an attacker used compromised Xygeni maintainer credentials and a GitHub App token to introduce the same malicious payload through three pull requests. The pull requests were closed, but the attacker moved the mutable `v5` tag to the backdoored commit.
+
+    That tag move was the release. Any workflow using `xygeni/xygeni-action@v5` resolved to commit `4bf1d4e19ad81a3e8d4063755ae0f482dd3baf12`, even though the workflow file did not change and the code was not merged to the main branch.
+
+    The payload was disguised as scanner telemetry in `action.yml`. It registered the runner with `security-verify.91.214.78.178.nip.io`, sent hostname, username, OS, and scanner version data, then polled for commands and executed them with `eval`, returning compressed base64 output.
+
+    Xygeni removed the compromised tag on 2026-03-10, rotated contributor tokens, enabled release immutability, added tag protection, and recommended pinning by full commit SHA. The incident is a clean example of why mutable GitHub Action tags are production release surfaces.
   start_date: 2026-03-03
   end_date: 2026-03-10
   target:
@@ -22,7 +24,7 @@
   language: YAML/Shell
   method:
     cause: compromised_account_credentials
-    phase: source
+    phase: distribution
     motive: credential_theft_remote_access
     transitive: false
   impact:
@@ -42,20 +44,39 @@
     versions:
     - v5
     locations:
-    - uri: https://github.com/xygeni/xygeni-action/tree/4bf1d4e19ad81a3e8d4063755ae0f482dd3baf12
-      role: distribution
-    - uri: https://github.com/xygeni/xygeni-action/pull/46
-      role: distribution
-    - uri: https://github.com/xygeni/xygeni-action/pull/47
-      role: distribution
-    - uri: https://github.com/xygeni/xygeni-action/pull/48
-      role: distribution
-    - uri: https://github.com/xygeni/xygeni-action/issues/54
+    - uri: 
+        https://github.com/xygeni/xygeni-action/tree/4bf1d4e19ad81a3e8d4063755ae0f482dd3baf12
       role: distribution
     - uri: https://github.com/xygeni/xygeni-action
       role: mirror
     commits:
     - 4bf1d4e19ad81a3e8d4063755ae0f482dd3baf12
+    indicators:
+    - kind: file
+      value: action.yml
+    - kind: ip
+      value: 91.214.78.178
+    - kind: domain
+      value: security-verify.91.214.78.178.nip.io
+    - kind: header
+      value: 'X-B: sL5x#9kR!vQ2$mN7'
+    - kind: command
+      value: eval
+    - kind: observable
+      value: The v5 mutable tag pointed at the backdoored commit from March 3 to
+        March 10, 2026.
   references:
-  - url: https://www.stepsecurity.io/blog/xygeni-action-compromised-c2-reverse-shell-backdoor-injected-via-tag-poisoning
-  - url: https://xygeni.io/blog/security-incident-report-xygeni-action-github-action-compromise/
+  - url: 
+      https://www.stepsecurity.io/blog/xygeni-action-compromised-c2-reverse-shell-backdoor-injected-via-tag-poisoning
+    title: 'xygeni-action Compromised: C2 Reverse Shell Backdoor Injected via Tag Poisoning'
+  - url: 
+      https://xygeni.io/blog/security-incident-report-xygeni-action-github-action-compromise/
+    title: 'Security Incident Report: xygeni-action GitHub Action Compromise'
+  - url: https://github.com/xygeni/xygeni-action/pull/46
+    title: Pull request 46 in xygeni/xygeni-action
+  - url: https://github.com/xygeni/xygeni-action/pull/47
+    title: Pull request 47 in xygeni/xygeni-action
+  - url: https://github.com/xygeni/xygeni-action/pull/48
+    title: Pull request 48 in xygeni/xygeni-action
+  - url: https://github.com/xygeni/xygeni-action/issues/54
+    title: Security incident discussion in xygeni/xygeni-action

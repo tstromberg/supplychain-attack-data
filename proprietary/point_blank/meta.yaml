@@ -1,12 +1,16 @@
----
 - id: point-blank
-  title: Point Blank game executable backdoored via supply chain
-  synopsis: Linked to the ShadowHammer/BARIUM APT group (also involved in the ASUS
-    attack), the executable for the online game Point Blank was reportedly recompiled
-    with malicious code sometime before 2019. This supply chain compromise likely
-    aimed to collect system information from players. The compromised executables
-    were signed with legitimate digital certificates. This record tracks Point Blank
-    specifically; related ShadowHammer game and ASUS compromises are tracked separately.
+  title: Point Blank executable shipped backdoor
+  synopsis: >-
+    Point Blank downloads were reported with a signed Winnti backdoor. The same payload
+    family appeared in Asian gaming supply-chain compromises.
+  story: |
+    ESET reported a cluster of Asian gaming supply-chain compromises in March 2019. Two games and one gaming platform carried the same backdoor code, launched by the same early-entry mechanism. Later reporting named Point Blank as one of the affected games.
+
+    The backdoor ran before normal program startup. Added code hooked the C runtime initialization path, decrypted an embedded DLL with RC4, executed it in memory, and then resumed the host application. That shape pointed toward build configuration or build environment compromise.
+
+    The payload was small but useful. It reported host identity, operating system, language, and a MAC-derived bot identifier, then accepted commands to download files, run downloaded binaries, execute a binary in memory, or disable callbacks through a registry flag.
+
+    ESET's telemetry placed victims mostly in Asia, with Thailand prominent. The record remains cautious about exact Point Blank versions because public reports did not publish a clean package list for that title.
   start_date: 2018-01-01
   end_date: 2019-03-11
   target:
@@ -28,24 +32,52 @@
   artifacts:
   - id: point-blank
     name: Point Blank
+    package: Point Blank
+    ecosystem: game launcher
     kind: binary_archive
     start_date: 2018-01-01
     end_date: 2019-03-11
     locations:
     - uri: https://securelist.com/operation-shadowhammer/89083/
       role: mirror
-    - uri: https://www.bankinfosecurity.com/shadowhammer-spreads-across-online-gaming-supply-chain-a-12409
+    - uri: 
+        https://www.bankinfosecurity.com/shadowhammer-spreads-across-online-gaming-supply-chain-a-12409
       role: mirror
     indicators:
-    - kind: observable
-      value: Compromised Point Blank game executables distributed via official game
-        patches or downloads, potentially through platforms like Steam or direct publisher
-        websites, prior to 2019.
+    - kind: family
+      value: Winnti
+    - kind: family
+      value: Win32/HackedApp.Winnti
+    - kind: family
+      value: Win32/Winnti.AG
+    - kind: domain
+      value: xigncodeservice.com
+    - kind: domain
+      value: gxxservice.com
+    - kind: url
+      value: https://bugcheck.xigncodeservice.com/Common/Lib/Common_bsod.php
+    - kind: url
+      value: https://dump.gxxservice.com/common/up/up_base.php
+    - kind: command
+      value: DownUrlFile
+    - kind: command
+      value: DownRunUrlFile
+    - kind: command
+      value: RunUrlBinInMem
+    - kind: command
+      value: UnInstall
     notes:
     - Exact affected Point Blank executable versions or patches are unknown.
   references:
-  - url: https://malwaretips.com/threads/point-blank-gamers-targeted-with-backdoor-malware.92107/
+  - url: 
+      https://malwaretips.com/threads/point-blank-gamers-targeted-with-backdoor-malware.92107/
+    title: Point Blank gamers targeted with backdoor malware
   - url: https://threatpost.com/gamers-pointblank-backdoor-malware/144088/
+    title: Point Blank gamers targeted with backdoor malware
   - url: https://securelist.com/operation-shadowhammer/89083/
-  - url: https://www.bankinfosecurity.com/shadowhammer-spreads-across-online-gaming-supply-chain-a-12409
+    title: Operation ShadowHammer
+  - url: 
+      https://www.bankinfosecurity.com/shadowhammer-spreads-across-online-gaming-supply-chain-a-12409
+    title: ShadowHammer spreads across online gaming supply chain
   - url: https://www.welivesecurity.com/2019/03/11/gaming-industry-scope-attackers-asia/
+    title: Gaming industry still in the scope of attackers in Asia

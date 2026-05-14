@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PyTorch nightly builds compromised via malicious dependency</title>
+  <title>PyTorch nightly builds pulled malicious dependency</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,10 +13,10 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>PyTorch nightly builds compromised via malicious dependency</h1>
+  <h1>PyTorch nightly builds pulled malicious dependency</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> pytorch · <a href="https://github.com/pytorch/pytorch" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Target:</strong> pytorch · <a href="https://pytorch.org" target="_blank">website</a> · <a href="https://github.com/pytorch/pytorch" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2022-12-25 to 2022-12-30 (5 days)</div>
     <div class="meta-item"><strong>Actor:</strong> Unknown (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> library</div>
@@ -30,17 +30,17 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">PyTorch nightly builds were compromised when a malicious torchtriton package was uploaded to PyPI and won dependency resolution over the intended internal package hosted on PyTorch&#39;s nightly index. Linux users who installed nightly builds with pip between December 25 and December 30, 2022 could receive torchtriton 2.0.0 from PyPI. The malicious ELF collected host, environment, git, SSH, and home-directory data and exfiltrated it through encrypted DNS queries.</p>
+  <p class="synopsis">PyTorch nightly builds were compromised when a malicious torchtriton package was uploaded to PyPI and won dependency resolution over the intended internal package hosted on PyTorch&#39;s nightly index.</p>
 
   
   <h2>Story</h2>
   <div class="story">
     
-      <p>The PyTorch compromise was dependency confusion in a high-value machine-learning stack. PyTorch nightly builds depended on torchtriton, an internal package served from PyTorch&#39;s own index. Because pip gave PyPI precedence in the mixed-index install flow, an attacker could publish the same package name publicly and win resolution.</p>
+      <p>The PyTorch compromise was dependency confusion in a high-value machine-learning stack. PyTorch nightly builds depended on torchtriton, an internal package served from PyTorch&#39;s own index. PyTorch said PyPI took precedence in the mixed-index install flow, so an attacker could publish the same package name publicly and win resolution.</p>
     
       <p>On December 26, 2022, the attacker published torchtriton 2.0.0 to PyPI. Checkmarx reported that the public package copied the legitimate project and added two changes: a malicious ELF binary under `triton/runtime/triton` and Python glue in `__init__.py` to execute it. The package also used starjacking to borrow legitimacy from the real repository.</p>
     
-      <p>The binary targeted x64 Linux systems. It collected nameserver configuration, hostname, username, working directory, environment variables, `/etc/hosts`, `/etc/passwd`, `.gitconfig`, `.ssh`, and the first 1,000 files under the user&#39;s home directory. Exfiltration went through encrypted DNS queries to `*.h4ck.cfd` using `wheezy.io`.</p>
+      <p>The binary targeted x64 Linux systems and ran when the `triton` package was imported. It collected nameserver configuration, hostname, username, working directory, environment variables, `/etc/hosts`, `/etc/passwd`, `.gitconfig`, `.ssh`, and the first 1,000 files under the user&#39;s home directory. Exfiltration went through encrypted DNS queries to `*.h4ck.cfd` using `wheezy.io`.</p>
     
       <p>PyTorch removed affected nightly packages, replaced the dependency with pytorch-triton, and registered a dummy PyPI package to prevent the same namespace collision. Stable PyTorch packages were not affected. The incident became a reference case for PyPI dependency confusion against mixed public and project-hosted package indexes.</p>
     
@@ -83,7 +83,7 @@
           </td>
           <td>
             
-              <code>sha256:919118939367690c239923b9748520c261503865094823459177886619378916</code>
+              <code>sha256:919118939367690c239923b9748520c261503865094823459177886619378916</code><br><code>sha256:2385b29489cd9e35f92c072780f903ae2e517ed422eae67246ae50a5cc738a0e</code>
             
           </td>
         </tr>
@@ -104,6 +104,8 @@
   
   <h2>References</h2>
   <ul>
+    
+      <li><a href="https://pytorch.org/blog/compromised-nightly-dependency/" target="_blank">Compromised PyTorch-nightly dependency chain between December 25th and December 30th, 2022</a></li>
     
       <li><a href="https://pytorch.org/blog/security-alert/" target="_blank">PyTorch dependency confusion security alert</a></li>
     

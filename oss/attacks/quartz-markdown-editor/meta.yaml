@@ -1,9 +1,18 @@
----
 - id: quartz-markdown-editor
-  title: Glassworm Unicode Attack on quartz-markdown-editor
+  title: Quartz extension hid Glassworm payload
   campaigns:
   - glassworm-march-2026
-  synopsis: The Glassworm threat actor published a malicious version of the quartz.quartz-markdown-editor VS Code extension. Its payload was concealed with invisible PUA Unicode characters, hiding credential-theft logic in plain source view while the extension worked as a quiet collector of authentication tokens and secrets.
+  synopsis: >-
+    quartz.quartz-markdown-editor 0.3.0 carried Glassworm's invisible Unicode loader.
+    The VS Code extension was part of the March 2026 multi-ecosystem wave.
+  story: |
+    Glassworm returned in March 2026 with the same idea and a wider surface. The attacker hid executable payload bytes in invisible Unicode variation selectors, so reviews and normal editor views could show a harmless empty string.
+
+    `quartz.quartz-markdown-editor` was the VS Code Marketplace artifact in this wave. Aikido listed version 0.3.0 on March 12, alongside npm packages and compromised GitHub repositories, showing the campaign was no longer confined to one registry.
+
+    The loader decoded the invisible string at runtime and passed the result to `eval()`. Earlier Glassworm payloads fetched second-stage code through Solana-based infrastructure and targeted tokens, credentials, and developer secrets.
+
+    This record tracks the VS Code extension artifact. The campaign record tracks the shared Glassworm technique, the March 3-9 GitHub repository compromises, and the broader npm and marketplace spread.
   start_date: 2026-03-12
   end_date: 2026-03-13
   target:
@@ -25,11 +34,18 @@
   artifacts:
   - id: quartz-markdown-editor
     name: quartz-markdown-editor
+    package: quartz.quartz-markdown-editor
+    ecosystem: vscode
     kind: extension
     start_date: 2026-03-12
     end_date: 2026-03-13
     versions:
     - 0.3.0
+    indicators:
+    - kind: technique
+      value: invisible_unicode_loader
+    - kind: package
+      value: quartz.quartz-markdown-editor
   references:
   - url: https://www.aikido.dev/blog/glassworm-returns-unicode-attack-github-npm-vscode
     title: 'GlassWorm Returns: New Wave Strikes as We Expose Attacker Infrastructure'

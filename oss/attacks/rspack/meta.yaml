@@ -1,25 +1,27 @@
----
 - id: rspack
-  title: "@rspack/core and @rspack/cli npm packages backdoored with XMRig"
+  title: Rspack packages shipped XMRig
   campaigns:
   - rspack-vant-cryptominer-2024
-  synopsis: On 2024-12-19 at 02:01 UTC, an attacker with a compromised npm publishing
-    token released v1.1.7 of `@rspack/core` and `@rspack/cli` containing heavily obfuscated
-    postinstall code that fetched configuration from `80.78.28.72/tokens`, collected
-    geolocation via ipinfo.io, and dropped XMRig configured to use 75% of CPU threads
-    to mine Monero. Combined weekly downloads exceeded 500,000 (`@rspack/core` ~394k,
-    `@rspack/cli` ~145k). The maintainers published v1.1.8 the same day removing the
-    malicious code and deprecated v1.1.7. Sonatype linked it to a same-day vant compromise
-    as likely the work of the same actor.
+  synopsis: >-
+    A compromised npm token published @rspack/core and @rspack/cli 1.1.7 with obfuscated
+    postinstall code. The payload fetched XMRig configuration, collected host data,
+    and mined Monero.
+  story: |
+    Rspack was hit through the package publisher path. Datadog tracks the actor as MUT-1692 and says the attacker stole an npm maintainer access token, then published trojanized 1.1.7 releases of `@rspack/core` and `@rspack/cli`.
+
+    The malicious packages carried an obfuscated Node.js script. On install, it retrieved a JSON blob from a GitHub repository under the Vant project, decoded a base64 payload, and wrote it to `/tmp/vant`. The payload installed a custom XMRig fork with a hardcoded configuration, with fallback logic to pull the official XMRig installer if the primary path failed.
+
+    The malware also searched for cloud credentials associated with East Asian providers, including Alibaba Cloud, Huawei Cloud, and Tencent Cloud. It exfiltrated credential material to `80.78.28.72/tokens`. The campaign is grouped with the Vant compromise because the same infrastructure and payload-hosting pattern tied the records together.
   start_date: 2024-12-19
   end_date: 2024-12-19
   target:
     name: rspack
     kind: library
+    website: https://rspack.dev
     repo: https://github.com/web-infra-dev/rspack
   actor:
-    name: Unknown attacker
-    kind: unknown
+    name: MUT-1692
+    kind: group
   language: javascript
   method:
     cause: compromised_credentials
@@ -29,6 +31,7 @@
   impact:
     types:
     - cryptojacking
+    - credential_theft
     users: 539000
   artifacts:
   - id: rspack-core
@@ -43,6 +46,22 @@
     locations:
     - uri: https://www.npmjs.com/package/@rspack/core/v/1.1.7
       role: distribution
+    indicators:
+    - kind: file
+      value: /tmp/vant
+    - kind: url
+      value: https://api.github.com/repos/youzan/vant/git/blobs/8ed1c9256b4bfeb3e4f5aaff48bf140398361ae3
+    - kind: ip
+      value: 80.78.28.72
+    - kind: path
+      value: ~/.aliyun/config.json
+    - kind: path
+      value: ~/.hcloud/config.json
+    - kind: path
+      value: ~/.tccli/default.credential
+    - kind: observable
+      value: Obfuscated postinstall code decoded a base64 payload hosted through a Vant
+        GitHub blob and installed XMRig.
     notes:
     - Maintainers released clean 1.1.8 and deprecated 1.1.7.
   - id: rspack-cli
@@ -57,9 +76,31 @@
     locations:
     - uri: https://www.npmjs.com/package/@rspack/cli/v/1.1.7
       role: distribution
+    indicators:
+    - kind: file
+      value: /tmp/vant
+    - kind: url
+      value: https://api.github.com/repos/youzan/vant/git/blobs/8ed1c9256b4bfeb3e4f5aaff48bf140398361ae3
+    - kind: ip
+      value: 80.78.28.72
+    - kind: path
+      value: ~/.aliyun/config.json
+    - kind: path
+      value: ~/.hcloud/config.json
+    - kind: path
+      value: ~/.tccli/default.credential
+    - kind: observable
+      value: Obfuscated postinstall code decoded a base64 payload hosted through a Vant
+        GitHub blob and installed XMRig.
     notes:
     - Maintainers released clean 1.1.8 and deprecated 1.1.7.
   references:
   - url: https://socket.dev/blog/rspack-supply-chain-attack
-  - url: https://www.sonatype.com/blog/npm-packages-rspack-vant-compromised-blocked-by-sonatype
+    title: Rspack npm packages compromised in supply chain attack
+  - url: 
+      https://www.sonatype.com/blog/npm-packages-rspack-vant-compromised-blocked-by-sonatype
+    title: npm packages Rspack and Vant compromised, blocked by Sonatype
   - url: https://thehackernews.com/2024/12/rspack-vue-vant-packages-compromised.html
+    title: Rspack and Vant npm packages compromised with cryptomining malware
+  - url: https://securitylabs.datadoghq.com/articles/2025-q1-threat-roundup/#mut-1692-compromises-rspack-maintainers-account-to-distribute-cryptojacking-and-infostealer-malware
+    title: MUT-1692 compromises Rspack maintainer's account to distribute cryptojacking and infostealer malware

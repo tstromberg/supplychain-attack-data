@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Passwordstate update pushed Moserpass credential stealer.</title>
+  <title>Passwordstate update delivered Moserpass</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Passwordstate update pushed Moserpass credential stealer.</h1>
+  <h1>Passwordstate update delivered Moserpass</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> Passwordstate · <a href="https://clickstudios.com.au" target="_blank">website</a></div>
@@ -25,13 +25,26 @@
     <div class="meta-item"><strong>Motive:</strong> credential_theft_data_theft</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
     <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration</div>
-    <div class="meta-item"><strong>User Impact:</strong> 1000</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Passwordstate&#39;s enterprise password manager update mechanism was compromised by an unknown actor. For about 28 hours, it distributed a malicious update containing Moserpass, malware built to exfiltrate system details and stored Passwordstate credential data from the very vault trusted to protect secrets.</p>
+  <p class="synopsis">Click Studios&#39; Passwordstate in-place updater served a malformed upgrade that loaded Moserpass. The malware harvested system data and selected password records.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Passwordstate was an on-premises enterprise password manager. Its value was also its risk: administrators used it to store firewall, VPN, infrastructure, application, and service credentials. In April 2021, attackers turned its trusted in-place update path into a credential collection path.</p>
+    
+      <p>Click Studios said the initial compromise modified an upgrade director file on `www.clickstudios.com.au`. Manual upgrades were not believed affected. In-place upgrades performed between April 20, 2021 at 20:33 UTC and April 22, 2021 at 00:30 UTC could receive a malformed `Passwordstate_upgrade.zip` from infrastructure not controlled by Click Studios.</p>
+    
+      <p>The malformed package loaded a modified `Moserware.SecretSplitter.dll`, about 65 KB in size. That DLL downloaded `upgrade_service_upgrade.zip` from `passwordstate-18ed2.kxcdn.com`, decrypted an in-memory .NET assembly, and started a background thread. The payload did not need to break Passwordstate&#39;s vault model in the abstract. It ran inside the application environment.</p>
+    
+      <p>The malware collected host and process details, running services, Passwordstate proxy credentials, and selected password-table fields including title, username, description, notes, URL, generic fields, and password. Click Studios told affected customers to apply a hotfix, stop and restart Passwordstate and IIS, and reset stored passwords, prioritizing externally facing systems first. A later fake-hotfix phishing wave is kept as related context, not as a separate supply-chain artifact, because it was delivered by email rather than Passwordstate&#39;s official update path.</p>
+    
+  </div>
   
 
   
@@ -70,7 +83,7 @@
           </td>
           <td>
             
-              <code>sha256:502bf5e87e1809e6b2317888fab546aa1d22389922d83bb81a35b602ed12c23e</code><br><code>sha256:e5ca693512ae940f1058ef2ffb6a3cb560661a9e5b78e9fea7a25dee4c7f65a9</code><br><code>sha256:3559ef72396bc0bf5e8874cf5710a5aa0eef72c4b27af32e1f72ed5bacf9a271</code>
+              <code>sha256:502bf5e87e1809e6b2317888fab546aa1d22389922d83bb81a35b602ed12c23e</code><br><code>sha256:e5ca693512ae940f1058ef2ffb6a3cb560661a9e5b78e9fea7a25dee4c7f65a9</code><br><code>sha256:3559ef72396bc0bf5e8874cf5710a5aa0eef72c4b27af32e1f72ed5bacf9a271</code><br><code>sha256:f23f9c2aaf94147b2c5d4b39b56514cd67102d3293bdef85101e2c05ee1c3bf9</code>
             
           </td>
         </tr>
@@ -92,13 +105,23 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.csis.dk/newsroom-blog-overview/2021/moserpass/ # CSIS Group analysis (Link confirmed dead, needs alternative)" target="_blank">https://www.csis.dk/newsroom-blog-overview/2021/moserpass/ # CSIS Group analysis (Link confirmed dead, needs alternative)</a></li>
+      <li><a href="https://kryptera.se/wp-content/uploads/Incident_Management_Advisory-01-20210424.pdf" target="_blank">Passwordstate Incident Management Advisory</a></li>
     
-      <li><a href="https://www.bleepingcomputer.com/news/security/passwordstate-password-manager-breached-via-supply-chain-attack/ # (Link confirmed dead, needs alternative)" target="_blank">https://www.bleepingcomputer.com/news/security/passwordstate-password-manager-breached-via-supply-chain-attack/ # (Link confirmed dead, needs alternative)</a></li>
+      <li><a href="https://www.bleepingcomputer.com/news/security/passwordstate-password-manager-hacked-in-supply-chain-attack/" target="_blank">Passwordstate password manager hacked in supply chain attack</a></li>
     
-      <li><a href="https://socprime.com/blog/passwordstate-supply-chain-attack-exposes-29k-companies-to-the-risk-of-compromise/ # (Link confirmed dead, needs alternative)" target="_blank">https://socprime.com/blog/passwordstate-supply-chain-attack-exposes-29k-companies-to-the-risk-of-compromise/ # (Link confirmed dead, needs alternative)</a></li>
+      <li><a href="https://securityaffairs.com/117221/cyber-crime/passwordstate-supply-chain-attack.html" target="_blank">A supply chain attack compromised the update mechanism of Passwordstate Password Manager</a></li>
     
-      <li><a href="https://www.clickstudios.com.au/passwordstate-supply-chain-attack-information.html # Original vendor advisory page (Link confirmed dead/server error, needs alternative)" target="_blank">https://www.clickstudios.com.au/passwordstate-supply-chain-attack-information.html # Original vendor advisory page (Link confirmed dead/server error, needs alternative)</a></li>
+      <li><a href="https://arstechnica.com/gadgets/2021/04/hackers-backdoor-corporate-password-manager-and-steal-customer-data/" target="_blank">Hackers backdoor corporate password manager and steal customer data</a></li>
+    
+      <li><a href="https://www.bleepingcomputer.com/news/security/passwordstate-hackers-phish-for-more-victims-with-updated-malware/" target="_blank">Passwordstate hackers phish for more victims with updated malware</a></li>
+    
+      <li><a href="https://www.netsec.news/phishing-campaign-impersonates-click-studios-to-deliver-new-moserpass-malware-variant/" target="_blank">Phishing Campaign Impersonates Click Studios to Deliver New Moserpass Malware Variant</a></li>
+    
+      <li><a href="https://socprime.com/blog/passwordstate-supply-chain-attack-exposes-29k-companies-to-the-risk-of-compromise/" target="_blank">Passwordstate Supply Chain Attack Exposes 29K Companies to the Risk of Compromise</a></li>
+    
+      <li><a href="https://techcrunch.com/2021/08/04/passwordstate-supply-chain-attack/" target="_blank">Passwordstate customers complain of silence and secrecy after cyberattack</a></li>
+    
+      <li><a href="https://www.ncert.gov.ph/2021/04/27/passwordstate-password-manager-tool-compromised/" target="_blank">PasswordState, Password Manager Tool Compromised</a></li>
     
   </ul>
   

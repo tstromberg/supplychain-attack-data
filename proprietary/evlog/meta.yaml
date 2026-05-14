@@ -1,22 +1,28 @@
----
 - id: evlog
-  title: Altair EvLog update delivered Kingslayer malware.
-  synopsis: Attackers compromised update mechanisms for Altair Technologies' EvLog
-    event log management software. Altered versions, signed with a stolen private
-    key, were distributed containing the 'Kingslayer' malware which provided backdoor
-    access, targeting telecom and military organizations primarily between April and
-    July 2015.
-  start_date: 2015-04-01
-  end_date: 2015-07-31
+  title: Altair EvLog delivered Kingslayer
+  synopsis: >-
+    Attackers compromised Altair Technologies' eventid.net and EvLog update path,
+    replacing EvLog 3.0 with a signed Kingslayer backdoor. The administrator tool
+    gave the operation a privileged route into sensitive enterprise networks.
+  story: |
+    EvLog was a small Windows event-log tool, but it sat in the right hands. System administrators used it to read the signals of large networks. In April 2015, attackers compromised Altair Technologies' eventid.net infrastructure, including the EvLog download and update path.
+
+    RSA reported `.htaccess` redirects on the MSI download and update sites. Those redirects sent users to attacker-controlled infrastructure hosting a subverted MSI and modified service binaries built from Altair source and signed with Altair's stolen code-signing key. Krebs described the update server as part of the compromise; Altair later told SecurityWeek that EvLog did not update by itself and required a manual update request.
+
+    The backdoor decrypted `http://www.oraclesoft.net/mailcheck.png`, beaconed only during a narrow weekly schedule, and could load a second-stage executable from the image response. RSA called that suspected secondary implant K2; forensic evidence on one administrator workstation showed SYSTEM-level execution, file transfer, and uploaded-program execution.
+
+    RSA sinkholed oraclesoft.net in April 2016 and saw signs that sensitive organizations were still exposed. The public disclosure was weak. Krebs identified the unnamed vendor as Altair and tied the RSA timeline to an EvLog notice published on June 30, 2016 and revised on July 17, 2016. Those are disclosure dates. The compromised distribution window was April 9 through April 25, 2015.
+  start_date: 2015-04-09
+  end_date: 2015-04-25
   target:
-    name: EvLog
+    name: Altair Technologies EvLog
     kind: application
-    website: https://altairtech.com
+    website: http://www.eventid.net/evlog/
   actor:
     name: Unknown attacker
     kind: unknown
   method:
-    cause: stolen_certificates_keys
+    cause: update_server_compromise_stolen_certificates
     phase: distribution
     motive: espionage
     transitive: false
@@ -24,18 +30,20 @@
     types:
     - backdoor
     - remote_access
-    - credential_theft
+    - espionage
     users: 100
   artifacts:
   - id: evlog
-    name: EvLog
+    name: EvLog 3.0
     kind: binary_archive
-    website: https://altairtech.com
-    start_date: 2015-04-01
-    end_date: 2015-07-31
+    website: http://www.eventid.net/evlog/
+    start_date: 2015-04-09
+    end_date: 2015-04-25
+    versions:
+    - "3.0"
     locations:
-    - uri: https://web.archive.org/web/20170726040823/https://www.comsecglobal.com/kingslayer-a-supply-chain-attack/
-      role: mirror
+    - uri: http://www.eventid.net/evlog/
+      role: distribution
     hashes:
     - sha256:caea901a301b9c103d90b8539819e050e57b67c6ff4d7863ad1cd549f5fdc2af
     - sha256:383d60bffd5dc64e38893361cb03939bc8c6d5e476dc70755eb0886947e51661
@@ -44,11 +52,42 @@
     - sha256:72ccf28f4636403249d87721e802140ccae2248b810860f8c5d4f33d07363597
     - sha256:4286ecd104cf0667064ad008e5ac9ffa33a0f7858bb745d533fdb30369e89dd4
     indicators:
+    - kind: domain
+      value: oraclesoft.net
+    - kind: domain
+      value: timekard.com
+    - kind: url
+      value: http://www.oraclesoft.net/mailcheck.png
+    - kind: file
+      value: EvLog MSI installer
+    - kind: file
+      value: service executable
+    - kind: malware
+      value: Kingslayer
+    - kind: malware
+      value: K2
+    - kind: technique
+      value: htaccess_redirect
     - kind: observable
-      value: Compromised EvLog update packages distributed via Altair Technologies'
-        official update channels.
+      value: Compromised EvLog update packages were served through eventid.net and the
+        EvLog update path.
     notes:
-    - Affected EvLog scope covered versions updated between April and July 2015.
+    - RSA sinkholed the Kingslayer control domain in April 2016 and observed indicators
+      of organizations that may still have been running the backdoored software.
+    - RSA described the current-version update path as a delivery route; Altair later
+      told SecurityWeek the software did not update by itself and required a manual
+      update request.
+    - Altair's EvLog notice was published on June 30, 2016 and revised on July 17,
+      2016; those are disclosure dates, not artifact distribution dates.
   references:
+  - url: https://krebsonsecurity.com/2017/02/how-to-bury-a-major-breach-notification/
+    title: How to Bury a Major Breach Notification
+  - url: https://www.securityweek.com/serious-breach-linked-chinese-apts-comes-light/
+    title: Serious Breach Linked to Chinese APTs Comes to Light
+  - url: https://www.atlanticcouncil.org/in-depth-research-reports/report/broken-trust-lessons-from-sunburst/
+    title: 'Broken Trust: Lessons from Sunburst'
+  - url: 
+      https://github.com/eric-erki/threat-INTel/blob/master/2017/kingslayer-a-supply-chain-attack.pdf
+    title: Kingslayer - A Supply Chain Attack
   - url: https://web.archive.org/web/20170726040823/https://www.comsecglobal.com/kingslayer-a-supply-chain-attack/
-  - url: https://securityaffairs.com/58864/cyber-crime/operation-wilysupply-hacking.html
+    title: Kingslayer - A Supply Chain Attack

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>gem-wrappers gem backdoored during RubyGems.org platform compromise</title>
+  <title>gem-wrappers backdoor reached RubyGems.org</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>gem-wrappers gem backdoored during RubyGems.org platform compromise</h1>
+  <h1>gem-wrappers backdoor reached RubyGems.org</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> gem-wrappers · <a href="https://github.com/rvm/gem-wrappers" target="_blank">repo</a></div>
@@ -30,8 +30,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">During a platform-level compromise of RubyGems.org (exploiting server vulnerabilities), attackers gained root filesystem access and replaced the legitimate &#39;gem-wrappers&#39; gem file (v1.1.0) with a malicious version. This trojaned version, with malicious code inserted into &#39;gemutils.rb&#39;, contained obfuscated code (using eval(Zlib::Inflate.inflate(Base64.decode64(...)))) that acted as a backdoor. The backdoor listened on UDP port 53, accepted clear text commands, and allowed remote command execution via eval() on systems that installed or updated to the compromised gem during the incident window.</p>
+  <p class="synopsis">During a platform-level compromise of RubyGems.org (exploiting server vulnerabilities), attackers gained root filesystem access and replaced the legitimate &#39;gem-wrappers&#39; gem file (v1.1.0) with a malicious version.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>gem-wrappers was the package-level artifact exposed by the 2013 RubyGems.org compromise. The attack was not a maintainer deciding to publish hostile code; it was a failure at the hosting platform that distributed gems to the Ruby ecosystem.</p>
+    
+      <p>Public reporting tied the intrusion to a RubyGems.org server vulnerability that let attacker-controlled gem metadata execute on the service. Once the platform was compromised, the legitimate `gem-wrappers` 1.1.0 gem file was replaced with a malicious archive.</p>
+    
+      <p>That made the trust path simple and dangerous. Users asking RubyGems.org for `gem-wrappers` 1.1.0 could receive the poisoned package from the canonical registry. The source repository was less important than the archive served by the package host.</p>
+    
+      <p>RubyGems.org took the service offline, audited gems, and restored trust in the distribution platform. This record keeps the package artifact separate from the platform incident because the affected gem version and archive hash are concrete.</p>
+    
+  </div>
   
 
   
@@ -92,9 +105,11 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://arstechnica.com/information-technology/2013/02/rubygems-org-hacked-popular-gem-backdoored-with-remote-code-exploit/" target="_blank">https://arstechnica.com/information-technology/2013/02/rubygems-org-hacked-popular-gem-backdoored-with-remote-code-exploit/</a></li>
+      <li><a href="https://arstechnica.com/information-technology/2013/02/rubygems-org-hacked-popular-gem-backdoored-with-remote-code-exploit/" target="_blank">RubyGems.org hacked, popular gem backdoored with remote code exploit</a></li>
     
-      <li><a href="https://nakedsecurity.sophos.com/2013/02/01/rubygems-hacked-gem-wrappers/" target="_blank">https://nakedsecurity.sophos.com/2013/02/01/rubygems-hacked-gem-wrappers/</a></li>
+      <li><a href="https://nakedsecurity.sophos.com/2013/02/01/rubygems-hacked-gem-wrappers/" target="_blank">RubyGems hacked, gem-wrappers backdoored</a></li>
+    
+      <li><a href="https://venturebeat.com/business/rubygems-org-hacked-interrupting-heroku-services-and-putting-millions-of-sites-using-rails-at-risk/" target="_blank">RubyGems.org hacked, interrupting Heroku services and putting Rails sites at risk</a></li>
     
   </ul>
   

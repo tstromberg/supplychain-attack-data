@@ -1,0 +1,66 @@
+- id: dogwiftools
+  title: DogWifTools Windows releases drained wallets
+  synopsis: >-
+    An attacker used an exposed GitHub token to replace DogWifTools Windows releases
+    with RAT-laced builds. Versions 1.6.3 through 1.6.6 stole wallet material and
+    drained Solana users.
+  story: |
+    DogWifTools was a commercial tool for Solana memecoin launches. It automated volume, bundling, comments, and activity simulation for Pump.fun promotion. The users trusted the Windows client with wallets and local trading material.
+
+    According to DogWifTools' disclosure as reported by BleepingComputer, an attacker reverse engineered the software and extracted a GitHub token. The token gave access to the project's private GitHub repository. The attacker did not publish malware immediately. After legitimate releases, they waited, modified the builds, and replaced the Windows artifacts.
+
+    The affected versions were 1.6.3 through 1.6.6. The malicious build installed a remote access trojan and downloaded `updater.exe` into the user's local AppData directory. The payload targeted cryptocurrency wallet private keys. Reports also described exchange-account loss and possible exposure of identity documents from systems where DogWifTools had broad permissions.
+
+    The estimated theft was more than $10 million, though that figure came from community reporting and was disputed by a person claiming responsibility. DogWifTools denied staff involvement, said macOS users were not affected, and said it was adding security controls while working with investigators.
+  start_date: 2025-01-27
+  end_date: 2025-01-29
+  target:
+    name: DogWifTools
+    kind: application
+    website: https://dogwiftools.com
+  actor:
+    name: Unknown attacker
+    kind: unknown
+  method:
+    cause: exposed_secret
+    phase: distribution
+    motive: financial_gain
+    transitive: false
+  impact:
+    types:
+    - cryptocurrency_theft
+    - credential_theft
+    - remote_access
+    users: 0
+  artifacts:
+  - id: dogwiftools-windows
+    name: DogWifTools for Windows
+    kind: binary_archive
+    website: https://dogwiftools.com
+    start_date: 2025-01-27
+    end_date: 2025-01-29
+    versions:
+    - 1.6.3 - 1.6.6
+    locations:
+    - uri: https://dogwiftools.com
+      role: distribution
+    indicators:
+    - kind: file
+      value: updater.exe
+    - kind: path
+      value: '%LOCALAPPDATA%\updater.exe'
+    - kind: observable
+      value: Windows builds of DogWifTools versions 1.6.3 through 1.6.6 were replaced
+        with RAT-laced artifacts after legitimate releases.
+    notes:
+    - The public sources describe the compromised artifact as the Windows version;
+      macOS users were reported as unaffected.
+    - The estimated theft exceeded $10 million in community reporting, but the exact
+      amount remains disputed.
+  references:
+  - url: https://www.bleepingcomputer.com/news/security/solana-pumpfun-tool-dogwiftool-compromised-to-drain-wallets/
+    title: Solana Pump.fun tool DogWifTool compromised to drain wallets
+  - url: https://threats.wiz.io/all-incidents/dogwiftool-supply-chain-attack
+    title: DogWifTool supply chain attack
+  - url: https://www.halborn.com/blog/post/explained-the-dogwiftools-hack-january-2025
+    title: 'Explained: The DogWifTools Hack (January 2025)'

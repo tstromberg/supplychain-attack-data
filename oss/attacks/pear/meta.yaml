@@ -1,10 +1,17 @@
----
 - id: pear
-  title: PEAR PHP installer go-pear.phar compromised on server
-  synopsis: The official go-pear.phar installer on pear.php.net was replaced with
-    a malicious version and left in place for roughly six months. Anyone bootstrapping
-    PEAR from the trusted server risked executing a backdoored installer, a thin bootstrap
-    script turned into a long-lived foothold.
+  title: PEAR installer served Perl backdoor
+  synopsis: >-
+    The official go-pear.phar installer on pear.php.net was replaced for roughly six months.
+    The malicious installer enabled a Perl backdoor and exposed systems that built PEAR from
+    the official site.
+  story: |-
+    PEAR was an old distribution root for PHP code, and `go-pear.phar` was its bootstrap installer. In January 2019, maintainers found that the copy served from `pear.php.net` had been replaced on the project server.
+
+    The exposure window was long. PEAR warned that anyone who downloaded `go-pear.phar` during the prior six months should compare it against the clean GitHub copy. Rapid7 reported that, to PEAR's knowledge at the time, only the copy on `pear.php.net` was known to be affected.
+
+    cPanel described the malicious installer as an extractor that enabled a Perl backdoor and opened a shell to a remote infected server. That gave the attacker a path to install applications, run code, and capture sensitive data. DCSO published a MISP event for defenders under UUID `5c46dd16-2ed0-4604-ab12-181cac12042b`.
+
+    The project took most of `pear.php.net` offline while it investigated. Users were told to fetch the same release from `pear/pearweb_phars`, compare hashes, and treat mismatches as compromise evidence. This was not dependency confusion or a lookalike package; it was the official installer file, served from the official site, replaced in place.
   start_date: 2018-06-20
   end_date: 2019-01-19
   target:
@@ -24,6 +31,7 @@
     types:
     - backdoor
     - remote_code_execution
+    - data_theft
   artifacts:
   - id: pear
     name: pear
@@ -36,13 +44,37 @@
       role: distribution
     - uri: http://web.archive.org/web/20190119035624/http://pear.php.net/go-pear.phar
       role: distribution
-    - uri: https://www.bleepingcomputer.com/news/security/official-php-pear-website-suffers-supply-chain-attack/
+    - uri: https://github.com/pear/pearweb_phars
+      role: mirror
+    - uri: 
+        https://www.bleepingcomputer.com/news/security/official-php-pear-website-suffers-supply-chain-attack/
       role: mirror
     - uri: https://blog.paranoidpenguin.net/2019/01/pear-php-net-probably-compromised/
       role: mirror
     hashes:
     - sha1:1e623a48b8991980e93896153651135ab7ab82a0
+    - md5:1e26d9dd3110af79a9595f1a77a82de7
+    indicators:
+    - kind: file
+      value: go-pear.phar
+    - kind: hash
+      value: 1e26d9dd3110af79a9595f1a77a82de7
+    - kind: malware
+      value: Perl reverse shell
+    - kind: misp_event
+      value: 5c46dd16-2ed0-4604-ab12-181cac12042b
   references:
   - url: https://thehackernews.com/2019/01/php-pear-hacked.html
+    title: Someone Hacked PHP PEAR Site and Replaced the Official Package Manager
   - url: https://blog.paranoidpenguin.net/2019/01/pear-php-net-probably-compromised/
+    title: pear.php.net probably compromised
   - url: https://twitter.com/pear/status/1086934578562560001
+    title: PEAR security breach announcement
+  - url: 
+      https://www.rapid7.com/blog/post/2019/01/22/php-extension-and-application-repository-pear-compromise-what-you-need-to-know/
+    title: 'PHP Extension and Application Repository (PEAR) Compromise: What You Need
+      to Know'
+  - url: https://www.cpanel.net/blog/products/when-php-went-pear-shaped-the-php-pear-compromise/
+    title: When PHP Went Pear Shaped- The PHP PEAR Compromise
+  - url: https://thephp.cc/articles/blast-from-the-past
+    title: Blast from the Past

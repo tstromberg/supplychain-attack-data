@@ -1,11 +1,16 @@
----
 - id: twilio-taskrouter-js-sdk
-  title: Twilio SDK hosted on S3 delivered malicious code.
-  synopsis: An improperly configured AWS S3 bucket allowed attackers to modify version
-    1.20 of Twilio's TaskRouter JavaScript SDK hosted for public use. For several
-    hours, websites loading the SDK directly from Twilio's CDN received code modified
-    with malicious script, likely part of a Magecart-related malvertising or skimming
-    campaign.
+  title: Twilio SDK S3 bucket served malware
+  synopsis: >-
+    An exposed S3 bucket let attackers alter Twilio's hosted TaskRouter JS SDK v1.20.
+    The injected code loaded malvertising infrastructure from customer pages.
+  story: |
+    Twilio's TaskRouter JavaScript SDK v1.20 was served as a hosted browser dependency from `media.twiliocdn.com`. On 2020-07-19, attackers modified that hosted file through a misconfigured AWS S3 bucket.
+
+    The injected code set a cookie named `jqueryapi1oad` and requested `gold.platinumus.top/track/awswrite`. Twilio associated the behavior with a known malvertising campaign; the returned content led to further attacker-controlled infrastructure.
+
+    Twilio said the affected window ran from 20:12 UTC on 2020-07-19 to 05:30 UTC on 2020-07-20. Customers who pinned the script with Subresource Integrity were protected because the modified file no longer matched the expected hash.
+
+    The incident was narrow but instructive. The library source was not the only artifact that mattered; the hosted copy was production code. A public CDN object with weak write controls became part of every page that trusted it.
   start_date: '2020-07-19T20:12:00Z'
   end_date: '2020-07-20T05:30:00Z'
   target:
@@ -40,17 +45,25 @@
       role: mirror
     - uri: https://www.theregister.com/2020/07/21/twilio_javascript_sdk_code_injection/
       role: mirror
-    - uri: https://www.scworld.com/news/misconfigured-s3-exposes-twilio-users-to-magecart-attack/
+    - uri: 
+        https://www.scworld.com/news/misconfigured-s3-exposes-twilio-users-to-magecart-attack/
       role: mirror
     indicators:
-    - kind: observable
-      value: 'hxxps://gold[.]platinumus[.]top/track/awswrite?q=dmn # Malicious URL
-        loaded by compromised SDK'
-    - kind: observable
-      value: 'SRI sha384:n+W3iUCPkW2u64HjqHqOaSFKB6k4BIYw4Fy8BuxDNkrWcCvd9fwnyZKwYjkxqphy
-        # Legitimate taskrouter.min.js v1.20, base64-encoded SHA384 from Twilio advisory'
+    - kind: cookie
+      value: jqueryapi1oad
+    - kind: url
+      value: hxxps://gold[.]platinumus[.]top/track/awswrite?q=dmn
+    - kind: url
+      value: hxxp://presratrasiverin[.]tk/index/?4021528806835
+    - kind: sri_sha384
+      value: n+W3iUCPkW2u64HjqHqOaSFKB6k4BIYw4Fy8BuxDNkrWcCvd9fwnyZKwYjkxqphy
   references:
   - url: https://www.twilio.com/en-us/blog/incident-report-taskrouter-js-sdk-july-2020
+    title: Incident Report - TaskRouter JS SDK Security Incident - July 19, 2020
   - url: https://www.theregister.com/2020/07/21/twilio_javascript_sdk_code_injection/
-  - url: https://www.scworld.com/news/misconfigured-s3-exposes-twilio-users-to-magecart-attack/
+    title: Miscreant injects bad code into Twilio JavaScript SDK hosted in S3 bucket
+  - url: 
+      https://www.scworld.com/news/misconfigured-s3-exposes-twilio-users-to-magecart-attack/
+    title: Misconfigured S3 exposes Twilio users to Magecart attack
   - url: https://www.securityhq.com/blog/security-101-compromised-aws-s3-buckets/
+    title: Security 101 - Compromised AWS S3 buckets

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mistral AI Python SDK backdoored on PyPI</title>
+  <title>Mistral SDK imported Shai-Hulud loader</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Mistral AI Python SDK backdoored on PyPI</h1>
+  <h1>Mistral SDK imported Shai-Hulud loader</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> mistralai-python · <a href="https://github.com/mistralai/client-python" target="_blank">repo</a></div>
@@ -29,7 +29,7 @@
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
     <div class="meta-item"><strong>Campaigns:</strong>
       
-        <a href="/campaign/teampcp-2026/">TeamPCP 2026 Package Compromise Campaign</a>, 
+        <a href="/campaign/teampcp-2026/">TeamPCP package wave stole credentials</a>, 
       
         <a href="/campaign/shai-hulud-here-we-go-again/">Shai-Hulud hits npm and PyPI</a>
       
@@ -37,8 +37,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The mistralai Python package version 2.4.6 contained an import-time Linux backdoor in src/mistralai/client/__init__.py. The added code downloaded https://83.142.209.194/transformers.pyz with curl -k, saved it to /tmp/transformers.pyz, and executed it as a background Python process when users imported mistralai, guarded only by the MISTRAL_INIT environment variable and silently swallowing errors. JFrog later reported that the remote payload changed from TeamPCP attribution text into a Python credential stealer that harvested local, cloud, Kubernetes, Vault, password-manager, and developer-tooling secrets, exfiltrated encrypted data, and could install pgsql-monitor persistence with destructive second-stage behavior.</p>
+  <p class="synopsis">mistralai 2.4.6 carried a Linux-only import hook in mistralai/client/__init__.py. It downloaded transformers.pyz from attacker infrastructure and ran it detached.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The PyPI side of Shai-Hulud used a different shape from the npm worm. Instead of a `preinstall` script, `mistralai@2.4.6` placed its loader in `mistralai/client/__init__.py`, where ordinary imports could trigger it.</p>
+    
+      <p>The loader was Linux-only and guarded itself with `MISTRAL_INIT` to avoid repeated execution. It downloaded `transformers.pyz` from `83.142.209.194` using `curl -k -L -s`, wrote it under `/tmp`, and launched it with the current Python interpreter.</p>
+    
+      <p>JFrog later reported that the remote PyPI payload had changed from attribution text to a credential stealer. The observed target set included local files, cloud provider credentials, Kubernetes, Vault, password managers, and developer tooling secrets.</p>
+    
+      <p>This record is scoped to Mistral&#39;s Python SDK artifact. The broader campaign record carries the cross-ecosystem TeamPCP/Shai-Hulud machinery and propagation behavior.</p>
+    
+  </div>
   
 
   
@@ -58,8 +71,8 @@
         
         <tr>
           <td>
-            <strong>mistralai-python</strong>
-            
+            <strong>mistralai 2.4.6 PyPI release</strong>
+            <br><code>mistralai</code>
             <br><span>pypi · source_archive</span>
             
             <br><a href="https://github.com/mistralai/client-python" target="_blank">https://github.com/mistralai/client-python</a>
@@ -99,9 +112,9 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://github.com/mistralai/client-python/issues/523" target="_blank">https://github.com/mistralai/client-python/issues/523</a></li>
+      <li><a href="https://github.com/mistralai/client-python/issues/523" target="_blank">Supply chain compromise in mistralai 2.4.6</a></li>
     
-      <li><a href="https://research.jfrog.com/post/shai-hulud-here-we-go-again/" target="_blank">https://research.jfrog.com/post/shai-hulud-here-we-go-again/</a></li>
+      <li><a href="https://research.jfrog.com/post/shai-hulud-here-we-go-again/" target="_blank">Shai-Hulud: Here We Go Again - Worm by TeamPCP Hits NPM and PyPI</a></li>
     
   </ul>
   

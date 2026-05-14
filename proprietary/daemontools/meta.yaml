@@ -1,58 +1,129 @@
----
 - id: daemon-tools
-  title: Trojanized DAEMON Tools distributed QUIC RAT.
-  synopsis: Attackers compromised official installers for DAEMON Tools, a popular
-    disk imaging software, to distribute multi-stage malware. The infection chain
-    included an information collector and a complex "QUIC RAT" backdoor, which was
-    used for targeted espionage against government and scientific organizations globally.
+  title: DAEMON Tools installer delivered QUIC RAT
+  synopsis: >-
+    Official signed DAEMON Tools Lite installers were trojanized from April 2026. The
+    backdoor profiled machines, then selectively delivered a minimal backdoor and QUIC RAT.
+  story: |
+    DAEMON Tools was compromised at the point users trust most: the vendor's own signed installers. Kaspersky found that installers distributed from the legitimate DAEMON Tools website had been trojanized starting April 8, 2026, covering versions 12.5.0.2421 through 12.5.0.2434.
+
+    The altered builds changed signed DAEMON Tools binaries such as `DTHelper.exe`, `DiscSoftBusServiceLite.exe`, and `DTShellHlp.exe`. At startup, the implanted code contacted `env-check.daemontools.cc`, a lookalike domain registered shortly before the campaign, and could receive shell commands to download and run follow-on payloads.
+
+    Most observed infections received an information collector. It gathered MAC address, host and DNS names, running processes, installed software, and locale, then posted the profile to attacker infrastructure. That stage let the operators sort a broad installer compromise into a smaller list of useful targets.
+
+    A few machines received a minimal backdoor, and one observed organization received QUIC RAT. Kaspersky described the latter as a C++ implant supporting HTTP, UDP, TCP, WSS, QUIC, DNS, and HTTP/3, with injection into `notepad.exe` and `conhost.exe`. The vendor later acknowledged the issue and released 12.6.0.2445 without the malicious behavior.
   start_date: 2026-04-08
-  end_date: Ongoing
+  end_date: 2026-05-06
   target:
     name: DAEMON Tools
     kind: application
     website: https://daemontools.cc
   actor:
-    name: Chinese-speaking actor
-    kind: group
+    name: Unknown Chinese-speaking actor
+    kind: unknown
   language: C++
   method:
     cause: website_compromise
     phase: distribution
-    motive: espionage
+    motive: espionage_or_targeted_intrusion
     transitive: false
   impact:
     types:
     - backdoor
     - data_theft
     - remote_access
-    users: 50000
+    users: 0
+  locations:
+  - uri: https://files.disc-soft.com/inst/DTLite64.exe
+    role: distribution
+  indicators:
+  - kind: family
+    value: QUIC RAT
+  - kind: domain
+    value: env-check.daemontools.cc
+  - kind: ip
+    value: 38.180.107.76
+  - kind: url
+    value: https://env-check.daemontools.cc/2032716822411
+  - kind: url
+    value: http://38.180.107.76/09505aca4f538bd
+  - kind: url
+    value: http://38.180.107.76/79437f5edda13f9c066/version/check
+  - kind: file
+    value: DTHelper.exe
+  - kind: file
+    value: DiscSoftBusServiceLite.exe
+  - kind: file
+    value: DTShellHlp.exe
+  - kind: file
+    value: envchk.exe
+  - kind: file
+    value: cdg.exe
+  - kind: file
+    value: cdg.tmp
+  - kind: file
+    value: mcrypto.chiper
+  - kind: file
+    value: mcrypto.dat
+  - kind: process
+    value: notepad.exe
+  - kind: process
+    value: conhost.exe
+  - kind: protocol
+    value: QUIC
+  - kind: protocol
+    value: HTTP/3
+  - kind: file_sha1
+    value: envchk.exe 2d4eb55b01f59c62c6de9aacba9b47267d398fe4
+  - kind: file_sha1
+    value: cdg.exe 9dbfc23ebf36b3c0b56d2f93116abb32656c42e4
+  - kind: file_sha1
+    value: cdg.tmp 295ce86226b933e7262c2ce4b36bdd6c389aaaef
+  - kind: file_sha1
+    value: mcrypto.chiper 98de8147394b74b27158e02ce9e7b0e25eb6e98a
+  - kind: file_sha1
+    value: mcrypto.dat 2ecb292d27c36c1d4e47fb5cafa42af7ffbdda99
+  - kind: file_sha1
+    value: minimalistic-backdoor-mcrypto a3e90653bd0a81ebe2ae387a67a59bb8d07ce7b5
+  - kind: file_sha1
+    value: minimalistic-backdoor-cdg 3ee71d75020b2634b2c23866211a0c91b942c8d4
+  - kind: observable
+    value: Kaspersky observed thousands of attempted deployments across more than 100
+      countries.
+  - kind: observable
+    value: Further-stage payloads were deployed only to a small subset of infected
+      machines.
   artifacts:
   - id: daemon-tools
-    name: DAEMON Tools
+    name: DAEMON Tools Lite installers
+    package: DAEMON Tools Lite
+    ecosystem: windows installer
     kind: binary_archive
     website: https://daemontools.cc
     start_date: 2026-04-08
-    end_date: Ongoing
+    end_date: 2026-05-06
     versions:
-    - 12.5.0.2421
-    - 12.5.0.2425
-    - 12.5.0.2429
-    - 12.5.0.2432
-    - 12.5.0.2434
+    - 12.5.0.2421 - 12.5.0.2434
+    fixed_versions:
+    - 12.6.0.2445
     locations:
     - uri: https://files.disc-soft.com/inst/DTLite64.exe
       role: distribution
-    - uri: https://www.virustotal.com/gui/file/10d9e84307f0f62d186e24508499252327702f30691456a2976be04d603a1168
-      role: mirror
-    - uri: https://www.virustotal.com/gui/file/2d4eb55b01f59c62c6de9aacba9b47267d398fe4
-      role: mirror
-    - uri: https://www.virustotal.com/gui/file/b58557997380907d7301018568c07d3967d337894a8607a016667b1654860f4e
-      role: mirror
     hashes:
     - sha1:9ccd769624de98eeeb12714ff1707ec4f5bf196d
-    - sha1:2d4eb55b01f59c62c6de9aacba9b47267d398fe4
-    - sha1:396041ec1838836528d227d896683884c7188173
-    - sha256:10d9e84307f0f62d186e24508499252327702f30691456a2976be04d603a1168
-    - sha256:b58557997380907d7301018568c07d3967d337894a8607a016667b1654860f4e
+    - sha1:50d47adb6dd45215c7cb4c68bae28b129ca09645
+    - sha1:0c1d3da9c7a651ba40b40e12d48ebd32b3f31820
+    - sha1:28b72576d67ae21d9587d782942628ea46dcc870
+    - sha1:46b90bf370e60d61075d3472828fdc0b85ab0492
+    - sha1:6325179f442e5b1a716580cd70dea644ac9ecd18
+    - sha1:bd8fbb5e6842df8683163adbd6a36136164eac58
+    - sha1:15ed5c3384e12fe4314ad6edbd1dcccf5ac1ee29
+    notes:
+    - Kaspersky listed these SHA-1 values as infected DAEMON Tools Lite installer hashes
+      and mapped them to versions 12.5.0.2421, 12.5.0.2422, 12.5.0.2423, 12.5.0.2424,
+      12.5.0.2430, 12.5.0.2431, 12.5.0.2433, and 12.5.0.2434.
+    - Earlier local SHA-256 values were removed because the source text did not identify
+      the exact DAEMON Tools installer file for each digest.
   references:
   - url: https://securelist.com/tr/daemon-tools-backdoor/119654/
+    title: DAEMON Tools software infected – supply chain attack ongoing since April 8,
+      2026

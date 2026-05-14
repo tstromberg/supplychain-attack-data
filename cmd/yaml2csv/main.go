@@ -153,6 +153,7 @@ var (
 	versionRange    = regexp.MustCompile(`^v?[0-9][0-9A-Za-z._+-]* - v?[0-9][0-9A-Za-z._+-]*$`)
 	compactRange    = regexp.MustCompile(`^v?[0-9][0-9A-Za-z._+]*-v?[0-9][0-9A-Za-z._+]*\.[0-9]`)
 	versionLabel    = regexp.MustCompile(`(?i)^(bad|good|clean|safe|malicious|neutralized|affected|vulnerable|fixed):\s*`)
+	fileHashKind    = regexp.MustCompile(`^file_(md5|sha1|sha256|sha384|sha512)$`)
 	slugPattern     = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 	locationRoles   = map[string]bool{"distribution": true, "mirror": true}
 )
@@ -332,6 +333,7 @@ func validateEntry(entry Entry, campaignIDs map[string]bool) []issue {
 	if !slugPattern.MatchString(entry.ID) {
 		issues = append(issues, issue{"error", "id", entry.ID, entry.SourcePath, entry.ID, "use a stable lowercase slug"})
 	}
+	issues = append(issues, validateTitle(entry.SourcePath, entry.ID, "title", entry.Title)...)
 	issues = append(issues, validateSynopsis(entry.SourcePath, entry.ID, "synopsis", entry.Synopsis)...)
 	issues = append(issues, validateStory(entry.SourcePath, entry.ID, "story", entry.Story)...)
 	issues = append(issues, validateDate(entry.SourcePath, entry.ID, "start_date", entry.StartDate)...)
@@ -413,6 +415,7 @@ func validateCampaign(campaign Campaign) []issue {
 	if !slugPattern.MatchString(campaign.ID) {
 		issues = append(issues, issue{"error", "id", campaign.ID, campaign.SourcePath, campaign.ID, "use a stable lowercase slug"})
 	}
+	issues = append(issues, validateTitle(campaign.SourcePath, campaign.ID, "title", campaign.Title)...)
 	issues = append(issues, validateSynopsis(campaign.SourcePath, campaign.ID, "synopsis", campaign.Synopsis)...)
 	issues = append(issues, validateStory(campaign.SourcePath, campaign.ID, "story", campaign.Story)...)
 	issues = append(issues, validateDate(campaign.SourcePath, campaign.ID, "start_date", campaign.StartDate)...)
@@ -422,12 +425,62 @@ func validateCampaign(campaign Campaign) []issue {
 	return issues
 }
 
-func validateSynopsis(path, id, field, value string) []issue {
-	words := len(strings.Fields(value))
-	if words >= 40 && words <= 110 {
-		return nil
+func validateTitle(path, id, field, value string) []issue {
+	var issues []issue
+	value = strings.TrimSpace(value)
+	chars := len([]rune(value))
+	if chars > 90 {
+		issues = append(issues, issue{"error", field, strconv.Itoa(chars), path, id, "title must be no more than 90 characters"})
 	}
-	return []issue{{"error", field, strconv.Itoa(words), path, id, "synopsis must be between 40 and 110 words"}}
+	if strings.HasSuffix(value, ".") || strings.HasSuffix(value, "!") || strings.HasSuffix(value, "?") {
+		issues = append(issues, issue{"error", field, value, path, id, "title must not end with sentence punctuation"})
+	}
+	return issues
+}
+
+func validateSynopsis(path, id, field, value string) []issue {
+	var issues []issue
+	chars := len([]rune(strings.TrimSpace(value)))
+	if chars > 280 {
+		issues = append(issues, issue{"error", field, strconv.Itoa(chars), path, id, "synopsis must be no more than 280 characters"})
+	}
+	sentences := countSentences(value)
+	if sentences < 1 || sentences > 2 {
+		issues = append(issues, issue{"error", field, strconv.Itoa(sentences), path, id, "synopsis must be 1 or 2 sentences"})
+	}
+	return issues
+}
+
+func countSentences(value string) int {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return 0
+	}
+	count := 0
+	for i := 0; i < len(value); i++ {
+		switch value[i] {
+		case '.', '!', '?':
+			if value[i] == '.' && i > 0 && i+1 < len(value) && isASCIIDigit(value[i-1]) && isASCIIDigit(value[i+1]) {
+				continue
+			}
+			j := i + 1
+			for j < len(value) && (value[j] == '"' || value[j] == '\'' || value[j] == '`' || value[j] == ')' || value[j] == ']') {
+				j++
+			}
+			if j == len(value) {
+				count++
+				continue
+			}
+			if value[j] == ' ' || value[j] == '\n' || value[j] == '\t' {
+				count++
+			}
+		}
+	}
+	return count
+}
+
+func isASCIIDigit(b byte) bool {
+	return b >= '0' && b <= '9'
 }
 
 func validateStory(path, id, field, value string) []issue {
@@ -562,19 +615,64 @@ func validateIndicators(path, id, field string, indicators []Indicator) []issue 
 	var issues []issue
 	for i, indicator := range indicators {
 		prefix := fmt.Sprintf("%s[%d]", field, i)
-		if strings.TrimSpace(indicator.Kind) == "" || strings.TrimSpace(indicator.Value) == "" {
+		kind := strings.TrimSpace(indicator.Kind)
+		value := strings.TrimSpace(indicator.Value)
+		if kind == "" || value == "" {
 			issues = append(issues, issue{"error", prefix, "", path, id, "indicator must set kind and value"})
+			continue
+		}
+		if normalize(kind) != kind {
+			issues = append(issues, issue{"error", prefix + ".kind", kind, path, id, "use lower_snake_case"})
+		}
+		if match := fileHashKind.FindStringSubmatch(kind); len(match) == 2 {
+			parts := strings.Fields(value)
+			if len(parts) < 2 {
+				issues = append(issues, issue{"error", prefix + ".value", value, path, id, "file hash indicators must use '<file> <digest>'"})
+				continue
+			}
+			algorithm := match[1]
+			hash := parts[len(parts)-1]
+			if !hashMatchesAlgorithm(algorithm, hash) {
+				issues = append(issues, issue{"error", prefix + ".value", value, path, id, fmt.Sprintf("file_%s must end with a valid %s digest", algorithm, algorithm)})
+			}
 		}
 	}
 	return issues
 }
 
-func validateEvidence(path, id, field string, evidence []Evidence) []issue {
+func hashMatchesAlgorithm(algorithm, digest string) bool {
+	expected := map[string]int{"md5": 32, "sha1": 40, "sha256": 64, "sha384": 96, "sha512": 128}
+	if len(digest) != expected[algorithm] {
+		return false
+	}
+	for _, char := range digest {
+		if !((char >= '0' && char <= '9') || (char >= 'a' && char <= 'f') || (char >= 'A' && char <= 'F')) {
+			return false
+		}
+	}
+	return true
+}
+
+func validateEvidence(metaPath, id, field string, evidence []Evidence) []issue {
 	var issues []issue
 	for i, item := range evidence {
 		prefix := fmt.Sprintf("%s[%d]", field, i)
 		if strings.TrimSpace(item.Kind) == "" || strings.TrimSpace(item.Path) == "" {
-			issues = append(issues, issue{"error", prefix, "", path, id, "evidence must set kind and path"})
+			issues = append(issues, issue{"error", prefix, "", metaPath, id, "evidence must set kind and path"})
+			continue
+		}
+		cleanPath := filepath.Clean(strings.TrimSpace(item.Path))
+		if filepath.IsAbs(cleanPath) || strings.Contains(cleanPath, "://") {
+			issues = append(issues, issue{"error", prefix + ".path", item.Path, metaPath, id, "evidence path must be a local relative path; use locations or references for URLs"})
+			continue
+		}
+		if cleanPath == "." || cleanPath == ".." || strings.HasPrefix(cleanPath, ".."+string(filepath.Separator)) {
+			issues = append(issues, issue{"error", prefix + ".path", item.Path, metaPath, id, "evidence path must stay inside the attack directory"})
+			continue
+		}
+		fullPath := filepath.Join(filepath.Dir(metaPath), cleanPath)
+		if _, err := os.Stat(fullPath); err != nil {
+			issues = append(issues, issue{"error", prefix + ".path", item.Path, metaPath, id, "evidence path does not exist"})
 		}
 	}
 	return issues

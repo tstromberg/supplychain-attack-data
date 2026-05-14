@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CPUID HWMonitor and CPU-Z Supply Chain Attack (STX RAT)</title>
+  <title>CPUID installers delivered STX RAT</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,25 +13,38 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>CPUID HWMonitor and CPU-Z Supply Chain Attack (STX RAT)</h1>
+  <h1>CPUID installers delivered STX RAT</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> cpuid-hwmonitor · <a href="https://cpuid.com" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Target:</strong> CPUID · <a href="https://cpuid.com" target="_blank">website</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-04-09</div>
-    <div class="meta-item"><strong>Actor:</strong> Third Party (group)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
     <div class="meta-item"><strong>Language:</strong> C++</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
-    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft_remote_access</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
-    <div class="meta-item"><strong>Impact:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, remote_access, session_theft</div>
     <div class="meta-item"><strong>User Impact:</strong> 0</div>
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The official CPUID download page was hijacked by compromising a secondary API to redirect legitimate download requests for HWMonitor (v1.63) and CPU-Z to a malicious Cloudflare R2 bucket. The downloaded archive contained a malicious cryptbase.dll that was sideloaded by the legitimate executable. This initiated a sophisticated five-stage in-memory execution chain to deploy the STX RAT infostealer, which harvested browser credentials, session cookies, crypto wallet keys, and VPN/FTP credentials.</p>
+  <p class="synopsis">CPUID&#39;s official download flow redirected HWMonitor and CPU-Z users to attacker infrastructure. Trojanized HWMonitor 1.63 sideloaded cryptbase.dll and unpacked STX RAT.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The CPUID compromise hit a small but valuable habit: administrators downloading trusted diagnostic tools. On April 9, 2026, users following CPUID&#39;s official HWMonitor download path could be redirected away from the expected file and toward an attacker-controlled Cloudflare R2 object.</p>
+    
+      <p>CPUID later acknowledged that a secondary API had been breached for roughly six hours. The signed original files were not reported compromised. Instead, the download selection path randomly sent some users to malicious packages, with HWMonitor 1.63 confirmed and CPU-Z also reported affected.</p>
+    
+      <p>The HWMonitor package carried a rogue `cryptbase.dll` beside the legitimate 64-bit executable. When `HWMonitor_x64.exe` started, Windows DLL search order loaded the malicious DLL. The loader then unpacked several in-memory stages using reflective PE loading, XOR decryption, and bitwise transforms.</p>
+    
+      <p>The final payload matched STX RAT, a remote access trojan with infostealer capability. Cyderes reported campaign tags and referrer values that separated HWMonitor from CPU-Z traffic, suggesting a maintained operation aimed at high-value technical users rather than a random drive-by download.</p>
+    
+  </div>
   
 
   
@@ -57,7 +70,7 @@
             <br><a href="https://cpuid.com" target="_blank">https://cpuid.com</a>
             
           </td>
-          <td>2026-04-09</td>
+          <td>2026-04-09<br>to 2026-04-10</td>
           <td>
             
               <code>1.63</code>
@@ -83,7 +96,7 @@
             <br><a href="https://cpuid.com" target="_blank">https://cpuid.com</a>
             
           </td>
-          <td>2026-04-09</td>
+          <td>2026-04-09<br>to 2026-04-10</td>
           <td>
             
               N/A
@@ -107,26 +120,67 @@
   
 
   
-
-  
-
-  
-  <h2>Hashes</h2>
-  <ul class="hashes">
+  <h2>Locations</h2>
+  <ul>
     
-      <li><code>sha256:a27df06c7167eced1ddaeb8adccaa5f60500f52bc7030389eed2a0903cdf8286</code></li>
+      <li><code>distribution</code>: <code>https://www.cpuid.com/softwares/hwmonitor.html</code></li>
     
-      <li><code>sha256:1331f19c6732fca81f32c4cec9f89abf26371ed9d3665954f491c89e2c55e5bb</code></li>
-    
-      <li><code>sha256:116d806a5ca6f34fdd04061499daca9a352feb2e3f291c7ef3e5d470fe875f7f</code></li>
-    
-      <li><code>sha256:a70645f46eee6d765c54ba4a5c48166bd83bcfbc7771a82be9ed48ab4871ebfa</code></li>
-    
-      <li><code>sha256:52862b538459c8faaf89cf2b5d79c2f0030f79f80a68f93d65ec91f046f05be6</code></li>
-    
-      <li><code>sha256:eefc0f986dd3ea376a4a54f80ce0dc3e6491165aefdd7d5d6005da3892ce248f</code></li>
+      <li><code>distribution</code>: <code>https://www.cpuid.com/softwares/cpu-z.html</code></li>
     
   </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>family:STX RAT</code></li>
+    
+      <li><code>domain:welcome.supp0v3.com</code></li>
+    
+      <li><code>url:https://welcome.supp0v3.com/d/callback</code></li>
+    
+      <li><code>url:http://pub-fd67c956bf8548b7b2cc23bb3774ff0c.r2.dev/hwmonitor_1.63.zip</code></li>
+    
+      <li><code>url:http://pub-45c2577dbd174292a02137c18e7b1b5a.r2.dev/hwmonitor/HWiNFO_Monitor_Setup.exe</code></li>
+    
+      <li><code>file:cryptbase.dll</code></li>
+    
+      <li><code>file:HWMonitor_x64.exe</code></li>
+    
+      <li><code>file:HWiNFO_Monitor_Setup.exe</code></li>
+    
+      <li><code>campaign_tag:tbs</code></li>
+    
+      <li><code>campaign_tag:tbs2</code></li>
+    
+      <li><code>campaign_tag:tbs3</code></li>
+    
+      <li><code>campaign_tag:snip</code></li>
+    
+      <li><code>observable:referrer monitor3 identified HWMonitor traffic.</code></li>
+    
+      <li><code>observable:referrer CPZ identified CPU-Z traffic.</code></li>
+    
+      <li><code>observable:Only the 64-bit HWMonitor execution path was reported affected by DLL sideloading.</code></li>
+    
+      <li><code>file_sha256:HWMonitor_x64.exe 02db6764d1f13b837b0a525e5931bdbc67e7a2a4d071e849c7e087255d4a2d5b</code></li>
+    
+      <li><code>file_sha256:cryptbase.dll a27df06c7167eced1ddaeb8adccaa5f60500f52bc7030389eed2a0903cdf8286</code></li>
+    
+      <li><code>file_sha256:stage2 1331f19c6732fca81f32c4cec9f89abf26371ed9d3665954f491c89e2c55e5bb</code></li>
+    
+      <li><code>file_sha256:stage3 116d806a5ca6f34fdd04061499daca9a352feb2e3f291c7ef3e5d470fe875f7f</code></li>
+    
+      <li><code>file_sha256:stage4 a70645f46eee6d765c54ba4a5c48166bd83bcfbc7771a82be9ed48ab4871ebfa</code></li>
+    
+      <li><code>file_sha256:stx-rat 52862b538459c8faaf89cf2b5d79c2f0030f79f80a68f93d65ec91f046f05be6</code></li>
+    
+      <li><code>file_sha256:HWiNFO_Monitor_Setup.exe eefc0f986dd3ea376a4a54f80ce0dc3e6491165aefdd7d5d6005da3892ce248f</code></li>
+    
+  </ul>
+  
+
   
 
   
@@ -135,11 +189,11 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.cyderes.com/howler-cell/how-cpuids-hwmonitor-supply-chain-was-hijacked-to-deploy-stx-rat" target="_blank">https://www.cyderes.com/howler-cell/how-cpuids-hwmonitor-supply-chain-was-hijacked-to-deploy-stx-rat</a></li>
+      <li><a href="https://www.cyderes.com/howler-cell/how-cpuids-hwmonitor-supply-chain-was-hijacked-to-deploy-stx-rat" target="_blank">Monitoring the Monitor: How CPUID&#39;s HWMonitor Supply Chain Was Hijacked to Deploy STX RAT</a></li>
     
-      <li><a href="https://www.igorslab.de/en/warning-cpuid-suspected-of-being-a-virus-suspicious-hwmonitor-downloads-are-causing-alarm/" target="_blank">https://www.igorslab.de/en/warning-cpuid-suspected-of-being-a-virus-suspicious-hwmonitor-downloads-are-causing-alarm/</a></li>
+      <li><a href="https://www.igorslab.de/en/warning-cpuid-suspected-of-being-a-virus-suspicious-hwmonitor-downloads-are-causing-alarm/" target="_blank">Warning: CPUID Suspected of Being a Virus; Suspicious HWMonitor Downloads Raise Alarms</a></li>
     
-      <li><a href="https://www.reddit.com/r/pcmasterrace/comments/1sh4e5l/warning_hwmonitor_163_download_on_the_official/" target="_blank">https://www.reddit.com/r/pcmasterrace/comments/1sh4e5l/warning_hwmonitor_163_download_on_the_official/</a></li>
+      <li><a href="https://www.reddit.com/r/pcmasterrace/comments/1sh4e5l/warning_hwmonitor_163_download_on_the_official/" target="_blank">WARNING! HWMonitor 1.63 Download on the official &quot;cpuid&quot; page is a Virus!!!</a></li>
     
   </ul>
   

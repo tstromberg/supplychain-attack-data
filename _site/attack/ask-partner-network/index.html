@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ask Partner Network update channel delivered fileless malware</title>
+  <title>APN updater delivered signed backdoor</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,25 +13,38 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Ask Partner Network update channel delivered fileless malware</h1>
+  <h1>APN updater delivered signed backdoor</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> ask-partner-network · <a href="https://apn.ask.com" target="_blank">website</a></div>
-    <div class="meta-item"><strong>Date:</strong> 2017-06-01 to 2017-11-30 (182 days)</div>
-    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
-    <div class="meta-item"><strong>Target Kind:</strong> application</div>
-    <div class="meta-item"><strong>Language:</strong> c++</div>
+    <div class="meta-item"><strong>Target:</strong> Ask Partner Network · <a href="https://apn.ask.com" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2016-11-05 to 2016-12-16 (41 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> update_service</div>
+    <div class="meta-item"><strong>Language:</strong> C++</div>
     <div class="meta-item"><strong>Cause:</strong> update_infrastructure_compromise</div>
     <div class="meta-item"><strong>Motive:</strong> espionage</div>
-    <div class="meta-item"><strong>Transitive:</strong> true</div>
-    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_access</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_access, credential_theft</div>
     <div class="meta-item"><strong>User Impact:</strong> 0</div>
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Carbon Black and Red Canary disclosed in late 2017 that the Ask Partner Network (APN) — the update infrastructure behind the Ask.com Toolbar bundled with many freeware installers — was abused to push a multi-stage fileless malware loader through its official update channel. Endpoints with the Ask Toolbar installed received the malicious update via the trusted updater process, complicating detection. The campaign was characterized as targeted, with downstream payloads tailored to specific organizations rather than mass cryptojacking. APN/IAC pushed a clean update after notification.</p>
+  <p class="synopsis">Ask Partner Network&#39;s signed updater path executed attacker-controlled payloads. Later activity used a signed APN update binary to launch a remote shell and credential theft.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Ask Partner Network was unwanted software, but it was still a real distribution channel. It was bundled with common installers and present across many enterprise endpoints. That reach made the updater valuable to an attacker.</p>
+    
+      <p>Red Canary saw the first compromise on November 5, 2016. A signed Ask component, `apnmcp.exe`, wrote and executed a PE file named `logo.png`. The filename looked like an image. The behavior did not. `logo.png` downloaded two or three later-stage binaries, executed them, then deleted itself.</p>
+    
+      <p>Carbon Black saw a second wave on December 16, 2016. `Apnmcp.exe` contacted `tbapi.search.ask.com`, then redirected to a VPS outside the APN environment. It downloaded `ApnUpdateMgr.exe`, a remote-access trojan signed with an APN LLC certificate issued after the November incident.</p>
+    
+      <p>The attacker moved fast. VMware reported a reverse command shell, credential theft, network enumeration, lateral movement, and persistence through `C:&#92;ProgramData&#92;System.bat` and encoded PowerShell that loaded obfuscated shellcode. APN revoked the compromised certificate and shipped updates. The lesson is plain: signed updater plumbing is code execution.</p>
+    
+  </div>
   
 
   
@@ -51,13 +64,13 @@
         
         <tr>
           <td>
-            <strong>ask-partner-network</strong>
-            
-            <br><span>binary_archive</span>
+            <strong>Ask Partner Network updater</strong>
+            <br><code>APN Updater</code>
+            <br><span>windows update · update</span>
             <br><a href="https://apn.ask.com" target="_blank">https://apn.ask.com</a>
             
           </td>
-          <td>2017-06-01<br>to 2017-11-30</td>
+          <td>2016-11-05<br>to 2016-12-16</td>
           <td>
             
               N/A
@@ -70,7 +83,7 @@
           </td>
           <td>
             
-              N/A
+              <code>sha256:d01c7abc39e1b24a76641b597426aa377db0e27369f32dfe3522f364cec4495b</code>
             
           </td>
         </tr>
@@ -92,9 +105,15 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://redcanary.com/blog/ask-partner-network-supply-chain-attack/" target="_blank">https://redcanary.com/blog/ask-partner-network-supply-chain-attack/</a></li>
+      <li><a href="https://redcanary.com/blog/opinions-insights/ask-partner-network-compromise/" target="_blank">Ask Partner Network Compromise: Operational Lessons on Software Supply Chain Risk</a></li>
     
-      <li><a href="https://www.bleepingcomputer.com/news/security/ask-partner-network-blamed-for-supplying-malware-to-millions-of-pcs/" target="_blank">https://www.bleepingcomputer.com/news/security/ask-partner-network-blamed-for-supplying-malware-to-millions-of-pcs/</a></li>
+      <li><a href="https://blogs.vmware.com/security/2017/03/second-ask-partner-network-apn-compromise-highlights-attackers-commandeering-widely-used-general-tools-sophisticated-targeted-attacks.html" target="_blank">Second Ask Partner Network Compromise Highlights How Attackers Are Commandeering Widely Used General Tools for Sophisticated Targeted Attacks</a></li>
+    
+      <li><a href="https://www.bleepingcomputer.com/news/security/ask-partner-network-blamed-for-supplying-malware-to-millions-of-pcs/" target="_blank">Ask Partner Network blamed for supplying malware to millions of PCs</a></li>
+    
+      <li><a href="https://www.scworld.com/news/ask-partner-network-compromised-second-time-in-two-months" target="_blank">Ask Partner Network compromised second time in two months</a></li>
+    
+      <li><a href="https://www.networkworld.com/article/961532/ask-com-serves-as-a-conduit-for-malware-again.html" target="_blank">Ask.com serves as a conduit for malware again</a></li>
     
   </ul>
   

@@ -1,14 +1,18 @@
----
 - id: qix-npm-account
-  title: Qix npm maintainer account compromise
+  title: Qix npm account shipped wallet drainers
   campaigns:
   - qix-npm-phishing-2025
-  synopsis: Attackers phished prolific npm maintainer Josh Junon with the fake npmjs.help
-    domain, intercepted credentials and 2FA tokens, and used the captured npm access
-    to publish malicious releases across 18 packages he maintained. The poisoned utility
-    packages carried a crypto-clipper and credential-harvesting worm, turning tiny
-    dependencies with enormous install reach into a broad wallet-theft and propagation
-    surface.
+  synopsis: >-
+    Attackers phished Qix through npmjs.help and published malicious releases across
+    widely used npm packages. Browser bundles could redirect crypto transactions.
+  story: |
+    The Qix compromise began with a convincing npm support phish. The fake `npmjs.help` flow captured maintainer access from Josh Junon, known as Qix, and gave the attacker publishing rights to foundational JavaScript packages.
+
+    The first wave landed on September 8, 2025. Packages such as `debug`, `chalk`, `ansi-regex`, `strip-ansi`, `wrap-ansi`, and related terminal and color utilities received malicious versions. Their aggregate weekly download count was enormous, but downloads are exposure, not confirmed victims.
+
+    The payload was built for browsers. It hooked wallet and network APIs, watched for Ethereum, Bitcoin, Solana, Tron, Litecoin, and related transaction material, and replaced destination addresses or approvals with attacker-controlled values. Server-side installs were still poisoned artifacts, but the theft path needed bundled client-side execution.
+
+    Cleanup required removing the bad npm versions, purging registry caches, deleting `node_modules`, and rebuilding deployed browser bundles from clean packages. Follow-on compromised packages are grouped in the Qix campaign; this record carries the packages controlled by the Qix npm account.
   start_date: 2025-09-08
   end_date: 2025-09-08
   target:
@@ -28,7 +32,10 @@
     - credential_theft
     - financial_exploitation
     - self_propagation
-    users: 50000000
+    users: 0
+  notes:
+  - Public reporting described roughly two billion aggregate weekly downloads for
+    affected packages; that is exposure context, not a confirmed victim count.
   artifacts:
   - id: ansi-regex
     name: ansi-regex
@@ -150,6 +157,20 @@
     locations:
     - uri: https://www.npmjs.com/package/debug/v/4.4.2
       role: distribution
+  - id: error-ex
+    name: error-ex
+    package: error-ex
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2025-09-08
+    end_date: 2025-09-08
+    versions:
+    - 1.3.3
+    fixed_versions:
+    - 1.3.4
+    locations:
+    - uri: https://www.npmjs.com/package/error-ex/v/1.3.3
+      role: distribution
   - id: has-ansi
     name: has-ansi
     package: has-ansi
@@ -247,7 +268,16 @@
     - uri: https://www.npmjs.com/package/wrap-ansi/v/9.0.1
       role: distribution
   references:
-  - url: https://www.varonis.com/
+  - url: 
+      https://www.wiz.io/blog/widespread-npm-supply-chain-attack-breaking-down-impact-scope-across-debug-chalk
+    title: Widespread npm Supply Chain Attack Breaking Down Impact Scope Across debug, chalk
   - url: https://www.aikido.dev/blog/npm-debug-and-chalk-packages-compromised
-  - url: https://www.stepsecurity.io/blog/20-popular-npm-packages-compromised-chalk-debug-strip-ansi-color-convert-wrap-ansi
-  - url: https://blog.qualys.com/vulnerabilities-threat-research/2025/09/10/when-dependencies-turn-dangerous-responding-to-the-npm-supply-chain-attack
+    title: npm debug and chalk packages compromised
+  - url: 
+      https://www.stepsecurity.io/blog/20-popular-npm-packages-compromised-chalk-debug-strip-ansi-color-convert-wrap-ansi
+    title: 20+ Popular NPM Packages Compromised
+  - url: 
+      https://blog.qualys.com/vulnerabilities-threat-research/2025/09/10/when-dependencies-turn-dangerous-responding-to-the-npm-supply-chain-attack
+    title: 'When Dependencies Turn Dangerous: Responding to the NPM Supply Chain Attack'
+  - url: https://github.com/advisories/GHSA-6jp5-hh4c-8c5h
+    title: error-ex@1.3.3 contains malware after npm account takeover

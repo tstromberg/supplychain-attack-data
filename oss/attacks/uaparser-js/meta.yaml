@@ -1,11 +1,8 @@
----
 - id: uaparser-js
-  title: ua-parser-js NPM package hijacked distributing malware
-  synopsis: The maintainer's npm account was compromised, allowing attackers to publish
-    malicious versions of ua-parser-js, a library embedded across millions of weekly
-    installs. The payload stole OS passwords, browser cookies, and Discord tokens,
-    then installed a cryptominer on Linux and Windows. Its danger came from reach;
-    user-agent parsing had become quiet infrastructure.
+  title: ua-parser-js hijack shipped malware
+  synopsis: >-
+    The maintainer's npm account was compromised, allowing attackers to publish malicious
+    versions of ua-parser-js, a library embedded across millions of weekly installs.
   story: |
     ua-parser-js sat low in the stack and high in the graph. It parsed user-agent strings. Most applications did not depend on it by choice; they received it through other packages. On October 22, 2021, a hijacked npm account published malicious versions 0.7.29, 0.8.0, and 1.0.0 under the real package name.
 
@@ -19,7 +16,7 @@
     kind: library
     repo: https://github.com/faisalman/ua-parser-js
   actor:
-    name: Cybercriminal Gang
+    name: UNC3379
     kind: group
   language: Javascript
   method:
@@ -30,10 +27,14 @@
   impact:
     types:
     - financial_exploitation
+    - cryptojacking
+    - credential_theft
     users: 8000000
   artifacts:
   - id: uaparser-js
     name: uaparser-js
+    package: ua-parser-js
+    ecosystem: npm
     kind: source_archive
     repo: https://github.com/faisalman/ua-parser-js
     start_date: 2021-10-22
@@ -42,6 +43,10 @@
     - 0.7.29
     - 0.8.0
     - 1.0.0
+    fixed_versions:
+    - 0.7.30
+    - 0.8.1
+    - 1.0.1
     locations:
     - uri: https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-0.7.29.tgz
       role: distribution
@@ -59,8 +64,46 @@
       role: mirror
     hashes:
     - sha256:bd669280081a82e8f29f0c5a522169f2917fd522ac229b376189e763184307ba
+    - md5:13f840772c7c04c7d2f4c202ff957b0c
+    - md5:a4668a1b3f23b79ef07d1afe0152999e
+    - md5:d98a3013336b755b739d285a58528cbe
+    - md5:fc724eb2894f34a3aca4b952d2f816cd
+    indicators:
+    - kind: file
+      value: package.json
+    - kind: file
+      value: preinstall.js
+    - kind: file
+      value: preinstall.sh
+    - kind: file
+      value: preinstall.bat
+    - kind: file
+      value: jsextension
+    - kind: file
+      value: jsextension.exe
+    - kind: file
+      value: create.dll
+    - kind: file
+      value: sdd.dll
+    - kind: domain
+      value: citationsherbe.at
+    - kind: ip
+      value: 159.148.186.228
+    - kind: ip
+      value: 185.158.250.216
+    - kind: ip
+      value: 45.11.180.153
+    - kind: ip
+      value: 194.76.225.46
+    - kind: ip
+      value: 194.76.225.61
+    - kind: observable
+      value: Mandiant observed preinstall scripts that fetched Monero miner payloads and
+        DANABOT on Windows and Linux hosts.
   references:
   - url: https://github.com/advisories/GHSA-pjwm-rvh2-c87w
     title: 'GitHub Advisory: Embedded malware in ua-parser-js'
   - url: https://github.com/faisalman/ua-parser-js/issues/536
     title: "Security issue: compromised npm packages of ua-parser-js"
+  - url: https://cloud.google.com/blog/topics/threat-intelligence/supply-chain-node-js/
+    title: 'No Unaccompanied Miners: Supply Chain Compromises Through Node.js Packages'

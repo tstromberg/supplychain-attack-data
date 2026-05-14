@@ -1,0 +1,107 @@
+- id: phpstudy
+  title: phpStudy package carried PHP DLL backdoor
+  synopsis: >-
+    phpStudy distributions for Windows carried a backdoored PHP extension DLL that executed
+    base64 PHP code from HTTP headers. Police reporting later tied the backdoor to large-scale
+    host control and data theft.
+  story: |-
+    phpStudy was a Windows bundle for local PHP development and small server deployments. In 2019, public reporting said the phpStudy package released in 2016 had been maliciously planted with a backdoor, and that the maintainer removed the tampered package in January 2019.
+
+    The backdoor lived in PHP extension code, not in a visible installer script. Public reproductions identified `php_xmlrpc.dll` under PHP 5.2.17 and 5.4.45 paths. The DLL inspected request headers and, when the right conditions were met, decoded attacker-supplied base64 PHP from `Accept-Charset`.
+
+    The execution path was direct. Requests used `Accept-Encoding: gzip,deflate` and a base64 payload in `Accept-Charset`; the extension decoded the payload and passed it to PHP evaluation. That turned any exposed phpStudy-hosted application into unauthenticated remote code execution as the web server user.
+
+    NSFOCUS cited Hangzhou police reporting that the planted backdoor was used to control more than 670,000 computers and collect more than 100,000 pieces of data, including accounts, passwords, chat data, and device identifiers. This record tracks the software supply-chain insertion, not later exploitation of individual exposed servers.
+  start_date: 2016-01-01
+  end_date: 2019-01-31
+  target:
+    name: phpStudy
+    kind: application
+    website: https://www.xp.cn/phpstudy
+  actor:
+    name: Individual Hacker
+    kind: person
+  language: C
+  method:
+    cause: compromised_build_or_distribution
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - remote_code_execution
+    - backdoor
+    - data_theft
+    users: 670000
+  artifacts:
+  - id: phpstudy-php-5-4-45
+    name: phpStudy PHP 5.4 distribution
+    package: phpStudy
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://www.xp.cn/phpstudy
+    start_date: 2016-01-01
+    end_date: 2019-01-31
+    versions:
+    - 5.4
+    - 5.4.45
+    locations:
+    - uri: https://www.xp.cn/phpstudy
+      role: distribution
+    - uri: https://github.com/jas502n/PHPStudy-Backdoor
+      role: mirror
+    hashes:
+    - md5:c339482fd2b233fb0a555b629c0ea5d5
+    indicators:
+    - kind: file
+      value: php/php-5.4.45/ext/php_xmlrpc.dll
+    - kind: cve
+      value: CVE-2025-34061
+    - kind: header
+      value: 'Accept-Encoding: gzip,deflate'
+    - kind: header
+      value: 'Accept-Charset: <base64 PHP payload>'
+    - kind: observable
+      value: Backdoored php_xmlrpc.dll decoded attacker-supplied PHP from Accept-Charset and evaluated it.
+    notes:
+    - NSFOCUS described the affected scope as the PHP 5.4 distribution in the phpStudy
+      2016 package and said the developer removed the backdoor in January 2019.
+    - NVD and the GitHub Advisory Database describe broader PHPStudy 2016 through 2018
+      exposure; this artifact records the narrower DLL and version detail with public hashes.
+  - id: phpstudy-php-5-2-17
+    name: phpStudy PHP 5.2 distribution
+    package: phpStudy
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://www.xp.cn/phpstudy
+    versions:
+    - 5.2.17
+    locations:
+    - uri: https://www.xp.cn/phpstudy
+      role: distribution
+    - uri: https://github.com/jas502n/PHPStudy-Backdoor
+      role: mirror
+    hashes:
+    - md5:0f7ad38e7a9857523dfbce4bce43a9e9
+    indicators:
+    - kind: file
+      value: php/php-5.2.17/ext/php_xmlrpc.dll
+    - kind: cve
+      value: CVE-2025-34061
+    - kind: header
+      value: 'Accept-Charset: <base64 PHP payload>'
+    notes:
+    - Public proof-of-concept analysis found the same eval markers in the PHP 5.2.17
+      php_xmlrpc.dll shipped with affected phpStudy distributions.
+  references:
+  - url: https://nsfocusglobal.com/phpstudy-backdoor-event-threat-alert/
+    title: phpStudy Backdoor Event Threat Alert
+  - url: https://github.com/jas502n/PHPStudy-Backdoor
+    title: PHPStudy-Backdoor
+  - url: https://github.com/advisories/GHSA-2mv3-3vpm-p5pm
+    title: PHPStudy backdoor remote code execution
+  - url: https://nvd.nist.gov/vuln/detail/CVE-2025-34061
+    title: CVE-2025-34061 Detail
+  - url: 
+      https://raw.githubusercontent.com/rapid7/metasploit-framework/master/modules/exploits/multi/http/phpstudy_backdoor_rce.rb
+    title: Metasploit module phpstudy_backdoor_rce

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Checkmarx March 2026 GitHub Actions and OpenVSX compromise</title>
+  <title>Checkmarx tools stole CI secrets</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,25 +13,38 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Checkmarx March 2026 GitHub Actions and OpenVSX compromise</h1>
+  <h1>Checkmarx tools stole CI secrets</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> checkmarx-march-2026 · <a href="https://github.com/Checkmarx" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Target:</strong> Checkmarx developer tooling · <a href="https://github.com/Checkmarx" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-03-23</div>
-    <div class="meta-item"><strong>Actor:</strong> Advanced Persistent Threat (group)</div>
-    <div class="meta-item"><strong>Target Kind:</strong> ci_cd_plugin</div>
+    <div class="meta-item"><strong>Actor:</strong> TeamPCP (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> developer_tooling</div>
     <div class="meta-item"><strong>Language:</strong> Shell</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
     <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
     <div class="meta-item"><strong>Transitive:</strong> true</div>
-    <div class="meta-item"><strong>Impact:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, persistence</div>
     <div class="meta-item"><strong>User Impact:</strong> 0</div>
     <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">TeamPCP turned Checkmarx&#39;s own developer tooling into a credential-harvesting path on March 23, 2026. Malicious GitHub Action tags and OpenVSX extensions reached CI runners and developer workstations, collecting environment variables, cloud keys, SSH material, Kubernetes tokens, and Checkmarx credentials before exfiltration to attacker infrastructure. The incident mattered because security scanners and IDE plugins sit directly inside privileged build and development workflows.</p>
+  <p class="synopsis">TeamPCP poisoned Checkmarx GitHub Actions and OpenVSX extensions. The payload hunted CI, cloud, SSH, Kubernetes, and developer credentials from trusted scanning tools.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The March Checkmarx incident began in the places developers trust by habit. Malicious OpenVSX extensions appeared early on March 23. Later that day, Checkmarx GitHub Actions tags were altered so CI jobs pulled attacker code as normal scanner setup.</p>
+    
+      <p>The GitHub Actions payload changed the action startup path and ran `setup.sh`. It searched runners for environment variables, SSH keys, cloud metadata, Kubernetes tokens, and GitHub Actions process memory. It encrypted the collection, wrote `tpcp.tar.gz`, and tried to send it to TeamPCP infrastructure, with GitHub release upload as a fallback.</p>
+    
+      <p>The OpenVSX payload used the IDE instead of CI. Compromised `ast-results` and `cx-dev-assist` VSIX files loaded a malicious checker, gated execution on the presence of cloud credentials, fetched a second stage, then used the same credential-stealing grammar. On developer machines it could install a user-level systemd persistence loop.</p>
+    
+      <p>Checkmarx removed the affected artifacts, deleted older GitHub versions, rotated credentials, and advised users to move to verified releases. The incident is recorded as its own attack because it compromised Checkmarx-controlled distribution channels on March 23, even though the technique and infrastructure tie it to the wider TeamPCP campaign.</p>
+    
+  </div>
   
 
   
@@ -65,7 +78,7 @@
           </td>
           <td>
             
-              N/A
+              <code>2.3.33</code>
             
           </td>
           <td>
@@ -91,7 +104,7 @@
           </td>
           <td>
             
-              N/A
+              <code>2.1.20</code>
             
           </td>
           <td>
@@ -174,6 +187,29 @@
   
 
   
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>domain:checkmarx.zone</code></li>
+    
+      <li><code>ip:83.142.209.11</code></li>
+    
+      <li><code>file:setup.sh</code></li>
+    
+      <li><code>file:environmentAuthChecker.js</code></li>
+    
+      <li><code>file:checkmarx-util-1.0.4.tgz</code></li>
+    
+      <li><code>file:tpcp.tar.gz</code></li>
+    
+      <li><code>file:sysmon.py</code></li>
+    
+      <li><code>observable:docs-tpcp GitHub repository used as fallback exfiltration path.</code></li>
+    
+      <li><code>observable:OpenVSX extensions fetched checkmarx-util-1.0.4.tgz from checkmarx.zone/static.</code></li>
+    
+  </ul>
+  
 
   
 
@@ -183,13 +219,13 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://checkmarx.com/blog/ongoing-security-updates/" target="_blank">https://checkmarx.com/blog/ongoing-security-updates/</a></li>
+      <li><a href="https://checkmarx.com/blog/ongoing-security-updates/" target="_blank">Update: Ongoing Checkmarx Supply Chain Security Incident</a></li>
     
-      <li><a href="https://checkmarx.com/blog/checkmarx-security-update/" target="_blank">https://checkmarx.com/blog/checkmarx-security-update/</a></li>
+      <li><a href="https://checkmarx.com/blog/checkmarx-security-update/" target="_blank">Update: Ongoing Checkmarx Supply Chain Security Incident</a></li>
     
-      <li><a href="https://www.wiz.io/blog/teampcp-attack-kics-github-action" target="_blank">https://www.wiz.io/blog/teampcp-attack-kics-github-action</a></li>
+      <li><a href="https://www.wiz.io/blog/teampcp-attack-kics-github-action" target="_blank">KICS GitHub Action Compromised: TeamPCP Strikes Again in Supply Chain Attack</a></li>
     
-      <li><a href="https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags" target="_blank">https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags" target="_blank">Checkmarx KICS GitHub Action Compromised: Malware Injected in All Git Tags</a></li>
     
   </ul>
   

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GOM Player update mechanism abused to deliver malware to Korean targets</title>
+  <title>GOM Player update served Miancha</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,25 +13,38 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>GOM Player update mechanism abused to deliver malware to Korean targets</h1>
+  <h1>GOM Player update served Miancha</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> gom-player · <a href="https://gomlab.com" target="_blank">website</a></div>
-    <div class="meta-item"><strong>Date:</strong> 2013-07-01 to 2013-12-31 (183 days)</div>
+    <div class="meta-item"><strong>Target:</strong> GOM Player · <a href="https://gomlab.com" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2013-11-27 to 2014-01-16 (50 days)</div>
     <div class="meta-item"><strong>Actor:</strong> Nation-state (state)</div>
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
-    <div class="meta-item"><strong>Language:</strong> c++</div>
+    <div class="meta-item"><strong>Language:</strong> C++</div>
     <div class="meta-item"><strong>Cause:</strong> update_infrastructure_compromise</div>
     <div class="meta-item"><strong>Motive:</strong> espionage</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
-    <div class="meta-item"><strong>Impact:</strong> backdoor, espionage</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_access, data_exfiltration</div>
     <div class="meta-item"><strong>User Impact:</strong> 0</div>
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">In mid-2013, suspected DPRK-aligned actors abused the auto-update mechanism of GOM Player — a popular Korean media player by Gretech — to deliver malware to selected South Korean targets. Compromised at the same broad period as SimDisk and other Korean software supply-chain incidents in the DarkSeoul cluster. The malicious update was served through GOM Player&#39;s official update channel and signed/packaged to appear legitimate. Public technical detail is sparser than for SimDisk; the incident is most often referenced in roundups of Korean software-update supply-chain compromises rather than a single canonical writeup.</p>
+  <p class="synopsis">GRETECH&#39;s GOM Player update path redirected Japanese users to a malicious installer. The package ran the real update and installed Miancha through a staged RAR payload.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>GOM Player&#39;s Japanese update service was abused in late 2013 and early 2014. GRETECH initially warned that users who updated between December 27 and January 16 could have been infected; later investigation extended the exposure back to November 27. The issue became public after a system associated with the Monju fast breeder reactor was reported infected.</p>
+    
+      <p>The delivery used trust, not novelty. A user ran the ordinary GOM Player update flow and was redirected to a third-party site. The downloaded file, `GoMPLAYER_JPSETUP.EXE`, was a RAR-packed executable that contained a legitimate GOM Player updater and another packed executable named `GOMPLAYERBETASETUP_JP.EXE`.</p>
+    
+      <p>The second layer carried the malicious work. `install.exe` checked whether it was running on 32-bit or 64-bit Windows, decrypted `dll.tmp` or `dll64.tmp` with XOR key `x14`, wrote `install.ocx`, copied a matching PDF-like payload, and registered the OCX under a COM CLSID. It then restarted `explorer.exe` so the payload loaded inside Explorer.</p>
+    
+      <p>Kaspersky detected the malware as `Backdoor.Win32.Miancha.b`. The payload extracted command-and-control data from marker strings at the end of the PDF-like file, decoded it, and used it for callback configuration. The compromise was narrow and effective: official updater, real installer, hidden backdoor.</p>
+    
+  </div>
   
 
   
@@ -51,13 +64,13 @@
         
         <tr>
           <td>
-            <strong>gom-player</strong>
-            
-            <br><span>binary_archive</span>
+            <strong>GOM Player Japanese updater</strong>
+            <br><code>GOM Player</code>
+            <br><span>windows updater · update</span>
             <br><a href="https://gomlab.com" target="_blank">https://gomlab.com</a>
             
           </td>
-          <td>2013-07-01<br>to 2013-12-31</td>
+          <td>2013-11-27<br>to 2014-01-16</td>
           <td>
             
               N/A
@@ -92,9 +105,15 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.symantec.com/connect/blogs/four-years-darkseoul-cyberattacks-against-south-korea-continue-anniversary-korean-war" target="_blank">https://www.symantec.com/connect/blogs/four-years-darkseoul-cyberattacks-against-south-korea-continue-anniversary-korean-war</a></li>
+      <li><a href="https://securelist.com/abused-update-of-gom-player-poses-a-threat/58240/" target="_blank">Abused Update of GOM Player Poses a Threat</a></li>
     
-      <li><a href="https://www.welivesecurity.com/2013/07/01/south-korea-malware-watering-hole/" target="_blank">https://www.welivesecurity.com/2013/07/01/south-korea-malware-watering-hole/</a></li>
+      <li><a href="https://internet.watch.impress.co.jp/docs/news/632516.html" target="_blank">GOM Player update server unauthorized access disclosed</a></li>
+    
+      <li><a href="https://forest.watch.impress.co.jp/docs/news/638849.html" target="_blank">GRETECH publishes detailed investigation results on targeted attack abusing GOM Player</a></li>
+    
+      <li><a href="https://www.symantec.com/connect/blogs/four-years-darkseoul-cyberattacks-against-south-korea-continue-anniversary-korean-war" target="_blank">Four Years of DarkSeoul Cyberattacks Against South Korea Continue</a></li>
+    
+      <li><a href="https://www.welivesecurity.com/2013/07/01/south-korea-malware-watering-hole/" target="_blank">South Korea malware watering hole</a></li>
     
   </ul>
   

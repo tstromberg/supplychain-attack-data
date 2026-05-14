@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Malicious script injected into Amazon Q Developer for Visual Studio</title>
+  <title>Amazon Q extension prompt injection</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,10 +13,10 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Malicious script injected into Amazon Q Developer for Visual Studio</h1>
+  <h1>Amazon Q extension prompt injection</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> aws-toolkit-vscode · <a href="https://github.com/aws/aws-toolkit-vscode" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Target:</strong> Amazon Q Developer for VS Code · <a href="https://marketplace.visualstudio.com/items?itemName=AmazonWebServices.amazon-q-vscode" target="_blank">website</a> · <a href="https://github.com/aws/aws-toolkit-vscode" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2025-07-25</div>
     <div class="meta-item"><strong>Actor:</strong> Third Party (group)</div>
     <div class="meta-item"><strong>Target Kind:</strong> plugin</div>
@@ -30,8 +30,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">A threat actor exploited an inappropriately scoped GitHub token in the extension&#39;s CodeBuild configuration to commit malicious code into the open-source repository. This code was automatically included in the version 1.84.0 release. Fortunately, the malicious code failed to execute due to a syntax error.</p>
+  <p class="synopsis">A threat actor used an overbroad GitHub token in AWS CodeBuild to commit malicious prompt-injection code into Amazon Q Developer for VS Code 1.84.0. The code shipped through the official extension release, but a syntax error prevented execution.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>AWS investigated the Amazon Q Developer for VS Code extension in July 2025 and found that its CodeBuild configuration exposed a GitHub token with too much repository access. The token let the attacker commit code into the open-source repository.</p>
+    
+      <p>The malicious change was automatically included in Amazon Q Developer for VS Code 1.84.0. It targeted the assistant&#39;s code-context path rather than a normal binary payload: the injected content acted as a prompt intended to make the agent perform destructive local and AWS actions.</p>
+    
+      <p>AWS said the malicious code was distributed with the extension but did not execute because of a syntax error. ReversingLabs and later case-study writeups framed the incident as a near miss because Amazon Q can operate with local files and cloud resources available to the developer.</p>
+    
+      <p>AWS revoked and replaced credentials, removed the malicious code, removed 1.84.0 from distribution channels, and released 1.85.0. Existing 1.84.0 installations still contained the inert malicious code and were directed to upgrade.</p>
+    
+  </div>
   
 
   
@@ -51,10 +64,10 @@
         
         <tr>
           <td>
-            <strong>aws-toolkit-vscode</strong>
-            
-            <br><span>extension</span>
-            
+            <strong>Amazon Q Developer for VS Code</strong>
+            <br><code>aws-toolkit-vscode</code>
+            <br><span>vscode_marketplace · extension</span>
+            <br><a href="https://marketplace.visualstudio.com/items?itemName=AmazonWebServices.amazon-q-vscode" target="_blank">https://marketplace.visualstudio.com/items?itemName=AmazonWebServices.amazon-q-vscode</a>
             <br><a href="https://github.com/aws/aws-toolkit-vscode" target="_blank">https://github.com/aws/aws-toolkit-vscode</a>
           </td>
           <td>2025-07-25</td>
@@ -65,7 +78,7 @@
           </td>
           <td>
             
-              N/A
+              <code>1.85.0</code>
             
           </td>
           <td>
@@ -92,7 +105,11 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://github.com/aws/aws-toolkit-vscode/security/advisories/GHSA-7g7f-ff96-5gcw" target="_blank">https://github.com/aws/aws-toolkit-vscode/security/advisories/GHSA-7g7f-ff96-5gcw</a></li>
+      <li><a href="https://github.com/aws/aws-toolkit-vscode/security/advisories/GHSA-7g7f-ff96-5gcw" target="_blank">Malicious script injected into Amazon Q Developer for Visual Studio Code Extension</a></li>
+    
+      <li><a href="https://www.reversinglabs.com/blog/aws-amazonq-ai-incident" target="_blank">How AWS averted an AI supply chain disaster</a></li>
+    
+      <li><a href="https://github.com/vectara/awesome-agent-failures/blob/main/docs/case-studies/amazon-q-supply-chain-attack.md" target="_blank">Amazon Q VS Code Prompt Injection Supply Chain Attack - 2025</a></li>
     
   </ul>
   

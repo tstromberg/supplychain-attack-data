@@ -1,12 +1,16 @@
----
 - id: util-linux
   title: util-linux source archive trojanized
-  synopsis: The util-linux 2.9g source archive was replaced on an official distribution
-    site during the same 1999 advisory window as the tcp-wrappers compromise. The
-    malicious change targeted login code, allowing credential theft and unauthorized
-    command execution after administrators built and installed the package. This is
-    a distinct record from tcp-wrappers, even though both were covered by the same
-    CERT-era warning.
+  synopsis: >-
+    The util-linux 2.9g source archive was replaced on an official distribution site during
+    the same 1999 advisory window as the tcp-wrappers compromise.
+  story: |
+    In January 1999, the util-linux 2.9g source archive on `ftp.win.tue.nl` was found to be a trojaned replacement. The report came days after the tcp-wrappers compromise on the same server. The trusted FTP host, not a random mirror, was the failed boundary.
+
+    The modified archive changed `login-utils/login.c`. A new `checkname()` path ran during login. If the supplied username began with `#!`, the code built `/bin/<name>` and executed it. That turned an ordinary login prompt into a command trigger for anyone who knew the convention.
+
+    The same function also forked a reporting process. It resolved `mail.hotmail.com`, spoke SMTP, and sent host and UID data to a Hotmail address. It left `/var/tmp/.fmlock0` as a marker and exposed `HELO 127.0.0.1` as a simple detection string.
+
+    The maintainer restored a clean 2.9g archive and warned that nothing on the compromised machine should be trusted. CERT later folded util-linux into CA-1999-02 and advised users to move to util-linux 2.9h with signature verification. The lesson was plain: timestamps and familiar paths were not integrity.
   start_date: 1999-01-21
   end_date: 1999-01-22
   target:
@@ -44,7 +48,20 @@
     indicators:
     - kind: observable
       value: ftp://ftp.win.tue.nl/pub/linux-local/utils/util-linux-2.9g.tar.gz
+    - kind: file
+      value: login-utils/login.c
+    - kind: function
+      value: checkname
+    - kind: string
+      value: HELO 127.0.0.1
+    - kind: file
+      value: /var/tmp/.fmlock0
+    - kind: domain
+      value: mail.hotmail.com
   references:
   - url: https://seclists.org/bugtraq/1999/Jan/286
+    title: 'Bugtraq: Re: util-linux compromised'
   - url: https://www.linuxtoday.com/security/cert-advisory-ca-99-02-trojan-horses/
+    title: 'LinuxToday: CERT Advisory CA-99.02 - Trojan Horses'
   - url: https://www.linuxtoday.com/security/util-linux-2-9g-compromised/
+    title: 'LinuxToday: util-linux-2.9g compromised'

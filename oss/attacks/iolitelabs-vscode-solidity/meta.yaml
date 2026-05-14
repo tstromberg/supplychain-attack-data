@@ -1,15 +1,17 @@
----
 - id: iolitelabs-vscode-solidity
-  title: IoliteLabs VS Code Solidity Extensions Backdoor
-  synopsis: A dormant IoliteLabs Visual Studio Marketplace publisher account was used
-    to update three Solidity extensions to version 0.1.8 after nearly eight years
-    of inactivity, with no matching source repository commits. The VSIX packages replaced
-    the original language-server behavior with startup activation and hid the backdoor
-    in a bundled copy of the pako dependency. The payload delivered Windows and macOS
-    backdoors with persistence and exfiltration behavior; the Linux extension loaded
-    the tampered dependency but did not contain an active Linux execution branch.
-    The incident shows how dormant publisher accounts and vendored dependencies can
-    hide malicious extension code away from the declared entry point.
+  title: IoliteLabs Solidity extensions shipped backdoor
+  synopsis: >-
+    A dormant IoliteLabs Visual Studio Marketplace publisher account was used to update three
+    Solidity extensions to version 0.1.8 after nearly eight years of inactivity, with no matching
+    source repository commits.
+  story: |
+    IoliteLabs had three old Solidity extensions in the Visual Studio Marketplace: macOS, Windows, and Linux packages first published for the Iolite ecosystem in 2018. On 2026-03-25, all three were updated to version 0.1.8 after nearly eight years of silence.
+
+    The source repository did not match the marketplace update. StepSecurity found no corresponding GitHub commits, and the VSIX shape changed sharply: the extension shrank, real Solidity functionality became hollow command stubs, and a bundled `pako` library carried the backdoor.
+
+    The payload selected behavior by platform. Windows and macOS received separate staged payloads and C2 paths. Linux loaded the tampered dependency but public analysis did not identify an active Linux execution branch.
+
+    The attack targeted Solidity developers through a legitimate publisher account with existing installs and history. That preserved trust while removing functionality; the extension became a loader wearing the old package name.
   start_date: 2026-03-25
   end_date: 2026-03-27
   target:
@@ -71,7 +73,8 @@
     versions:
     - 0.1.8
     locations:
-    - uri: https://marketplace.visualstudio.com/items?itemName=iolitelabs.solidity-windows
+    - uri: 
+        https://marketplace.visualstudio.com/items?itemName=iolitelabs.solidity-windows
       role: distribution
     notes:
     - Windows extension; safe versions are <0.1.8.
@@ -88,7 +91,10 @@
     - uri: https://marketplace.visualstudio.com/items?itemName=iolitelabs.solidity-linux
       role: distribution
     notes:
-    - Linux extension loaded the tampered dependency but the public report did not
+    - Linux extension loaded the tampered dependency but the public report did not 
       identify an active Linux execution branch; safe versions are <0.1.8.
   references:
-  - url: https://www.stepsecurity.io/blog/malicious-iolitelabs-vscode-extensions-target-solidity-developers-on-windows-macos-and-linux-with-backdoor
+  - url: 
+      https://www.stepsecurity.io/blog/malicious-iolitelabs-vscode-extensions-target-solidity-developers-on-windows-macos-and-linux-with-backdoor
+    title: Malicious IoliteLabs VSCode Extensions Target Solidity Developers on
+      Windows, macOS, and Linux with Backdoor

@@ -1,14 +1,19 @@
----
 - id: intercom-php
-  title: Intercom PHP SDK Compromise (Mini Shai-Hulud)
+  title: Intercom PHP SDK hit by Mini Shai-Hulud
   campaigns:
   - teampcp-2026
-  synopsis: The Mini Shai-Hulud campaign expanded into the PHP ecosystem by compromising
-    the official intercom/intercom-php package on Packagist. Attackers compromised
-    a maintainer account to overwrite existing legitimate versions. The malicious
-    code was converted into a Composer plugin to execute automatically during installation,
-    downloading the Bun runtime to execute an obfuscated payload that exfiltrated
-    GitHub tokens, SSH keys, cloud credentials, and .env files to zero.masscan.cloud.
+  synopsis: >-
+    The Mini Shai-Hulud campaign expanded into the PHP ecosystem by compromising the official
+    intercom/intercom-php package on Packagist. Attackers compromised a maintainer account
+    to overwrite existing legitimate versions.
+  story: |
+    `intercom/intercom-php@5.0.2` showed Mini Shai-Hulud crossing ecosystem boundaries. Semgrep reported that attackers overwrote an existing legitimate Packagist version rather than publishing a new obvious outlier.
+
+    The malicious package converted itself into a Composer plugin. That matters because Composer plugins execute during installation, before application code imports the library. The install step became the execution step.
+
+    The plugin downloaded the Bun JavaScript runtime and ran an obfuscated credential stealer aligned with the npm campaign. The payload targeted GitHub tokens, SSH keys, cloud credentials, environment variables, and other developer secrets.
+
+    The record is paired with `intercom-client` because both appeared the same day and shared Mini Shai-Hulud tooling. It remains separate because the compromised artifact, package manager, and execution mechanism were different.
   start_date: 2026-04-30
   end_date: 2026-04-30
   target:
@@ -31,6 +36,7 @@
   artifacts:
   - id: intercom-php
     name: intercom-php
+    package: intercom/intercom-php
     ecosystem: packagist
     kind: source_archive
     repo: https://github.com/intercom/intercom-php
@@ -41,5 +47,17 @@
     locations:
     - uri: https://github.com/intercom/intercom-php
       role: mirror
+    indicators:
+    - kind: family
+      value: Mini Shai-Hulud
+    - kind: file
+      value: composer.json
+    - kind: domain
+      value: zero.masscan.cloud
+    - kind: runtime
+      value: Bun
   references:
-  - url: https://semgrep.dev/blog/2026/malicious-intercom-php-package-spreads-mini-shai-hulud-attack-to-packagist-via-composer-plugin/
+  - url: 
+      https://semgrep.dev/blog/2026/malicious-intercom-php-package-spreads-mini-shai-hulud-attack-to-packagist-via-composer-plugin/
+    title: Malicious Intercom PHP Package Spreads Mini Shai-Hulud Attack to Packagist
+      via Composer Plugin

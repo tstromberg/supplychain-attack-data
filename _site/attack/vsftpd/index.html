@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>vsftpd official distribution site compromised distributing backdoor</title>
+  <title>vsftpd distribution site served backdoor</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>vsftpd official distribution site compromised distributing backdoor</h1>
+  <h1>vsftpd distribution site served backdoor</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> vsftpd · <a href="https://security.appspot.com" target="_blank">website</a></div>
@@ -30,7 +30,7 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The official vsftpd 2.3.4 source archive was replaced with a backdoored tarball around June 30 to July 1, 2011, and removed on July 3. The malicious code failed the original GPG signature and triggered when an FTP username contained &#39;:)&#39;, opening a TCP/6200 shell with the privileges of the running daemon.</p>
+  <p class="synopsis">The official vsftpd 2.3.4 source archive was replaced with a backdoored tarball around June 30 to July 1, 2011, and removed on July 3.</p>
 
   
   <h2>Story</h2>
@@ -40,7 +40,9 @@
     
       <p>The delivery was the official source archive. The code change did not need a vulnerable parser or malformed FTP command. It changed the daemon being built, and the failed detached signature was the clean technical signal that the archive and release key no longer matched.</p>
     
-      <p>The payload was blunt and memorable. If an FTP username contained `:)`, the server attempted to spawn a shell listener on TCP/6200. There was no installation beacon, which meant the attacker likely needed download logs, broad scanning, or prior knowledge of targets to find victims. Evans moved the project download to a more trusted host and published the warning with a diff reference so administrators could verify both source integrity and runtime exposure.</p>
+      <p>The payload was blunt and memorable. The diff showed `str.c` checking for the byte sequence `0x3a 0x29`, the ASCII smiley `:)`, and calling `vsf_sysutil_extra()`. The added function in `sysdeputil.c` created a TCP listener on port 6200, accepted a connection, duplicated it onto standard input, output, and error, then executed `/bin/sh`.</p>
+    
+      <p>There was no installation beacon, which meant the attacker likely needed download logs, broad scanning, or prior knowledge of targets to find victims. Evans moved the project download to a more trusted host and published the warning with a diff reference so administrators could verify both source integrity and runtime exposure.</p>
     
   </div>
   
@@ -110,6 +112,12 @@
       <li><a href="https://www.rapid7.com/db/modules/exploit/unix/ftp/vsftpd_234_backdoor/" target="_blank">VSFTPD 2.3.4 Backdoor Command Execution</a></li>
     
       <li><a href="https://web.archive.org/web/20210228222523/https://pastebin.com/AetT9sS5" target="_blank">Archived vsftpd 2.3.4 backdoor diff</a></li>
+    
+      <li><a href="https://pastebin.com/AetT9sS5" target="_blank">vsftpd 2.3.4 backdoor diff</a></li>
+    
+      <li><a href="https://github.com/DoctorKisow/vsftpd-2.3.4" target="_blank">GitHub: DoctorKisow/vsftpd-2.3.4</a></li>
+    
+      <li><a href="https://github.com/advisories/GHSA-qf3g-hgw2-8r8h" target="_blank">GitHub Advisory Database: CVE-2011-2523</a></li>
     
       <li><a href="https://www.computerworld.com/article/2518230/vsftpd-developer-confirms-backdoor-in-version-2-3-4.html" target="_blank">vsftpd developer confirms backdoor in version 2.3.4</a></li>
     

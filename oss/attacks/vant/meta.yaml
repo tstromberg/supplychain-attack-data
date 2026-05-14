@@ -1,15 +1,19 @@
----
 - id: vant
-  title: vant Vue UI library npm packages backdoored with XMRig
+  title: vant npm packages shipped XMRig
   campaigns:
   - rspack-vant-cryptominer-2024
-  synopsis: On 2024-12-19, the same day as the @rspack/core compromise and likely
-    by the same actor, ten versions of the Chinese-origin Vue UI library `vant` were
-    published to npm with obfuscated XMRig cryptojacking code beaconing to `80.78.28.72/tokens`.
-    The compromise spanned three release lines (v2, v3, v4) — versions 2.13.3-2.13.5,
-    3.6.13-3.6.15, and 4.9.11-4.9.14 — leveraging a stolen npm publishing token. The
-    maintainers released clean v4.9.15. Vant had ~46,000 weekly downloads at the time
-    of the attack.
+  synopsis: >-
+    On 2024-12-19, the same day as the @rspack/core compromise and likely by the same actor,
+    ten versions of the Chinese-origin Vue UI library `vant` were published to npm with obfuscated
+    XMRig cryptojacking code beaconing to `80.78.28.72/tokens`.
+  story: |
+    Vant was the second half of the December 2024 Rspack/Vant npm campaign. On December 19, attackers published malicious Vant releases across the v2, v3, and v4 lines, giving the payload a wide compatibility surface.
+
+    The malicious code matched the Rspack pattern. It ran during npm installation, reached out to attacker infrastructure, installed XMRig, and sent host and credential data to `80.78.28.72/tokens`. The campaign also touched cloud credential paths used by Alibaba Cloud, Huawei Cloud, and Tencent Cloud.
+
+    The Vant repository itself mattered to the campaign. Rspack's payload pulled a base64 blob from a Vant GitHub object, tying the two records together by infrastructure as well as timing. Sonatype blocked affected packages and reported the linked compromise across both projects.
+
+    Maintainers released clean 4.9.15 and deprecated the compromised versions. The 46,000 figure records package reach around the incident, not a confirmed victim count.
   start_date: 2024-12-19
   end_date: 2024-12-20
   target:
@@ -17,8 +21,8 @@
     kind: library
     repo: https://github.com/youzan/vant
   actor:
-    name: Unknown attacker
-    kind: unknown
+    name: MUT-1692
+    kind: group
   language: javascript
   method:
     cause: compromised_credentials
@@ -28,7 +32,8 @@
   impact:
     types:
     - cryptojacking
-    users: 46000
+    - credential_theft
+    users: 0
   artifacts:
   - id: vant
     name: vant
@@ -69,9 +74,31 @@
       role: distribution
     - uri: https://www.npmjs.com/package/vant/v/4.9.14
       role: distribution
+    indicators:
+    - kind: file
+      value: /tmp/vant
+    - kind: ip
+      value: 80.78.28.72
+    - kind: url
+      value: http://80.78.28.72/tokens
+    - kind: path
+      value: ~/.aliyun/config.json
+    - kind: path
+      value: ~/.hcloud/config.json
+    - kind: path
+      value: ~/.tccli/default.credential
+    - kind: malware
+      value: XMRig
     notes:
-    - Compromised versions span the v2, v3, and v4 release lines; maintainers released
+    - Compromised versions span the v2, v3, and v4 release lines; maintainers released 
       clean v4.9.15.
+    - Public reporting cited package download volume as exposure context; confirmed
+      victim count is unknown.
   references:
-  - url: https://www.sonatype.com/blog/npm-packages-rspack-vant-compromised-blocked-by-sonatype
+  - url: 
+      https://www.sonatype.com/blog/npm-packages-rspack-vant-compromised-blocked-by-sonatype
+    title: npm packages Rspack and Vant compromised, blocked by Sonatype
   - url: https://thehackernews.com/2024/12/rspack-vue-vant-packages-compromised.html
+    title: Rspack and Vant npm packages compromised with cryptomining malware
+  - url: https://securitylabs.datadoghq.com/articles/2025-q1-threat-roundup/#mut-1692-compromises-rspack-maintainers-account-to-distribute-cryptojacking-and-infostealer-malware
+    title: MUT-1692 compromises Rspack maintainer's account to distribute cryptojacking and infostealer malware

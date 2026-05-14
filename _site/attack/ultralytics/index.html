@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ultralytics PyPI package compromised distributing cryptominer</title>
+  <title>Ultralytics PyPI releases shipped cryptominer</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Ultralytics PyPI package compromised distributing cryptominer</h1>
+  <h1>Ultralytics PyPI releases shipped cryptominer</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> ultralytics · <a href="https://github.com/ultralytics/ultralytics" target="_blank">repo</a></div>
@@ -30,8 +30,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Attackers exploited a vulnerability in the project&#39;s GitHub Actions CI/CD workflow (combining `pull_request_target` trigger with command injection via unsanitized branch names). This allowed them to execute arbitrary code during the build/publish process and upload malicious versions of the official `ultralytics` package directly to PyPI. These compromised versions contained an XMRig cryptominer. Several malicious versions were published over a few days before being detected and removed.</p>
+  <p class="synopsis">Attackers abused Ultralytics GitHub Actions to publish four PyPI releases with cryptominer code. The trigger combined pull_request_target with branch-name injection.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The Ultralytics attack began in CI, not in PyPI. The project used a `pull_request_target` workflow and passed a privileged token into a custom action. That action then evaluated a user-controlled branch name inside a shell command.</p>
+    
+      <p>The attacker named the branch as a command substitution. When the workflow ran, the branch name fetched and executed a remote shell script from GitHub, turning formatting automation into code execution on a privileged runner.</p>
+    
+      <p>The attacker used that path to publish compromised PyPI releases. Versions 8.3.41, 8.3.42, 8.3.45, and 8.3.46 carried cryptomining changes, while the public repository did not contain matching malicious source. The package still looked like a normal computer-vision library release to downstream users.</p>
+    
+      <p>The project cleaned up the releases and GitHub published GHSA-32hc-9xrg-cc9g. The durable lesson is simple: `pull_request_target` can be safe only when untrusted fork input is kept out of privileged execution.</p>
+    
+  </div>
   
 
   
@@ -92,11 +105,13 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent" target="_blank">https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent</a></li>
+      <li><a href="https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent" target="_blank">The Ultralytics Supply Chain Attack: How It Happened, How to Prevent</a></li>
     
-      <li><a href="https://safetycli.com/research/supply-chain-attack-ultralytics-ai" target="_blank">https://safetycli.com/research/supply-chain-attack-ultralytics-ai</a></li>
+      <li><a href="https://safetycli.com/research/supply-chain-attack-ultralytics-ai" target="_blank">Ultralytics AI Supply Chain Attack</a></li>
     
-      <li><a href="https://github.com/ultralytics/ultralytics/issues/18029" target="_blank">https://github.com/ultralytics/ultralytics/issues/18029</a></li>
+      <li><a href="https://github.com/ultralytics/ultralytics/issues/18029" target="_blank">PyPI package compromised</a></li>
+    
+      <li><a href="https://github.com/ultralytics/ultralytics/security/advisories/GHSA-32hc-9xrg-cc9g" target="_blank">Ultralytics PyPI package compromise</a></li>
     
   </ul>
   

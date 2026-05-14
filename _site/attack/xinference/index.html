@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xinference PyPI Two-Stage Credential Stealer</title>
+  <title>Xinference PyPI release stole credentials</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,12 +13,12 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Xinference PyPI Two-Stage Credential Stealer</h1>
+  <h1>Xinference PyPI release stole credentials</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> xinference · <a href="https://github.com/xorbitsai/inference" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-04-22</div>
-    <div class="meta-item"><strong>Actor:</strong> Advanced Persistent Threat (group)</div>
+    <div class="meta-item"><strong>Actor:</strong> TeamPCP (group)</div>
     <div class="meta-item"><strong>Target Kind:</strong> library</div>
     <div class="meta-item"><strong>Language:</strong> Python</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
@@ -29,14 +29,27 @@
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
     <div class="meta-item"><strong>Campaigns:</strong>
       
-        <a href="/campaign/teampcp-2026/">TeamPCP 2026 Package Compromise Campaign</a>
+        <a href="/campaign/teampcp-2026/">TeamPCP package wave stole credentials</a>
       
     </div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">TeamPCP compromised three consecutive xinference PyPI releases, 2.6.0 through 2.6.2, by adding an import-time two-stage Python credential stealer to xinference/__init__.py. The attacker iterated the trigger across releases but kept the same core behavior: collect SSH keys, environment variables, cloud and Kubernetes credentials, package-manager tokens, CI/CD files, shell history, and wallet material, then archive and exfiltrate the results to attacker infrastructure. The incident is notable for its rapid multi-version refinement and for sharing TeamPCP markers and injection patterns with the LiteLLM and Telnyx compromises.</p>
+  <p class="synopsis">TeamPCP compromised three consecutive xinference PyPI releases, 2.6.0 through 2.6.2, by adding an import-time two-stage Python credential stealer to xinference/__init__.py.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The xinference compromise put malware into the top-level import path of an LLM inference framework. On April 22, 2026, PyPI releases 2.6.0, 2.6.1, and 2.6.2 carried code added to `xinference/__init__.py`.</p>
+    
+      <p>Version 2.6.0 ran a base64 payload at module scope. Version 2.6.1 moved the payload into `_install()` and used synchronous `exec()`. Version 2.6.2 kept the function-level hiding but restored detached execution with `subprocess.Popen`.</p>
+    
+      <p>The decoded first stage contained the marker `# hacked by teampcp`. It launched a second Python collector, wrote collected data into a temporary file, compressed it as `love.tar.gz`, and posted it to `whereisitat.lucyatemysuperbox.space` with the header `X-QT-SR: 14`.</p>
+    
+      <p>The collector targeted the material expected on inference servers: SSH keys, cloud credentials, Kubernetes tokens, Docker auth, `.env` files, shell histories, TLS private keys, and cryptocurrency wallets. StepSecurity noted that this variant lacked the RSA wrapping seen in LiteLLM and Telnyx, leaving a copycat possibility, but the marker, placement, and rapid version iteration match TeamPCP tradecraft.</p>
+    
+  </div>
   
 
   
@@ -97,7 +110,7 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.stepsecurity.io/blog/teampcp-injects-two-stage-credential-stealer-into-xinference-pypi-package" target="_blank">https://www.stepsecurity.io/blog/teampcp-injects-two-stage-credential-stealer-into-xinference-pypi-package</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/teampcp-injects-two-stage-credential-stealer-into-xinference-pypi-package" target="_blank">TeamPCP Injects Two-Stage Credential Stealer into xinference PyPI Package</a></li>
     
   </ul>
   

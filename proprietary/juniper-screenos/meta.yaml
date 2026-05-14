@@ -1,20 +1,17 @@
----
 - id: juniper-screenos
-  title: Juniper ScreenOS firmware contained unauthorized backdoors
-  synopsis: Juniper disclosed on December 17, 2015 that unauthorized code had entered
-    official ScreenOS firmware for NetScreen firewalls. One flaw, CVE-2015-7755,
-    let remote SSH or Telnet users obtain administrator access with a hidden password.
-    The other, CVE-2015-7756, weakened VPN encryption so a knowledgeable passive
-    observer could decrypt traffic. The case remains notorious because the same
-    firewall image carried both command access and traffic-surveillance risk.
+  title: Juniper ScreenOS firmware hid backdoors
+  synopsis: >-
+    Juniper disclosed that unauthorized code entered official ScreenOS firmware for NetScreen
+    firewalls. CVE-2015-7755 opened hidden SSH/Telnet admin access; CVE-2015-7756 could let
+    an observer decrypt VPN traffic.
   story: |
     The Juniper ScreenOS incident was not a normal bug disclosure. Juniper said an internal review found unauthorized code in ScreenOS, the operating system for NetScreen firewalls. The affected firmware was official vendor firmware, distributed through the normal ScreenOS channel, and the product sat directly on network boundaries.
 
     CVE-2015-7755 was the administrative-access backdoor. Rapid7 and Fox-IT analysis found an authentication path in SSH and Telnet that compared the supplied password against the string `<<< %s(un='%s') = %u`. The string looked like a format string, but on vulnerable builds it was a master password: any username could reach an administrative shell with the highest privileges.
 
-    CVE-2015-7756 was a separate VPN decryption vulnerability. Juniper described it as independent of the authentication bypass. Researchers tied the weakness to ScreenOS random-number generation and the Dual_EC_DRBG controversy: a changed parameter could let someone who knew the corresponding secret passively decrypt VPN traffic they could capture.
+    CVE-2015-7756 was a separate VPN decryption vulnerability. Juniper described it as independent of the authentication bypass. Public cryptographic analysis tied it to ScreenOS random-number generation, Dual_EC_DRBG, and a changed Q parameter. The attacker did not need a large code change; replacing the parameter was enough if the holder of the corresponding secret could see the right output.
 
-    The two issues had different version scopes. Juniper's bulletin gave broad affected ScreenOS ranges, while Rapid7 reported that the authentication backdoor appeared later in the 6.3.0 line and Juniper later confirmed it for 6.3.0r17 through 6.3.0r20. The VPN weakness covered the broader 6.2.0r15 through 6.2.0r18 and 6.3.0r12 through 6.3.0r20 ranges.
+    The deeper lesson was that ScreenOS already carried dangerous cryptographic structure. Dual_EC output was meant to be hidden behind an ANSI X9.17 generator, but researchers found paths where raw output could surface. The unauthorized parameter change then turned weak plumbing into a practical passive decryption path for VPN traffic.
   start_date: 2012-09-01
   end_date: 2015-12-17
   target:
@@ -47,9 +44,11 @@
     fixed_versions:
     - 6.3.0r21
     locations:
-    - uri: https://supportportal.juniper.net/s/article/2015-12-Out-of-Cycle-Security-Bulletin-ScreenOS-Multiple-Security-issues-with-ScreenOS-CVE-2015-7755-CVE-2015-7756
+    - uri: 
+        https://supportportal.juniper.net/s/article/2015-12-Out-of-Cycle-Security-Bulletin-ScreenOS-Multiple-Security-issues-with-ScreenOS-CVE-2015-7755-CVE-2015-7756
       role: distribution
-    - uri: https://www.rapid7.com/blog/post/2015/12/20/cve-2015-7755-juniper-screenos-authentication-backdoor/
+    - uri: 
+        https://www.rapid7.com/blog/post/2015/12/20/cve-2015-7755-juniper-screenos-authentication-backdoor/
       role: mirror
     indicators:
     - kind: cve
@@ -63,14 +62,14 @@
     - kind: signature
       value: TROJAN:BACKDOOR:SCREENOS-PWD
     - kind: observable
-      value: Any username with the hidden password could receive an administrative
-        shell on vulnerable ScreenOS devices.
+      value: Any username with the hidden password could receive an administrative shell
+        on vulnerable ScreenOS devices.
     notes:
-    - Juniper's original bulletin and CVE text list a broader affected range; Rapid7
-      reported that the authentication backdoor was not present in earlier 6.2.0
-      and 6.3.0 samples it examined, and noted Juniper confirmation for 6.3.0r17
-      through 6.3.0r20.
-    - Rapid7 estimated about 26,000 internet-facing NetScreen devices with SSH open
+    - Juniper's original bulletin and CVE text list a broader affected range; Rapid7 
+      reported that the authentication backdoor was not present in earlier 6.2.0 and 
+      6.3.0 samples it examined, and noted Juniper confirmation for 6.3.0r17 through 
+      6.3.0r20.
+    - Rapid7 estimated about 26,000 internet-facing NetScreen devices with SSH open 
       shortly after disclosure.
   - id: screenos-vpn-decryption
     name: Juniper ScreenOS VPN decryption weakness
@@ -85,9 +84,11 @@
     - 6.2.0r19
     - 6.3.0r21
     locations:
-    - uri: https://supportportal.juniper.net/s/article/2015-12-Out-of-Cycle-Security-Bulletin-ScreenOS-Multiple-Security-issues-with-ScreenOS-CVE-2015-7755-CVE-2015-7756
+    - uri: 
+        https://supportportal.juniper.net/s/article/2015-12-Out-of-Cycle-Security-Bulletin-ScreenOS-Multiple-Security-issues-with-ScreenOS-CVE-2015-7755-CVE-2015-7756
       role: distribution
-    - uri: https://www.wired.com/2015/12/researchers-solve-the-juniper-mystery-and-they-say-its-partially-the-nsas-fault/
+    - uri: 
+        https://www.wired.com/2015/12/researchers-solve-the-juniper-mystery-and-they-say-its-partially-the-nsas-fault/
       role: mirror
     indicators:
     - kind: cve
@@ -95,25 +96,35 @@
     - kind: crypto
       value: Dual_EC_DRBG
     - kind: capability
-      value: Passive VPN traffic decryption by an observer able to capture ciphertext
+      value: Passive VPN traffic decryption by an observer able to capture ciphertext 
         and holding the corresponding secret.
     notes:
-    - Juniper described CVE-2015-7756 as independent of the administrative-access
-      issue.
-    - Public analysis connected the weakness to ScreenOS random number generation
-      and the replacement of the Dual_EC_DRBG Q parameter.
+    - Juniper described CVE-2015-7756 as independent of the administrative-access issue.
+    - Public analysis connected the weakness to ScreenOS random number generation and 
+      the replacement of the Dual_EC_DRBG Q parameter.
+    - >-
+      Matthew Green summarized the public cryptographic analysis: the 2012 change appeared
+      to replace the Dual_EC Q value and test vectors, letting an attacker piggyback on
+      an existing ScreenOS design weakness rather than add a large new decryption module.
   references:
-  - url: https://supportportal.juniper.net/s/article/2015-12-Out-of-Cycle-Security-Bulletin-ScreenOS-Multiple-Security-issues-with-ScreenOS-CVE-2015-7755-CVE-2015-7756
-    title: '2015-12 Out of Cycle Security Bulletin: ScreenOS: Multiple Security issues
-      with ScreenOS'
-  - url: https://www.rapid7.com/blog/post/2015/12/20/cve-2015-7755-juniper-screenos-authentication-backdoor/
+  - url: 
+      https://supportportal.juniper.net/s/article/2015-12-Out-of-Cycle-Security-Bulletin-ScreenOS-Multiple-Security-issues-with-ScreenOS-CVE-2015-7755-CVE-2015-7756
+    title: '2015-12 Out of Cycle Security Bulletin: ScreenOS: Multiple Security issues with
+      ScreenOS'
+  - url: 
+      https://www.rapid7.com/blog/post/2015/12/20/cve-2015-7755-juniper-screenos-authentication-backdoor/
     title: 'CVE-2015-7755: Juniper ScreenOS Authentication Backdoor'
-  - url: https://www.juniper.net/us/en/threatlabs/ips-signatures/detail.TROJAN:BACKDOOR:SCREENOS-PWD.html
+  - url: 
+      https://www.juniper.net/us/en/threatlabs/ips-signatures/detail.TROJAN:BACKDOOR:SCREENOS-PWD.html
     title: 'TROJAN: Juniper ScreenOS Telnet Backdoor Password Attempt'
-  - url: https://www.wired.com/2015/12/researchers-solve-the-juniper-mystery-and-they-say-its-partially-the-nsas-fault/
-    title: Researchers Solve the Juniper Mystery and They Say It's Partially the
-      NSA's Fault
-  - url: https://blog.fox-it.com/2015/12/20/deepdive-into-cve-2015-7755-juniper-screenos-authentication-backdoor/
+  - url: 
+      https://www.wired.com/2015/12/researchers-solve-the-juniper-mystery-and-they-say-its-partially-the-nsas-fault/
+    title: Researchers Solve the Juniper Mystery and They Say It's Partially the NSA's 
+      Fault
+  - url: 
+      https://blog.fox-it.com/2015/12/20/deepdive-into-cve-2015-7755-juniper-screenos-authentication-backdoor/
     title: Deep dive into CVE-2015-7755 Juniper ScreenOS authentication backdoor
   - url: https://www.kb.cert.org/vuls/id/640184
     title: Juniper ScreenOS contains multiple vulnerabilities
+  - url: https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/
+    title: On the Juniper backdoor

@@ -1,16 +1,18 @@
----
 - id: opengov-form-builder
-  title: "@opengov/form-builder CanisterWorm npm Backdoor"
+  title: OpenGov form builder carried CanisterWorm
   campaigns:
   - teampcp-2026
-  synopsis: TeamPCP's CanisterWorm campaign backdoored @opengov/form-builder 0.12.3
-    after npm publishing credentials were stolen through the second Trivy compromise.
-    The malicious release added a postinstall payload that installed a persistent
-    Python implant and polled an Internet Computer canister C2. The worm harvested
-    npm publishing tokens, enumerated packages the victim could publish, bumped patch
-    versions, injected the same payload, and republished with the latest tag. Follow-on
-    capability included Kubernetes DaemonSet deployment that varied by geolocation
-    and cluster context.
+  synopsis: >-
+    @opengov/form-builder 0.12.3 added a postinstall backdoor during TeamPCP's
+    CanisterWorm campaign. The worm used npm tokens stolen through the second Trivy compromise.
+  story: |
+    CanisterWorm reached the `@opengov` namespace after the second Trivy compromise. StepSecurity traced the path: malicious Trivy tooling harvested CI/CD secrets, and the stolen npm tokens were then used to publish new package versions across reachable scopes.
+
+    `@opengov/form-builder@0.12.3` changed the install surface. Earlier releases had no lifecycle script; the compromised release added `postinstall: node index.js`. That gave the package code execution at install time, before application code ran.
+
+    The JavaScript loader carried a base64-encoded Python implant. It wrote `~/.local/share/pgmon/service.py`, installed a user-level systemd service, and polled an Internet Computer canister for commands. A propagation component searched npm configuration and environment variables for publish tokens, then republished the payload to other packages the victim could reach.
+
+    The record is scoped to the `@opengov/form-builder` artifact. The TeamPCP campaign record carries the broader Trivy credential theft, self-propagation, and destructive Kubernetes payload behavior.
   start_date: 2026-03-21
   end_date: 2026-03-21
   target:
@@ -34,6 +36,7 @@
   artifacts:
   - id: opengov-form-builder
     name: opengov-form-builder
+    package: "@opengov/form-builder"
     ecosystem: npm
     kind: source_archive
     repo: https://www.npmjs.com/package/@opengov/form-builder
@@ -46,7 +49,23 @@
       role: distribution
     hashes:
     - sha256:6dc5a2428a8b5ce0761da68e9d844924839e8681b388bdd1b8ceea88237e4cfc
+    indicators:
+    - kind: file
+      value: index.js
+    - kind: file
+      value: ~/.local/share/pgmon/service.py
+    - kind: file
+      value: ~/.config/systemd/user/pgmon.service
+    - kind: domain
+      value: tdtqy-oyaaa-aaaae-af2dq-cai.raw.icp0.io
+    - kind: technique
+      value: npm_postinstall
   references:
-  - url: https://www.stepsecurity.io/blog/canisterworm-how-a-self-propagating-npm-worm-is-spreading-backdoors-across-the-ecosystem
+  - url: 
+      https://www.stepsecurity.io/blog/canisterworm-how-a-self-propagating-npm-worm-is-spreading-backdoors-across-the-ecosystem
+    title: 'CanisterWorm: How a Self-Propagating npm Worm Is Spreading Backdoors Across the Ecosystem'
   - url: https://osv.dev/vulnerability/MAL-2026-2210
-  - url: https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release
+    title: Malicious code in @opengov/form-builder
+  - url: 
+      https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release
+    title: Trivy Compromised a Second Time

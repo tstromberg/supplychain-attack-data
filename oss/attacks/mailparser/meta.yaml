@@ -1,10 +1,16 @@
----
 - id: mailparser
-  title: mailparser NPM package compromised downloads executes binary
-  synopsis: The maintainer's npm account for mailparser was compromised, and malicious
-    version 0.1.2 was published to the registry. Its install path attempted to download
-    and execute an OS-specific binary from an external server, but the package was
-    removed within an hour and saw fewer than 100 downloads.
+  title: mailparser npm ran malicious binary
+  synopsis: >-
+    A compromised npm account published mailparser 0.1.2 in March 2019. The package
+    used install-time execution to fetch and run attacker code from the registry path.
+  story: |
+    The mailparser incident was a registry compromise, not a source repository change. Attackers obtained publishing access and released `mailparser@0.1.2` to npm.
+
+    The malicious release used the package installation path as execution. Anyone installing the affected version could run attacker code before application code had a chance to import the library.
+
+    Snyk and the npm advisory trail identify the release as malicious and tie it to a downloaded executable payload. The useful record is small: one package, one version, one registry artifact.
+
+    The package name is easy to confuse with later, legitimate mail parsing libraries. This record is scoped to the legacy `mailparser` npm package and its 2019 malicious `0.1.2` publication.
   start_date: 2019-03-12
   end_date: 2019-03-12
   target:
@@ -14,7 +20,7 @@
   actor:
     name: Individual Hacker
     kind: person
-  language: Javascript
+  language: JavaScript
   method:
     cause: compromised_account_credentials
     phase: distribution
@@ -28,6 +34,8 @@
   artifacts:
   - id: mailparser
     name: mailparser
+    package: mailparser
+    ecosystem: npm
     kind: source_archive
     repo: https://github.com/mailparser-legacy/mailparser
     start_date: 2019-03-12
@@ -41,6 +49,11 @@
       role: mirror
     hashes:
     - sha256:a7c55ef358ba3b90def7f46fd0ad40830e0df3b6f68e32cdb8603c4ccb0cc45a
+    indicators:
+    - kind: observable
+      value: Install-time package behavior downloaded and executed a malicious binary.
   references:
   - url: https://security.snyk.io/vuln/npm:mailparser:20190312
+    title: Malicious Package Affecting mailparser package
   - url: https://www.npmjs.com/advisories/912
+    title: Malicious Package in mailparser

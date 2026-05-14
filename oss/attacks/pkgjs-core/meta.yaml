@@ -1,14 +1,18 @@
----
 - id: pkgjs-core
-  title: "@pkgjs/core npm phishing compromise"
+  title: "@pkgjs/core npm phishing stole credentials"
   campaigns:
   - npnjs-scam-npm-2025
-  synopsis: StepSecurity confirmed @pkgjs/core 0.2.8 as one of the npm packages affected
-    by the July 2025 npnjs.com maintainer phishing campaign. The attacker used a phished
-    maintainer credential path to publish malicious releases directly to npm without
-    corresponding source repository changes. In the eslint-config-prettier cluster,
-    the malicious package family executed install.js during installation and launched
-    a bundled Windows DLL through rundll32 on Windows systems.
+  synopsis: >-
+    StepSecurity confirmed @pkgjs/core 0.2.8 as one of the npm packages affected by the July
+    2025 npnjs.com maintainer phishing campaign.
+  story: |-
+    @pkgjs/core was another legitimate package caught in the npnjs.com phishing campaign. The attacker used stolen npm publishing access, so the malicious release appeared under the real package coordinate.
+
+    Version 0.2.8 was the affected release. The compromise followed the same pattern as the Prettier tooling packages: a registry publish with no ordinary source-review path behind it.
+
+    The package's role in the ecosystem made install-time execution dangerous even without a large user-facing application. Developer machines and CI runners often install tooling packages in environments with credentials and network reach.
+
+    This record stays concise because the public reporting names the package and version but gives less package-specific payload detail. The campaign record carries the shared phishing infrastructure and payload behavior.
   start_date: 2025-07-18
   end_date: 2025-07-19
   target:
@@ -43,6 +47,13 @@
       role: distribution
     - uri: https://www.npmjs.com/package/@pkgjs/core
       role: mirror
+    indicators:
+    - kind: observable
+      value: Published through npm credentials stolen in the npnjs.com phishing campaign.
   references:
-  - url: https://www.stepsecurity.io/blog/supply-chain-security-alert-eslint-config-prettier-package-shows-signs-of-compromise
-  - url: https://socket.dev/blog/npm-phishing-campaign-leads-to-prettier-tooling-packages-compromise
+  - url: 
+      https://www.stepsecurity.io/blog/supply-chain-security-alert-eslint-config-prettier-package-shows-signs-of-compromise
+    title: eslint-config-prettier package shows signs of compromise
+  - url: 
+      https://socket.dev/blog/npm-phishing-campaign-leads-to-prettier-tooling-packages-compromise
+    title: npm phishing campaign leads to Prettier tooling packages compromise

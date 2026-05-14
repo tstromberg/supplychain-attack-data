@@ -1,18 +1,19 @@
----
 - id: mistralai-python
-  title: Mistral AI Python SDK backdoored on PyPI
+  title: Mistral SDK imported Shai-Hulud loader
   campaigns:
   - teampcp-2026
   - shai-hulud-here-we-go-again
-  synopsis: The mistralai Python package version 2.4.6 contained an import-time Linux
-    backdoor in src/mistralai/client/__init__.py. The added code downloaded https://83.142.209.194/transformers.pyz
-    with curl -k, saved it to /tmp/transformers.pyz, and executed it as a background
-    Python process when users imported mistralai, guarded only by the MISTRAL_INIT
-    environment variable and silently swallowing errors. JFrog later reported that
-    the remote payload changed from TeamPCP attribution text into a Python credential
-    stealer that harvested local, cloud, Kubernetes, Vault, password-manager, and
-    developer-tooling secrets, exfiltrated encrypted data, and could install pgsql-monitor
-    persistence with destructive second-stage behavior.
+  synopsis: >-
+    mistralai 2.4.6 carried a Linux-only import hook in mistralai/client/__init__.py.
+    It downloaded transformers.pyz from attacker infrastructure and ran it detached.
+  story: |
+    The PyPI side of Shai-Hulud used a different shape from the npm worm. Instead of a `preinstall` script, `mistralai@2.4.6` placed its loader in `mistralai/client/__init__.py`, where ordinary imports could trigger it.
+
+    The loader was Linux-only and guarded itself with `MISTRAL_INIT` to avoid repeated execution. It downloaded `transformers.pyz` from `83.142.209.194` using `curl -k -L -s`, wrote it under `/tmp`, and launched it with the current Python interpreter.
+
+    JFrog later reported that the remote PyPI payload had changed from attribution text to a credential stealer. The observed target set included local files, cloud provider credentials, Kubernetes, Vault, password managers, and developer tooling secrets.
+
+    This record is scoped to Mistral's Python SDK artifact. The broader campaign record carries the cross-ecosystem TeamPCP/Shai-Hulud machinery and propagation behavior.
   start_date: 2026-05-12
   end_date: 2026-05-12
   target:
@@ -35,7 +36,8 @@
     users: 0
   artifacts:
   - id: mistralai-python
-    name: mistralai-python
+    name: mistralai 2.4.6 PyPI release
+    package: mistralai
     ecosystem: pypi
     kind: source_archive
     repo: https://github.com/mistralai/client-python
@@ -50,6 +52,17 @@
     - sha256:6dbaa43bf2f3c0d3cddbca74967e952da563fb974c1ef9d4ecbb2e58e41fe81b
     - sha256:2a314ea8be337e1ca9ec833ed13ed854d9fd38bce0a519cf288f3bec8d9e6f30
     - sha256:5245eb032e336b85cff0dbb3450d591826bf2ef214fd30d7eba1a763664e151b
+    indicators:
+    - kind: file
+      value: mistralai/client/__init__.py
+    - kind: file
+      value: /tmp/transformers.pyz
+    - kind: ip
+      value: 83.142.209.194
+    - kind: environment_variable
+      value: MISTRAL_INIT
   references:
   - url: https://github.com/mistralai/client-python/issues/523
+    title: Supply chain compromise in mistralai 2.4.6
   - url: https://research.jfrog.com/post/shai-hulud-here-we-go-again/
+    title: 'Shai-Hulud: Here We Go Again - Worm by TeamPCP Hits NPM and PyPI'

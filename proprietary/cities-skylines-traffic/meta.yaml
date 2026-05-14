@@ -1,0 +1,65 @@
+- id: cities-skylines-traffic
+  title: Traffic mod loaded wallet-stealing DLL
+  synopsis: >-
+    A compromised Traffic mod author account pushed fastmath.dll through Paradox Mods.
+    Cities: Skylines II loaded the DLL, which targeted Exodus cryptocurrency wallets.
+  story: |
+    The affected package was Traffic, a code mod for Cities: Skylines II distributed through Paradox Mods. Late on October 28, 2024, an outside actor pushed an unauthorized update that added `fastmath.dll` to the mod directory.
+
+    Paradox later determined that this was a DLL hijacking attack. When players launched the game with the affected mod installed, the game executable loaded the malicious DLL. The first stage then looked for Exodus wallet data under the user's local AppData directory.
+
+    Paradox removed the malicious file, worked with the mod author to secure the account, and said version 0.2.4 was safe as of October 31, 2024 at 15:35 CET. The company also scanned Paradox Mods for the same malicious file and added update notifications so creators could see unexpected changes sooner.
+  start_date: 2024-10-28
+  end_date: 2024-10-31
+  target:
+    name: Traffic
+    kind: game_mod
+    website: https://mods.paradoxplaza.com/mods/80095/Windows
+  actor:
+    name: Unknown
+    kind: unknown
+  language: C#
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: cryptocurrency_theft
+    transitive: false
+  impact:
+    types:
+    - cryptocurrency_theft
+    - remote_code_execution
+    users: 0
+  artifacts:
+  - id: traffic-paradox-mods
+    name: Traffic
+    package: mods/80095
+    ecosystem: paradox mods
+    kind: game_mod
+    website: https://mods.paradoxplaza.com
+    start_date: 2024-10-28
+    end_date: 2024-10-31
+    fixed_versions:
+    - 0.2.4
+    locations:
+    - uri: https://mods.paradoxplaza.com/mods/80095/Windows
+      role: distribution
+    - uri: https://www.paradoxinteractive.com/games/cities-skylines-ii/news/traffic-breach-statement
+      role: mirror
+    indicators:
+    - kind: file
+      value: fastmath.dll
+    - kind: file
+      value: "%localappdata%low\\Colossal Order\\Cities Skylines II\\.cache\\Mods\\mods_subscribed\\80095_13"
+    - kind: observable
+      value: 'Malicious DLL loaded by the Cities: Skylines II executable when the affected mod was used.'
+    notes:
+    - Paradox identified folder 80095_13 as the affected local mod directory and stated
+      that version 0.2.4 was safe after removal of the malicious file.
+    - The exact malicious version identifier was not stated in the official advisory.
+  references:
+  - url: https://www.paradoxinteractive.com/games/cities-skylines-ii/news/traffic-breach-statement
+    title: Traffic Breach Statement
+  - url: https://www.pcgamesn.com/cities-skylines-2/malicious-file-mod
+    title: Popular Cities Skylines 2 traffic mod may contain malicious file, Paradox warns
+  - url: https://www.pcgamesn.com/cities-skylines-2/hacked-mod
+    title: Hacked Cities Skylines 2 mod may target players' crypto wallets, Paradox says

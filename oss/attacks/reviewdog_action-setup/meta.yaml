@@ -1,15 +1,18 @@
----
 - id: reviewdog-action-setup
-  title: reviewdog/action-setup GitHub Action compromise leaks secrets
+  title: reviewdog/action-setup leaked GitHub Actions secrets
   campaigns:
   - reviewdog-tj-actions-2025
-  synopsis: Attackers compromised a contributor's Personal Access Token (PAT), traced
-    back to an earlier leak from the SpotBugs project, which granted write access.
-    They maliciously updated the `v1` tag of the official `reviewdog/action-setup`
-    GitHub Action to point to malicious code (`f0d342d`). For approximately 2 hours,
-    workflows using `@v1` executed this code, which dumped secrets (like GITHUB_TOKEN)
-    from the runner environment into publicly accessible workflow logs. This incident
-    was a precursor, enabling the compromise of the `tj-actions/changed-files` action.
+  synopsis: >-
+    Attackers compromised a contributor's Personal Access Token (PAT), traced back to an earlier
+    leak from the SpotBugs project, which granted write access.
+  story: |
+    The reviewdog/action-setup compromise was the first step in the March 2025 GitHub Actions chain that later exposed `tj-actions/changed-files`. A contributor token leaked earlier through SpotBugs had write access, and the attacker used it against the reviewdog repository.
+
+    The attacker moved the `v1` tag to malicious commits. Because GitHub Actions workflows commonly pin actions by tag rather than immutable commit SHA, downstream workflows pulled attacker-controlled code without changing their own repositories.
+
+    The malicious action printed CI secrets into logs in a recoverable form. That exposed tokens from projects using the action and supplied the path to compromise `tj-actions/changed-files`, where the same secret-leaking pattern reached a much larger set of repositories.
+
+    CISA, NVD, Wiz, StepSecurity, and Unit 42 all treat reviewdog and tj-actions as related supply-chain incidents. This record stays scoped to reviewdog/action-setup; the campaign record carries the two-action chain.
   start_date: 2025-03-11
   end_date: 2025-03-17
   target:
@@ -40,11 +43,13 @@
     versions:
     - v1
     locations:
-    - uri: https://github.com/reviewdog/action-setup/tree/f0d342d24037bb11d26b9bd8496e0808ba32e9ec
+    - uri: 
+        https://github.com/reviewdog/action-setup/tree/f0d342d24037bb11d26b9bd8496e0808ba32e9ec
       role: distribution
     - uri: https://github.com/reviewdog/action-setup/tree/v1
       role: distribution
-    - uri: https://www.wiz.io/blog/new-github-action-supply-chain-attack-reviewdog-action-setup
+    - uri: 
+        https://www.wiz.io/blog/new-github-action-supply-chain-attack-reviewdog-action-setup
       role: mirror
     - uri: https://www.stepsecurity.io/blog/reviewdog-github-actions-are-compromised
       role: mirror
@@ -62,18 +67,21 @@
     - kind: observable
       value: reviewdog/action-setup v1 tag was moved to attacker-controlled commits.
     - kind: observable
-      value: Compromise provided the path to steal a token with write access to
+      value: Compromise provided the path to steal a token with write access to 
         tj-actions/changed-files.
   references:
   - url: https://github.com/reviewdog/reviewdog/security/advisories/GHSA-qmg3-hpqr-gqvc
     title: reviewdog/action-setup security advisory GHSA-qmg3-hpqr-gqvc
   - url: https://nvd.nist.gov/vuln/detail/CVE-2025-30154
     title: CVE-2025-30154
-  - url: https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
-    title: Supply Chain Compromise of tj-actions/changed-files and reviewdog/action-setup
+  - url: 
+      https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction
+    title: Supply Chain Compromise of tj-actions/changed-files and 
+      reviewdog/action-setup
   - url: https://nvd.nist.gov/vuln/detail/CVE-2025-30066
     title: CVE-2025-30066
-  - url: https://www.wiz.io/blog/new-github-action-supply-chain-attack-reviewdog-action-setup
+  - url: 
+      https://www.wiz.io/blog/new-github-action-supply-chain-attack-reviewdog-action-setup
     title: New GitHub Action supply chain attack reviewdog/action-setup
   - url: https://www.stepsecurity.io/blog/reviewdog-github-actions-are-compromised
     title: reviewdog GitHub Actions are compromised

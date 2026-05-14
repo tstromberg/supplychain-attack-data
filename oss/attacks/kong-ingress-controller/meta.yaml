@@ -1,14 +1,18 @@
----
 - id: kong-ingress-controller
-  title: Kong Ingress Controller image backdoored with cryptominer
-  synopsis: An attacker compromised a Kong DockerHub Personal Access Token (PAT),
-    likely via a CI/CD pipeline exploit ("Pwn Request" targeting an old branch). Using
-    this token, they uploaded a malicious version of the official Kong Ingress Controller
-    container image (v3.4.0) directly to DockerHub. This malicious image contained
-    an XMRig cryptominer configured to mine Monero using the resources of clusters
-    that pulled and ran the compromised image.
+  title: Kong Ingress image shipped cryptominer
+  synopsis: >-
+    An attacker used a pull_request_target workflow weakness on an old Kong Ingress Controller
+    branch to steal CI secrets and publish an unauthorized DockerHub image for version 3.4.0.
+  story: |
+    Kong had already received a November 2024 report about a Pwn Request path in the KIC repository. The active branches were changed, but old unused branches still had workflows triggered by `pull_request_target`. On December 23, an attacker opened a pull request against one of those branches and used it to reach CI secrets.
+
+    The attacker obtained a GitHub personal access token used by KIC automation. Kong later said the malicious payload was probably inserted through a transiently compromised GitHub Actions pipeline, not by direct theft of a DockerHub token. The attacker pushed an unauthorized image so the DockerHub `:latest`, `:3.4`, and `:3.4.0` tags pointed to the compromised build.
+
+    Users reported high CPU usage on December 29. Kong reproduced the behavior on January 2 and found the public 3.4.0 image making DNS requests to subdomains of `supportxmr.com`. Third-party analysis concluded that the only malicious payload was XMRig. ARMO also described runtime behavior consistent with cryptomining, including high CPU use, communication with `pool.supportxmr.com`, and fileless execution through `memfd_create`.
+
+    Kong deleted the affected 3.4.0 tag, rebuilt from a clean environment, published 3.4.1, and moved clean images back under the 3.4 and latest tags. The advisory told users who pulled 3.4.0 between December 22, 2024 and January 3, 2025 to remove the image from clusters and internal registries and pull the remediated image.
   start_date: 2024-12-23
-  end_date: 2025-01-02
+  end_date: 2025-01-03
   target:
     name: kong-ingress-controller
     kind: application
@@ -18,25 +22,35 @@
     kind: person
   language: Binary
   method:
-    cause: compromised_account_credentials
+    cause: ci_cd_exploit
     phase: ci_cd
     motive: financial_gain
     transitive: false
   impact:
     types:
     - financial_exploitation
+    - cryptojacking
+    users: 202
   artifacts:
   - id: kong-ingress-controller
     name: kong-ingress-controller
+    package: kong/kubernetes-ingress-controller
+    ecosystem: docker
     kind: oci_image
     website: https://docker.io
     repo: https://github.com/Kong/kubernetes-ingress-controller
     start_date: 2024-12-23
-    end_date: 2025-01-02
+    end_date: 2025-01-03
     versions:
     - 3.4.0
+    fixed_versions:
+    - 3.4.1
     locations:
-    - uri: https://hub.docker.com/layers/kong/kubernetes-ingress-controller/3.4.0/images/sha256-a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43
+    - uri: 
+        https://hub.docker.com/layers/kong/kubernetes-ingress-controller/3.4.0/images/sha256-a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43
+      role: distribution
+    - uri: 
+        docker://docker.io/kong/kubernetes-ingress-controller:3.4.0@sha256:a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43
       role: distribution
     - uri: https://github.com/r0binak/kong-xmrig
       role: mirror
@@ -46,10 +60,50 @@
     - sha256:e164e6e21c661679c556d16638300c25e16d86bb2d567ad66b4181f1a65f4788
     - sha256:56ff46874f0536c289ff38af4cb308af8f7e6156e3f9d9227b71004d2042a4e6
     indicators:
+    - kind: ghsa
+      value: GHSA-58mg-ww7q-xw3p
+    - kind: cwe
+      value: CWE-506
+    - kind: malware
+      value: XMRig
+    - kind: domain
+      value: supportxmr.com
+    - kind: domain
+      value: pool.supportxmr.com
+    - kind: syscall
+      value: memfd_create
+    - kind: tag
+      value: docker.io/kong/kubernetes-ingress-controller:3.4.0
+    - kind: tag
+      value: docker.io/kong/kubernetes-ingress-controller:3.4
+    - kind: tag
+      value: docker.io/kong/kubernetes-ingress-controller:latest
+    - kind: workflow
+      value: pull_request_target
     - kind: observable
-      value: docker://docker.io/kong/kubernetes-ingress-controller:3.4.0@sha256:a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43
+      value: 
+        docker://docker.io/kong/kubernetes-ingress-controller:3.4.0@sha256:a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43
+    - kind: observable
+      value: Users reported high CPU usage from Kong Ingress Controller 3.4.0 pods.
+    notes:
+    - Kong reported that the unauthorized image was downloaded 202 times.
+    - Kong's fixed image hashes for 3.4.0 were 
+      sha256:b358296fa6a1458c977c0513ff918e80b708fa9d7721f9d438f3dfce24f60f4f for AMD64 
+      and sha256:e0125aa85a4c9eef7822ba5234e90958c71e1d29474d6247adc3e7e21327e8ee for 
+      ARM64; these are clean replacement hashes, not malicious hashes.
+    - Kong reported no evidence that any other images before or after the malicious hash
+      were affected.
   references:
-  - url: https://github.com/Kong/kubernetes-ingress-controller/security/advisories/GHSA-58mg-ww7q-xw3p
-  - url: https://konghq.com/blog/product-releases/december-2024-unauthorized-kong-ingress-controller-3-4-0-build
+  - url: 
+      https://github.com/Kong/kubernetes-ingress-controller/security/advisories/GHSA-58mg-ww7q-xw3p
+    title: Unauthorized image of Kong Ingress Controller v.3.4.0
+  - url: 
+      https://konghq.com/blog/product-releases/december-2024-unauthorized-kong-ingress-controller-3-4-0-build
+    title: December 2024 Unauthorized Kong Ingress Controller 3.4.0 Build
   - url: https://hackread.com/malicious-kong-ingress-controller-image-dockerhub/
+    title: Malicious Kong Ingress Controller Image Found on DockerHub
   - url: https://www.armosec.io/blog/kong-ingress-controller-cryptojacking/
+    title: Tackling the recent Kong ingress controller security incident with ARMO's 
+      behavioral CADR
+  - url: https://github.com/Kong/kubernetes-ingress-controller/issues/6907
+    title: Kong-ingress-controller 3.4 has high CPU usage when running 2 pods

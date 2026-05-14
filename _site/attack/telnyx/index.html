@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telnyx PyPI WAV Steganography Credential Stealer</title>
+  <title>Telnyx PyPI release hid WAV stealer</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Telnyx PyPI WAV Steganography Credential Stealer</h1>
+  <h1>Telnyx PyPI release hid WAV stealer</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> telnyx · <a href="https://github.com/team-telnyx/telnyx-python" target="_blank">repo</a></div>
@@ -25,18 +25,31 @@
     <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
     <div class="meta-item"><strong>Transitive:</strong> true</div>
     <div class="meta-item"><strong>Impact:</strong> credential_theft</div>
-    <div class="meta-item"><strong>User Impact:</strong> 742000</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
     <div class="meta-item"><strong>Campaigns:</strong>
       
-        <a href="/campaign/teampcp-2026/">TeamPCP 2026 Package Compromise Campaign</a>
+        <a href="/campaign/teampcp-2026/">TeamPCP package wave stole credentials</a>
       
     </div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">TeamPCP compromised Telnyx Python SDK releases 4.87.1 and 4.87.2 by adding import-time malware to the PyPI artifacts. The payload hid a second-stage credential stealer inside WAV audio data, collected developer, cloud, package-manager, and wallet secrets, encrypted them with the same TeamPCP RSA/AES scheme seen in LiteLLM, and exfiltrated them as tpcp.tar.gz. Version 4.87.2 also repaired a Windows branch intended to decode and persist a PE backdoor. The case stands out for using audio steganography inside a legitimate communications SDK package.</p>
+  <p class="synopsis">TeamPCP compromised Telnyx Python SDK releases 4.87.1 and 4.87.2 by adding import-time malware to the PyPI artifacts.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The Telnyx Python SDK compromise put TeamPCP code into a communications library with a large install base. On March 27, 2026, PyPI releases 4.87.1 and 4.87.2 added malicious import-time logic to `telnyx/_client.py`.</p>
+    
+      <p>The code ran when an application imported `telnyx`. On Linux and macOS, `FetchAudio()` spawned a detached Python subprocess, fetched `ringtone.wav` from `83.142.209.203:8080`, decoded a hidden credential harvester from the audio data, and posted encrypted results as `tpcp.tar.gz`.</p>
+    
+      <p>Windows had its own path. Version 4.87.1 called `Setup()` with the wrong case, so the Windows function did not run. Version 4.87.2 fixed that to `setup()`, downloaded `hangup.wav`, decoded a PE binary, wrote it as `%APPDATA%&#92;Microsoft&#92;Windows&#92;Start Menu&#92;Programs&#92;Startup&#92;msbuild.exe`, and used a lock file to mark execution.</p>
+    
+      <p>StepSecurity tied the package to TeamPCP through the same RSA-4096 public key, encryption scheme, and `tpcp.tar.gz` exfiltration marker seen in the LiteLLM compromise. The 742,000 download figure is pre-compromise package reach, not a confirmed victim count.</p>
+    
+  </div>
   
 
   
@@ -97,11 +110,11 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next" target="_blank">https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next</a></li>
+      <li><a href="https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next" target="_blank">Five Supply Chain Attacks in Twelve Days</a></li>
     
-      <li><a href="https://www.stepsecurity.io/blog/teampcp-plants-wav-steganography-credential-stealer-in-telnyx-pypi-package" target="_blank">https://www.stepsecurity.io/blog/teampcp-plants-wav-steganography-credential-stealer-in-telnyx-pypi-package</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/teampcp-plants-wav-steganography-credential-stealer-in-telnyx-pypi-package" target="_blank">TeamPCP Plants WAV Steganography Credential Stealer in telnyx PyPI Package</a></li>
     
-      <li><a href="https://github.com/team-telnyx/telnyx-python/issues/235" target="_blank">https://github.com/team-telnyx/telnyx-python/issues/235</a></li>
+      <li><a href="https://github.com/team-telnyx/telnyx-python/issues/235" target="_blank">Compromised Telnyx Python SDK releases 4.87.1 and 4.87.2</a></li>
     
   </ul>
   

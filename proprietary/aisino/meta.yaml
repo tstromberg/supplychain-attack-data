@@ -1,32 +1,43 @@
 ---
 - id: aisino
-  title: Chinese tax software installed GoldenSpy backdoor.
-  synopsis: Intelligent Tax software, produced by Aisino Corporation and required
-    by some Chinese banks for companies operating in China, was found to install the
-    GoldenSpy backdoor. This malware provided extensive remote access and control
-    capabilities, including command execution and data exfiltration, with a delayed
-    installation to evade detection.
+  title: Aisino tax software installed GoldenSpy
+  synopsis: >-
+    A Chinese bank required companies to install Aisino Intelligent Tax, which
+    silently deployed GoldenSpy. The backdoor ran as SYSTEM and survived removal
+    of the tax software.
+  story: |
+    A multinational company opened operations in China and installed the local tax software its bank required. The software was Intelligent Tax, produced by the Golden Tax Department of Aisino Credit Information. It did the tax work, but it also carried something else.
+
+    Trustwave found GoldenSpy inside that trust boundary in 2020. The backdoor did not install immediately. It waited about two hours after Intelligent Tax finished, then installed silently under `%WinDir%\System32\PluginManager` and ran as an autostart Windows service with SYSTEM privileges.
+
+    GoldenSpy did not use the normal tax-software infrastructure. It contacted `ningzhidata.com` and related command servers over non-standard HTTP ports. It collected host information, executed Windows commands, uploaded and downloaded files, and could install more binaries. Removing Intelligent Tax did not remove GoldenSpy.
+
+    After Trustwave published, Intelligent Tax began pushing an uninstaller instead of the backdoor. That cleanup tool removed files, registry entries, logs, and itself. CERT-FR later noted a second uninstaller sent from July 1 with changes that appeared designed to evade Trustwave's YARA rule. The response looked like a cover track, not a fix.
   start_date: 2020-04-01
   end_date: 2020-06-28
   target:
-    name: Aisino
+    name: Aisino Intelligent Tax
     kind: application
     website: https://i-xinnuo.com
   actor:
-    name: Nation-state
-    kind: state
+    name: Unknown actor
+    kind: group
   method:
-    cause: vendor_compromise
-    phase: source
+    cause: official_software_inclusion
+    phase: distribution
     motive: espionage_data_theft
     transitive: false
   impact:
     types:
     - backdoor
+    - remote_code_execution
+    - data_exfiltration
     users: 1000
   artifacts:
-  - id: aisino
-    name: Aisino
+  - id: intelligent-tax
+    name: Aisino Intelligent Tax installer
+    package: Intelligent Tax
+    ecosystem: windows installer
     kind: binary_archive
     website: https://i-xinnuo.com
     start_date: 2020-04-01
@@ -34,13 +45,17 @@
     locations:
     - uri: http://download.i-xinnuo.com/products/IntelligentTaxSetup.exe
       role: distribution
-    - uri: https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/goldenspy-whos-really-pulling-the-strings/
+    - uri: 
+        https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/goldenspy-whos-really-pulling-the-strings/
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/c1d7873a21d28ba995725f958741948f0d750b1e18311341682b56f257025642
+    - uri: 
+        https://www.virustotal.com/gui/file/c1d7873a21d28ba995725f958741948f0d750b1e18311341682b56f257025642
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/1536924c856093919f4f697f83225471094e4868131226a996d75a738080b0e6
+    - uri: 
+        https://www.virustotal.com/gui/file/1536924c856093919f4f697f83225471094e4868131226a996d75a738080b0e6
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/5953fc590db6ab347840ccbf10f09a0b1bb48d38309067a1d65c34cb3ce82f4b
+    - uri: 
+        https://www.virustotal.com/gui/file/5953fc590db6ab347840ccbf10f09a0b1bb48d38309067a1d65c34cb3ce82f4b
       role: mirror
     - uri: https://bazaar.abuse.ch/browse.php?search=tag%3AGoldenSpy
       role: mirror
@@ -48,12 +63,106 @@
     - sha256:c1d7873a21d28ba995725f958741948f0d750b1e18311341682b56f257025642
     - sha256:1536924c856093919f4f697f83225471094e4868131226a996d75a738080b0e6
     - sha256:5953fc590db6ab347840ccbf10f09a0b1bb48d38309067a1d65c34cb3ce82f4b
-    - sha256:aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899
+    indicators:
+    - kind: malware
+      value: GoldenSpy
+    - kind: malware
+      value: GoldenSpy uninstaller
+    - kind: mitre_software
+      value: S0493
+    - kind: file
+      value: IntelligentTaxSetup.exe
+    - kind: file
+      value: taxver.exe
+    - kind: file
+      value: svminstaller.exe
+    - kind: file
+      value: svmmain.exe
+    - kind: file
+      value: svm.exe
+    - kind: file
+      value: AWX.exe
+    - kind: path
+      value: '%WinDir%\System32\PluginManager'
+    - kind: domain
+      value: ningzhidata.com
+    - kind: ip
+      value: 223.112.21.2
+    - kind: port
+      value: '9002'
+    - kind: port
+      value: '9005'
+    - kind: port
+      value: '9006'
+    - kind: port
+      value: '8090'
+    - kind: port
+      value: '33666'
+    - kind: url
+      value: http://223.112.21.2:8090/download/AWX.exe
+    - kind: command
+      value: PROTOCOL_00
+    - kind: command
+      value: PROTOCOL_99
+    - kind: command
+      value: cmd.exe /c del /q C:\Users\admin\AppData\Local\Temp\AWX.exe
+    - kind: api
+      value: WinExec()
+    - kind: capability
+      value: command execution
+    - kind: capability
+      value: upload and execute arbitrary binaries
+    - kind: capability
+      value: local user creation
+    - kind: observable
+      value: GoldenSpy installed about two hours after Intelligent Tax completed installation.
+    - kind: observable
+      value: Intelligent Tax uninstall did not remove GoldenSpy.
+    - kind: observable
+      value: Aisino Intelligent Tax pushed a GoldenSpy uninstaller on June 28, 2020.
+    - kind: observable
+      value: CERT-FR reported a second uninstaller from July 1, 2020 with YARA-evasion changes.
     notes:
-    - Affected Aisino scope covered multiple Intelligent Tax software versions containing
-      GoldenSpy active in 2020.
+    - Trustwave observed GoldenSpy active in April 2020 and reported an uninstaller
+      pushed by Intelligent Tax on June 28, 2020.
+    - FBI/IC3 reported in July 2020 that Aisino and Baiwang were the only
+      government-authorized VAT software providers and that use of one provider was
+      required for US companies operating in China's market.
+    - FBI/IC3 said GoldenSpy was believed to have been around since 2016, but the
+      public Trustwave Aisino incident timeline begins with observed April 2020
+      activity.
+    - CERT-FR later used GoldenSpy as a case study in mandatory untrusted software
+      and recommended isolating such software from the rest of an enterprise network.
+    - Attribution remains unattributed in the primary Trustwave reporting; the
+      record avoids assigning this to a named government or state actor.
   references:
-  - url: https://www.zdnet.com/article/chinese-bank-forced-western-companies-to-install-malware-laced-tax-software/
+  - url: https://www.ic3.gov/CSA/2020/200728.pdf
+    title: Chinese Government-Mandated Tax Software Contains Malware, Enabling
+      Backdoor Access
+  - url: https://www.cert.ssi.gouv.fr/uploads/CERTFR-2022-CTI-007.pdf
+    title: Integration of Untrusted Software - The Case of GoldenSpy
+  - url: 
+      https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/the-golden-tax-department-and-the-emergence-of-goldenspy-malware/
+    title: The Golden Tax Department and the Emergence of GoldenSpy Malware
+  - url: https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/goldenspy-chapter-two-the-uninstaller/
+    title: 'GoldenSpy: Chapter Two - The Uninstaller'
+  - url: https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/goldenspy-chapter-3-new-and-improved-uninstaller/
+    title: 'GoldenSpy Chapter 3: New and Improved Uninstaller'
+  - url: 
+      https://www.zdnet.com/article/chinese-bank-forced-western-companies-to-install-malware-laced-tax-software/
+    title: Chinese bank forced Western companies to install malware-laced tax software
+  - url: 
+      https://www.darkreading.com/threat-intelligence/-goldenspy-malware-hidden-in-tax-software-spies-on-companies-doing-business-in-china
+    title: "'GoldenSpy' Malware Hidden in Tax Software Spies on Companies Doing
+      Business in China"
+  - url: 
+      https://www.darkreading.com/cyberattacks-data-breaches/chinese-software-company-aisino-uninstalls-goldenspy-malware
+    title: Chinese Software Company Aisino Uninstalls GoldenSpy Malware
   - url: https://attack.mitre.org/software/S0493/
-  - url: https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/goldenspy-whos-really-pulling-the-strings/
-  - url: https://www.crowdstrike.com/blog/goldenspy-supply-chain-attack-hits-organizations-operating-in-china/
+    title: GoldenSpy, Software S0493
+  - url: 
+      https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/goldenspy-whos-really-pulling-the-strings/
+    title: "GoldenSpy: Who's Really Pulling the Strings?"
+  - url: 
+      https://www.crowdstrike.com/blog/goldenspy-supply-chain-attack-hits-organizations-operating-in-china/
+    title: GoldenSpy Supply Chain Attack Hits Organizations Operating in China

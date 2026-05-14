@@ -1,15 +1,16 @@
----
 - id: statcounter
-  title: StatCounter analytics tag hijacked to steal gate.io withdrawals
-  synopsis: ESET disclosed on 2018-11-06 that attackers had injected malicious JavaScript
-    into the official StatCounter tracking script `www.statcounter.com/counter/counter.js`
-    on 2018-11-03, served to roughly 2 million sites embedding StatCounter analytics.
-    Conditional code triggered only on URI paths matching `myaccount/withdraw/BTC`
-    — i.e. the gate.io cryptocurrency exchange's BTC withdrawal page — and pulled
-    a second stage from the lookalike `statconuter.com/c.php`. The payload silently
-    rewrote the destination wallet on Bitcoin withdrawals to attacker-controlled `1JrFLmGVk1ho1UcMPq1WYirHptcCYr2jad`,
-    capping at the user's daily withdrawal limit. Gate.io stopped using StatCounter
-    on 2018-11-06 and StatCounter removed the script the same day.
+  title: StatCounter script stole gate.io withdrawals
+  synopsis: >-
+    Attackers injected JavaScript into StatCounter's hosted analytics script. The code
+    waited for gate.io Bitcoin withdrawal pages and swapped destination wallets.
+  story: |
+    StatCounter was a third-party analytics dependency embedded by more than two million member sites. On 2018-11-03, attackers changed `www.statcounter.com/counter/counter.js`, turning a common tracking tag into a delivery point.
+
+    The injected code was placed in the middle of the legitimate script and packed with the Dean Edwards packer. It did not attack every page. It checked the current URL for `myaccount/withdraw/BTC`, a path ESET matched to gate.io.
+
+    When a victim reached the gate.io Bitcoin withdrawal form, the second-stage script from `statconuter.com` rewrote the withdrawal submission. It replaced the destination address with an attacker wallet and could use the account's available balance or daily limit.
+
+    Gate.io stopped using StatCounter before ESET published, and StatCounter removed the malicious script on 2018-11-06. The attack mattered because one compromised analytics script reached many sites while targeting one exchange with precision.
   start_date: 2018-11-03
   end_date: 2018-11-06
   target:
@@ -32,6 +33,8 @@
   artifacts:
   - id: statcounter
     name: statcounter
+    package: counter.js
+    ecosystem: hosted javascript
     kind: source_archive
     website: https://statcounter.com
     start_date: 2018-11-03
@@ -39,7 +42,25 @@
     locations:
     - uri: https://www.statcounter.com/counter/counter.js
       role: distribution
+    indicators:
+    - kind: url
+      value: https://www.statcounter.com/counter/counter.js
+    - kind: domain
+      value: statconuter.com
+    - kind: url
+      value: https://www.statconuter.com/c.php
+    - kind: path
+      value: myaccount/withdraw/BTC
+    - kind: wallet
+      value: 1JrFLmGVk1ho1UcMPq1WYirHptcCYr2jad
+    - kind: packer
+      value: Dean Edwards packer
   references:
-  - url: https://www.welivesecurity.com/2018/11/06/supply-chain-attack-cryptocurrency-exchange-gate-io/
-  - url: https://www.bleepingcomputer.com/news/security/statcounter-analytics-platform-hacked-to-steal-bitcoin-from-gateio-users/
+  - url: 
+      https://www.welivesecurity.com/2018/11/06/supply-chain-attack-cryptocurrency-exchange-gate-io/
+    title: Supply-chain attack on cryptocurrency exchange gate.io
+  - url: 
+      https://www.bleepingcomputer.com/news/security/statcounter-analytics-platform-hacked-to-steal-bitcoin-from-gateio-users/
+    title: StatCounter analytics platform hacked to steal Bitcoin from gate.io users
   - url: https://thehackernews.com/2018/11/statcounter-cryptocurrency-hack.html
+    title: StatCounter hacked to steal cryptocurrency from gate.io users

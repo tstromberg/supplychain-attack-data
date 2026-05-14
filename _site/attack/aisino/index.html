@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chinese tax software installed GoldenSpy backdoor.</title>
+  <title>Aisino tax software installed GoldenSpy</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,25 +13,38 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Chinese tax software installed GoldenSpy backdoor.</h1>
+  <h1>Aisino tax software installed GoldenSpy</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> Aisino · <a href="https://i-xinnuo.com" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Target:</strong> Aisino Intelligent Tax · <a href="https://i-xinnuo.com" target="_blank">website</a></div>
     <div class="meta-item"><strong>Date:</strong> 2020-04-01 to 2020-06-28 (88 days)</div>
-    <div class="meta-item"><strong>Actor:</strong> Nation-state (state)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown actor (group)</div>
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
     <div class="meta-item"><strong>Language:</strong> N/A</div>
-    <div class="meta-item"><strong>Cause:</strong> vendor_compromise</div>
+    <div class="meta-item"><strong>Cause:</strong> official_software_inclusion</div>
     <div class="meta-item"><strong>Motive:</strong> espionage_data_theft</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
-    <div class="meta-item"><strong>Impact:</strong> backdoor</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution, data_exfiltration</div>
     <div class="meta-item"><strong>User Impact:</strong> 1000</div>
-    <div class="meta-item"><strong>Phase:</strong> source</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Intelligent Tax software, produced by Aisino Corporation and required by some Chinese banks for companies operating in China, was found to install the GoldenSpy backdoor. This malware provided extensive remote access and control capabilities, including command execution and data exfiltration, with a delayed installation to evade detection.</p>
+  <p class="synopsis">A Chinese bank required companies to install Aisino Intelligent Tax, which silently deployed GoldenSpy. The backdoor ran as SYSTEM and survived removal of the tax software.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>A multinational company opened operations in China and installed the local tax software its bank required. The software was Intelligent Tax, produced by the Golden Tax Department of Aisino Credit Information. It did the tax work, but it also carried something else.</p>
+    
+      <p>Trustwave found GoldenSpy inside that trust boundary in 2020. The backdoor did not install immediately. It waited about two hours after Intelligent Tax finished, then installed silently under `%WinDir%&#92;System32&#92;PluginManager` and ran as an autostart Windows service with SYSTEM privileges.</p>
+    
+      <p>GoldenSpy did not use the normal tax-software infrastructure. It contacted `ningzhidata.com` and related command servers over non-standard HTTP ports. It collected host information, executed Windows commands, uploaded and downloaded files, and could install more binaries. Removing Intelligent Tax did not remove GoldenSpy.</p>
+    
+      <p>After Trustwave published, Intelligent Tax began pushing an uninstaller instead of the backdoor. That cleanup tool removed files, registry entries, logs, and itself. CERT-FR later noted a second uninstaller sent from July 1 with changes that appeared designed to evade Trustwave&#39;s YARA rule. The response looked like a cover track, not a fix.</p>
+    
+  </div>
   
 
   
@@ -51,9 +64,9 @@
         
         <tr>
           <td>
-            <strong>Aisino</strong>
-            
-            <br><span>binary_archive</span>
+            <strong>Aisino Intelligent Tax installer</strong>
+            <br><code>Intelligent Tax</code>
+            <br><span>windows installer · binary_archive</span>
             <br><a href="https://i-xinnuo.com" target="_blank">https://i-xinnuo.com</a>
             
           </td>
@@ -70,7 +83,7 @@
           </td>
           <td>
             
-              <code>sha256:c1d7873a21d28ba995725f958741948f0d750b1e18311341682b56f257025642</code><br><code>sha256:1536924c856093919f4f697f83225471094e4868131226a996d75a738080b0e6</code><br><code>sha256:5953fc590db6ab347840ccbf10f09a0b1bb48d38309067a1d65c34cb3ce82f4b</code><br><code>sha256:aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899</code>
+              <code>sha256:c1d7873a21d28ba995725f958741948f0d750b1e18311341682b56f257025642</code><br><code>sha256:1536924c856093919f4f697f83225471094e4868131226a996d75a738080b0e6</code><br><code>sha256:5953fc590db6ab347840ccbf10f09a0b1bb48d38309067a1d65c34cb3ce82f4b</code>
             
           </td>
         </tr>
@@ -92,13 +105,27 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.zdnet.com/article/chinese-bank-forced-western-companies-to-install-malware-laced-tax-software/" target="_blank">https://www.zdnet.com/article/chinese-bank-forced-western-companies-to-install-malware-laced-tax-software/</a></li>
+      <li><a href="https://www.ic3.gov/CSA/2020/200728.pdf" target="_blank">Chinese Government-Mandated Tax Software Contains Malware, Enabling Backdoor Access</a></li>
     
-      <li><a href="https://attack.mitre.org/software/S0493/" target="_blank">https://attack.mitre.org/software/S0493/</a></li>
+      <li><a href="https://www.cert.ssi.gouv.fr/uploads/CERTFR-2022-CTI-007.pdf" target="_blank">Integration of Untrusted Software - The Case of GoldenSpy</a></li>
     
-      <li><a href="https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/goldenspy-whos-really-pulling-the-strings/" target="_blank">https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/goldenspy-whos-really-pulling-the-strings/</a></li>
+      <li><a href="https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/the-golden-tax-department-and-the-emergence-of-goldenspy-malware/" target="_blank">The Golden Tax Department and the Emergence of GoldenSpy Malware</a></li>
     
-      <li><a href="https://www.crowdstrike.com/blog/goldenspy-supply-chain-attack-hits-organizations-operating-in-china/" target="_blank">https://www.crowdstrike.com/blog/goldenspy-supply-chain-attack-hits-organizations-operating-in-china/</a></li>
+      <li><a href="https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/goldenspy-chapter-two-the-uninstaller/" target="_blank">GoldenSpy: Chapter Two - The Uninstaller</a></li>
+    
+      <li><a href="https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/goldenspy-chapter-3-new-and-improved-uninstaller/" target="_blank">GoldenSpy Chapter 3: New and Improved Uninstaller</a></li>
+    
+      <li><a href="https://www.zdnet.com/article/chinese-bank-forced-western-companies-to-install-malware-laced-tax-software/" target="_blank">Chinese bank forced Western companies to install malware-laced tax software</a></li>
+    
+      <li><a href="https://www.darkreading.com/threat-intelligence/-goldenspy-malware-hidden-in-tax-software-spies-on-companies-doing-business-in-china" target="_blank">&#39;GoldenSpy&#39; Malware Hidden in Tax Software Spies on Companies Doing Business in China</a></li>
+    
+      <li><a href="https://www.darkreading.com/cyberattacks-data-breaches/chinese-software-company-aisino-uninstalls-goldenspy-malware" target="_blank">Chinese Software Company Aisino Uninstalls GoldenSpy Malware</a></li>
+    
+      <li><a href="https://attack.mitre.org/software/S0493/" target="_blank">GoldenSpy, Software S0493</a></li>
+    
+      <li><a href="https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/goldenspy-whos-really-pulling-the-strings/" target="_blank">GoldenSpy: Who&#39;s Really Pulling the Strings?</a></li>
+    
+      <li><a href="https://www.crowdstrike.com/blog/goldenspy-supply-chain-attack-hits-organizations-operating-in-china/" target="_blank">GoldenSpy Supply Chain Attack Hits Organizations Operating in China</a></li>
     
   </ul>
   

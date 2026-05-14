@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ctx NPM package maintainer hijack steals credentials</title>
+  <title>ctx PyPI account stole environment variables</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,25 +13,38 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>ctx NPM package maintainer hijack steals credentials</h1>
+  <h1>ctx PyPI account stole environment variables</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> ctx · <a href="https://github.com/rreverser/ctx" target="_blank">repo</a></div>
-    <div class="meta-item"><strong>Date:</strong> 2022-05-18</div>
-    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Target:</strong> ctx PyPI package · <a href="https://github.com/rreverser/ctx" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2022-05-14 to 2022-05-24 (10 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Sockpuppets (person)</div>
     <div class="meta-item"><strong>Target Kind:</strong> library</div>
-    <div class="meta-item"><strong>Language:</strong> Javascript</div>
-    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Language:</strong> Python</div>
+    <div class="meta-item"><strong>Cause:</strong> expired_domain_takeover</div>
     <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
-    <div class="meta-item"><strong>Impact:</strong> data_exfiltration</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration</div>
     <div class="meta-item"><strong>User Impact:</strong> 0</div>
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">An attacker gained access to the maintainer account for ctx, a small utility library, and published a malicious release. The payload hid in a test file but ran during installation, scraping environment variables and .npmrc credentials from machines that treated the package as harmless plumbing.</p>
+  <p class="synopsis">An attacker re-registered the expired maintainer email domain for ctx and reset its PyPI account. Malicious releases exfiltrated environment variables to Heroku.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>ctx was a small Python package with an old release history. Its last legitimate release was in 2014, and the maintainer email domain later expired. In May 2022, the attacker registered that domain, recreated the maintainer email address, and used PyPI password recovery to take over the official package account.</p>
+    
+      <p>The new releases looked like ordinary PyPI updates but carried a short credential theft routine. When a `Ctx` object was created, the code walked process environment variables, base64-encoded the collected values, and sent them to `anti-theft-web.herokuapp.com`. AWS keys and CI/CD secrets were the obvious prize.</p>
+    
+      <p>The compromise mattered because the package name was legitimate. Users did not install a typosquat. They installed ctx from PyPI and received code from the official registry page tied to that project name.</p>
+    
+      <p>The event was reported alongside the hautelook/phpass repo-jacking incident. Both attacks used abandoned identity to regain control of established package coordinates. PyPI removed ctx, deleted the release files, blocked the name from re-registration without administrator review, and froze the compromised owner account.</p>
+    
+  </div>
   
 
   
@@ -53,14 +66,14 @@
           <td>
             <strong>ctx</strong>
             
-            <br><span>source_archive</span>
+            <br><span>pypi · source_archive</span>
             
             <br><a href="https://github.com/rreverser/ctx" target="_blank">https://github.com/rreverser/ctx</a>
           </td>
-          <td>2022-05-18</td>
+          <td>2022-05-14<br>to 2022-05-24</td>
           <td>
             
-              <code>0.1.2</code>
+              <code>0.1.2</code><br><code>0.2.2</code><br><code>0.2.6</code>
             
           </td>
           <td>
@@ -70,7 +83,7 @@
           </td>
           <td>
             
-              <code>sha256:195f077e7e3390951309a5e8fa0f02f16110d41915fc569097e6c90dfb76755e</code>
+              N/A
             
           </td>
         </tr>
@@ -92,7 +105,15 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html" target="_blank">https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html</a></li>
+      <li><a href="https://orca.security/resources/blog/python-supply-chain-attack-ctx-phpass/" target="_blank">Supply Chain Attack: CTX Account Takeover and PHPass Hijack Explained</a></li>
+    
+      <li><a href="https://www.crowdstrike.com/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass/" target="_blank">Detecting Poisoned Python Packages: CTX and PHPass</a></li>
+    
+      <li><a href="https://www.sonatype.com/blog/pypi-package-ctx-compromised-are-you-at-risk" target="_blank">PyPI Package &#39;ctx&#39; and PHP Library &#39;phpass&#39; Compromised to Steal Environment Variables</a></li>
+    
+      <li><a href="https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html" target="_blank">PyPI package ctx and PHP library phpass compromised</a></li>
+    
+      <li><a href="https://cybersecuritynews.com/attackers-compromised-pypi-package/" target="_blank">Attackers compromised PyPI package to steal AWS keys</a></li>
     
   </ul>
   

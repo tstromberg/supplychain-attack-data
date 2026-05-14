@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>reviewdog/action-setup GitHub Action compromise leaks secrets</title>
+  <title>reviewdog/action-setup leaked GitHub Actions secrets</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>reviewdog/action-setup GitHub Action compromise leaks secrets</h1>
+  <h1>reviewdog/action-setup leaked GitHub Actions secrets</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> reviewdog/action-setup</div>
@@ -29,14 +29,27 @@
     <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
     <div class="meta-item"><strong>Campaigns:</strong>
       
-        <a href="/campaign/reviewdog-tj-actions-2025/">reviewdog and tj-actions GitHub Actions Compromise</a>
+        <a href="/campaign/reviewdog-tj-actions-2025/">reviewdog and tj-actions leaked CI secrets</a>
       
     </div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Attackers compromised a contributor&#39;s Personal Access Token (PAT), traced back to an earlier leak from the SpotBugs project, which granted write access. They maliciously updated the `v1` tag of the official `reviewdog/action-setup` GitHub Action to point to malicious code (`f0d342d`). For approximately 2 hours, workflows using `@v1` executed this code, which dumped secrets (like GITHUB_TOKEN) from the runner environment into publicly accessible workflow logs. This incident was a precursor, enabling the compromise of the `tj-actions/changed-files` action.</p>
+  <p class="synopsis">Attackers compromised a contributor&#39;s Personal Access Token (PAT), traced back to an earlier leak from the SpotBugs project, which granted write access.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The reviewdog/action-setup compromise was the first step in the March 2025 GitHub Actions chain that later exposed `tj-actions/changed-files`. A contributor token leaked earlier through SpotBugs had write access, and the attacker used it against the reviewdog repository.</p>
+    
+      <p>The attacker moved the `v1` tag to malicious commits. Because GitHub Actions workflows commonly pin actions by tag rather than immutable commit SHA, downstream workflows pulled attacker-controlled code without changing their own repositories.</p>
+    
+      <p>The malicious action printed CI secrets into logs in a recoverable form. That exposed tokens from projects using the action and supplied the path to compromise `tj-actions/changed-files`, where the same secret-leaking pattern reached a much larger set of repositories.</p>
+    
+      <p>CISA, NVD, Wiz, StepSecurity, and Unit 42 all treat reviewdog and tj-actions as related supply-chain incidents. This record stays scoped to reviewdog/action-setup; the campaign record carries the two-action chain.</p>
+    
+  </div>
   
 
   

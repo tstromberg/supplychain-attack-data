@@ -1,0 +1,86 @@
+- id: apifox-cdn
+  title: Apifox CDN script stole developer secrets
+  synopsis: >-
+    A compromised Apifox CDN analytics script ran inside the Electron desktop client.
+    The injected JavaScript stole tokens, developer credentials, and system data,
+    then fetched remote payloads for command execution.
+  story: |
+    Apifox is an API development client, so it sits close to secrets. Developers use it with access tokens, API keys, Git credentials, SSH keys, npm tokens, and Kubernetes configuration. In March 2026, a script loaded by the desktop client became the delivery path.
+
+    The compromised file was `apifox-app-event-tracking.min.js` on Apifox's official CDN. It was supposed to be event-tracking code. The malicious version appended heavily obfuscated JavaScript to the legitimate analytics logic, so the Electron client executed it automatically at startup or during runtime.
+
+    The payload read Apifox local storage, enumerated processes with `ps aux` or `tasklist`, and targeted developer files such as `~/.ssh/`, `~/.git-credentials`, shell history, kubeconfig data, `.npmrc`, and Subversion credentials. It sent stolen data over encrypted channels and could retrieve and execute additional code.
+
+    SlowMist reported the attack on March 26, 2026. Kudelski later summarized the exposure window as March 4 through March 22 and treated all users who launched the desktop client during that period as potentially affected. The practical response was secret rotation, session invalidation, local storage cleanup, and network blocking of the attacker domains.
+  start_date: 2026-03-04
+  end_date: 2026-03-22
+  target:
+    name: Apifox
+    kind: application
+    website: https://apifox.com
+  actor:
+    name: Unknown attacker
+    kind: unknown
+  language: javascript
+  method:
+    cause: compromised_cdn_script
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+    - remote_code_execution
+  artifacts:
+  - id: apifox-app-event-tracking
+    name: apifox-app-event-tracking.min.js
+    kind: script
+    website: https://apifox.com
+    start_date: 2026-03-04
+    end_date: 2026-03-22
+    locations:
+    - uri: https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js
+      role: distribution
+    - uri: https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js
+      role: mirror
+    hashes:
+    - sha256:91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1
+    indicators:
+    - kind: domain
+      value: apifox.it.com
+    - kind: domain
+      value: cdn.openroute.dev
+    - kind: domain
+      value: upgrade.feishu.it.com
+    - kind: domain
+      value: system.toshinkyo.or.jp
+    - kind: domain
+      value: ns.openroute.dev
+    - kind: file
+      value: apifox-app-event-tracking.min.js
+    - kind: file
+      value: user-tracking.min.js
+    - kind: path
+      value: ~/.ssh/
+    - kind: path
+      value: ~/.git-credentials
+    - kind: path
+      value: ~/.kube/
+    - kind: path
+      value: ~/.npmrc
+    - kind: local_storage_key
+      value: _rl_headers
+    - kind: local_storage_key
+      value: _rl_mc
+    - kind: observable
+      value: The Electron desktop client automatically loaded the compromised CDN script
+        without user interaction.
+    notes:
+    - SlowMist identified a malicious Wayback snapshot from 2026-03-05; Kudelski
+      summarized the exposure window as March 4 through March 22, 2026.
+  references:
+  - url: https://slowmist.medium.com/security-alert-supply-chain-attack-on-apifox-desktop-client-via-compromised-official-cdn-script-bc3870992564
+    title: 'Security Alert: Supply Chain Attack on Apifox Desktop Client via Compromised Official CDN Script'
+  - url: https://kudelskisecurity.com/research/apifox-supply-chain-attack
+    title: Apifox Supply Chain Attack

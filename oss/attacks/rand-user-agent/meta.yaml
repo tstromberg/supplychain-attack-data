@@ -1,12 +1,16 @@
----
 - id: rand-user-agent
-  title: rand-user-agent Package Hijacked With RAT
-  synopsis: Attackers compromised the NPM account of the maintainer and published
-    malicious versions of the rand-user-agent package. The compromised versions contained
-    obfuscated code that installed a Remote Access Trojan (RAT), which established
-    a connection to a command-and-control server. The malware could execute arbitrary
-    commands, upload files from victims' machines, and modify the PATH environment
-    variable to hijack Python execution.
+  title: rand-user-agent carried RAT
+  synopsis: >-
+    rand-user-agent 1.0.110, 2.0.83, and 2.0.84 carried obfuscated RAT code.
+    The payload connected to attacker C2 and exposed shell and file-upload commands.
+  story: |
+    Aikido detected the first malicious `rand-user-agent` release on May 5, 2025 at 16:00 UTC. The project repository still pointed at older clean source, but npm held newer package versions with code that did not belong.
+
+    The attacker hid the first stage in `dist/index.js`, using obfuscation and horizontal scroll space to bury the payload in a file reviewers might skim. After decoding, the code installed or loaded `axios` and `socket.io-client` under a custom `.node_modules` path in the user's home directory.
+
+    The payload behaved as a remote access trojan. It connected to `85.239.62.36:3306`, uploaded files through `85.239.62.36:27017/u/f`, sent hostname and username details, accepted directory and upload commands, and executed arbitrary shell input through `child_process.exec()`.
+
+    On Windows, it also prepended `%LOCALAPPDATA%\Programs\Python\Python3127` to `PATH`, giving the attacker a quiet way to influence commands that resolved Python tooling by name. The affected npm versions were 1.0.110, 2.0.83, and 2.0.84.
   start_date: 2025-05-05
   end_date: 2025-05-05
   target:
@@ -31,6 +35,8 @@
   - id: rand-user-agent
     name: rand-user-agent
     kind: source_archive
+    package: rand-user-agent
+    ecosystem: npm
     repo: https://github.com/WebScrapingAPI/rand-user-agent
     start_date: 2025-05-05
     end_date: 2025-05-05
@@ -45,10 +51,46 @@
       role: distribution
     - uri: https://registry.npmjs.org/rand-user-agent/-/rand-user-agent-2.0.84.tgz
       role: distribution
-    - uri: https://www.aikido.dev/blog/catching-a-rat-remote-access-trojian-rand-user-agent-supply-chain-compromise
+    - uri: 
+        https://www.aikido.dev/blog/catching-a-rat-remote-access-trojian-rand-user-agent-supply-chain-compromise
       role: mirror
     hashes:
     - sha256:4ecdf8ceee1f2345ef9996c15f44eee3f87a1e04baa0fb0f91cc228e699a2873
+    indicators:
+    - kind: file
+      value: dist/index.js
+    - kind: ip
+      value: 85.239.62.36
+    - kind: url
+      value: http://85.239.62.36:3306
+    - kind: url
+      value: http://85.239.62.36:27017/u/f
+    - kind: file
+      value: ~/.node_modules
+    - kind: file
+      value: '%LOCALAPPDATA%\Programs\Python\Python3127'
+    evidence:
+    - kind: source
+      path: artifacts/clean/index.js
+      role: clean_source
+    - kind: source
+      path: artifacts/compromised/index.js
+      role: compromised_source
+    - kind: source
+      path: artifacts/extracts/index.js
+      role: payload_extract
+    - kind: source
+      path: artifacts/extracts/persist.js
+      role: payload_extract
+    - kind: source
+      path: artifacts/extracts/rat.js
+      role: payload_extract
+    - kind: source
+      path: artifacts/extracts/rat2.js
+      role: payload_extract
   references:
-  - url: https://www.aikido.dev/blog/catching-a-rat-remote-access-trojian-rand-user-agent-supply-chain-compromise
+  - url: 
+      https://www.aikido.dev/blog/catching-a-rat-remote-access-trojian-rand-user-agent-supply-chain-compromise
+    title: 'RATatouille: A Malicious Recipe Hidden in rand-user-agent'
   - url: https://www.npmjs.com/package/rand-user-agent
+    title: rand-user-agent

@@ -1,14 +1,21 @@
 ---
 - id: eltima-elmedia-player-folx
-  title: Eltima installers bundled Proton RAT.
-  synopsis: Eltima Software download servers were compromised, and macOS installers
-    for Elmedia Player and Folx were bundled with the Proton RAT. Users seeking media
-    and download utilities from the official site received remote-access malware folded
-    into otherwise familiar application packages for macOS.
+  title: Eltima downloads served Proton RAT
+  synopsis: >-
+    Eltima's official macOS downloads for Elmedia Player and Folx were replaced
+    with Proton RAT wrappers. The malware stole secrets and left a backdoor.
+  story: |
+    Eltima's public download path failed for one day in October 2017. Users who fetched Elmedia Player or Folx from the official site received macOS disk images wrapped around legitimate applications and OSX/Proton. The built-in automatic update path was not reported affected.
+
+    ESET confirmed the poisoned downloads on October 19, notified Eltima at 10:35 EDT, and saw the site serving clean packages again by 15:15 EDT. The malicious wrappers were signed with an Apple Developer ID issued to Clifton Grimm, not Eltima. Apple revoked that certificate.
+
+    The wrapper launched the real application as cover, then extracted and ran Proton. It asked for the administrator password through a fake authorization prompt, installed a LaunchAgent, and placed its updater under `/Library/.rand/`. The technique was direct: keep the user interface normal, then persist below it.
+
+    Proton was built to steal. Public analyses describe browser credentials and cookies, macOS keychain data, 1Password vaults, SSH private data, GnuPG files, VPN configurations, cryptocurrency wallets, host data, remote shell functions, file upload and download, and command execution. For infected Macs, reinstalling the operating system and rotating secrets were the practical recovery steps.
   start_date: 2017-10-19
-  end_date: 2017-10-20
+  end_date: 2017-10-19
   target:
-    name: Eltima Elmedia Player/Folx
+    name: Eltima Software
     kind: application
     website: https://mac.eltima.com
   actor:
@@ -26,7 +33,8 @@
     - remote_access
     - credential_theft
   locations:
-  - uri: https://www.welivesecurity.com/2017/10/21/osxproton-supply-chain-attack-elmedia-player-folx/
+  - uri: 
+      https://www.welivesecurity.com/2017/10/20/osx-proton-supply-chain-attack-elmedia/
     role: mirror
   - uri: https://www.virustotal.com/gui/file/e22f6a66442f8078a5da788998146208
     role: mirror
@@ -47,12 +55,35 @@
     kind: binary_archive
     website: https://mac.eltima.com
     start_date: 2017-10-19
-    end_date: 2017-10-20
+    end_date: 2017-10-19
     locations:
-    - uri: https://mac.eltima.com/download/elmedia-player.dmg
+    - uri: https://mac.eltima.com/download/elmediaplayer.dmg
+      role: distribution
+    - uri: https://www.elmedia-video-player.com/download/elmediaplayer.dmg
       role: distribution
     hashes:
     - md5:e22f6a66442f8078a5da788998146208
+    indicators:
+    - kind: file
+      value: Elmedia Player.app/Contents/Resources/.pl.zip
+    - kind: file
+      value: Elmedia Player.app/Contents/MacOS/Elmedia Player
+    - kind: file_sha1
+      value: Elmedia Player.app/Contents/Resources/.pl.zip 9e5378165bb20e9a7f74a7fcc73b528f7b231a75
+    - kind: file_sha1
+      value: Elmedia Player.app/Contents/Resources/.pl.zip 10a09c09fd5dd76202e308718a357abc7de291b5
+    - kind: file_sha1
+      value: Elmedia Player.app/Contents/MacOS/Elmedia Player c9472d791c076a10dce5ff0d3ab6e7706524b741
+    - kind: file_sha1
+      value: Elmedia Player.app/Contents/MacOS/Elmedia Player 30d77908ac9d37c4c14d32ea3e0b8df4c7e75464
+    - kind: file_sha1
+      value: dmg e9dcdae1406ab1132dc9d507fd63503e5c4d41d9
+    - kind: file_sha1
+      value: dmg 8cfa551d15320f0157ece3bdf30b1c62765a93a5
+    - kind: file_sha1
+      value: dmg 0400b35d703d872adc64aa7ef914a260903998ca
+    - kind: certificate
+      value: 'Developer ID Application: Clifton Grimm (9H35WM5TA5)'
   - id: folx
     name: Folx macOS installer
     package: Folx
@@ -60,14 +91,73 @@
     kind: binary_archive
     website: https://mac.eltima.com
     start_date: 2017-10-19
-    end_date: 2017-10-20
+    end_date: 2017-10-19
     locations:
-    - uri: https://mac.eltima.com/download/folx.dmg
+    - uri: https://mac.eltima.com/download/downloader_mac.dmg
       role: distribution
     hashes:
     - md5:1163587a698afe5d88a930c006f2e1e5
+    indicators:
+    - kind: file
+      value: /tmp/Updater.app/
+    - kind: file
+      value: /Library/LaunchAgents/com.Eltima.UpdaterAgent.plist
+    - kind: file
+      value: /Library/.rand/
+    - kind: file
+      value: /Library/.rand/updateragent.app/
+    - kind: file
+      value: Updater.app/Contents/MacOS/Updater
+    - kind: file_sha1
+      value: Updater.app/Contents/MacOS/Updater 3ef34e2581937babd2b7ce63ab1d92cd9440181a
+    - kind: file_sha1
+      value: Updater.app/Contents/MacOS/Updater ef5a11a1bb5b2423554309688aa7947f4afa5388
+    - kind: domain
+      value: eltima.in
+    - kind: ip
+      value: 5.196.42.123
+    - kind: command
+      value: archive
+    - kind: command
+      value: copy
+    - kind: command
+      value: create
+    - kind: command
+      value: delete
+    - kind: command
+      value: download
+    - kind: command
+      value: file_search
+    - kind: command
+      value: force_update
+    - kind: command
+      value: phonehome
+    - kind: command
+      value: remote_execute
+    - kind: command
+      value: tunnel
+    - kind: command
+      value: upload
   references:
-  - url: https://www.bleepingcomputer.com/news/apple/eltima-website-hacked-to-spread-proton-rat-with-popular-video-player-app/
-  - url: https://www.welivesecurity.com/2017/10/21/osxproton-supply-chain-attack-elmedia-player-folx/
-  - url: https://web.archive.org/web/20171020215730/https://blog.eltima.com/security-breach-eltima-Oct-2017/
+  - url: https://mac.eltima.com/elmedia-player-and-folx-malware-threat-neutralized/
+    title: Elmedia Player and Folx malware threat Neutralized!
+  - url: 
+      https://www.bleepingcomputer.com/news/apple/eltima-website-hacked-to-spread-proton-rat-with-popular-video-player-app/
+    title: Eltima Website Hacked to Spread Proton RAT With Popular Video Player
+      App
+  - url: 
+      https://www.welivesecurity.com/2017/10/20/osx-proton-supply-chain-attack-elmedia/
+    title: OSX/Proton spreading again through supply-chain attack
+  - url: 
+      https://web.archive.org/web/20171020215730/https://blog.eltima.com/security-breach-eltima-Oct-2017/
+    title: Security breach Eltima October 2017
   - url: https://www.vice.com/en/article/elmedia-player-malware-hack-mac-trojan/
+    title: Hackers Distribute Malware-Infected Media Player to Hundreds of Mac
+      Users
+  - url: 
+      https://www.zdnet.com/article/trojan-malware-for-mac-osx-spread-via-compromised-media-player-downloads/
+    title: Trojan malware for Mac OSX spread via compromised media player downloads
+  - url: https://www.macrumors.com/2017/10/20/eltima-software-infected-with-malware/
+    title: Eltima Software's Elmedia Player and Folx Infected With Malware
+  - url: https://www.malwarebytes.com/blog/news/2017/10/mac-malware-osx-proton-strikes-again
+    title: Mac malware OSX.Proton strikes again

@@ -1,13 +1,18 @@
----
 - id: agama
-  title: Agama wallet compromised via malicious dependency backdoor
-  synopsis: The Agama cryptocurrency wallet application inadvertently included a compromised
-    version of the `electron-native-notify` NPM package (v1.1.6) as a dependency in
-    its builds. This resulted in official Agama wallet releases containing a backdoor
-    (reverse shell) inherited from the dependency, potentially allowing attackers
-    remote access and theft of wallet seeds or private keys.
-  start_date: 2018-08-01
-  end_date: 2018-08-13
+  title: Agama wallet dependency stole seeds
+  synopsis: >-
+    Komodo's Agama wallet pulled in a poisoned npm dependency that exported wallet seeds.
+    Komodo and npm raced the thief, moving at-risk funds before more could be stolen.
+  story: |
+    Agama was hit through its build chain, not through the Komodo blockchain. A GitHub contributor added `electron-native-notify` to the EasyDEX-GUI application used by Agama, then the npm package was updated with code that stole wallet seeds and passphrases.
+
+    The malicious package shipped before Agama's affected release. When users opened the wallet and entered a seed, the dependency contacted a remote server and stored the secret where the attacker could later use it. The payload was narrow and practical: steal the material that controls the coins.
+
+    npm privately notified Komodo on June 4, 2019. Komodo found that the attacker had already begun draining wallets, then used the same exposed seeds to sweep about 8 million KMD and 96 BTC into safe custody before the attacker could take them.
+
+    The response was unusual because it looked like theft until the context was known. The blockchain was not broken. The failure was dependency trust, pulled through a wallet build and converted into control over user funds.
+  start_date: 2019-04-13
+  end_date: 2019-06-05
   target:
     name: agama
     kind: application
@@ -32,26 +37,41 @@
     kind: binary_archive
     website: https://github.com
     repo: https://github.com/KomodoPlatform/Agama
-    start_date: 2018-08-01
-    end_date: 2018-08-13
+    start_date: 2019-04-13
+    end_date: 2019-06-05
     versions:
-    - 0.3.3
-    - 0.3.4
+    - 0.3.5
     locations:
-    - uri: https://github.com/eslint/eslint-scope/issues/39
+    - uri: https://github.com/KomodoPlatform/Agama
+      role: distribution
+    - uri: 
+        https://blog.npmjs.org/post/185397814280/plot-to-steal-cryptocurrency-foiled-by-the-npm
       role: mirror
-    - uri: https://github.com/eslint/eslint-scope/issues/39#issuecomment-404461211
-      role: mirror
-    - uri: https://blog.npmjs.org/post/185397814280/plot-to-steal-cryptocurrency-foiled-by-the-npm
+    - uri: https://komodoplatform.com/en/blog/update-agama-vulnerability/
       role: mirror
     hashes:
     - sha256:07f16d95f3c91dbd2ddf974d4b95d8dcec39b09b8906fa3b35e0a0da78fe8f76
     indicators:
     - kind: observable
-      value: v0.3.3
-    - kind: observable
-      value: v0.3.4
+      value: v0.3.5
+    - kind: package
+      value: electron-native-notify
+    - kind: version
+      value: 1.1.6
+    - kind: domain
+      value: updatecheck.herokuapp.com
+    notes:
+    - Hash is retained from the malicious `electron-native-notify` package that entered
+      Agama's build chain, not from an Agama release archive.
+    - npm's incident timeline says `electron-native-notify` 1.1.6 introduced the payload
+      on March 23, 2019 and Agama v0.3.5 followed on April 13.
   references:
-  - url: https://komodoplatform.com/vulnerability-discovered-in-komodos-agama-wallet-this-is-what-you-need-to-do/
-  - url: https://github.com/eslint/eslint-scope/issues/39
-  - url: https://blog.npmjs.org/post/185397814280/plot-to-steal-cryptocurrency-foiled-by-the-npm
+  - url: https://komodoplatform.com/en/blog/update-agama-vulnerability/
+    title: Update on Komodo's Agama Wallet Vulnerability
+  - url: 
+      https://blog.npmjs.org/post/185397814280/plot-to-steal-cryptocurrency-foiled-by-the-npm
+    title: Plot to steal cryptocurrency foiled by the npm security team
+  - url: https://github.com/advisories/GHSA-j8qr-rvcv-crhv
+    title: Malicious Package in electron-native-notify
+  - url: https://www.theregister.com/2019/06/07/komodo_npm_wallets/
+    title: Someone slipped a vuln into crypto-wallets via an NPM package

@@ -1,19 +1,26 @@
 ---
 - id: adups
-  title: Adups firmware update component spied on users.
-  synopsis: Firmware-Over-The-Air (FOTA) update software from Shanghai Adups Technology
-    Co., pre-installed by various OEMs on millions of Android devices (including budget
-    US models like BLU), covertly collected and transmitted extensive PII (texts,
-    call logs, contacts, location, app usage) to servers in China without user consent.
-    Adups claimed this was designed for Chinese manufacturers and mistakenly included
-    on international devices.
-  start_date: 2016-07-12
-  end_date: 2016-11-16
+  title: Adups FOTA collected phone data
+  synopsis: >-
+    BLU devices shipped with ADUPS FOTA software that collected text messages,
+    call logs, contacts, location, and app data. The update provider became a
+    built-in surveillance channel.
+  story: |
+    ADUPS was hired to do firmware-over-the-air updates. BLU directed manufacturers to preinstall ADUPS software on phones sold through major retailers. The update channel was trusted by design: it lived in the system image and did work normal users could not inspect or remove.
+
+    Kryptowire found the behavior on a BLU R1 HD in 2016. The ADUPS packages `com.adups.fota` and `com.adups.fota.sysoper` collected the contents of text messages, call logs, contacts, location, device identifiers, and installed-application data. The collection ran silently and sent data to ADUPS infrastructure in China.
+
+    The FTC later alleged that this was not needed for updates. Its complaint said ADUPS transmitted text messages every 72 hours and real-time location data every 24 hours, and that BLU failed to vet and oversee the service provider. BLU publicly said ADUPS had updated its software after the report, but the FTC alleged ADUPS continued to operate on older devices without adequate oversight.
+
+    The case sits at the boundary of supply chain and surveillance. The software was not a rogue typo package or malware added after shipment. It was an official third-party firmware component distributed through device manufacturing and update paths. That made the blast radius large, quiet, and hard for users to correct.
+  start_date: 2015-01-01
+  end_date: 2016-11-15
   target:
-    name: Adups
+    name: ADUPS FOTA on BLU Android devices
     kind: firmware
+    website: https://www.adups.com
   actor:
-    name: Commercial company
+    name: Shanghai ADUPS Technology
     kind: company
   method:
     cause: vendor_deliberate_inclusion
@@ -26,11 +33,14 @@
     - data_theft
     users: 700000000
   artifacts:
-  - id: adups
-    name: Adups
-    kind: hardware
-    start_date: 2016-07-12
-    end_date: 2016-11-16
+  - id: adups-fota
+    name: ADUPS FOTA Android system apps
+    package: com.adups.fota
+    ecosystem: android firmware
+    kind: android_system_app
+    website: https://www.adups.com
+    start_date: 2015-01-01
+    end_date: 2016-11-15
     locations:
     - uri: http://www.adups.com/download/fota-client-5.0.1.apk
       role: distribution
@@ -49,12 +59,60 @@
     hashes:
     - md5:beca89b7a9a52d39cc2c342e8886ce7a
     - sha256:c7ee90a0531637778796a53d6c259ac10f0375f150b13d995ac92064517a5a7b
+    indicators:
+    - kind: package
+      value: com.adups.fota
+    - kind: package
+      value: com.adups.fota.sysoper
+    - kind: vendor
+      value: Shanghai ADUPS Technology Co. Ltd.
+    - kind: vendor
+      value: BLU Products
+    - kind: device
+      value: BLU R1 HD
+    - kind: data
+      value: text message contents
+    - kind: data
+      value: call logs
+    - kind: data
+      value: contact lists
+    - kind: data
+      value: real-time location
+    - kind: data
+      value: installed application list
+    - kind: data
+      value: device identifiers
+    - kind: capability
+      value: firmware-over-the-air update
+    - kind: capability
+      value: remote command execution
+    - kind: capability
+      value: application installation
     notes:
-    - Affected Adups FOTA scope was reported around versions 5.0.x through 5.3.x on
+    - Start date is approximate; FTC guidance says BLU directed manufacturers to
+      preinstall ADUPS software since at least 2015.
+    - Public reporting and the FTC centered on BLU devices; broader reporting said
+      ADUPS software had a very large global device footprint, not all of which is
+      proven to have collected the same data.
+    - Affected ADUPS FOTA scope was reported around versions 5.0.x through 5.3.x on
       various Android devices, including BLU R1 HD.
   references:
+  - url: https://www.ftc.gov/business-guidance/blog/2018/04/lesson-blu-make-right-privacy-security-calls-when-working-service-providers
+    title: 'Lesson of BLU: Make the right privacy, security calls when working with service providers'
+  - url: https://www.ftc.gov/news-events/press-releases/2018/04/mobile-phone-maker-blu-reaches-settlement-ftc-over-deceptive
+    title: Mobile Phone Maker BLU Reaches Settlement with FTC over Deceptive Privacy
+      and Data Security Claims
+  - url: 
+      https://www.ftc.gov/legal-library/browse/cases-proceedings/172-3025-blu-products-samuel-ohev-zion-matter
+    title: 'BLU Products and Samuel Ohev-Zion, In the Matter of'
   - url: https://thehackernews.com/2016/11/hacking-android-smartphone.html
-  - url: https://android.gadgethacks.com/news/these-android-phones-could-be-affected-by-adups-chinese-spyware-0175014/
+    title: Over 700 Million Android Smartphones Secretly Sending Users' Data to China
+  - url: 
+      https://android.gadgethacks.com/news/these-android-phones-could-be-affected-by-adups-chinese-spyware-0175014/
+    title: These Android Phones Could Be Affected by Adups' Chinese Spyware
   - url: https://www.us-cert.gov/ncas/alerts/TA16-336A
+    title: Firmware Vulnerabilities in Android Devices
   - url: https://www.phonescoop.com/articles/article.php?a=17865
+    title: BLU Confirms Security Issue, Patches Devices
   - url: https://www.bluproducts.com/news/2017-blu-privacy.html
+    title: BLU Products privacy statement

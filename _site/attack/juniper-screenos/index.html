@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Juniper ScreenOS firmware contained unauthorized backdoors</title>
+  <title>Juniper ScreenOS firmware hid backdoors</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Juniper ScreenOS firmware contained unauthorized backdoors</h1>
+  <h1>Juniper ScreenOS firmware hid backdoors</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> juniper-screenos · <a href="https://juniper.net" target="_blank">website</a></div>
@@ -30,7 +30,7 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Juniper disclosed on December 17, 2015 that unauthorized code had entered official ScreenOS firmware for NetScreen firewalls. One flaw, CVE-2015-7755, let remote SSH or Telnet users obtain administrator access with a hidden password. The other, CVE-2015-7756, weakened VPN encryption so a knowledgeable passive observer could decrypt traffic. The case remains notorious because the same firewall image carried both command access and traffic-surveillance risk.</p>
+  <p class="synopsis">Juniper disclosed that unauthorized code entered official ScreenOS firmware for NetScreen firewalls. CVE-2015-7755 opened hidden SSH/Telnet admin access; CVE-2015-7756 could let an observer decrypt VPN traffic.</p>
 
   
   <h2>Story</h2>
@@ -40,9 +40,9 @@
     
       <p>CVE-2015-7755 was the administrative-access backdoor. Rapid7 and Fox-IT analysis found an authentication path in SSH and Telnet that compared the supplied password against the string `&lt;&lt;&lt; %s(un=&#39;%s&#39;) = %u`. The string looked like a format string, but on vulnerable builds it was a master password: any username could reach an administrative shell with the highest privileges.</p>
     
-      <p>CVE-2015-7756 was a separate VPN decryption vulnerability. Juniper described it as independent of the authentication bypass. Researchers tied the weakness to ScreenOS random-number generation and the Dual_EC_DRBG controversy: a changed parameter could let someone who knew the corresponding secret passively decrypt VPN traffic they could capture.</p>
+      <p>CVE-2015-7756 was a separate VPN decryption vulnerability. Juniper described it as independent of the authentication bypass. Public cryptographic analysis tied it to ScreenOS random-number generation, Dual_EC_DRBG, and a changed Q parameter. The attacker did not need a large code change; replacing the parameter was enough if the holder of the corresponding secret could see the right output.</p>
     
-      <p>The two issues had different version scopes. Juniper&#39;s bulletin gave broad affected ScreenOS ranges, while Rapid7 reported that the authentication backdoor appeared later in the 6.3.0 line and Juniper later confirmed it for 6.3.0r17 through 6.3.0r20. The VPN weakness covered the broader 6.2.0r15 through 6.2.0r18 and 6.3.0r12 through 6.3.0r20 ranges.</p>
+      <p>The deeper lesson was that ScreenOS already carried dangerous cryptographic structure. Dual_EC output was meant to be hidden behind an ANSI X9.17 generator, but researchers found paths where raw output could surface. The unauthorized parameter change then turned weak plumbing into a practical passive decryption path for VPN traffic.</p>
     
   </div>
   
@@ -142,6 +142,8 @@
       <li><a href="https://blog.fox-it.com/2015/12/20/deepdive-into-cve-2015-7755-juniper-screenos-authentication-backdoor/" target="_blank">Deep dive into CVE-2015-7755 Juniper ScreenOS authentication backdoor</a></li>
     
       <li><a href="https://www.kb.cert.org/vuls/id/640184" target="_blank">Juniper ScreenOS contains multiple vulnerabilities</a></li>
+    
+      <li><a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/" target="_blank">On the Juniper backdoor</a></li>
     
   </ul>
   

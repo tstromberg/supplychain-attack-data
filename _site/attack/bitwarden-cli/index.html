@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bitwarden CLI Compromise (Shai-Hulud V3)</title>
+  <title>Bitwarden CLI hit by Shai-Hulud</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,30 +13,43 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Bitwarden CLI Compromise (Shai-Hulud V3)</h1>
+  <h1>Bitwarden CLI hit by Shai-Hulud</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> bitwarden-cli · <a href="https://github.com/bitwarden/clients" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-04-22 to 2026-04-23 (1 day)</div>
-    <div class="meta-item"><strong>Actor:</strong> Advanced Persistent Threat (group)</div>
+    <div class="meta-item"><strong>Actor:</strong> TeamPCP (group)</div>
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
     <div class="meta-item"><strong>Language:</strong> JavaScript</div>
     <div class="meta-item"><strong>Cause:</strong> ci_cd_exploit</div>
     <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
     <div class="meta-item"><strong>Transitive:</strong> true</div>
     <div class="meta-item"><strong>Impact:</strong> credential_theft, self_propagation</div>
-    <div class="meta-item"><strong>User Impact:</strong> 100000</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
     <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
     <div class="meta-item"><strong>Campaigns:</strong>
       
-        <a href="/campaign/teampcp-2026/">TeamPCP 2026 Package Compromise Campaign</a>
+        <a href="/campaign/teampcp-2026/">TeamPCP package wave stole credentials</a>
       
     </div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The official Bitwarden CLI npm package (@bitwarden/cli) version 2026.4.0 was compromised during the broader Checkmarx/TeamPCP supply-chain campaign after attackers abused a GitHub Actions path in Bitwarden&#39;s CI/CD pipeline. The malicious package included a bw1.js payload that shared infrastructure with the Checkmarx campaign, harvested GitHub, npm, cloud, SSH, environment, Claude, and MCP credentials, exfiltrated to audit.checkmarx.cx and GitHub commit-based dead drops, and attempted npm/GitHub supply-chain propagation with injected install hooks and workflow files.</p>
+  <p class="synopsis">The official Bitwarden CLI npm package (@bitwarden/cli) version 2026.4.0 was compromised during the broader Checkmarx/TeamPCP supply-chain campaign after attackers abused a GitHub Actions path in Bitwarden&#39;s CI/CD pipeline.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Bitwarden CLI was hit through its npm delivery path. On April 22, 2026, version 2026.4.0 of `@bitwarden/cli` briefly carried malicious JavaScript in the package contents. The record is narrow: the CLI package on npm was affected, not Bitwarden vault data.</p>
+    
+      <p>The payload appeared in `bw1.js` and matched the Checkmarx/TeamPCP toolchain. It used the same `audit.checkmarx.cx` telemetry endpoint, the same style of scrambled strings, and the same embedded machinery for token theft, workflow injection, and npm republishing.</p>
+    
+      <p>The installer path mattered. The package could run through npm lifecycle behavior, scrape GitHub Actions runner memory and environment data, collect cloud and npm credentials, and use stolen publishing rights to push the campaign into more packages.</p>
+    
+      <p>Bitwarden contained the release, revoked compromised access, and deprecated the affected npm version. The useful boundary is precise: people outside the short npm distribution window were not affected, and Bitwarden reported no evidence that end-user vault data was accessed.</p>
+    
+  </div>
   
 
   
@@ -97,9 +110,9 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://socket.dev/blog/bitwarden-cli-compromised" target="_blank">https://socket.dev/blog/bitwarden-cli-compromised</a></li>
+      <li><a href="https://socket.dev/blog/bitwarden-cli-compromised" target="_blank">Bitwarden CLI compromised in ongoing Checkmarx supply chain campaign</a></li>
     
-      <li><a href="https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/" target="_blank">https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/</a></li>
+      <li><a href="https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/" target="_blank">The npm threat landscape</a></li>
     
   </ul>
   

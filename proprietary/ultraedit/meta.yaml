@@ -1,11 +1,21 @@
----
 - id: ultraedit
-  title: UltraEdit update mechanism abused in Operation WilySupply
-  synopsis: Microsoft disclosed WilySupply on 2017-05-04, describing a targeted supply-chain attack that abused an unnamed editor's auto-update channel to deliver a tiny ue.exe dropper to roughly 25 finance and payments organizations. The vendor was not named, but community evidence points most strongly to UltraEdit; that attribution remains circumstantial.
+  title: UltraEdit updater carried WilySupply
+  synopsis: >-
+    Operation WilySupply abused UltraEdit's updater to push ue.exe to selected finance
+    and payments targets. The dropper launched PowerShell and Meterpreter, then removed
+    itself after opening the first foothold.
+  story: |
+    Microsoft disclosed Operation WilySupply on 2017-05-04. The original report did not name the vendor, but it described a compromised updater for a third-party editing tool used as a quiet delivery channel into finance, payments, IT, and similar organizations.
+
+    Later supply-chain summaries, including F-Secure's 2021 attack landscape report, identified the tool as UltraEdit. The distinction matters: the public incident began as an unnamed text editor compromise, and the UltraEdit attribution appears in later reporting rather than the initial Microsoft disclosure.
+
+    The payload was a small binary named `ue.exe`, delivered through the legitimate updater path. It launched PowerShell, decoded a Base64/Gzip blob, fetched payload material from attacker infrastructure disguised as `logo.png`, and started a Meterpreter reverse shell.
+
+    The attack was selective. Microsoft said roughly 25 high-profile organizations received the malicious payload, and responders worked with the vendor to contain it early. The code was simple; the trust boundary it crossed was not.
   start_date: 2017-04-13
   end_date: 2017-04-14
   target:
-    name: ultraedit
+    name: UltraEdit
     kind: application
     website: https://ultraedit.com
   actor:
@@ -24,12 +34,39 @@
     users: 25
   artifacts:
   - id: ultraedit
-    name: ultraedit
+    name: UltraEdit updater payload
+    package: ue.exe
+    ecosystem: windows desktop software
     kind: binary_archive
     website: https://ultraedit.com
     start_date: 2017-04-13
     end_date: 2017-04-14
+    hashes:
+    - sha1:75edd4ee11e7d3dabd191c316da637f939140e2f
+    - md5:a34c930506b64f98cdf3ec2a474f5b31
+    indicators:
+    - kind: url
+      value: hXXp://5.39.218.205/logo.png
+    - kind: url
+      value: hXXp://176.53.118.131/logo.png
+    - kind: process
+      value: PowerShell
+    - kind: family
+      value: Meterpreter
+    notes:
+    - Microsoft reported 25 affected organizations; the schema stores that count in
+      impact.users because it has no separate organization-count field.
   references:
-  - url: https://www.microsoft.com/en-us/security/blog/2017/05/04/windows-defender-atp-thwarts-operation-wilysupply-software-supply-chain-cyberattack/
+  - url: 
+      https://www.microsoft.com/en-us/security/blog/2017/05/04/windows-defender-atp-thwarts-operation-wilysupply-software-supply-chain-cyberattack/
+    title: Windows Defender ATP thwarts Operation WilySupply software supply chain
+      cyberattack
   - url: https://www.theregister.com/2017/05/04/microsoft_unsupply_chain_attack/
-  - url: https://www.bleepingcomputer.com/news/security/microsoft-stops-targeted-malware-attack-distributed-via-software-supply-chain/
+    title: Microsoft says lock down your software supply chain before the malware
+      scum get in
+  - url: 
+      https://www.bleepingcomputer.com/news/security/microsoft-stops-targeted-malware-attack-distributed-via-software-supply-chain/
+    title: Microsoft Stops Targeted Malware Attack Distributed via Software Supply Chain
+  - url: 
+      https://blog-assets.f-secure.com/wp-content/uploads/2021/03/30120359/attack-landscape-update-h1-2021.pdf
+    title: Attack Landscape Update 2021

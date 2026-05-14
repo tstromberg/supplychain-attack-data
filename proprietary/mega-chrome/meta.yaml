@@ -1,14 +1,16 @@
----
 - id: mega-chrome
-  title: MEGA Chrome extension trojanized via developer account compromise
-  synopsis: On 2018-09-04 at 14:30 UTC, attackers compromised MEGA's Chrome Web Store
-    developer account and published v3.39.4 of the official MEGA extension with credential-stealing
-    code added to it. The trojanized extension intercepted POST requests containing
-    common login field names and exfiltrated credentials for Amazon, GitHub, Google,
-    and Microsoft, plus private keys for MyEtherWallet and MyMonero and credentials
-    for the Idex.market exchange, sending data to megaopac.host (176.119.1.146, Ukraine).
-    Google removed the extension at 19:19 UTC; the malicious version was live for
-    approximately 4 hours. Clean v3.39.5 was published shortly after.
+  title: MEGA Chrome extension stole credentials
+  synopsis: >-
+    Attackers used MEGA's Chrome Web Store account to publish extension v3.39.4.
+    The update requested broader permissions and stole credentials and wallet secrets.
+  story: |
+    The MEGA compromise was fast and public. On 2018-09-04 at about 14:30 UTC, an attacker accessed MEGA's Chrome Web Store developer account and uploaded version 3.39.4 of the official extension.
+
+    The malicious build asked for expanded permissions. Once installed or auto-updated, it could read credentials entered on sites such as Google, GitHub, Amazon, and cryptocurrency services including MyEtherWallet, MyMonero, and IDEX.
+
+    The extension exfiltrated captured data to `megaopac.host`, an attacker server reported in Ukraine. The prize was not only passwords; wallet private keys and exchange credentials made the browser extension a direct path to cryptocurrency theft.
+
+    MEGA replaced the extension with a clean release the same day and warned users to change passwords and rotate wallet secrets. This record tracks the Chrome Web Store package, not MEGA's cloud-storage service itself.
   start_date: 2018-09-04
   end_date: 2018-09-04
   target:
@@ -31,15 +33,32 @@
   artifacts:
   - id: mega-chrome
     name: mega-chrome
+    package: MEGA Chrome extension
+    ecosystem: chrome web store
     kind: extension_package
     start_date: 2018-09-04
     end_date: 2018-09-04
     versions:
     - 3.39.4
     locations:
+    - uri: https://chrome.google.com/webstore/detail/mega/nlbmnnijcnlegkjjpcfjclmcfggfefdm
+      role: distribution
     - uri: https://serhack.me/articles/mega-chrome-extension-hacked/
       role: mirror
+    indicators:
+    - kind: domain
+      value: megaopac.host
+    - kind: permission
+      value: Expanded Chrome extension permissions requested by version 3.39.4.
+    - kind: observable
+      value: Targeted credentials on Google, GitHub, Amazon, MyEtherWallet, MyMonero,
+        and IDEX.
   references:
   - url: https://serhack.me/articles/mega-chrome-extension-hacked/
-  - url: https://securityboulevard.com/2018/09/hackers-replace-mega-chrome-extension-with-trojanized-version/
-  - url: https://www.bleepingcomputer.com/news/security/mega-chrome-extension-hacked-cryptocurrency-and-user-passwords-targeted/
+    title: MEGA Chrome Extension Hacked - Detailed Timeline of Events
+  - url: 
+      https://securityboulevard.com/2018/09/hackers-replace-mega-chrome-extension-with-trojanized-version/
+    title: Hackers replace MEGA Chrome extension with trojanized version
+  - url: 
+      https://www.bleepingcomputer.com/news/security/mega-chrome-extension-hacked-cryptocurrency-and-user-passwords-targeted/
+    title: MEGA Chrome extension hacked, cryptocurrency and user passwords targeted

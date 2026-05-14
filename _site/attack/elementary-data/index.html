@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>elementary-data PyPI and GHCR Forged Release</title>
+  <title>elementary-data PyPI and GHCR releases forged</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>elementary-data PyPI and GHCR Forged Release</h1>
+  <h1>elementary-data PyPI and GHCR releases forged</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> elementary-data · <a href="https://github.com/elementary-data/elementary" target="_blank">repo</a></div>
@@ -30,8 +30,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">An attacker exploited a GitHub Actions script-injection flaw in elementary-data&#39;s issue-update workflow to forge release state, tag v0.23.3 at an orphan commit, and dispatch the legitimate release pipeline. That pipeline published elementary-data==0.23.3 to PyPI and pushed compromised GHCR images tagged 0.23.3 and latest. The artifacts used a Python .pth file to execute at interpreter startup, unpack a multi-stage credential stealer, collect local, cloud, container, Kubernetes, package-manager, wallet, and system secrets, and exfiltrate them as trin.tar.gz.</p>
+  <p class="synopsis">An attacker exploited a GitHub Actions script-injection flaw in elementary-data&#39;s issue-update workflow to forge release state, tag v0.23.3 at an orphan commit, and dispatch the legitimate release pipeline.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>elementary-data was compromised through GitHub Actions, not through a maintainer manually uploading a package. An attacker posted a crafted comment to a pull request, and a workflow interpolated that comment into a shell `run:` block.</p>
+    
+      <p>The injected command used the repository&#39;s `GITHUB_TOKEN` to create an orphan release commit and tag `v0.23.3`. That commit added a large `elementary.pth` file and bumped the package version. Python `.pth` files run during interpreter startup, so the payload did not need an explicit import.</p>
+    
+      <p>The attacker then dispatched the legitimate release workflow. PyPI received `elementary-data==0.23.3`, and GHCR received a multi-architecture `ghcr.io/elementary-data/elementary` image tagged `0.23.3` and `latest`, all from the forged release state.</p>
+    
+      <p>The payload was a credential stealer. It searched SSH keys, cloud credentials, Kubernetes files, package-manager tokens, wallet material, and secrets on disk, then posted an archive to attacker infrastructure. Maintainers removed the release and published clean `0.23.4`.</p>
+    
+  </div>
   
 
   
@@ -138,9 +151,9 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.elementary-data.com/post/security-incident-report-malicious-release-of-elementary-oss-python-cli-v0-23-3" target="_blank">https://www.elementary-data.com/post/security-incident-report-malicious-release-of-elementary-oss-python-cli-v0-23-3</a></li>
+      <li><a href="https://www.elementary-data.com/post/security-incident-report-malicious-release-of-elementary-oss-python-cli-v0-23-3" target="_blank">Security Incident Report: Malicious release of Elementary OSS Python CLI v0.23.3</a></li>
     
-      <li><a href="https://www.stepsecurity.io/blog/elementary-data-compromised-on-pypi-and-ghcr-forged-release-pushed-via-github-actions-script-injection" target="_blank">https://www.stepsecurity.io/blog/elementary-data-compromised-on-pypi-and-ghcr-forged-release-pushed-via-github-actions-script-injection</a></li>
+      <li><a href="https://www.stepsecurity.io/blog/elementary-data-compromised-on-pypi-and-ghcr-forged-release-pushed-via-github-actions-script-injection" target="_blank">elementary-data Compromised on PyPI and GHCR</a></li>
     
   </ul>
   

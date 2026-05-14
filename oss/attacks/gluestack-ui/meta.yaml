@@ -1,7 +1,16 @@
----
 - id: gluestack-ui
-  title: gluestack-ui and react-native-aria npm packages trojanized
-  synopsis: Beginning 2025-06-06 at 16:33 EST, an attacker who obtained a Gluestack publishing token pushed malicious updates to 17 packages across the @gluestack-ui and @react-native-aria scopes — starting with @react-native-aria/focus 0.2.10 and continuing over the next ~36 hours. The payload was appended to `lib/index.js` after large blocks of whitespace and acted as a remote-access trojan capable of running shell commands, file upload/download, and on Windows hijacking Python by editing PATH. Combined weekly downloads exceeded one million. Aikido Security identified the backdoor on 2025-06-08 and Gluestack revoked the token.
+  title: gluestack-ui packages shipped malware
+  synopsis: >-
+    A leaked npm token let attackers publish 17 malicious React Native ARIA and
+    gluestack-ui packages. The code carried obfuscated RAT behavior but was contained quickly.
+  story: |
+    The gluestack incident started with `@react-native-aria/focus@0.2.10` on 2025-06-06. Over the next day, the attacker published malicious versions across React Native ARIA and `@gluestack-ui/utils`, reaching 17 package versions with more than one million combined weekly downloads.
+
+    Gluestack attributed the compromise to an npm access token that lacked two-factor protection. The attacker used that token to publish existing package names, not typosquats, so normal dependency resolution could deliver the poisoned releases.
+
+    The payload was obfuscated JavaScript with remote-access behavior. Public reports described whitespace hiding, encoded JavaScript, fake Python persistence paths, metadata harvesting, command execution, and C2 endpoints on `136.0.9.8` and `85.239.62.36`.
+
+    The exposure window was short. Aikido reported the compromise, the team revoked tokens, deprecated affected versions, restricted access, and published clean replacements. Gluestack reported no confirmed system-level compromises or data exfiltration.
   start_date: 2025-06-06
   end_date: 2025-06-08
   target:
@@ -179,6 +188,12 @@
     - 0.1.17
   references:
   - url: https://scanoss.com/lessons-from-the-gluestack-supply-chain-attack/
+    title: Lessons from the gluestack supply-chain attack
   - url: https://www.aikido.dev/blog/supply-chain-attack-on-react-native-aria-ecosystem
+    title: Active NPM Attack Escalates - 16 React Native Packages for GlueStack
+      Backdoored Overnight
   - url: https://gluestack.io/blogs/public-incident-report
+    title: React Native ARIA and gluestack-ui Security Incident Report
   - url: https://thehackernews.com/2025/06/popular-react-native-aria-and-gluestack.html
+    title: Popular React Native ARIA and GlueStack packages compromised in supply
+      chain attack

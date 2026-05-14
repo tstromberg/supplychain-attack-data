@@ -1,14 +1,18 @@
----
 - id: napi-postinstall
-  title: napi-postinstall npm phishing compromise
+  title: napi-postinstall joined npm phishing wave
   campaigns:
   - npnjs-scam-npm-2025
-  synopsis: StepSecurity confirmed napi-postinstall 0.3.1 as one of the npm packages
-    affected by the July 2025 npnjs.com maintainer phishing campaign. The attacker
-    used a phished maintainer credential path to publish malicious releases directly
-    to npm without corresponding source repository changes. In the eslint-config-prettier
-    cluster, the malicious package family executed install.js during installation
-    and launched a bundled Windows DLL through rundll32 on Windows systems.
+  synopsis: >-
+    napi-postinstall 0.3.1 was published during the July 2025 npnjs.com maintainer
+    phishing wave. Its install path executed attacker-controlled JavaScript from npm.
+  story: |
+    The `napi-postinstall` compromise belongs to the npnjs.com phishing campaign. Maintainers were lured to a lookalike npm login flow, and stolen credentials were used to publish malicious versions across JavaScript tooling packages.
+
+    For this package, the affected artifact was `napi-postinstall@0.3.1`. The danger was the install path: npm lifecycle execution gave the payload a chance to run on developer machines and CI systems as soon as the package was installed.
+
+    StepSecurity listed the package among the affected releases while analyzing the eslint-config-prettier compromise, and Socket tracked the same phishing wave across the registry. The package itself is recorded separately so lockfiles and artifact inventories can point to the exact release.
+
+    The campaign record carries the shared phishing infrastructure and cross-package pattern. This record carries the concrete npm package and version.
   start_date: 2025-07-18
   end_date: 2025-07-19
   target:
@@ -30,7 +34,8 @@
     users: 0
   artifacts:
   - id: napi-postinstall
-    name: napi-postinstall
+    name: napi-postinstall npm package
+    package: napi-postinstall
     ecosystem: npm
     kind: source_archive
     repo: https://www.npmjs.com/package/napi-postinstall
@@ -43,6 +48,15 @@
       role: distribution
     - uri: https://www.npmjs.com/package/napi-postinstall
       role: mirror
+    indicators:
+    - kind: domain
+      value: npnjs.com
+    - kind: technique
+      value: npm_lifecycle_script
   references:
-  - url: https://www.stepsecurity.io/blog/supply-chain-security-alert-eslint-config-prettier-package-shows-signs-of-compromise
-  - url: https://socket.dev/blog/npm-phishing-campaign-leads-to-prettier-tooling-packages-compromise
+  - url: 
+      https://www.stepsecurity.io/blog/supply-chain-security-alert-eslint-config-prettier-package-shows-signs-of-compromise
+    title: Supply Chain Security Alert - eslint-config-prettier Package Shows Signs of Compromise
+  - url: 
+      https://socket.dev/blog/npm-phishing-campaign-leads-to-prettier-tooling-packages-compromise
+    title: npm phishing campaign leads to prettier tooling packages compromise

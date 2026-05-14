@@ -1,12 +1,18 @@
----
 - id: justice-av-solutions-javs-viewer
-  title: JAVS Viewer installer distributed backdoor.
-  synopsis: A specific JAVS Viewer release used for courtroom audio-visual recording
-    was compromised through the official installer path. The backdoored build gave
-    attackers potential full control of affected systems, placing covert access inside
-    software trusted for legal records and evidence handling.
-  start_date: 2024-02-01
-  end_date: 2024-05-10
+  title: JAVS Viewer installer delivered backdoor
+  synopsis: >-
+    JAVS Viewer 8.3.7 installers from the official site carried a fake fffmpeg.exe
+    backdoor. Courtroom recording environments were told to reimage and reset credentials.
+  story: |
+    JAVS Viewer is used in courtroom and hearing-room recording environments. Rapid7 traced an incident back to `JAVS Viewer Setup 8.3.7.250-1.exe`, downloaded from the official JAVS site on March 5, 2024.
+
+    The installer was signed, but not by Justice AV Solutions. It carried an Authenticode certificate for Vanguard Tech Limited and included `fffmpeg.exe`, with three leading f characters. That file ran from the JAVS Viewer installation directory and established command-and-control traffic.
+
+    The backdoor sent host details to `45.120.177.178`, maintained a persistent connection, and launched obfuscated PowerShell. Rapid7 later found second-stage binaries on the actor's infrastructure, including browser-credential theft tooling and StealC-related payloads.
+
+    JAVS pulled Viewer 8.3.7, reset passwords, audited systems, and said source code, certificates, systems, and other releases were not compromised. Rapid7 and JAVS both recommended reimaging affected machines, resetting credentials, and installing a clean 8.3.8 or later release.
+  start_date: 2024-02-21
+  end_date: 2024-05-13
   target:
     name: Justice AV Solutions (JAVS) Viewer
     kind: application
@@ -27,37 +33,109 @@
     - data_theft
   artifacts:
   - id: justice-av-solutions-javs-viewer
-    name: Justice AV Solutions (JAVS) Viewer
+    name: JAVS Viewer 8.3.7 installer
+    package: JAVS Viewer
+    ecosystem: windows installer
     kind: binary_archive
     website: https://javs.com
-    start_date: 2024-02-01
-    end_date: 2024-05-10
+    start_date: 2024-02-21
+    end_date: 2024-05-13
     versions:
     - 8.3.7.250-1
+    fixed_versions:
+    - 8.3.8
+    - 8.3.9
     locations:
-    - uri: https://www.rapid7.com/blog/post/2024/05/23/cve-2024-4978-backdoored-justice-av-solutions-viewer-software-used-in-apparent-supply-chain-attack/
+    - uri: 
+        https://www.rapid7.com/blog/post/2024/05/23/cve-2024-4978-backdoored-justice-av-solutions-viewer-software-used-in-apparent-supply-chain-attack/
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/543ea993454380f8152e2838d27ad78803083d953701349516c288069056f101
+    - uri: 
+        https://www.virustotal.com/gui/file/543ea993454380f8152e2838d27ad78803083d953701349516c288069056f101
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/a5e24c10d595969858af422c6dff6bed5f9c6c49dc9622d694327323d8a57d72
+    - uri: 
+        https://www.virustotal.com/gui/file/a5e24c10d595969858af422c6dff6bed5f9c6c49dc9622d694327323d8a57d72
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/fe408e2df48237b11cb724fa51b6d5e9c74c8f5d5b2955c22962095c7ed70b2c
+    - uri: 
+        https://www.virustotal.com/gui/file/fe408e2df48237b11cb724fa51b6d5e9c74c8f5d5b2955c22962095c7ed70b2c
       role: mirror
     hashes:
-    - sha256:543ea993454380f8152e2838d27ad78803083d953701349516c288069056f101
     - sha256:a5e24c10d595969858af422c6dff6bed5f9c6c49dc9622d694327323d8a57d72
     - sha256:fe408e2df48237b11cb724fa51b6d5e9c74c8f5d5b2955c22962095c7ed70b2c
-    - sha256:f8a734d5e7a7b99b29182dddf804d5daa9d876bf39ce7a04721794367a73da51
-    - sha256:4f0ca76987edfe00022c8b9c48ad239229ea88532e2b7a7cd6811ae353cd1eda
-    - sha256:d8def4437bd76279ec6351b65156d670ec0fed24d904e6648de536fed1061671
-    - sha256:c65ee0f73f53b287654b6446ffe7264e0d93b24302e7f0036f5e7db3748749b9
     indicators:
+    - kind: family
+      value: GateDoor
+    - kind: family
+      value: Rustdoor
+    - kind: family
+      value: StealC
+    - kind: ip
+      value: 45.120.177.178
+    - kind: url
+      value: https://45.120.177.178/gateway/register
+    - kind: url
+      value: https://45.120.177.178/gateway/report
+    - kind: url
+      value: https://www.javs.com/download/45819/
+    - kind: file
+      value: JAVS Viewer Setup 8.3.7.250-1.exe
+    - kind: file
+      value: JAVS.Viewer8.Setup_8.3.7.250-1.exe
+    - kind: file
+      value: fffmpeg.exe
+    - kind: file
+      value: Dll2.dll
+    - kind: file
+      value: chrome_installer.exe
+    - kind: file
+      value: firefox_updater.exe
+    - kind: file
+      value: OneDriveStandaloneUpdater.exe
+    - kind: file
+      value: ChromeDiscovery.exe
+    - kind: certificate_subject
+      value: Vanguard Tech Limited
+    - kind: certificate_subject
+      value: Justice AV Solutions Inc
+    - kind: path
+      value: C:\Program Files (x86)\JAVS\Viewer 8\
+    - kind: file_sha1
+      value: fffmpeg.exe e41ec15f2bac76914b4a86cade3a0f4619167f52
+    - kind: file_sha1
+      value: alternate-installer b8e97333fc1b5cd29a71299a8f82a541cabf4d59
+    - kind: file_sha1
+      value: alternate-fffmpeg.exe b9d13055766d792abaf1d11f18c6ee7618155a0e
+    - kind: file_sha1
+      value: Dll2.dll cd60955033d1da273a3fda61f69d76f6271e7e4c
+    - kind: file_sha256
+      value: fffmpeg.exe 543ea993454380f8152e2838d27ad78803083d953701349516c288069056f101
+    - kind: file_sha256
+      value: chrome_installer.exe f8a734d5e7a7b99b29182dddf804d5daa9d876bf39ce7a04721794367a73da51
+    - kind: file_sha256
+      value: main.exe 4150452d8041a6ec73c447cbe3b1422203fffdfbf5c845dbac1bed74b33a5e09
+    - kind: file_sha256
+      value: Dll2.dll 2183c102c107d11ae8aa1e9c0f2af3dc8fa462d0683a033d62a982364a0100d0
+    - kind: file_sha256
+      value: firefox_updater.exe 4f0ca76987edfe00022c8b9c48ad239229ea88532e2b7a7cd6811ae353cd1eda
+    - kind: file_sha256
+      value: ChromeDiscovery.exe d8def4437bd76279ec6351b65156d670ec0fed24d904e6648de536fed1061671
+    - kind: file_sha256
+      value: OneDriveStandaloneUpdater.exe c65ee0f73f53b287654b6446ffe7264e0d93b24302e7f0036f5e7db3748749b9
     - kind: observable
-      value: JAVS Viewer Setup 8.3.7.250-1.exe downloaded from javs.com (e.g., https://www.javs.com/download/45819/
-        as observed by Rapid7 hosting one malicious variant).
+      value: The unexpected malicious binary was named fffmpeg.exe with three f
+        characters, unlike legitimate ffmpeg.exe.
+    - kind: observable
+      value: JAVS said current website files were malware-free after response actions.
     notes:
     - Affected product release was JAVS Viewer 8.3.7.
+    - Artifact hashes contain the two publicly identified malicious JAVS Viewer installer
+      SHA-256 values; embedded payload and C2-hosted binaries are named indicators.
   references:
-  - url: https://www.rapid7.com/blog/post/2024/05/23/cve-2024-4978-backdoored-justice-av-solutions-viewer-software-used-in-apparent-supply-chain-attack/
+  - url: 
+      https://www.rapid7.com/blog/post/2024/05/23/cve-2024-4978-backdoored-justice-av-solutions-viewer-software-used-in-apparent-supply-chain-attack/
+    title: 'CVE-2024-4978: Backdoored Justice AV Solutions Viewer Software Used in
+      Apparent Supply Chain Attack'
   - url: https://nvd.nist.gov/vuln/detail/CVE-2024-4978
-  - url: https://www.cisa.gov/news-events/alerts/2024/05/29/cisa-adds-one-known-exploited-vulnerability-kev-catalog
+    title: CVE-2024-4978 Detail
+  - url: 
+      https://www.cisa.gov/news-events/alerts/2024/05/29/cisa-adds-one-known-exploited-vulnerability-kev-catalog
+    title: CISA Adds One Known Exploited Vulnerability to Catalog

@@ -1,7 +1,17 @@
----
 - id: monpass
-  title: MonPass Mongolian CA distributed Cobalt Strike-laced installer
-  synopsis: Avast disclosed in July 2021 that the official client installer for MonPass — a major Mongolian certificate authority — was backdoored on the company's download site between 2021-02-08 and 2021-03-03. The trojanized installer wrapped the legitimate MonPass client (used by Mongolian users to interact with their digital certificates), executing it normally while side-loading a Cobalt Strike beacon for remote access. Avast notified MonPass, which acknowledged the compromise and notified affected customers.
+  title: MonPass CA delivered Cobalt Strike installer
+  synopsis: >-
+    Avast disclosed in July 2021 that the official client installer for MonPass — a major
+    Mongolian certificate authority — was backdoored on the company's download site between
+    2021-02-08 and 2021-03-03.
+  story: |
+    MonPass was a trusted certificate authority in Mongolia. In 2021, Avast found that its public web server had been breached and that the official MonPass client installer had been replaced with a backdoored version. The affected download window ran from February 8 to March 3, 2021.
+
+    The installer was built to look normal. It downloaded the legitimate MonPass client from the official site, dropped it under `C:\Users\Public\`, and executed it in a new process. The user saw the expected installation path while the malicious code ran beside it.
+
+    The payload used a second channel. It fetched bitmap files from attacker infrastructure such as `download.google-images.ml:8880`, extracted hidden bytes from image data, decoded hexadecimal text, and XOR-decrypted the result with `miat_mg`. The recovered payload was a Cobalt Strike beacon.
+
+    Avast's server review found multiple webshells and backdoors on the MonPass public server, showing repeated control rather than a one-file accident. MonPass later told Avast it had resolved the issues and notified affected customers. The core failure was simple: a CA's trusted client download became a loader for remote access.
   start_date: 2021-02-08
   end_date: 2021-03-03
   target:
@@ -23,12 +33,68 @@
     - remote_access
   artifacts:
   - id: monpass
-    name: monpass
+    name: MonPass client installer
     kind: binary_archive
     website: https://int.monpass.mn
     start_date: 2021-02-08
     end_date: 2021-03-03
+    locations:
+    - uri: https://int.monpass.mn
+      role: distribution
+    - uri: https://github.com/avast/ioc/tree/master/MpIncident
+      role: mirror
+    hashes:
+    - sha256:f21a9c69bfca6f0633ba1e669e5cf86bd8fc55b2529cd9b064ff9e2e129525e8
+    - sha256:a7e9e2bec3ad283a9a0b130034e822c8b6dfd26dda855f883a3a4ff785514f97
+    - sha256:5cebdb91c7fc3abac1248deea6ed6b87fde621d0d407923de7e1365ce13d6dbe
+    - sha256:9834945a07cf20a0be1d70a8f7c2aa8a90e625fa86e744e539b5fe3676ef14a9
+    - sha256:456b69628caa3edf828f4ba987223812cbe5bbf91e6bbf167e21bef25de7c9d2
+    - sha256:28e050d086e7d055764213ab95104a0e7319732c041f947207229ec7dfcd72c8
+    - sha256:4a43fa8a3305c2a17f6a383fb68f02515f589ba112c6e95f570ce421cc690910
+    - sha256:e2596f015378234d9308549f08bcdca8eadbf69e488355cddc9c2425f77b7535
+    - sha256:379d5eef082825d71f199ab8b9b6107c764b7d77cf04c2af1adee67b356b5c7a
+    indicators:
+    - kind: malware
+      value: Cobalt Strike
+    - kind: pdb
+      value: C:\Users\test\Desktop\fishmaster\x64\Release\fishmaster.pdb
+    - kind: string
+      value: Bidenhappyhappyhappy
+    - kind: file
+      value: 37.bmp
+    - kind: file
+      value: x37.bmp
+    - kind: file
+      value: DNS.exe
+    - kind: file
+      value: Browser_plugin.exe
+    - kind: domain
+      value: download.google-images.ml
+    - kind: domain
+      value: jquery-code.ml
+    - kind: domain
+      value: micsoftin.us
+    - kind: ip
+      value: 37.61.205.212
+    - kind: url
+      value: http://download.google-images.ml:8880/download/37.bmp
+    - kind: key
+      value: miat_mg
+    - kind: path
+      value: C:\Users\Public\
+    - kind: observable
+      value: Backdoored installer downloaded and executed the legitimate MonPass client 
+        before loading the hidden Cobalt Strike payload.
   references:
-  - url: https://www.gendigital.com/blog/insights/research/backdoored-client-from-mongolian-ca-monpass
-  - url: https://www.bleepingcomputer.com/news/security/mongolian-certificate-authority-monpass-breached-website-served-malware/
+  - url: 
+      https://www.gendigital.com/blog/insights/research/backdoored-client-from-mongolian-ca-monpass
+    title: Backdoored client from Mongolian CA MonPass
+  - url: https://decoded.avast.io/luigicamastra/backdoored-client-from-mongolian-ca-monpass/
+    title: Backdoored Client from Mongolian CA MonPass
+  - url: https://github.com/avast/ioc/tree/master/MpIncident
+    title: Avast IoCs for MonPass incident
+  - url: 
+      https://www.bleepingcomputer.com/news/security/mongolian-certificate-authority-monpass-breached-website-served-malware/
+    title: Mongolian certificate authority MonPass breached, website served malware
   - url: https://thehackernews.com/2021/07/mongolian-certificate-authority-hacked.html
+    title: Mongolian Certificate Authority Hacked to Distribute Backdoored CA Software

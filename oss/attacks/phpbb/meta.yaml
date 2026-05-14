@@ -1,15 +1,18 @@
----
 - id: phpbb
-  title: phpBB.com download briefly served trojanized 3.2.4 installer
-  synopsis: On 2018-09-14, phpBB confirmed that download links on phpbb.com for the
-    freshly-released 3.2.4 release (`phpBB-3.2.4.zip`, `phpBB-3.2.4.tar.bz2`) had
-    been redirected to a third-party server hosting a trojanized archive containing
-    additional code that opened a backdoor. The compromise was on the project's own
-    site rather than the source code or build pipeline; clean files on the project's
-    mirrors and Composer-installed copies were unaffected. phpBB pulled the malicious
-    links within hours of discovery and rotated download URLs.
-  start_date: 2018-09-14
-  end_date: 2018-09-14
+  title: phpBB links served malicious packages
+  synopsis: >-
+    phpBB download links for 3.2.2 were replaced for 181 minutes on January 26, 2018.
+    The off-site packages carried extra code that tried to load remote JavaScript.
+  story: |
+    The phpBB incident was a link replacement attack, not a phpBB codebase exploit. On January 26, 2018, two official download links pointed away from phpBB's normal files to malicious packages on a third-party server.
+
+    The affected artifacts were the phpBB 3.2.2 full package and the automatic updater from 3.2.1 to 3.2.2. The altered packages added code that attempted to load JavaScript from a remote source. phpBB later controlled the referenced domains, which neutralized that path.
+
+    The window was short: 12:02 to 15:03 UTC, or 181 minutes. phpBB removed the links, told users to verify SHA256 hashes against the official download page, and asked anyone who installed or updated from the malicious packages to file an incident report.
+
+    phpBB estimated fewer than 500 downloads during the exposure window, with fewer likely used in production. The record is scoped to the official download-link compromise and the two package artifacts served through it.
+  start_date: 2018-01-26
+  end_date: 2018-01-26
   target:
     name: phpbb
     kind: application
@@ -27,22 +30,57 @@
   impact:
     types:
     - backdoor
+    users: 0
   artifacts:
-  - id: phpbb
-    name: phpbb
+  - id: phpbb-full-package
+    name: phpBB 3.2.2 full package
     kind: source_archive
     website: https://phpbb.com
     repo: https://github.com/phpbb/phpbb
-    start_date: 2018-09-14
-    end_date: 2018-09-14
+    start_date: 2018-01-26
+    end_date: 2018-01-26
     versions:
-    - 3.2.4
+    - 3.2.2
     locations:
+    - uri: https://www.phpbb.com/downloads/
+      role: distribution
     - uri: https://github.com/phpbb/phpbb
       role: mirror
+    indicators:
+    - kind: file
+      value: phpBB 3.2.2 full package
+    - kind: technique
+      value: remote_javascript_loader
     notes:
-    - Compromised phpBB downloads were served on 2018-09-14.
+    - phpBB estimated fewer than 500 downloads during the exposure window; the
+      number of production installations was expected to be far lower.
+  - id: phpbb-automatic-updater
+    name: phpBB 3.2.1 to 3.2.2 automatic updater
+    kind: source_archive
+    website: https://phpbb.com
+    repo: https://github.com/phpbb/phpbb
+    start_date: 2018-01-26
+    end_date: 2018-01-26
+    versions:
+    - 3.2.1 - 3.2.2
+    locations:
+    - uri: https://www.phpbb.com/downloads/
+      role: distribution
+    - uri: https://github.com/phpbb/phpbb
+      role: mirror
+    indicators:
+    - kind: file
+      value: phpBB 3.2.1 -> 3.2.2 automatic updater
+    - kind: technique
+      value: remote_javascript_loader
+    notes:
+    - phpBB estimated fewer than 500 downloads across both malicious packages;
+      the number is exposure context, not a confirmed victim count.
   references:
   - url: https://www.phpbb.com/community/viewtopic.php?t=2473051
-  - url: https://blog.phpbb.com/2018/09/14/security-incident-on-phpbb-com/
-  - url: https://www.bleepingcomputer.com/news/security/hacker-targets-phpbb-users-via-vulnerabilities-on-the-site/
+    title: phpBB Security Incident
+  - url: 
+      https://www.bleepingcomputer.com/news/security/hacker-compromised-official-phpbb-download-links/
+    title: Hacker Compromised Official phpBB Download Links
+  - url: https://www.securityweek.com/phpbb-website-served-malicious-packages/
+    title: phpBB Website Served Malicious Packages

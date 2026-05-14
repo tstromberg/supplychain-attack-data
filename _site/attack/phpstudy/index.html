@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>phpStudy package carried PHP DLL backdoor</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>phpStudy package carried PHP DLL backdoor</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> phpStudy · <a href="https://www.xp.cn/phpstudy" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2016-01-01 to 2019-01-31 (1126 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
+    <div class="meta-item"><strong>Language:</strong> C</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_build_or_distribution</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> remote_code_execution, backdoor, data_theft</div>
+    <div class="meta-item"><strong>User Impact:</strong> 670000</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">phpStudy distributions for Windows carried a backdoored PHP extension DLL that executed base64 PHP code from HTTP headers. Police reporting later tied the backdoor to large-scale host control and data theft.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>phpStudy was a Windows bundle for local PHP development and small server deployments. In 2019, public reporting said the phpStudy package released in 2016 had been maliciously planted with a backdoor, and that the maintainer removed the tampered package in January 2019.</p>
+    
+      <p>The backdoor lived in PHP extension code, not in a visible installer script. Public reproductions identified `php_xmlrpc.dll` under PHP 5.2.17 and 5.4.45 paths. The DLL inspected request headers and, when the right conditions were met, decoded attacker-supplied base64 PHP from `Accept-Charset`.</p>
+    
+      <p>The execution path was direct. Requests used `Accept-Encoding: gzip,deflate` and a base64 payload in `Accept-Charset`; the extension decoded the payload and passed it to PHP evaluation. That turned any exposed phpStudy-hosted application into unauthenticated remote code execution as the web server user.</p>
+    
+      <p>NSFOCUS cited Hangzhou police reporting that the planted backdoor was used to control more than 670,000 computers and collect more than 100,000 pieces of data, including accounts, passwords, chat data, and device identifiers. This record tracks the software supply-chain insertion, not later exploitation of individual exposed servers.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>phpStudy PHP 5.4 distribution</strong>
+            <br><code>phpStudy</code>
+            <br><span>windows installer · binary_archive</span>
+            <br><a href="https://www.xp.cn/phpstudy" target="_blank">https://www.xp.cn/phpstudy</a>
+            
+          </td>
+          <td>2016-01-01<br>to 2019-01-31</td>
+          <td>
+            
+              <code>5.4</code><br><code>5.4.45</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>md5:c339482fd2b233fb0a555b629c0ea5d5</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>phpStudy PHP 5.2 distribution</strong>
+            <br><code>phpStudy</code>
+            <br><span>windows installer · binary_archive</span>
+            <br><a href="https://www.xp.cn/phpstudy" target="_blank">https://www.xp.cn/phpstudy</a>
+            
+          </td>
+          <td>Thu Dec 31 2015 19:00:00 GMT-0500 (Eastern Standard Time)<br>to Wed Jan 30 2019 19:00:00 GMT-0500 (Eastern Standard Time)</td>
+          <td>
+            
+              <code>5.2.17</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>md5:0f7ad38e7a9857523dfbce4bce43a9e9</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://nsfocusglobal.com/phpstudy-backdoor-event-threat-alert/" target="_blank">phpStudy Backdoor Event Threat Alert</a></li>
+    
+      <li><a href="https://github.com/jas502n/PHPStudy-Backdoor" target="_blank">PHPStudy-Backdoor</a></li>
+    
+      <li><a href="https://github.com/advisories/GHSA-2mv3-3vpm-p5pm" target="_blank">PHPStudy backdoor remote code execution</a></li>
+    
+      <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2025-34061" target="_blank">CVE-2025-34061 Detail</a></li>
+    
+      <li><a href="https://raw.githubusercontent.com/rapid7/metasploit-framework/master/modules/exploits/multi/http/phpstudy_backdoor_rce.rb" target="_blank">Metasploit module phpstudy_backdoor_rce</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

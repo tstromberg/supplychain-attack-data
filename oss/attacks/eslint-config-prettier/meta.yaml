@@ -1,16 +1,18 @@
----
 - id: eslint-config-prettier
-  title: npm Phishing Campaign Targets Prettier Tooling
+  title: eslint-config-prettier phishing shipped malware
   campaigns:
   - npnjs-scam-npm-2025
-  synopsis: A phishing campaign targeting npm maintainers through the typosquatted
-    npnjs.com domain compromised eslint-config-prettier. The attacker added a malicious
-    npm token to maintainer JounQin's account and published eslint-config-prettier
-    8.10.1, 9.1.1, 10.1.6, and 10.1.7 directly to npm without matching GitHub source
-    changes. The malicious package executed install.js during installation and, on
-    Windows hosts, launched bundled node-gyp.dll with rundll32. NVD assigned CVE-2025-54313
-    to the eslint-config-prettier compromise. Related packages from the same campaign
-    are tracked separately in their own records.
+  synopsis: >-
+    A phishing campaign targeting npm maintainers through the typosquatted npnjs.com domain
+    compromised eslint-config-prettier.
+  story: |-
+    eslint-config-prettier was one of the first visible packages hit by the July 2025 `npnjs.com` phishing campaign. The attacker did not change the GitHub repository. They used stolen npm publishing credentials.
+
+    Four malicious versions appeared on npm without matching source commits: 8.10.1, 9.1.1, 10.1.6, and 10.1.7. That gap was the signal. The registry showed fresh releases; the project history did not.
+
+    The package executed an install script on Windows and attempted to launch `node-gyp.dll` through `rundll32`. That gave the attack code execution during dependency installation, a path commonly reached by CI and developer workstations before anyone reviews runtime behavior.
+
+    The maintainer revoked the compromised token, rotated credentials, deprecated the malicious releases, and coordinated removal with npm. The campaign record covers the broader phishing wave; this record anchors the high-download Prettier tooling package.
   start_date: 2025-07-18
   end_date: 2025-07-19
   target:
@@ -44,11 +46,32 @@
     - 10.1.6
     - 10.1.7
     locations:
-    - uri: https://www.npmjs.com/package/eslint-config-prettier
-      role: mirror
+    - uri: https://www.npmjs.com/package/eslint-config-prettier/v/8.10.1
+      role: distribution
+    - uri: https://www.npmjs.com/package/eslint-config-prettier/v/9.1.1
+      role: distribution
+    - uri: https://www.npmjs.com/package/eslint-config-prettier/v/10.1.6
+      role: distribution
+    - uri: https://www.npmjs.com/package/eslint-config-prettier/v/10.1.7
+      role: distribution
+    indicators:
+    - kind: file
+      value: install.js
+    - kind: file
+      value: node-gyp.dll
+    - kind: process
+      value: rundll32
   references:
-  - url: https://www.stepsecurity.io/blog/supply-chain-security-alert-eslint-config-prettier-package-shows-signs-of-compromise
+  - url: 
+      https://www.stepsecurity.io/blog/supply-chain-security-alert-eslint-config-prettier-package-shows-signs-of-compromise
+    title: eslint-config-prettier package shows signs of compromise
   - url: https://github.com/prettier/eslint-config-prettier/issues/339
+    title: Suspicious npm releases for eslint-config-prettier
   - url: https://nvd.nist.gov/vuln/detail/CVE-2025-54313
-  - url: https://socket.dev/blog/npm-phishing-campaign-leads-to-prettier-tooling-packages-compromise
-  - url: https://socket.dev/blog/npm-is-package-hijacked-in-expanding-supply-chain-attack
+    title: CVE-2025-54313 Detail
+  - url: 
+      https://socket.dev/blog/npm-phishing-campaign-leads-to-prettier-tooling-packages-compromise
+    title: npm phishing campaign leads to Prettier tooling packages compromise
+  - url: 
+      https://socket.dev/blog/npm-is-package-hijacked-in-expanding-supply-chain-attack
+    title: npm is package hijacked in expanding supply chain attack

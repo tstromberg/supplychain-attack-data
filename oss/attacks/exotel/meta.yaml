@@ -1,18 +1,26 @@
----
 - id: exotel
-  title: exotel PyPI package compromised via phishing.
-  synopsis: The PyPI account for the exotel package maintainer was compromised during
-    the JuiceLedger phishing campaign. Attackers uploaded version 0.1.6 with installation
-    code that downloaded and executed infostealer malware, making a niche Python client
-    a clean-looking vessel for credential theft across developer workstations.
-  start_date: 2022-08-01
-  end_date: 2022-08-31
+  title: exotel PyPI phishing shipped malware
+  campaigns:
+  - juiceledger-pypi-phishing-2022
+  synopsis: >-
+    JuiceLedger used phished PyPI credentials to publish malicious exotel 0.1.6. The release
+    collected environment data and ran a downloaded trojan at install time.
+  story: |-
+    exotel was one of the packages caught in the 2022 JuiceLedger PyPI phishing wave. The attacker did not need to impersonate the package name. They obtained publishing access and uploaded version 0.1.6 to the real PyPI project.
+
+    The malicious release executed during installation. Its setup code collected environment data from the host and reached out to attacker infrastructure, then downloaded and executed a second-stage payload. That made developer machines and CI runners the primary exposure surface.
+
+    The campaign was notable because it targeted maintainers through PyPI-themed phishing rather than package consumers directly. Once credentials were stolen, PyPI became the distribution system for code that looked ordinary by package coordinate but hostile by content.
+
+    The affected release was removed and advisories were published through GitHub and PyPA. This record stays package-specific because the campaign hit several projects, but the version, hashes, and package archive are specific to exotel.
+  start_date: 2022-08-24
+  end_date: 2022-08-24
   target:
     name: exotel
     kind: library
     repo: https://github.com/exotel/exotel-python
   actor:
-    name: Cybercriminal Gang
+    name: JuiceLedger
     kind: group
   language: Python
   method:
@@ -30,24 +38,50 @@
     ecosystem: pypi
     kind: source_archive
     repo: https://github.com/exotel/exotel-python
-    start_date: 2022-08-01
-    end_date: 2022-08-31
+    start_date: 2022-08-24
+    end_date: 2022-08-24
     versions:
     - 0.1.6
     locations:
     - uri: https://pypi.org/project/exotel/0.1.6/
       role: distribution
-    - uri: https://files.pythonhosted.org/packages/00/11/8be2e89e8e27dcd7fb53ea71c47a4bf99c5bec48c8d4ab7d6eeb1fc47c3/exotel-0.1.6.tar.gz
+    - uri: 
+        https://files.pythonhosted.org/packages/00/11/8be2e89e8e27dcd7fb53ea71c47a4bf99c5bec48c8d4ab7d6eeb1fc47c3/exotel-0.1.6.tar.gz
       role: distribution
     - uri: https://checkmarx.com/blog/first-known-phishing-attack-against-pypi-users/
       role: mirror
-    - uri: https://www.sentinelone.com/labs/pypi-phishing-campaign-juiceledger-threat-actor-pivots-from-fake-apps-to-supply-chain-attacks/
+    - uri: 
+        https://www.sentinelone.com/labs/pypi-phishing-campaign-juiceledger-threat-actor-pivots-from-fake-apps-to-supply-chain-attacks/
       role: mirror
     hashes:
     - sha256:fbb13333b05eaab13d5d4810f92dbd5dfc4c25cf14e4471c6352b046c6653b6f
     - sha256:60434af3ebe924efabc96558e6c8d8176bf4eb06dd6cc47b4c491da9964be874
     - sha256:8e97c6883e7af5cc1f88ac03197d62298906ac4a35a789d94cc9fde45ee7ea13
+    indicators:
+    - kind: file
+      value: setup.py
+    - kind: observable
+      value: Install-time code collected host environment data and downloaded a trojan payload.
   references:
+  - url: https://github.com/advisories/GHSA-cv6j-9835-p7fh
+    title: exotel-py includes code execution backdoor inserted by a third party
+  - url: https://github.com/advisories/GHSA-x6xg-3fj2-4pq3
+    title: "`exotel` project on PyPI compromised, malicious release made"
+  - url: https://github.com/pypa/advisory-database/blob/main/vulns/exotel/PYSEC-2022-43134.yaml
+    title: PYSEC-2022-43134 exotel advisory
+  - url: https://github.com/pypa/advisory-database/blob/main/vulns/exotel/PYSEC-2022-250.yaml
+    title: PYSEC-2022-250 exotel advisory
+  - url: 
+      https://inspector.pypi.io/project/exotel/0.1.6/packages/8b/ed/9ebeb34d4adb9b01151d73ccfde9c1cb2d629c3b146953c8727559a65446/exotel-0.1.6.tar.gz/exotel-0.1.6/setup.py
+    title: exotel 0.1.6 setup.py package inspector
+  - url: https://www.bleepingcomputer.com/news/security/pypi-packages-hijacked-after-developers-fall-for-phishing-emails/
+    title: PyPI packages hijacked after developers fall for phishing emails
   - url: https://checkmarx.com/blog/first-known-phishing-attack-against-pypi-users/
-  - url: https://www.sentinelone.com/labs/pypi-phishing-campaign-juiceledger-threat-actor-pivots-from-fake-apps-to-supply-chain-attacks/
-  - url: https://www.itpro.com/security/phishing/368899/pypi-packages-succumb-to-mailchimp-phishing-scam
+    title: First Known Phishing Attack Against PyPi Users
+  - url: 
+      https://www.sentinelone.com/labs/pypi-phishing-campaign-juiceledger-threat-actor-pivots-from-fake-apps-to-supply-chain-attacks/
+    title: PyPI Phishing Campaign | JuiceLedger Threat Actor Pivots From Fake Apps 
+      to Supply Chain Attacks
+  - url: 
+      https://www.itpro.com/security/phishing/368899/pypi-packages-succumb-to-mailchimp-phishing-scam
+    title: PyPI packages succumb to Mailchimp phishing scam

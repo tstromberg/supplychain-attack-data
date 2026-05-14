@@ -1,13 +1,16 @@
----
 - id: velora-dex-sdk
-  title: VeloraDEX SDK npm macOS Backdoor
-  synopsis: A registry-only malicious release of @velora-dex/sdk 9.4.1 was published
-    to npm with no matching source commit. Instead of using an install hook, the attacker
-    prepended code to the package entry point so importing the SDK downloaded and
-    installed a macOS backdoor with launchctl persistence. The change was limited
-    to package metadata and dist/index.js compared with the clean 9.4.0 tarball, making
-    --ignore-scripts ineffective because execution moved from install time to first
-    runtime import.
+  title: VeloraDEX SDK installed macOS backdoor
+  synopsis: >-
+    @velora-dex/sdk 9.4.1 was published directly to npm with no matching source commit.
+    Importing it fetched a macOS backdoor and registered launchctl persistence.
+  story: |
+    The VeloraDEX compromise was registry-only. The attacker published `@velora-dex/sdk@9.4.1` to npm without changing the GitHub repository, so source review of the default branch would not show the payload.
+
+    The malicious delta was small. `package.json` carried the version bump, and `dist/index.js` gained three prepended lines. Those lines decoded and ran a shell command when application code imported the package.
+
+    The command downloaded `install.sh` from `89.36.224.5`. On macOS, the script created `~/Library/Application Support/com.apple.Terminal/`, selected an ARM64 or Intel `profiler` binary, made it executable, and registered it with `launchctl submit -l zsh.profiler`.
+
+    The attack did not depend on npm lifecycle hooks. `--ignore-scripts` would not stop it; the trigger was `require('@velora-dex/sdk')`. StepSecurity recommended pinning to 9.4.0 or earlier, removing the launchctl service and dropped binary, and rotating secrets from affected machines.
   start_date: 2026-04-07
   end_date: 2026-04-07
   target:
@@ -37,11 +40,32 @@
     end_date: 2026-04-07
     versions:
     - 9.4.1
-    fixed_versions:
-    - 9.4.0
     locations:
     - uri: https://www.npmjs.com/package/@velora-dex/sdk/v/9.4.1
       role: distribution
+    indicators:
+    - kind: file
+      value: dist/index.js
+    - kind: ip
+      value: 89.36.224.5
+    - kind: url
+      value: http://89.36.224.5/troubleshoot/mac/install.sh
+    - kind: url
+      value: http://89.36.224.5/mac/arm/driver/profiler
+    - kind: url
+      value: http://89.36.224.5/mac/intel/driver/profiler
+    - kind: file
+      value: ~/Library/Application Support/com.apple.Terminal/profiler
+    - kind: service
+      value: zsh.profiler
+    - kind: command
+      value: launchctl submit -l zsh.profiler
+    notes:
+    - StepSecurity identified 9.4.0 and earlier as safe versions; 9.4.1 was the
+      compromised registry-only release.
   references:
-  - url: https://www.stepsecurity.io/blog/velora-dex-sdk-compromised-on-npm-malicious-version-drops-macos-backdoor-via-launchctl-persistence
+  - url: 
+      https://www.stepsecurity.io/blog/velora-dex-sdk-compromised-on-npm-malicious-version-drops-macos-backdoor-via-launchctl-persistence
+    title: '@velora-dex/sdk Compromised on npm: Malicious Version Drops macOS Backdoor via launchctl Persistence'
   - url: https://github.com/VeloraDEX/sdk/issues/233
+    title: SDK 9.4.1 compromised on npm

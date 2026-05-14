@@ -1,10 +1,17 @@
----
 - id: transmission-2016-08
-  title: Transmission macOS installer distributed Keydnap backdoor
-  synopsis: Months after the KeRanger incident, Transmission's website was compromised
-    again. This time, the legitimate macOS installer for version 2.92 was replaced
-    with a malicious version containing the OSX/Keydnap backdoor. Keydnap aimed to
-    steal keychain credentials and establish persistent remote access.
+  title: Transmission installer delivered Keydnap
+  synopsis: >-
+    Months after the KeRanger incident, Transmission's website was compromised again. This
+    time, the legitimate macOS installer for version 2.92 was replaced with a malicious version
+    containing the OSX/Keydnap backdoor.
+  story: |-
+    The August 2016 Transmission compromise repeated the same distribution pattern with a different payload. A recompiled Transmission 2.92 application was served from the official site and carried OSX/Keydnap instead of ransomware.
+
+    The malicious disk image was named `Transmission2.92.dmg`, while the legitimate package used `Transmission-2.92.dmg`. Inside the app bundle, the added `License.rtf` file acted as the dropper. ESET reported that the bundle was signed on August 28 with an Apple-issued certificate that was not the normal Transmission developer certificate.
+
+    Keydnap installed persistence under `com.apple.iCloud.sync.daemon`, used a local Tor client to reach an onion command server, and targeted the macOS keychain. Its purpose was quiet control and credential theft, not visible encryption.
+
+    ESET notified the Transmission team, which removed the file within minutes and moved users toward clean downloads. The second incident showed that the March response fixed the immediate artifact, not necessarily the release channel risk.
   start_date: 2016-08-28
   end_date: 2016-08-30
   target:
@@ -39,12 +46,38 @@
       role: distribution
     - uri: https://updates.transmissionbt.com/Transmission-2.92.dmg
       role: distribution
-    - uri: https://objective-see.org/blog/blog_0x11.html
+    - uri: 
+        https://www.welivesecurity.com/2016/08/30/osxkeydnap-spreads-via-signed-transmission-application/
       role: mirror
-    - uri: https://www.welivesecurity.com/2016/08/30/osxkeydnap-spreads-via-signed-transmission-application/
+    - uri: 
+        https://www.malwarebytes.com/blog/news/2016/09/transmission-hijacked-again-to-spread-malware
       role: mirror
     hashes:
     - sha256:f06ac9609c3a8b00a7586840e990153460f8de9526e91a1a6ab733c850d5c83f
     - sha256:c5e5ec89c5517b50d848b6a6d4f86ed74715a715a015c6d38d789addcffea6b3
+    - sha1:1ce125d76f77485636ecea330acb038701ccc4ce
+    - sha1:e0ef6a5216748737f5a3c8d08bbdf204d039559e
+    - sha1:8ca03122ee73d3e522221832872b9ed0c9869ac4
+    indicators:
+    - kind: file
+      value: Transmission2.92.dmg
+    - kind: file
+      value: Transmission.app/Contents/Resources/License.rtf
+    - kind: file
+      value: ~/Library/Application Support/com.apple.iCloud.sync.daemon/icloudsyncd
+    - kind: file
+      value: ~/Library/LaunchAgents/com.apple.iCloud.sync.daemon.plist
+    - kind: file
+      value: ~/Library/LaunchAgents/com.geticloud.icloud.photo.plist
+    - kind: domain
+      value: t4f2cocitdpqa7tv.onion
   references:
-  - url: https://objective-see.org/blog/blog_0x11.html
+  - url: 
+      https://www.welivesecurity.com/2016/08/30/osxkeydnap-spreads-via-signed-transmission-application/
+    title: OSX/Keydnap spreads via signed Transmission application
+  - url: 
+      https://www.malwarebytes.com/blog/news/2016/09/transmission-hijacked-again-to-spread-malware
+    title: Transmission hijacked again to spread malware
+  - url: 
+      https://appleinsider.com/articles/16/08/30/bittorrent-app-transmission-once-again-source-of-macos-malware
+    title: BitTorrent app Transmission once again source of macOS malware

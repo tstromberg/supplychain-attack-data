@@ -1,0 +1,112 @@
+---
+- id: monero
+  title: Monero CLI binaries stole wallet seeds
+  synopsis: >-
+    GetMonero briefly served malicious Linux and Windows CLI wallet binaries.
+    The altered wallet sent private wallet seeds to attacker infrastructure,
+    enabling theft of XMR funds.
+  story: |
+    Monero's official download site failed for a short window on November 18, 2019. A user noticed that the hash of a downloaded CLI wallet archive did not match the signed hash published by the project. The Monero team investigated and warned users not to run binaries downloaded between 02:30 and 16:30 UTC.
+
+    The attacker replaced official CLI wallet binaries, not the source tree. The malicious Linux archive carried a modified `monero-wallet-cli`; Windows CLI binaries were also compromised. The other Monero programs in the archive appeared normal, which kept the change focused on the wallet path.
+
+    The modified wallet asked for the password twice and added code paths named around sending the seed to command-and-control infrastructure. During wallet creation, wallet opening, or use of the `seed` command, the malware transmitted the private seed to `node.xmrsupport.co` over traffic shaped to resemble Monero daemon RPC.
+
+    A stolen seed is the wallet. Attackers could drain funds and inspect transaction metadata available through the wallet keys. Monero moved binaries to a safe source, told users to verify hashes, and advised anyone who had run the compromised binaries to move funds with a verified wallet immediately.
+  start_date: '2019-11-18T02:30:00Z'
+  end_date: '2019-11-18T16:30:00Z'
+  target:
+    name: Monero
+    kind: application
+    website: https://www.getmonero.org
+    repo: https://github.com/monero-project/monero
+  actor:
+    name: Unknown attacker
+    kind: group
+  language: C++
+  method:
+    cause: website_compromise
+    phase: distribution
+    motive: cryptocurrency_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - cryptocurrency_theft
+    - data_exfiltration
+  artifacts:
+  - id: monero-cli-wallet
+    name: Monero CLI wallet binaries
+    package: Monero CLI Wallet
+    ecosystem: binary release
+    kind: binary_archive
+    website: https://www.getmonero.org
+    repo: https://github.com/monero-project/monero
+    start_date: '2019-11-18T02:30:00Z'
+    end_date: '2019-11-18T16:30:00Z'
+    versions:
+    - 0.15.0.0
+    locations:
+    - uri: https://downloads.getmonero.org/cli/linux64
+      role: distribution
+    - uri: https://downloads.getmonero.org/cli/win64
+      role: distribution
+    - uri: https://web.getmonero.org/2019/11/19/warning-compromised-binaries.html
+      role: mirror
+    hashes:
+    - sha256:b99009d2e47989262c23f7277808f7bb0115075e7467061d54fd80c51a22e63d
+    indicators:
+    - kind: file
+      value: monero.tar.bz2
+    - kind: file
+      value: monero-wallet-cli
+    - kind: file
+      value: monero-wallet-cli.exe
+    - kind: file_md5
+      value: monero-wallet-cli.exe 72417ab40b8ed359a37b72ac8d399bd7
+    - kind: file_sha256
+      value: monero-wallet-cli.exe 963c1dfc86ff0e40cee176986ef9f2ce24fda53936c16f226c7387e1a3d67f74
+    - kind: file_md5
+      value: monero-wallet-cli d267be7efc3f2c4dde8e90b9b489ed2a
+    - kind: file_sha256
+      value: monero-wallet-cli 7ab9afbc5f9a1df687558d570192fbfe9e085712657d2cfa5524f2c8caccca31
+    - kind: commit
+      value: f07c326f13dc25efcfe6d680623c8cacb2dea2db
+    - kind: function
+      value: cryptonote::simple_wallet::send_to_cc
+    - kind: function
+      value: cryptonote::simple_wallet::send_seed
+    - kind: domain
+      value: xmrsupport.co
+    - kind: domain
+      value: node.xmrsupport.co
+    - kind: domain
+      value: hashmonero.com
+    - kind: domain
+      value: node.hashmonero.com
+    - kind: ip
+      value: 91.210.104.245
+    - kind: ip
+      value: 45.9.148.65
+    - kind: port
+      value: '18081'
+    - kind: path
+      value: /home/amp/BUILDS/monero
+    - kind: registry_key
+      value: HKLM\SYSTEM\CONTROLSET001\CONTROL\TERMINAL SERVER
+    notes:
+    - The Monero advisory gave the affected download window as 2019-11-18 02:30
+      to 16:30 UTC.
+    - SerHack reported that the Linux malicious binary was built from Monero
+      release-0.15.0 source and that Windows binaries contained the same malicious
+      seed-exfiltration functions.
+  references:
+  - url: https://web.getmonero.org/2019/11/19/warning-compromised-binaries.html
+    title: Warning - The binaries of the CLI wallet were compromised for a short
+      time
+  - url: https://serhack.me/articles/cli-binaries-compromised-monero-analysis/
+    title: 'Monero Windows and Linux CLI Compromised: The Analysis of Binaries'
+  - url: https://www.zdnet.com/article/official-monero-website-compromised-with-malware-that-steals-funds/
+    title: Official Monero website compromised with malware that steals funds
+  - url: https://arstechnica.com/information-technology/2019/11/official-monero-website-is-hacked-to-deliver-currency-stealing-malware/
+    title: Official Monero website is hacked to deliver currency-stealing malware

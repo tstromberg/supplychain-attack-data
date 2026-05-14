@@ -1,10 +1,17 @@
----
 - id: freedownloadmanager
-  title: FreeDownloadManager site served backdoored Linux version.
-  synopsis: The official FreeDownloadManager website was compromised and intermittently
-    redirected Linux users to a domain serving a trojanized Debian package. The malicious
-    package installed a backdoor and infostealer aimed at passwords, crypto wallets,
-    and cloud credentials, turning selective redirects into quiet compromise.
+  title: Free Download Manager Linux page served backdoor
+  synopsis: >-
+    Free Download Manager's Linux download page intermittently redirected users to
+    a malicious Debian package. The package installed a DNS-controlled backdoor
+    and credential stealer.
+  story: |
+    The Free Download Manager case was quiet because the compromise was selective. Linux users who clicked the official download page could receive either the real package or a malicious `.deb` from `deb.fdmpkg.org`. Kaspersky found video evidence of the redirection, and the vendor later confirmed a compromised page in its own backups.
+
+    The modified page chose between the legitimate link and the fake domain. The vendor said the attacker used an exception list for IP ranges associated with Bing and Google, so search crawlers saw clean behavior. That explains the long dwell time. The site looked normal to many visitors and to some automated checks.
+
+    The malicious Debian package used its `postinst` script as the insertion point. On install, it dropped `/var/tmp/crond` and `/var/tmp/bs`, then created `/etc/cron.d/collect` to run the backdoor every ten minutes. The installed Free Download Manager build itself traced to a January 24, 2020 release, while comments in the malicious script used Russian and Ukrainian and mentioned January 26 and 27 changes.
+
+    The backdoor resolved generated `*.u.fdmpkg.org` names and decoded the DNS response into a secondary server and port. It then opened a reverse shell over TCP or delegated SSL communication to `/var/tmp/bs`. In Kaspersky's sandbox, attackers used that shell to deploy a Bash stealer that collected system details, browser data, saved passwords, crypto wallets, and cloud credentials, then uploaded results with `/var/tmp/atd`.
   start_date: 2020-01-24
   end_date: 2022-01-01
   target:
@@ -25,37 +32,85 @@
     - backdoor
     - credential_theft
     - data_theft
-    users: 10000
   artifacts:
   - id: freedownloadmanager
-    name: FreeDownloadManager
+    name: Free Download Manager Linux Debian package
     kind: binary_archive
     website: https://freedownloadmanager.org
     start_date: 2020-01-24
     end_date: 2022-01-01
     locations:
+    - uri: https://www.freedownloadmanager.org/download-fdm-for-linux.htm
+      role: distribution
     - uri: https://deb.fdmpkg.org/freedownloadmanager.deb
       role: distribution
     - uri: https://securelist.com/backdoored-free-download-manager-linux-malware/110465/
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/b77f63f14d0b2bde3f4f62f4323aad87194da11d71c117a487e18ff3f2cd468d
+    - uri: 
+        https://www.virustotal.com/gui/file/b77f63f14d0b2bde3f4f62f4323aad87194da11d71c117a487e18ff3f2cd468d
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/2214c7a0256f07ce7b7aab8f61ef9cbaff10a456c8b9f2a97d8f713abd660349
+    - uri: 
+        https://www.virustotal.com/gui/file/2214c7a0256f07ce7b7aab8f61ef9cbaff10a456c8b9f2a97d8f713abd660349
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/93358bfb6ee0caced889e94cd82f6f417965087203ca9a5fce8dc7f6e1b8a3ea
+    - uri: 
+        https://www.virustotal.com/gui/file/93358bfb6ee0caced889e94cd82f6f417965087203ca9a5fce8dc7f6e1b8a3ea
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/d73be6e13732d365412d71791e5eb1096c7bb13d6f7fd533d8c04392ca0b69b5
+    - uri: 
+        https://www.virustotal.com/gui/file/d73be6e13732d365412d71791e5eb1096c7bb13d6f7fd533d8c04392ca0b69b5
       role: mirror
     hashes:
     - sha256:b77f63f14d0b2bde3f4f62f4323aad87194da11d71c117a487e18ff3f2cd468d
     - sha256:2214c7a0256f07ce7b7aab8f61ef9cbaff10a456c8b9f2a97d8f713abd660349
     - sha256:93358bfb6ee0caced889e94cd82f6f417965087203ca9a5fce8dc7f6e1b8a3ea
     - sha256:d73be6e13732d365412d71791e5eb1096c7bb13d6f7fd533d8c04392ca0b69b5
+    indicators:
+    - kind: file
+      value: freedownloadmanager.deb
+    - kind: script
+      value: postinst
+    - kind: file
+      value: /etc/cron.d/collect
+    - kind: file
+      value: /var/tmp/crond
+    - kind: file
+      value: /var/tmp/bs
+    - kind: file
+      value: /var/tmp/atd
+    - kind: domain
+      value: fdmpkg.org
+    - kind: domain
+      value: deb.fdmpkg.org
+    - kind: domain
+      value: 2c9bf1811ff428ef9ec999cc7544b43950947b0f.u.fdmpkg.org
+    - kind: domain
+      value: c6d76b1748b67fbc21ab493281dd1c7a558e3047.u.fdmpkg.org
+    - kind: domain
+      value: 0727bedf5c1f85f58337798a63812aa986448473.u.fdmpkg.org
+    - kind: domain
+      value: c3a05f0dac05669765800471abc1fdaba15e3360.u.fdmpkg.org
+    - kind: ip
+      value: 172.111.48.101
+    - kind: ip
+      value: 127.1.0.80
+    - kind: malware
+      value: Bew
+    - kind: observable
+      value: Compromised page used an exception list for Bing and Google IP ranges.
+    - kind: observable
+      value: Cron ran /var/tmp/crond every ten minutes.
     notes:
-    - Affected Free Download Manager scope covered specific Linux Debian packages
+    - Affected Free Download Manager scope covered specific Linux Debian packages 
       distributed via malicious redirect from 2020 through 2022.
+    - The vendor said the issue affected a small subset of Linux download attempts and 
+      did not affect Windows or macOS users.
   references:
   - url: https://securelist.com/backdoored-free-download-manager-linux-malware/110465/
+    title: Free Download Manager backdoored - a possible supply chain attack on Linux
+      machines
   - url: https://thehackernews.com/2023/09/free-download-manager-site-compromised.html
-  - url: https://www.bleepingcomputer.com/news/security/free-download-manager-website-hacked-to-spread-linux-malware/
-  - url: https://www.freedownloadmanager.org/blog/fdm-vulnerability-disclosure/
+    title: Free Download Manager Site Redirected Linux Users to Malware for Years
+  - url: 
+      https://www.bleepingcomputer.com/news/security/free-download-manager-website-hacked-to-spread-linux-malware/
+    title: Free Download Manager website hacked to spread Linux malware
+  - url: https://www.freedownloadmanager.org/blog/?p=664
+    title: Important Security Announcement to Our Valued Users

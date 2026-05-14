@@ -1,15 +1,19 @@
----
 - id: bitwarden-cli
-  title: Bitwarden CLI Compromise (Shai-Hulud V3)
+  title: Bitwarden CLI hit by Shai-Hulud
   campaigns:
   - teampcp-2026
-  synopsis: The official Bitwarden CLI npm package (@bitwarden/cli) version 2026.4.0
-    was compromised during the broader Checkmarx/TeamPCP supply-chain campaign after
-    attackers abused a GitHub Actions path in Bitwarden's CI/CD pipeline. The malicious
-    package included a bw1.js payload that shared infrastructure with the Checkmarx
-    campaign, harvested GitHub, npm, cloud, SSH, environment, Claude, and MCP credentials,
-    exfiltrated to audit.checkmarx.cx and GitHub commit-based dead drops, and attempted
-    npm/GitHub supply-chain propagation with injected install hooks and workflow files.
+  synopsis: >-
+    The official Bitwarden CLI npm package (@bitwarden/cli) version 2026.4.0 was compromised
+    during the broader Checkmarx/TeamPCP supply-chain campaign after attackers abused a GitHub
+    Actions path in Bitwarden's CI/CD pipeline.
+  story: |-
+    Bitwarden CLI was hit through its npm delivery path. On April 22, 2026, version 2026.4.0 of `@bitwarden/cli` briefly carried malicious JavaScript in the package contents. The record is narrow: the CLI package on npm was affected, not Bitwarden vault data.
+
+    The payload appeared in `bw1.js` and matched the Checkmarx/TeamPCP toolchain. It used the same `audit.checkmarx.cx` telemetry endpoint, the same style of scrambled strings, and the same embedded machinery for token theft, workflow injection, and npm republishing.
+
+    The installer path mattered. The package could run through npm lifecycle behavior, scrape GitHub Actions runner memory and environment data, collect cloud and npm credentials, and use stolen publishing rights to push the campaign into more packages.
+
+    Bitwarden contained the release, revoked compromised access, and deprecated the affected npm version. The useful boundary is precise: people outside the short npm distribution window were not affected, and Bitwarden reported no evidence that end-user vault data was accessed.
   start_date: 2026-04-22
   end_date: 2026-04-23
   target:
@@ -17,7 +21,7 @@
     kind: application
     repo: https://github.com/bitwarden/clients
   actor:
-    name: Advanced Persistent Threat
+    name: TeamPCP
     kind: group
   language: JavaScript
   method:
@@ -29,7 +33,6 @@
     types:
     - credential_theft
     - self_propagation
-    users: 100000
   artifacts:
   - id: bitwarden-cli
     name: bitwarden-cli
@@ -58,4 +61,6 @@
       value: package-updated.tgz
   references:
   - url: https://socket.dev/blog/bitwarden-cli-compromised
+    title: Bitwarden CLI compromised in ongoing Checkmarx supply chain campaign
   - url: https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/
+    title: The npm threat landscape

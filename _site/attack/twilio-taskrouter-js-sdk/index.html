@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Twilio SDK hosted on S3 delivered malicious code.</title>
+  <title>Twilio SDK S3 bucket served malware</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Twilio SDK hosted on S3 delivered malicious code.</h1>
+  <h1>Twilio SDK S3 bucket served malware</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> Twilio TaskRouter JS SDK · <a href="https://twiliocdn.com" target="_blank">website</a></div>
@@ -30,8 +30,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">An improperly configured AWS S3 bucket allowed attackers to modify version 1.20 of Twilio&#39;s TaskRouter JavaScript SDK hosted for public use. For several hours, websites loading the SDK directly from Twilio&#39;s CDN received code modified with malicious script, likely part of a Magecart-related malvertising or skimming campaign.</p>
+  <p class="synopsis">An exposed S3 bucket let attackers alter Twilio&#39;s hosted TaskRouter JS SDK v1.20. The injected code loaded malvertising infrastructure from customer pages.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Twilio&#39;s TaskRouter JavaScript SDK v1.20 was served as a hosted browser dependency from `media.twiliocdn.com`. On 2020-07-19, attackers modified that hosted file through a misconfigured AWS S3 bucket.</p>
+    
+      <p>The injected code set a cookie named `jqueryapi1oad` and requested `gold.platinumus.top/track/awswrite`. Twilio associated the behavior with a known malvertising campaign; the returned content led to further attacker-controlled infrastructure.</p>
+    
+      <p>Twilio said the affected window ran from 20:12 UTC on 2020-07-19 to 05:30 UTC on 2020-07-20. Customers who pinned the script with Subresource Integrity were protected because the modified file no longer matched the expected hash.</p>
+    
+      <p>The incident was narrow but instructive. The library source was not the only artifact that mattered; the hosted copy was production code. A public CDN object with weak write controls became part of every page that trusted it.</p>
+    
+  </div>
   
 
   
@@ -92,13 +105,13 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.twilio.com/en-us/blog/incident-report-taskrouter-js-sdk-july-2020" target="_blank">https://www.twilio.com/en-us/blog/incident-report-taskrouter-js-sdk-july-2020</a></li>
+      <li><a href="https://www.twilio.com/en-us/blog/incident-report-taskrouter-js-sdk-july-2020" target="_blank">Incident Report - TaskRouter JS SDK Security Incident - July 19, 2020</a></li>
     
-      <li><a href="https://www.theregister.com/2020/07/21/twilio_javascript_sdk_code_injection/" target="_blank">https://www.theregister.com/2020/07/21/twilio_javascript_sdk_code_injection/</a></li>
+      <li><a href="https://www.theregister.com/2020/07/21/twilio_javascript_sdk_code_injection/" target="_blank">Miscreant injects bad code into Twilio JavaScript SDK hosted in S3 bucket</a></li>
     
-      <li><a href="https://www.scworld.com/news/misconfigured-s3-exposes-twilio-users-to-magecart-attack/" target="_blank">https://www.scworld.com/news/misconfigured-s3-exposes-twilio-users-to-magecart-attack/</a></li>
+      <li><a href="https://www.scworld.com/news/misconfigured-s3-exposes-twilio-users-to-magecart-attack/" target="_blank">Misconfigured S3 exposes Twilio users to Magecart attack</a></li>
     
-      <li><a href="https://www.securityhq.com/blog/security-101-compromised-aws-s3-buckets/" target="_blank">https://www.securityhq.com/blog/security-101-compromised-aws-s3-buckets/</a></li>
+      <li><a href="https://www.securityhq.com/blog/security-101-compromised-aws-s3-buckets/" target="_blank">Security 101 - Compromised AWS S3 buckets</a></li>
     
   </ul>
   

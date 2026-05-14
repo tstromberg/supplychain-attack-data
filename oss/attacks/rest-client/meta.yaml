@@ -1,10 +1,16 @@
----
 - id: rest-client
-  title: rest-client gem backdoor steals credentials.
-  synopsis: A maintainer's RubyGems.org account was compromised through password reuse,
-    allowing attackers to publish malicious versions of the rest-client gem. The backdoor
-    exfiltrated environment variables and accepted remote commands, turning a familiar
-    HTTP client into a small control plane inside Ruby applications.
+  title: rest-client gem backdoor stole credentials
+  synopsis: >-
+    A reused maintainer password let attackers publish rest-client 1.6.10-1.6.13
+    to RubyGems. Production Rails apps could fetch Pastebin code and leak secrets.
+  story: |-
+    rest-client was an old, widely used Ruby HTTP client. In August 2019, attackers used a compromised RubyGems maintainer account to publish malicious releases in the 1.6 line, a branch old enough to avoid immediate attention but still present in real applications.
+
+    The weak point was ordinary password reuse. Sonatype cited the project thread: the maintainer had not logged into RubyGems in years, and the account password had appeared in an older breach. The attacker did not need the GitHub repository; registry publishing rights were enough.
+
+    The backdoor activated in Rails production environments. It fetched Ruby code from Pastebin, executed it, and sent host URLs and environment variables to attacker infrastructure. Sonatype's summary also noted a cookie-triggered path that could evaluate attacker-supplied Ruby code and expose authentication data in affected applications.
+
+    RubyGems yanked the malicious releases, locked the compromised account, and the project released 1.6.14 to supersede the poisoned 1.6.x builds. The attack was small in downloads, roughly one thousand by the project thread, but large in lesson: a stale dependency line is not inert if it still resolves from the registry.
   start_date: 2019-08-14
   end_date: 2019-08-19
   target:
@@ -23,7 +29,8 @@
   impact:
     types:
     - data_exfiltration
-    users: 2450
+    - remote_code_execution
+    users: 1000
   artifacts:
   - id: rest-client
     name: rest-client
@@ -45,16 +52,39 @@
       role: distribution
     - uri: https://rubygems.org/gems/rest-client/versions/1.6.13
       role: distribution
-    - uri: https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/
+    - uri: 
+        https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/
       role: mirror
     - uri: https://github.com/rest-client/rest-client/issues/713
       role: mirror
-    - uri: https://github.com/rubysec/ruby-advisory-db/blob/master/gems/rest-client/CVE-2019-15224.yml
+    - uri: 
+        https://github.com/rubysec/ruby-advisory-db/blob/master/gems/rest-client/CVE-2019-15224.yml
       role: mirror
     hashes:
     - sha256:9900a959f1ebf2a27e45f5a9ebff2440edc7a91181e4aae2d3c89dd03dca3dfe
     - sha256:cca62351eceaebe5ba440a8fc00a3170a58e0af67a755d2bce743c11a2b1437e
+    indicators:
+    - kind: cve
+      value: CVE-2019-15224
+    - kind: service
+      value: pastebin.com
+    - kind: domain
+      value: mironanoru.zzz.com.ua
+    - kind: observable
+      value: Rails production guard checked whether Rails.env started with "p".
+    - kind: observable
+      value: Crafted cookie could carry attacker-supplied Ruby code for evaluation.
+    notes:
+    - Versions 1.6.10 through 1.6.13 were malicious; version 1.6.14 was released to
+      supersede the affected legacy 1.6.x line.
   references:
+  - url: 
+      https://www.sonatype.com/blog/anatomy-of-the-rubygems-rest-client-hack-and-getting-creative-about-open-source-security
+    title: Anatomy of the RubyGems 'rest-client' Hack
   - url: https://github.com/rest-client/rest-client/issues/713
-  - url: https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/
+    title: Version 1.6.13 published with malicious backdoor
+  - url: 
+      https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/
+    title: Code execution back door found in Ruby's rest-client library
   - url: https://www.helpnetsecurity.com/2019/08/21/backdoored-ruby-gems/
+    title: Backdoored Ruby gems stole credentials, injected cryptomining code

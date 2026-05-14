@@ -1,18 +1,24 @@
----
 - id: feedify
-  title: Feedify push notification script compromised.
-  synopsis: Feedify, a push notification service provider, had its JavaScript library
-    compromised. Attackers injected malicious code into the script served to Feedify's
-    customers. This skimmer code was then loaded on the websites of numerous businesses
-    using Feedify, attempting to steal payment card details from their end-users.
-  start_date: 2018-09-01
-  end_date: 2018-11-01
+  title: Feedify push script injected Magecart
+  synopsis: >-
+    Magecart compromised Feedify's hosted push-notification JavaScript. Customer sites
+    loading the Feedify library also loaded a card skimmer into checkout pages.
+  story: |
+    Feedify sold hosted push-notification and engagement scripts to ecommerce sites. Customers embedded Feedify JavaScript, then trusted Feedify's servers to supply live code into their pages. That trust made the service a useful Magecart target.
+
+    RiskIQ and Sucuri reported that attackers altered Feedify's hosted JavaScript so customer sites loaded skimming code from the third-party service path. The compromise mattered because the code executed in shoppers' browsers, inside the same page context where names, addresses, and card data were typed.
+
+    RiskIQ said it had observed the compromise beginning on August 17, 2018, and that attackers may have had access for nearly a month. Public reporting later tied the incident to Feedify's advertised base of more than 4,000 customers, but that number is treated as exposed customer scope, not confirmed victim count.
+
+    This record is scoped to the Feedify script distribution path. Individual ecommerce stores may have separate incidents, but the supply-chain event was the shared script: one compromised service, many dependent checkout pages.
+  start_date: 2018-08-17
+  end_date: 2018-11-09
   target:
     name: Feedify
     kind: script
     website: https://feedify.net
   actor:
-    name: Cybercriminal Gang
+    name: Magecart
     kind: group
   language: JavaScript
   method:
@@ -22,23 +28,47 @@
     transitive: true
   impact:
     types:
-    - credential_theft
+    - skimming
     - data_theft
-    users: 4000
+    - payment_card_theft
+    users: 0
+  locations:
+  - uri: https://feedify.net/getjs/pushconfig.js
+    role: distribution
+  indicators:
+  - kind: family
+    value: Magecart
+  - kind: file
+    value: pushconfig.js
+  - kind: domain
+    value: feedify.net
+  - kind: observable
+    value: Feedify advertised more than 4,000 customers; this is exposed customer scope,
+      not confirmed affected shopper count.
   artifacts:
   - id: feedify
-    name: Feedify
+    name: Feedify push notification JavaScript
+    package: pushconfig.js
+    ecosystem: hosted javascript
     kind: source_archive
     website: https://feedify.net
-    start_date: 2018-09-01
-    end_date: 2018-11-01
+    start_date: 2018-08-17
+    end_date: 2018-11-09
     locations:
     - uri: https://feedify.net/getjs/pushconfig.js
       role: distribution
-    - uri: https://web.archive.org/web/20181110000000/https://blog.sucuri.net/2018/11/feedify-compromised-push-notifications-used-to-load-card-skimmer.html
+    - uri: 
+        https://web.archive.org/web/20181110000000/https://blog.sucuri.net/2018/11/feedify-compromised-push-notifications-used-to-load-card-skimmer.html
       role: mirror
-    - uri: https://web.archive.org/web/20181120000000/https://www.riskiq.com/blog/labs/magecart-feedify/
+    - uri: 
+        https://web.archive.org/web/20181120000000/https://www.riskiq.com/blog/labs/magecart-feedify/
       role: mirror
   references:
-  - url: https://web.archive.org/web/20181110000000/https://blog.sucuri.net/2018/11/feedify-compromised-push-notifications-used-to-load-card-skimmer.html
-  - url: https://web.archive.org/web/20181120000000/https://www.riskiq.com/blog/labs/magecart-feedify/
+  - url: 
+      https://web.archive.org/web/20181110000000/https://blog.sucuri.net/2018/11/feedify-compromised-push-notifications-used-to-load-card-skimmer.html
+    title: Feedify Compromised Push Notifications Used to Load Card Skimmer
+  - url: 
+      https://web.archive.org/web/20181120000000/https://www.riskiq.com/blog/labs/magecart-feedify/
+    title: Magecart Compromises Feedify
+  - url: https://www.securityweek.com/magecart-attackers-compromise-cloud-service-firm-feedify/
+    title: MageCart Attackers Compromise Cloud Service Firm Feedify

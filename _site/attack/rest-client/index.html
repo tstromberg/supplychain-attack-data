@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>rest-client gem backdoor steals credentials.</title>
+  <title>rest-client gem backdoor stole credentials</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>rest-client gem backdoor steals credentials.</h1>
+  <h1>rest-client gem backdoor stole credentials</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> rest-client · <a href="https://github.com/rest-client/rest-client" target="_blank">repo</a></div>
@@ -24,14 +24,27 @@
     <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
     <div class="meta-item"><strong>Motive:</strong> financial_gain</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
-    <div class="meta-item"><strong>Impact:</strong> data_exfiltration</div>
-    <div class="meta-item"><strong>User Impact:</strong> 2450</div>
+    <div class="meta-item"><strong>Impact:</strong> data_exfiltration, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 1000</div>
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">A maintainer&#39;s RubyGems.org account was compromised through password reuse, allowing attackers to publish malicious versions of the rest-client gem. The backdoor exfiltrated environment variables and accepted remote commands, turning a familiar HTTP client into a small control plane inside Ruby applications.</p>
+  <p class="synopsis">A reused maintainer password let attackers publish rest-client 1.6.10-1.6.13 to RubyGems. Production Rails apps could fetch Pastebin code and leak secrets.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>rest-client was an old, widely used Ruby HTTP client. In August 2019, attackers used a compromised RubyGems maintainer account to publish malicious releases in the 1.6 line, a branch old enough to avoid immediate attention but still present in real applications.</p>
+    
+      <p>The weak point was ordinary password reuse. Sonatype cited the project thread: the maintainer had not logged into RubyGems in years, and the account password had appeared in an older breach. The attacker did not need the GitHub repository; registry publishing rights were enough.</p>
+    
+      <p>The backdoor activated in Rails production environments. It fetched Ruby code from Pastebin, executed it, and sent host URLs and environment variables to attacker infrastructure. Sonatype&#39;s summary also noted a cookie-triggered path that could evaluate attacker-supplied Ruby code and expose authentication data in affected applications.</p>
+    
+      <p>RubyGems yanked the malicious releases, locked the compromised account, and the project released 1.6.14 to supersede the poisoned 1.6.x builds. The attack was small in downloads, roughly one thousand by the project thread, but large in lesson: a stale dependency line is not inert if it still resolves from the registry.</p>
+    
+  </div>
   
 
   
@@ -92,11 +105,13 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://github.com/rest-client/rest-client/issues/713" target="_blank">https://github.com/rest-client/rest-client/issues/713</a></li>
+      <li><a href="https://www.sonatype.com/blog/anatomy-of-the-rubygems-rest-client-hack-and-getting-creative-about-open-source-security" target="_blank">Anatomy of the RubyGems &#39;rest-client&#39; Hack</a></li>
     
-      <li><a href="https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/" target="_blank">https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/</a></li>
+      <li><a href="https://github.com/rest-client/rest-client/issues/713" target="_blank">Version 1.6.13 published with malicious backdoor</a></li>
     
-      <li><a href="https://www.helpnetsecurity.com/2019/08/21/backdoored-ruby-gems/" target="_blank">https://www.helpnetsecurity.com/2019/08/21/backdoored-ruby-gems/</a></li>
+      <li><a href="https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/" target="_blank">Code execution back door found in Ruby&#39;s rest-client library</a></li>
+    
+      <li><a href="https://www.helpnetsecurity.com/2019/08/21/backdoored-ruby-gems/" target="_blank">Backdoored Ruby gems stole credentials, injected cryptomining code</a></li>
     
   </ul>
   

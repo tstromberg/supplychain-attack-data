@@ -1,16 +1,20 @@
----
 - id: opensearch-js
-  title: OpenSearch npm prereleases compromised
+  title: OpenSearch prereleases carried Shai-Hulud
   campaigns:
   - teampcp-2026
   - shai-hulud-here-we-go-again
-  synopsis: The Mini Shai-Hulud campaign reached OpenSearch when four prerelease versions
-    of the official @opensearch-project/opensearch npm package were published with
-    malicious payloads. The advisory maps the release window to May 11, 2026 EDT,
-    or May 12 UTC, and recommends immediate removal of affected prereleases. The impact
-    followed the broader worm pattern, with install-time credential theft risk and
-    potential propagation through stolen developer and publishing tokens.
-  start_date: 2026-05-12
+  synopsis: >-
+    Four @opensearch-project/opensearch prereleases were published with Mini Shai-Hulud malware.
+    OpenSearch removed them and blocked repository writes during credential rotation.
+  story: |
+    OpenSearch reported the compromise on the evening of May 11, 2026 in America/New_York time. Four prerelease versions of the official `@opensearch-project/opensearch` npm package were published within minutes of each other and removed from npm by 11:00 p.m. EDT.
+
+    The affected versions were `3.5.3`, `3.6.2`, `3.7.0`, and `3.8.0`. OpenSearch treated machines that installed or executed those packages between 0000 and 0300 UTC on May 12 as potentially fully compromised, with all local secrets and keys requiring rotation from another system.
+
+    The advisory tied the activity to the broader Mini Shai-Hulud campaign against npm and CI/CD publishing infrastructure. JFrog described the campaign's npm payload as a preinstall loader with obfuscated JavaScript that steals credentials, exfiltrates through redundant channels, and uses stolen access to publish more compromised packages.
+
+    OpenSearch removed the packages, blocked project repository write permissions, and began credential rotation. This attack record carries the OpenSearch package versions; the campaign record carries the cross-package TeamPCP machinery.
+  start_date: 2026-05-11
   end_date: 2026-05-12
   target:
     name: opensearch-js
@@ -31,13 +35,17 @@
     - self_propagation
     users: 0
   locations:
-  - uri: https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.5.3.tgz
+  - uri: 
+      https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.5.3.tgz
     role: distribution
-  - uri: https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.6.2.tgz
+  - uri: 
+      https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.6.2.tgz
     role: distribution
-  - uri: https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.7.0.tgz
+  - uri: 
+      https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.7.0.tgz
     role: distribution
-  - uri: https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.8.0.tgz
+  - uri: 
+      https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.8.0.tgz
     role: distribution
   - uri: https://seclists.org/oss-sec/2026/q2/510
     role: mirror
@@ -55,15 +63,28 @@
     - 3.7.0
     - 3.8.0
     locations:
-    - uri: https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.5.3.tgz
+    - uri: 
+        https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.5.3.tgz
       role: distribution
-    - uri: https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.6.2.tgz
+    - uri: 
+        https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.6.2.tgz
       role: distribution
-    - uri: https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.7.0.tgz
+    - uri: 
+        https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.7.0.tgz
       role: distribution
-    - uri: https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.8.0.tgz
+    - uri: 
+        https://registry.npmjs.org/@opensearch-project/opensearch/-/opensearch-3.8.0.tgz
       role: distribution
+    indicators:
+    - kind: technique
+      value: npm_preinstall
+    - kind: campaign
+      value: Mini Shai-Hulud
   references:
   - url: https://seclists.org/oss-sec/2026/q2/510
+    title: Malicious Compromise of OpenSearch Pre-Release npm Packages
   - url: https://research.jfrog.com/post/shai-hulud-here-we-go-again/
-  - url: https://socket.dev/blog/tanstack-npm-packages-compromised-mini-shai-hulud-supply-chain-attack
+    title: 'Shai-Hulud: Here We Go Again - Worm by TeamPCP Hits NPM and PyPI'
+  - url: 
+      https://socket.dev/blog/tanstack-npm-packages-compromised-mini-shai-hulud-supply-chain-attack
+    title: TanStack NPM Packages Compromised in Mini Shai-Hulud Supply Chain Attack

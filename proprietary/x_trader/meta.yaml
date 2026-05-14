@@ -1,11 +1,17 @@
----
 - id: x-trader
-  title: Trading Technologies X_TRADER software delivered backdoor.
-  synopsis: A compromised installer for the retired X_TRADER financial software, available
-    on Trading Technologies' official website and signed with their certificate, contained
-    the VEILEDSIGNAL backdoor. It infected a 3CX employee, initiating a cascading
-    supply chain attack, and reportedly impacted other energy and financial sector
-    organizations.
+  title: X_TRADER software delivered VEILEDSIGNAL backdoor
+  synopsis: >-
+    A compromised installer for the retired X_TRADER financial software, available on Trading
+    Technologies' official website and signed with their certificate, contained the VEILEDSIGNAL
+    backdoor.
+  story: |-
+    X_TRADER was retired software that still sat on an official download path. In 2022, Trading Technologies' site served `X_TRADER_r7.17.90p608.exe`, signed by Trading Technologies International, Inc., even though the platform had reportedly been discontinued in 2020.
+
+    The installer executed `Setup.exe`. That program dropped two trojanized DLLs and a benign executable, then used DLL side-loading to run the malicious code. SIGFLIP located shellcode using the `FEEDFACE` marker and an RC4 configuration, DAVESHELL loaded the payload in memory, and the final implant was VEILEDSIGNAL.
+
+    VEILEDSIGNAL was a modular backdoor. It could send implant data, execute shellcode, and terminate itself. Its communication module used a named pipe and encrypted traffic with AES-256-GCM; its configured URL reused a Trading Technologies-looking path, `www.tradingtechnologies.com/trading/order-management`.
+
+    The impact was larger than the X_TRADER user base. Mandiant found that a 3CX employee installed the trojanized X_TRADER package on a personal machine, the actor stole corporate credentials, and the access later led to compromise of 3CX's build environments. This was a supply-chain attack that became another supply-chain attack.
   start_date: 2021-11-01
   end_date: 2022-07-26
   target:
@@ -35,21 +41,60 @@
     locations:
     - uri: https://tradingtechnologies.com/x-trader/downloads/X_TRADER_r7.17.90p608.exe
       role: distribution
-    - uri: https://www.tradingtechnologies.com/legacy-downloads/X_TRADER%20Pro%207.17.10.exe
+    - uri: 
+        https://www.tradingtechnologies.com/legacy-downloads/X_TRADER%20Pro%207.17.10.exe
       role: distribution
-    - uri: https://downloads.tradingtechnologies.com/trading-software/x-trader/legacy/setup.exe
+    - uri: 
+        https://downloads.tradingtechnologies.com/trading-software/x-trader/legacy/setup.exe
       role: distribution
     - uri: https://www.virustotal.com/gui/file/ef4ab22e565684424b4142b1294f1f4d
       role: mirror
     hashes:
     - md5:ef4ab22e565684424b4142b1294f1f4d
+    - sha1:ced671856bbaef2f1878a2469fb44e9be8c20055
+    - sha256:fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370
+    - md5:00a43d64f9b5187a1e1f922b99b09b77
+    - sha1:3bda9ca504146ad5558939de9fece0700f57c1c0
+    - sha256:6e11c02485ddd5a3798bf0f77206f2be37487ba04d3119e2d5ce12501178b378
     - sha256:88968c9f1de3c41c54a025a0f51a818c1a0b0c98e7affe0ea0aa0ad6e441fc46
     - sha256:8c9395a019def2cc80a0320a1285ccc4cb1cd73ecb89886a1c03da5aaf5db0a3
+    indicators:
+    - kind: file
+      value: X_TRADER_r7.17.90p608.exe
+    - kind: file
+      value: Setup.exe
+    - kind: malware
+      value: VEILEDSIGNAL
+    - kind: malware
+      value: SIGFLIP
+    - kind: malware
+      value: DAVESHELL
+    - kind: string
+      value: FEEDFACE
+    - kind: string
+      value: 3jB(2bsG#@c7
+    - kind: string
+      value: __tutma
+    - kind: url
+      value: www.tradingtechnologies[.]com/trading/order-management
+    - kind: certificate
+      value: '9599605970805149948'
     notes:
-    - Affected X_TRADER scope covered installer versions available from November 2021
+    - Affected X_TRADER scope covered installer versions available from November 2021 
       through July 2022, including X_TRADER_r7.17.90p608.exe reporting.
+    - Mandiant identified this installer as the initial intrusion vector that led to
+      the later 3CX build-environment compromise.
   references:
-  - url: https://cloud.google.com/blog/topics/threat-intelligence/3cx-software-supply-chain-compromise
-  - url: https://www.securityweek.com/cascading-supply-chain-attack-3cx-hacked-after-employee-downloaded-trojanized-app/
-  - url: https://www.cybersecuritydive.com/news/3cx-x-trader-symantec-supply-chain/648414/
+  - url: https://www.3cx.com/blog/news/mandiant-security-update2/
+    title: Security Update Thursday 20 April 2023 - Initial Intrusion Vector Found
+  - url: 
+      https://cloud.google.com/blog/topics/threat-intelligence/3cx-software-supply-chain-compromise
+    title: 3CX Software Supply Chain Compromise Initiated by a Prior Software Supply Chain Compromise
+  - url: 
+      https://www.securityweek.com/cascading-supply-chain-attack-3cx-hacked-after-employee-downloaded-trojanized-app/
+    title: Cascading Supply Chain Attack - 3CX Hacked After Employee Downloaded Trojanized App
+  - url: 
+      https://www.cybersecuritydive.com/news/3cx-x-trader-symantec-supply-chain/648414/
+    title: 3CX attack traced to X_TRADER supply chain compromise
   - url: https://www.zetter-zeroday.com/software-maker-3cx-was-compromised/
+    title: Software maker 3CX was compromised by another supply-chain attack

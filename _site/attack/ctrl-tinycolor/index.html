@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>@ctrl/tinycolor NPM Package Compromise (Shai-Hulud)</title>
+  <title>@ctrl/tinycolor hit by Shai-Hulud</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>@ctrl/tinycolor NPM Package Compromise (Shai-Hulud)</h1>
+  <h1>@ctrl/tinycolor hit by Shai-Hulud</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> ctrl-tinycolor</div>
@@ -24,19 +24,32 @@
     <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
     <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
-    <div class="meta-item"><strong>Impact:</strong> code_execution</div>
+    <div class="meta-item"><strong>Impact:</strong> code_execution, credential_theft, self_propagation</div>
     <div class="meta-item"><strong>User Impact:</strong> 2000000</div>
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
     <div class="meta-item"><strong>Campaigns:</strong>
       
-        <a href="/campaign/shai-hulud-npm-2025/">Shai-Hulud npm Worm Campaign</a>
+        <a href="/campaign/shai-hulud-npm-2025/">Shai-Hulud npm worm stole developer secrets</a>
       
     </div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">An attacker targeted a shared repository (angulartics2) where the maintainer had admin rights. They pushed a malicious branch (Shai-Hulud) containing a GitHub Actions workflow that immediately ran, exfiltrating a static npm token with broad publish rights. The attacker then published malicious versions of approximately 20 packages, including @ctrl/tinycolor, containing a malicious postinstall script.</p>
+  <p class="synopsis">An attacker targeted a shared repository (angulartics2) where the maintainer had admin rights. They pushed a malicious branch (Shai-Hulud) containing a GitHub Actions workflow that immediately ran, exfiltrating a static npm token with broad publish rights.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>@ctrl/tinycolor was not compromised through its own repository. The maintainer still had admin rights on a shared repository, angulartics2, which held an npm token with broad publish authority.</p>
+    
+      <p>An attacker force-pushed a Shai-Hulud branch to that shared repository. Because the actor had admin-level access, the malicious GitHub Actions workflow ran without pull request review and exfiltrated the npm token.</p>
+    
+      <p>The stolen token was enough. The attacker published malicious versions of @ctrl/tinycolor and other packages, and the bad releases carried the Shai-Hulud postinstall payload. @ctrl/tinycolor mattered most because it had roughly two million weekly downloads.</p>
+    
+      <p>npm and GitHub removed the malicious versions quickly. The maintainer revoked tokens, republished clean packages to flush caches, and moved toward tighter publishing controls with package-scoped tokens and Trusted Publishing.</p>
+    
+  </div>
   
 
   
@@ -97,7 +110,9 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://sigh.dev/posts/ctrl-tinycolor-post-mortem/" target="_blank">https://sigh.dev/posts/ctrl-tinycolor-post-mortem/</a></li>
+      <li><a href="https://sigh.dev/posts/ctrl-tinycolor-post-mortem/" target="_blank">@ctrl/tinycolor supply chain attack post-mortem</a></li>
+    
+      <li><a href="https://www.wiz.io/blog/shai-hulud-npm-supply-chain-attack" target="_blank">Shai-Hulud npm supply chain attack</a></li>
     
   </ul>
   

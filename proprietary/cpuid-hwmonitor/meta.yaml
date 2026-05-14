@@ -1,33 +1,87 @@
----
 - id: cpuid-hwmonitor
-  title: CPUID HWMonitor and CPU-Z Supply Chain Attack (STX RAT)
-  synopsis: The official CPUID download page was hijacked by compromising a secondary API to redirect legitimate download requests for HWMonitor (v1.63) and CPU-Z to a malicious Cloudflare R2 bucket. The downloaded archive contained a malicious cryptbase.dll that was sideloaded by the legitimate executable. This initiated a sophisticated five-stage in-memory execution chain to deploy the STX RAT infostealer, which harvested browser credentials, session cookies, crypto wallet keys, and VPN/FTP credentials.
+  title: CPUID installers delivered STX RAT
+  synopsis: >-
+    CPUID's official download flow redirected HWMonitor and CPU-Z users to attacker
+    infrastructure. Trojanized HWMonitor 1.63 sideloaded cryptbase.dll and unpacked STX RAT.
+  story: |
+    The CPUID compromise hit a small but valuable habit: administrators downloading trusted diagnostic tools. On April 9, 2026, users following CPUID's official HWMonitor download path could be redirected away from the expected file and toward an attacker-controlled Cloudflare R2 object.
+
+    CPUID later acknowledged that a secondary API had been breached for roughly six hours. The signed original files were not reported compromised. Instead, the download selection path randomly sent some users to malicious packages, with HWMonitor 1.63 confirmed and CPU-Z also reported affected.
+
+    The HWMonitor package carried a rogue `cryptbase.dll` beside the legitimate 64-bit executable. When `HWMonitor_x64.exe` started, Windows DLL search order loaded the malicious DLL. The loader then unpacked several in-memory stages using reflective PE loading, XOR decryption, and bitwise transforms.
+
+    The final payload matched STX RAT, a remote access trojan with infostealer capability. Cyderes reported campaign tags and referrer values that separated HWMonitor from CPU-Z traffic, suggesting a maintained operation aimed at high-value technical users rather than a random drive-by download.
   start_date: 2026-04-09
   end_date: 2026-04-09
   target:
-    name: cpuid-hwmonitor
+    name: CPUID
     kind: application
     website: https://cpuid.com
   actor:
-    name: Third Party
-    kind: group
+    name: Unknown attacker
+    kind: unknown
   language: C++
   method:
     cause: compromised_infrastructure
     phase: distribution
-    motive: credential_theft
+    motive: credential_theft_remote_access
     transitive: false
   impact:
     types:
     - credential_theft
+    - remote_access
+    - session_theft
     users: 0
-  hashes:
-  - sha256:a27df06c7167eced1ddaeb8adccaa5f60500f52bc7030389eed2a0903cdf8286
-  - sha256:1331f19c6732fca81f32c4cec9f89abf26371ed9d3665954f491c89e2c55e5bb
-  - sha256:116d806a5ca6f34fdd04061499daca9a352feb2e3f291c7ef3e5d470fe875f7f
-  - sha256:a70645f46eee6d765c54ba4a5c48166bd83bcfbc7771a82be9ed48ab4871ebfa
-  - sha256:52862b538459c8faaf89cf2b5d79c2f0030f79f80a68f93d65ec91f046f05be6
-  - sha256:eefc0f986dd3ea376a4a54f80ce0dc3e6491165aefdd7d5d6005da3892ce248f
+  locations:
+  - uri: https://www.cpuid.com/softwares/hwmonitor.html
+    role: distribution
+  - uri: https://www.cpuid.com/softwares/cpu-z.html
+    role: distribution
+  indicators:
+  - kind: family
+    value: STX RAT
+  - kind: domain
+    value: welcome.supp0v3.com
+  - kind: url
+    value: https://welcome.supp0v3.com/d/callback
+  - kind: url
+    value: http://pub-fd67c956bf8548b7b2cc23bb3774ff0c.r2.dev/hwmonitor_1.63.zip
+  - kind: url
+    value: http://pub-45c2577dbd174292a02137c18e7b1b5a.r2.dev/hwmonitor/HWiNFO_Monitor_Setup.exe
+  - kind: file
+    value: cryptbase.dll
+  - kind: file
+    value: HWMonitor_x64.exe
+  - kind: file
+    value: HWiNFO_Monitor_Setup.exe
+  - kind: campaign_tag
+    value: tbs
+  - kind: campaign_tag
+    value: tbs2
+  - kind: campaign_tag
+    value: tbs3
+  - kind: campaign_tag
+    value: snip
+  - kind: observable
+    value: referrer monitor3 identified HWMonitor traffic.
+  - kind: observable
+    value: referrer CPZ identified CPU-Z traffic.
+  - kind: observable
+    value: Only the 64-bit HWMonitor execution path was reported affected by DLL sideloading.
+  - kind: file_sha256
+    value: HWMonitor_x64.exe 02db6764d1f13b837b0a525e5931bdbc67e7a2a4d071e849c7e087255d4a2d5b
+  - kind: file_sha256
+    value: cryptbase.dll a27df06c7167eced1ddaeb8adccaa5f60500f52bc7030389eed2a0903cdf8286
+  - kind: file_sha256
+    value: stage2 1331f19c6732fca81f32c4cec9f89abf26371ed9d3665954f491c89e2c55e5bb
+  - kind: file_sha256
+    value: stage3 116d806a5ca6f34fdd04061499daca9a352feb2e3f291c7ef3e5d470fe875f7f
+  - kind: file_sha256
+    value: stage4 a70645f46eee6d765c54ba4a5c48166bd83bcfbc7771a82be9ed48ab4871ebfa
+  - kind: file_sha256
+    value: stx-rat 52862b538459c8faaf89cf2b5d79c2f0030f79f80a68f93d65ec91f046f05be6
+  - kind: file_sha256
+    value: HWiNFO_Monitor_Setup.exe eefc0f986dd3ea376a4a54f80ce0dc3e6491165aefdd7d5d6005da3892ce248f
   artifacts:
   - id: hwmonitor
     name: HWMonitor redirected download
@@ -36,11 +90,21 @@
     kind: application
     website: https://cpuid.com
     start_date: 2026-04-09
-    end_date: 2026-04-09
+    end_date: 2026-04-10
     versions:
     - '1.63'
+    locations:
+    - uri: https://www.cpuid.com/softwares/hwmonitor.html
+      role: distribution
+    - uri: http://pub-fd67c956bf8548b7b2cc23bb3774ff0c.r2.dev/hwmonitor_1.63.zip
+      role: distribution
+    - uri: http://pub-45c2577dbd174292a02137c18e7b1b5a.r2.dev/hwmonitor/HWiNFO_Monitor_Setup.exe
+      role: distribution
     notes:
-    - The public report identifies HWMonitor 1.63 as one of the redirected official download targets; shared STX RAT payload hashes remain at the attack level.
+    - The public report identifies HWMonitor 1.63 as one of the redirected official 
+      download targets; component and stage hashes are recorded as named indicators.
+    - Cyderes reported that the malicious DLL was sideloaded only by the 64-bit HWMonitor
+      executable.
   - id: cpu-z
     name: CPU-Z redirected download
     package: CPU-Z
@@ -48,10 +112,22 @@
     kind: application
     website: https://cpuid.com
     start_date: 2026-04-09
-    end_date: 2026-04-09
+    end_date: 2026-04-10
+    locations:
+    - uri: https://www.cpuid.com/softwares/cpu-z.html
+      role: distribution
     notes:
-    - The public report names CPU-Z as an affected official download target but this record does not yet contain a precise CPU-Z version.
+    - The public report names CPU-Z as an affected official download target but this 
+      record does not yet contain a precise CPU-Z version.
+    - Cyderes reported CPU-Z traffic under referrer value CPZ, but public reporting did
+      not provide a CPU-Z artifact hash in text.
   references:
-  - url: https://www.cyderes.com/howler-cell/how-cpuids-hwmonitor-supply-chain-was-hijacked-to-deploy-stx-rat
-  - url: https://www.igorslab.de/en/warning-cpuid-suspected-of-being-a-virus-suspicious-hwmonitor-downloads-are-causing-alarm/
-  - url: https://www.reddit.com/r/pcmasterrace/comments/1sh4e5l/warning_hwmonitor_163_download_on_the_official/
+  - url: 
+      https://www.cyderes.com/howler-cell/how-cpuids-hwmonitor-supply-chain-was-hijacked-to-deploy-stx-rat
+    title: 'Monitoring the Monitor: How CPUID''s HWMonitor Supply Chain Was Hijacked to Deploy STX RAT'
+  - url: 
+      https://www.igorslab.de/en/warning-cpuid-suspected-of-being-a-virus-suspicious-hwmonitor-downloads-are-causing-alarm/
+    title: 'Warning: CPUID Suspected of Being a Virus; Suspicious HWMonitor Downloads Raise Alarms'
+  - url: 
+      https://www.reddit.com/r/pcmasterrace/comments/1sh4e5l/warning_hwmonitor_163_download_on_the_official/
+    title: 'WARNING! HWMonitor 1.63 Download on the official "cpuid" page is a Virus!!!'

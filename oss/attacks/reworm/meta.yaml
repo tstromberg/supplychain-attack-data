@@ -1,12 +1,18 @@
----
 - id: reworm
-  title: Glassworm Unicode Attack on reworm repo
+  title: reworm repo hid Glassworm payload
   campaigns:
   - glassworm-march-2026
-  synopsis: The Glassworm threat actor compromised the pedronauck/reworm GitHub repository
-    and blended malicious code into realistic-looking commits. Invisible PUA Unicode
-    characters hid the payload from casual review, making the repository appear ordinary
-    while its source carried credential-stealing logic beneath the text.
+  synopsis: >-
+    The Glassworm threat actor compromised the pedronauck/reworm GitHub repository and blended
+    malicious code into realistic-looking commits.
+  story: |
+    Reworm was one of the visible GitHub repositories in the March 2026 Glassworm wave. Aikido listed `pedronauck/reworm` among notable compromised repositories while tracking more than 150 matching Unicode-loader injections.
+
+    The method was visual deception. The attacker encoded payload bytes inside invisible Unicode variation selectors, placed them in strings that looked empty, decoded them at runtime, and passed the result to `eval()`.
+
+    The commits did not look like a crude dump of malware. Aikido reported that surrounding changes were plausible documentation updates, version bumps, refactors, and bug fixes, shaped to fit each repository well enough to pass a quick review.
+
+    This record uses stars as exposure context only. The campaign record tracks the broader March 2026 Glassworm push across GitHub, npm, and the VS Code marketplace.
   start_date: 2026-03-03
   end_date: 2026-03-09
   target:
@@ -38,5 +44,14 @@
     locations:
     - uri: https://github.com/pedronauck/reworm
       role: mirror
+    indicators:
+    - kind: technique
+      value: invisible_unicode_loader
+    - kind: function
+      value: eval
+    notes:
+    - Aikido cited 1,460 GitHub stars for reworm as exposure context, not a confirmed
+      victim count.
   references:
   - url: https://www.aikido.dev/blog/glassworm-returns-unicode-attack-github-npm-vscode
+    title: 'GlassWorm Returns: New Wave Strikes as We Expose Attacker Infrastructure'

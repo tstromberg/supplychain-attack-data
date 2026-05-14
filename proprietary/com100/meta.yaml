@@ -1,11 +1,17 @@
----
 - id: comm100
-  title: Comm100 chat installer delivered backdoor malware.
-  synopsis: Attackers compromised the official website of Comm100 (customer engagement
-    software vendor) to distribute a trojanized version of their Windows Desktop Agent
-    installer. The installer, signed with a valid Comm100 certificate, contained a
-    JavaScript backdoor leading to potential remote shell access and further malware
-    deployment.
+  title: Comm100 installer delivered backdoor
+  synopsis: >-
+    A validly signed Comm100 Live Chat Windows installer downloaded from the vendor
+    website carried a JavaScript backdoor. The payload staged remote shell code and
+    follow-on loaders against customers in several sectors.
+  story: |
+    Comm100 was a live-chat and customer engagement vendor. Its Windows Agent Console was a trusted desktop application for support staff. In late September 2022, that trust boundary failed: customers could download a signed installer from Comm100 infrastructure that contained a backdoor.
+
+    CrowdStrike observed the attack from at least September 27 through the morning of September 29. The trojanized installer was signed on September 26 with a valid Comm100 Network Corporation certificate, so the package looked like normal vendor software. The Canadian Centre for Cyber Security later said the installer was last reported infected and accessible for download on September 29.
+
+    The malicious 10.0.8 Electron application contained a JavaScript backdoor in `main.js` inside the embedded ASAR archive. It downloaded a second-stage script from `api.amazonawsreplay.com`, gathered host data, and exposed remote shell functionality through `cmd.exe`. Follow-on activity dropped `MidlrtMd.dll`, used DLL search-order hijacking with `mdmerge.exe`, decrypted a `license` payload with a hard-coded RC4 key, and injected shellcode into `notepad.exe`.
+
+    CrowdStrike assessed with moderate confidence that the actor likely had a China nexus, based on malware comments, C2 naming, Alibaba-hosted infrastructure, and overlap with targeting of online gambling entities in East and Southeast Asia. The Cyber Centre reported active compromise and advised more than simple product removal. Comm100 published a clean 10.0.9 installer and remediation guidance for 10.0.8.
   start_date: 2022-09-27
   end_date: 2022-09-29
   target:
@@ -13,8 +19,8 @@
     kind: application
     website: https://comm100.com
   actor:
-    name: Nation-state
-    kind: state
+    name: China-nexus threat actor
+    kind: group
   method:
     cause: website_compromise
     phase: distribution
@@ -24,35 +30,93 @@
     types:
     - backdoor
     - remote_access
+    - data_exfiltration
     users: 1000
   artifacts:
-  - id: comm100
-    name: Comm100
+  - id: comm100-agent-console
+    name: Comm100 Live Chat Agent Console
     kind: binary_archive
     website: https://comm100.com
     start_date: 2022-09-27
     end_date: 2022-09-29
     versions:
-    - 10.0.7
     - 10.0.8
+    - 10.0.72
+    fixed_versions:
+    - 10.0.9
     locations:
-    - uri: https://s1.comm100.com/livechat/electron/10.0.7/Comm100LiveChat-Setup-win.exe
-      role: distribution
-    - uri: https://s1.comm100.com/livechat/electron/10.0.8/Comm100LiveChat-Setup-win.exe
+    - uri: https://dash11.comm100.io/livechat/electron/10000/Comm100LiveChat-Setup-win.exe
       role: distribution
     - uri: https://www.comm100.com/livechat/platform/desktopapp/Comm100LiveChatSetup.exe
       role: distribution
-    - uri: https://www.crowdstrike.com/blog/crowdstrike-detects-supply-chain-attack-targeting-comm100-customers/
+    - uri: 
+        https://www.crowdstrike.com/en-us/blog/new-supply-chain-attack-leverages-comm100-chat-installer/
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/6f0fae95f5637710d1464b42ba49f9533443181262f78805d3ff13bea3b8fd45
+    - uri: 
+        https://www.virustotal.com/gui/file/6f0fae95f5637710d1464b42ba49f9533443181262f78805d3ff13bea3b8fd45
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/ac5c0823d623a7999f0db345611084e0a494770c3d6dd5feeba4199deee82b86
+    - uri: 
+        https://www.virustotal.com/gui/file/ac5c0823d623a7999f0db345611084e0a494770c3d6dd5feeba4199deee82b86
       role: mirror
     hashes:
     - sha256:6f0fae95f5637710d1464b42ba49f9533443181262f78805d3ff13bea3b8fd45
     - sha256:ac5c0823d623a7999f0db345611084e0a494770c3d6dd5feeba4199deee82b86
+    indicators:
+    - kind: file
+      value: main.js
+    - kind: file
+      value: MidlrtMd.dll
+    - kind: file
+      value: mdmerge.exe
+    - kind: file
+      value: C:\ProgramData\Cisco Core\CoreConnect.exe
+    - kind: file
+      value: C:\ProgramData\Cisco Core\MidlrtMd.dll
+    - kind: file
+      value: C:\ProgramData\Cisco Core\license
+    - kind: file_sha256
+      value: MidlrtMd.dll 6194d57fc3bc35acf9365b764338adefacecfacf5955b87ad6a5b753fb6081f8
+    - kind: domain
+      value: api.amazonawsreplay.com
+    - kind: domain
+      value: api.microsoftfileapis.com
+    - kind: domain
+      value: selfhelp.windowstearns.com
+    - kind: ip
+      value: 8.219.167.156
+    - kind: url
+      value: http://api.amazonawsreplay.com/livehelp/collect
+    - kind: command
+      value: reg query "hklm\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v ProductId
+    - kind: certificate_thumbprint
+      value: d65cdc6b3a6738951f59d4ec8cc7d42f330c6d59
+    - kind: key
+      value: U9ELetx8eMR8pd5koFamoOyuf9tTRTPG
+    - kind: observable
+      value: The 10.0.8 Electron installer contained a JavaScript backdoor in main.js
+        inside the embedded ASAR archive.
+    notes:
+    - CrowdStrike reported malicious 10.0.72 had the same backdoor but was not observed
+      in the wild; Cyber Centre listed both 10.0.72 and 10.0.8.
+    - The installer was signed on 2022-09-26 14:54:00 UTC with a valid Comm100 Network
+      Corporation certificate.
   references:
-  - url: https://www.crowdstrike.com/blog/crowdstrike-detects-supply-chain-attack-targeting-comm100-customers/
-  - url: https://www.cyber.gc.ca/en/alerts-advisories/supply-chain-compromise-impacting-comm100-live-chat-software
-  - url: https://therecord.media/report-commercial-chat-provider-hijacked-to-spread-malware-in-supply-chain-attack
-  - url: https://socradar.io/comm100-installer-abused-in-supply-chain-attack-to-distribute-malware/
+  - url: 
+      https://www.crowdstrike.com/en-us/blog/new-supply-chain-attack-leverages-comm100-chat-installer/
+    title: CrowdStrike Falcon Platform Identifies Supply Chain Attack via a Trojanized
+      Comm100 Chat Installer
+  - url: 
+      https://www.cyber.gc.ca/en/alerts-advisories/supply-chain-compromise-impacting-comm100-live-chat-software
+    title: Supply chain compromise impacting Comm100 Live Chat software - Update 1
+  - url: https://www.bleepingcomputer.com/news/security/live-support-service-hacked-to-spread-malware-in-supply-chain-attack/
+    title: Live support service hacked to spread malware in supply chain attack
+  - url: https://securityaffairs.com/136582/hacking/comm100-supply-chain-attack.html
+    title: Trojanized Comm100 Live Chat app installer distributed a JavaScript backdoor
+  - url: https://rewterz.com/rewterz-news/rewterz-threat-alert-comm100-chat-provider-hacked-to-spread-malware-in-supply-chain-attack-active-iocs
+    title: Comm100 Chat Provider Hacked To Spread Malware In Supply Chain Attack - Active IOCs
+  - url: 
+      https://therecord.media/report-commercial-chat-provider-hijacked-to-spread-malware-in-supply-chain-attack
+    title: Commercial chat provider hijacked to spread malware in supply chain attack
+  - url: 
+      https://socradar.io/comm100-installer-abused-in-supply-chain-attack-to-distribute-malware/
+    title: Comm100 Installer Abused in Supply Chain Attack to Distribute Malware

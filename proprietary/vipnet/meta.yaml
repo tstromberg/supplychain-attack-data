@@ -1,15 +1,22 @@
----
 - id: vipnet-client-infotecs
-  title: ViPNet updates mimicked to deploy backdoor.
-  synopsis: A sophisticated backdoor was distributed disguised as updates for ViPNet,
-    a secure networking software suite by InfoTeCS used in Russia. Attackers crafted
-    update archives that, when processed by the ViPNet update service component, would
-    execute a malicious loader and deploy a versatile backdoor.
+  title: ViPNet updates mimicked to deploy backdoor
+  synopsis: >-
+    Targeted LZH archives imitated ViPNet security-network updates for Russian organizations
+    in government, finance, and industry.
+  story: |
+    Kaspersky published the Russian disclosure on April 17, 2025 after finding the backdoor during an incident response. The victims were large Russian organizations connected to ViPNet networks. InfoTeCS confirmed targeted attacks against some users in an April 18 update and issued security updates and customer recommendations.
+
+    The malicious archives used the shape of ViPNet update packages. Each archive contained `action.inf`, a legitimate `lumpdiag.exe`, a small malicious `msinfo32.exe`, and an encrypted payload file whose name varied by archive.
+
+    The update service component `itcsrvup64.exe` processed `action.inf` and executed `lumpdiag.exe --msconfig`. The legitimate executable was vulnerable to path substitution, so the attacker-controlled `msinfo32.exe` ran in its context.
+
+    The loader decrypted the payload and mapped the backdoor into memory. The backdoor connected to command-and-control over TCP, could steal files, and could launch additional malicious components.
   start_date: 2025-04-01
   end_date: 2025-04-22
   target:
     name: ViPNet Client (InfoTeCS)
     kind: application
+    website: https://infotecs.ru
   actor:
     name: APT group
     kind: group
@@ -40,6 +47,18 @@
     - md5:A5B31B22E41100EB9D0B9A27B9B2D8EF
     - md5:E6DB606FA2B7E9D58340DF14F65664B8
     indicators:
+    - kind: file
+      value: action.inf
+    - kind: file
+      value: lumpdiag.exe
+    - kind: file
+      value: msinfo32.exe
+    - kind: process
+      value: itcsrvup64.exe
+    - kind: command
+      value: lumpdiag.exe --msconfig
+    - kind: detection
+      value: HEUR:Trojan.Win32.Loader.gen
     - kind: observable
       value: Malicious LZH update archives for ViPNet software, designed to be processed
         by the ViPNet update service.
@@ -48,9 +67,18 @@
     - kind: observable
       value: "%PROGRAMFILES%\\common files\\infotecs\\update_tmp\\driv_*\\*\\msinfo32.exe"
     - kind: observable
-      value: "%PROGRAMFILESx86%\\InfoTeCS\\ViPNet Coordinator\\ccc\\update_tmp\\DRIV_FSA\\*\\msinfo32.exe"
+      value: "%PROGRAMFILESx86%\\InfoTeCS\\ViPNet Coordinator\\ccc\\update_tmp\\DRIV_FSA\\\
+        *\\msinfo32.exe"
     notes:
-    - Affected ViPNet scope covered client versions susceptible to update package
+    - Kaspersky's Russian disclosure was published on 2025-04-17 and updated on 
+      2025-04-18 after InfoTeCS confirmed targeted attacks against some users; the 
+      English Securelist article followed on 2025-04-22.
+    - Affected ViPNet scope covered client versions susceptible to update package 
       manipulation.
   references:
+  - url: https://securelist.ru/new-backdoor-mimics-security-software-update/112326/
+    title: Russian organizations targeted by backdoor masquerading as ViPNet software 
+      updates
   - url: https://securelist.com/new-backdoor-mimics-security-software-update/116246/
+    title: Russian organizations targeted by backdoor masquerading as secure networking 
+      software updates

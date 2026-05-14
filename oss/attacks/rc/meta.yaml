@@ -1,10 +1,16 @@
----
 - id: rc
-  title: rc NPM package includes malicious coa dependency
-  synopsis: The rc configuration loader was compromised indirectly after attackers
-    gained control of coa, one of its dependencies, and published malicious releases.
-    When rc moved onto the poisoned coa versions, it began carrying password-stealing
-    malware transitively, proving that a clean package can still ship dirty code.
+  title: rc npm releases carried malware
+  synopsis: >-
+    Attackers published rc 1.2.9, 1.3.9, and 2.3.9 with malicious postinstall code.
+    The same account-takeover wave also hit coa.
+  story: |
+    `rc` was not only a downstream casualty of `coa`. npm and GitHub advisories identify three malicious `rc` releases: 1.2.9, 1.3.9, and 2.3.9. They appeared during the same November 2021 account-takeover wave that hit `coa`.
+
+    The injected install path ran obfuscated TypeScript, detected the operating system, and downloaded platform-specific shell or batch code. On Windows, reporting tied the chain to a DLL detected as Qakbot.
+
+    The release pattern was conspicuous. `rc` had not shipped a new release since December 2015, so a sudden new version in a package with more than ten million weekly downloads drew attention quickly. npm removed the affected versions.
+
+    GitHub's advisory treated any machine that installed or ran the affected versions as fully compromised and recommended downgrading to 1.2.8, rotating secrets from a separate system, and investigating for persistence.
   start_date: 2021-11-04
   end_date: 2021-11-05
   target:
@@ -12,12 +18,12 @@
     kind: library
     repo: https://github.com/dominictarr/rc
   actor:
-    name: Compromised Dependency
-    kind: dependency
-  language: Javascript
+    name: Unknown attacker
+    kind: unknown
+  language: JavaScript
   method:
-    cause: malicious_dependency
-    phase: dependency
+    cause: compromised_account_credentials
+    phase: distribution
     motive: credential_theft
     transitive: true
   impact:
@@ -27,6 +33,8 @@
   artifacts:
   - id: rc
     name: rc
+    package: rc
+    ecosystem: npm
     kind: source_archive
     repo: https://github.com/dominictarr/rc
     start_date: 2021-11-04
@@ -49,7 +57,18 @@
     hashes:
     - sha256:47e42e13c821b68a5e7a60114ac739bcb22365c41f0b5dcefa8632ce977a5f53
     - sha256:3bbc2a836422ea9c327bb3e7b8429b3b6a878dc25811e19869bb48e0b933c089
+    indicators:
+    - kind: technique
+      value: npm_postinstall
+    - kind: malware
+      value: Qakbot
+    - kind: file_sha256
+      value: downloaded.dll 26451f7f6fe297adf6738295b1dcc70f7678434ef21d8b6aad5ec00beb8a72cf
   references:
-  - url: https://therecord.media/malware-found-in-coa-and-rc-two-npm-packages-with-23m-weekly-downloads/
+  - url: 
+      https://therecord.media/malware-found-in-coa-and-rc-two-npm-packages-with-23m-weekly-downloads/
+    title: Malware found in coa and rc, two npm packages with 23M weekly downloads
   - url: https://snyk.io/blog/npm-security-malicious-code-in-rc-and-coa-packages/
+    title: Malicious code found in npm package rc and coa
   - url: https://github.com/advisories/GHSA-g2q5-5433-rhrf
+    title: Embedded malware in rc

@@ -1,10 +1,16 @@
----
 - id: handbrake
-  title: HandBrake Mac download mirror distributed Proton RAT
-  synopsis: An official HandBrake download mirror, download.handbrake.fr, was compromised
-    while hosting the macOS release. The HandBrake-1.0.7.dmg image was replaced with
-    a malicious build carrying the Proton RAT, so Mac users following the expected
-    mirror path received remote-access malware instead of video tooling.
+  title: HandBrake mirror delivered Proton RAT
+  synopsis: >-
+    An official HandBrake download mirror, download.handbrake.fr, was compromised while hosting
+    the macOS release.
+  story: |-
+    HandBrake's 2017 incident hit a mirror, not the source tree. Between May 2 and May 6, the `download.handbrake.fr` mirror served a trojanized `HandBrake-1.0.7.dmg` for macOS. The main site stayed legitimate, but the official mirror path was enough.
+
+    The replacement package carried OSX/Proton.B. The malware used `activity_agent`, decrypted strings from a `.hash` resource, asked the user for a password under the cover of installing codecs, and then used that password to obtain higher privileges.
+
+    Proton was built for control and theft. Public analysis described keylogging, password and keychain theft, browser credential theft, file exfiltration, screenshots, remote shell, and remote access capabilities. HandBrake told affected users to change passwords stored in macOS Keychain and browsers.
+
+    The project said users who downloaded during the window had about a fifty percent chance of infection because not every download came from the compromised mirror. Built-in updates from HandBrake 1.0 and later were reported safe because update verification would reject the malicious file.
   start_date: 2017-05-02
   end_date: 2017-05-06
   target:
@@ -39,14 +45,29 @@
       role: distribution
     - uri: https://objective-see.org/blog/blog_0x1D.html
       role: mirror
-    - uri: https://www.cybereason.com/blog/labs-proton-b-what-this-mac-malware-actually-does
+    - uri: 
+        https://www.cybereason.com/blog/labs-proton-b-what-this-mac-malware-actually-does
       role: mirror
     hashes:
     - sha256:0935a43ca90c6c419a49e4f8f1d75e68cd70cb90b79306ce0cc7af2716aaa377
     - sha1:32176407013738cb03959d0945993c13373f9590
     - sha256:013623e5e50449bbdf6943549d8224a122aa6c42bd3300a1bd2b743b01ae6793
     - sha1:230a3e5404b633882b799d84633206b98e80790d
+    indicators:
+    - kind: file
+      value: activity_agent
+    - kind: file
+      value: .hash
+    - kind: process
+      value: Activity_agent
   references:
-  - url: https://arstechnica.com/information-technology/2017/05/handbrake-download-server-hacked-to-distribute-mac-malware/
+  - url: 
+      https://arstechnica.com/information-technology/2017/05/handbrake-download-server-hacked-to-distribute-mac-malware/
+    title: HandBrake download server hacked to distribute Mac malware
   - url: https://securelist.com/proton-mac-os-x-rat/79960/
+    title: Proton Mac OS X RAT
   - url: https://forum.handbrake.fr/viewtopic.php?f=33&t=36380
+    title: Check your HandBrake 1.0.7.dmg
+  - url: 
+      https://www.cybereason.com/blog/labs-proton-b-what-this-mac-malware-actually-does
+    title: 'Proton.B: What this Mac malware actually does'

@@ -1,11 +1,21 @@
----
 - id: escan
-  title: eScan Antivirus Update Supply Chain Attack
-  synopsis: Attackers compromised the legitimate eScan antivirus update infrastructure to distribute a trojanized version of Reload.exe (32-bit). This component dropped a persistent downloader (CONSCTLX.exe) that used scheduled tasks, registry modifications, and hosts file tampering to block remote updates and evade remediation while maintaining backdoor access.
+  title: eScan antivirus updates delivered GuptiMiner
+  synopsis: >-
+    Attackers used eScan's legitimate update infrastructure to ship a trojanized
+    Reload.exe. The payload disabled updates, planted persistence, and contacted C2
+    infrastructure.
+  story: |
+    On January 20, 2026, eScan customers received a malicious antivirus component through the product's legitimate update path. eScan's advisory said unauthorized access to one regional update server configuration placed an unauthorized file in the update distribution path for roughly two hours. Morphisec detected and blocked activity the same day, and Kaspersky later confirmed the supply-chain route.
+
+    The substituted file was `Reload.exe`, normally located at `C:\Program Files (x86)\eScan\reload.exe`. The attacker gave the binary a fake, invalid digital signature and made it run only from the expected Program Files path. Once launched, it initialized the CLR inside the process and loaded a small .NET executable derived from UnmanagedPowerShell.
+
+    The PowerShell chain first attacked the security product itself. It deleted or backed up selected eScan files, added broad antivirus exclusions, tried to map eScan update hosts to `2.3.4.0` in the hosts file, and changed database registry values. It wrote a debug log to `C:\ProgramData\euapp.log` and replaced `CONSCTLX.exe` with a persistent payload.
+
+    Persistence had two paths. One payload stored encoded PowerShell in `HKLM\Software\E9F9EEC3-86CA-4EBE-9AA4-1B55EE8D114E` and launched it through the scheduled task `Microsoft\Windows\Defrag\CorelDefrag`. Another ran through the replaced `CONSCTLX.exe`, kept the eScan GUI update date looking fresh, and could fetch RC4-encrypted shellcode from fallback C2 infrastructure. eScan isolated and rebuilt the affected infrastructure, rotated credentials globally, and told affected customers to run remediation tooling.
   start_date: 2026-01-20
   end_date: 2026-01-21
   target:
-    name: escan
+    name: eScan
     kind: application
     website: https://escanav.com
   actor:
@@ -20,16 +30,28 @@
   impact:
     types:
     - persistence
-    users: 0
+    - remote_access
+    - defense_evasion
   artifacts:
   - id: escan
-    name: escan
-    kind: application
+    name: eScan Reload.exe update component
+    package: Reload.exe
+    ecosystem: eScan update service
+    kind: binary_archive
     website: https://escanav.com
     start_date: 2026-01-20
     end_date: 2026-01-21
+    locations:
+    - uri: https://escanav.com
+      role: distribution
+    - uri: https://securelist.com/escan-supply-chain-attack/118688/
+      role: mirror
+    - uri: https://www.morphisec.com/blog/critical-escan-threat-bulletin/
+      role: mirror
     hashes:
     - sha256:36ef2ec9ada035c56644f677dab65946798575e1d8b14f1365f22d7c68269860
+    - sha256:674943387cc7e0fd18d0d6278e6e4f7a0f3059ee6ef94e0976fae6954ffd40dd
+    - sha256:386a16926aff225abc31f73e8e040ac0c53fb093e7daf3fbd6903c157d88958c
     - sha256:bec369597633eac7cc27a698288e4ae8d12bdd9b01946e73a28e1423b17252b1
     - sha1:1617949c0c9daa2d2a5a80f1028aeb95ce1c0dee
     - sha1:a928bddfaa536c11c28c8d2c5d16e27cbeaf6357
@@ -37,6 +59,74 @@
     - sha1:96cdd8476faa7c6a7d2ad285658d3559855b168d
     - sha1:2d2d58700a40642e189f3f1ccea41337486947f5
     - sha1:eec1a5e3bb415d12302e087a24c3f4051fca040e
+    indicators:
+    - kind: file
+      value: Reload.exe
+    - kind: file
+      value: CONSCTLX.exe
+    - kind: file
+      value: C:\Program Files (x86)\eScan\reload.exe
+    - kind: file
+      value: C:\Program Files (x86)\eScan\CONSCTLX.exe
+    - kind: file
+      value: C:\ProgramData\euapp.log
+    - kind: directory
+      value: C:\ProgramData\esfsbk
+    - kind: path
+      value: C:\Windows\System32\drivers\etc\hosts
+    - kind: scheduled_task
+      value: Microsoft\Windows\Defrag\CorelDefrag
+    - kind: registry
+      value: HKLM\Software\E9F9EEC3-86CA-4EBE-9AA4-1B55EE8D114E
+    - kind: registry
+      value: HKLM\SOFTWARE\WOW6432Node\MicroWorld\eScan for Windows\ODS
+    - kind: registry_value
+      value: WTBases_new=999
+    - kind: ip
+      value: 2.3.4.0
+    - kind: domain
+      value: vhs.delrosal.net
+    - kind: domain
+      value: tumama.hns.to
+    - kind: domain
+      value: blackice.sol-domain.org
+    - kind: domain
+      value: codegiant.io
+    - kind: domain
+      value: csc.biologii.net
+    - kind: domain
+      value: airanks.hns.to
+    - kind: domain
+      value: 504e1a42.host.njalla.net
+    - kind: ip
+      value: 185.241.208.115
+    - kind: certificate_thumbprint
+      value: 76B0D9D51537DA06707AFA97B4AE981ED6D03483
+    - kind: certificate_serial
+      value: 68525dadf70c773d41609ff7ca499fb5
+    - kind: observable
+      value: Malicious Reload.exe carried a fake, invalid digital signature.
+    - kind: observable
+      value: Payload blocked eScan update servers and made the GUI display a fresh 
+        update date.
+    notes:
+    - eScan advisory ESCAN-2026-001 said the unauthorized file was distributed from a 
+      single regional update server cluster for approximately two hours on January 20, 
+      2026.
+    - Kaspersky reported hundreds of encountered infection attempts, mostly in South 
+      Asia, including India, Bangladesh, Sri Lanka, and the Philippines.
+    - Morphisec reported that eScan isolated the affected infrastructure and took the 
+      global update system offline for more than eight hours on January 21, 2026.
   references:
+  - url: https://download1.mwti.net/documents/Advisory/eScan_Security_Advisory_2026.pdf
+    title: eScan Security Advisory ESCAN-2026-001
   - url: https://www.morphisec.com/blog/critical-escan-threat-bulletin/
+    title: 'Threat Bulletin: Critical eScan Supply Chain Compromise'
   - url: https://securelist.com/escan-supply-chain-attack/118688/
+    title: 'Supply chain attack on eScan antivirus: detecting and remediating malicious
+      updates'
+  - url: https://www.bleepingcomputer.com/news/security/escan-confirms-update-server-breached-to-push-malicious-update/
+    title: eScan confirms update server breached to push malicious update
+  - url: https://www.techradar.com/pro/security/top-antivirus-hacked-to-push-out-a-malicious-update-find-out-if-youre-affected
+    title: Top antivirus hacked to push out a malicious update - find out if you're
+      affected

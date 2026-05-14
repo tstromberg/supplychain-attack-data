@@ -1,45 +1,95 @@
----
 - id: ctx
-  title: ctx NPM package maintainer hijack steals credentials
-  synopsis: An attacker gained access to the maintainer account for ctx, a small utility
-    library, and published a malicious release. The payload hid in a test file but
-    ran during installation, scraping environment variables and .npmrc credentials
-    from machines that treated the package as harmless plumbing.
-  start_date: 2022-05-18
-  end_date: 2022-05-18
+  title: ctx PyPI account stole environment variables
+  synopsis: >-
+    An attacker re-registered the expired maintainer email domain for ctx and reset its
+    PyPI account. Malicious releases exfiltrated environment variables to Heroku.
+  story: |-
+    ctx was a small Python package with an old release history. Its last legitimate release was in 2014, and the maintainer email domain later expired. In May 2022, the attacker registered that domain, recreated the maintainer email address, and used PyPI password recovery to take over the official package account.
+
+    The new releases looked like ordinary PyPI updates but carried a short credential theft routine. When a `Ctx` object was created, the code walked process environment variables, base64-encoded the collected values, and sent them to `anti-theft-web.herokuapp.com`. AWS keys and CI/CD secrets were the obvious prize.
+
+    The compromise mattered because the package name was legitimate. Users did not install a typosquat. They installed ctx from PyPI and received code from the official registry page tied to that project name.
+
+    The event was reported alongside the hautelook/phpass repo-jacking incident. Both attacks used abandoned identity to regain control of established package coordinates. PyPI removed ctx, deleted the release files, blocked the name from re-registration without administrator review, and froze the compromised owner account.
+  start_date: 2022-05-14
+  end_date: 2022-05-24
   target:
-    name: ctx
+    name: ctx PyPI package
     kind: library
     repo: https://github.com/rreverser/ctx
   actor:
-    name: Individual Hacker
+    name: Sockpuppets
     kind: person
-  language: Javascript
+  language: Python
   method:
-    cause: compromised_account_credentials
+    cause: expired_domain_takeover
     phase: distribution
     motive: credential_theft
     transitive: false
   impact:
     types:
+    - credential_theft
     - data_exfiltration
+    users: 0
   artifacts:
   - id: ctx
     name: ctx
+    package: ctx
+    ecosystem: pypi
     kind: source_archive
     repo: https://github.com/rreverser/ctx
-    start_date: 2022-05-18
-    end_date: 2022-05-18
+    start_date: 2022-05-14
+    end_date: 2022-05-24
     versions:
     - 0.1.2
+    - 0.2.2
+    - 0.2.6
     locations:
-    - uri: https://registry.npmjs.org/ctx/-/ctx-0.1.2.tgz
+    - uri: https://pypi.org/project/ctx/
       role: distribution
-    - uri: https://socket.dev/npm/package/ctx/versions
+    - uri: 
+        https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html
       role: mirror
-    - uri: https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html
-      role: mirror
-    hashes:
-    - sha256:195f077e7e3390951309a5e8fa0f02f16110d41915fc569097e6c90dfb76755e
+    indicators:
+    - kind: domain
+      value: figlief.com
+    - kind: domain
+      value: anti-theft-web.herokuapp.com
+    - kind: url
+      value: https://anti-theft-web.herokuapp.com/hacked.html
+    - kind: url
+      value: https://anti-theft-web.herokuapp.com/hacked/
+    - kind: account
+      value: figlief@figlief.com
+    - kind: function
+      value: sendRequest
+    - kind: package
+      value: ctx 0.1.2
+    - kind: package
+      value: ctx 0.2.2
+    - kind: package
+      value: ctx 0.2.6
+    - kind: observable
+      value: Environment variables were collected, base64-encoded, and exfiltrated
+        during package execution.
+    - kind: observable
+      value: PyPI estimated roughly 27,000 downloads of malicious ctx releases, with
+        mirror activity accounting for much of the excess.
+    notes:
+    - Orca and CrowdStrike describe the account takeover as a PyPI password reset enabled
+      by re-registering the expired figlief.com domain.
+    - Sonatype observed malicious versions 0.2.2 and 0.2.6 and reported that the PyPI
+      copy of 0.1.2 had also been replaced with malicious code.
   references:
+  - url: https://orca.security/resources/blog/python-supply-chain-attack-ctx-phpass/
+    title: 'Supply Chain Attack: CTX Account Takeover and PHPass Hijack Explained'
+  - url: 
+      https://www.crowdstrike.com/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass/
+    title: 'Detecting Poisoned Python Packages: CTX and PHPass'
+  - url: https://www.sonatype.com/blog/pypi-package-ctx-compromised-are-you-at-risk
+    title: PyPI Package 'ctx' and PHP Library 'phpass' Compromised to Steal
+      Environment Variables
   - url: https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html
+    title: PyPI package ctx and PHP library phpass compromised
+  - url: https://cybersecuritynews.com/attackers-compromised-pypi-package/
+    title: Attackers compromised PyPI package to steal AWS keys

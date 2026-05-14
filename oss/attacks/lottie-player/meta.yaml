@@ -1,11 +1,17 @@
----
 - id: lottie-player
-  title: lottie-player compromised via token, crypto theft.
-  synopsis: The lottie-player npm package was compromised when attackers gained access
-    to a developer's access token. They published three malicious versions (2.0.5,
-    2.0.6, 2.0.7) that prompted users to connect their Web3 wallets, enabling theft
-    of cryptocurrency assets. The compromised versions were distributed via CDNs,
-    affecting users who hadn't pinned specific versions.
+  title: lottie-player prompted wallet drains
+  synopsis: >-
+    A stolen maintainer token published lottie-player 2.0.5 through 2.0.7. CDN consumers
+    received Web3 wallet prompts that could trick users into signing asset-draining
+    transactions.
+  story: |
+    Lottie Player is a browser component for rendering lightweight animations. On 2024-10-30, attackers used a compromised maintainer access token to publish three malicious npm versions after months without a release.
+
+    The payload changed the browser surface, not the animation format. Sites loading the affected package saw unexpected cryptocurrency wallet prompts, including common wallet brands. Users who trusted the page could be led into signing a malicious transaction.
+
+    The CDN path made the incident fast. Sites that referenced `latest` or pulled unpinned builds from unpkg or jsDelivr could receive the compromised release without changing their own code. Pinned safe versions were not exposed in the same way.
+
+    LottieFiles removed the bad releases and published 2.0.8 as the safe replacement. Wiz and Sonatype reported at least one suspected theft transaction, but the package record treats weekly downloads as exposure, not confirmed victims.
   start_date: '2024-10-30'
   end_date: '2024-10-30'
   target:
@@ -24,7 +30,7 @@
   impact:
     types:
     - financial_exploitation
-    users: 94000
+    users: 0
   artifacts:
   - id: lottie-player
     name: lottie-player
@@ -37,22 +43,43 @@
     - 2.0.5
     - 2.0.6
     - 2.0.7
+    fixed_versions:
+    - 2.0.8
     locations:
     - uri: https://unpkg.com/@lottiefiles/lottie-player@2.0.5/dist/lottie-player.js
       role: distribution
-    - uri: https://cdn.jsdelivr.net/npm/@lottiefiles/lottie-player@2.0.5/dist/lottie-player.min.js
+    - uri: 
+        https://cdn.jsdelivr.net/npm/@lottiefiles/lottie-player@2.0.5/dist/lottie-player.min.js
       role: distribution
-    - uri: https://registry.npmjs.org/@lottiefiles/lottie-player/-/lottie-player-2.0.5.tgz
+    - uri: 
+        https://registry.npmjs.org/@lottiefiles/lottie-player/-/lottie-player-2.0.5.tgz
       role: distribution
-    - uri: https://www.reversinglabs.com/blog/differential-analysis-raises-red-flags-over-lottiefiles/lottie-player
+    - uri: 
+        https://www.reversinglabs.com/blog/differential-analysis-raises-red-flags-over-lottiefiles/lottie-player
       role: mirror
     hashes:
     - sha1:446996c35a4188647361733b4c7175b2aeea9611
     - sha1:5bbd2290a7de5a4736fdafe171f5b6eae6abc27e
     - sha1:846f2efc0212317b5e44690234995ba7e269dee3
+    indicators:
+    - kind: observable
+      value: Unexpected Web3 wallet connect prompt shown by sites loading compromised lottie-player builds.
+    - kind: file
+      value: lottie-player.js
+    notes:
+    - Wiz and Sonatype reported roughly 94,000 weekly downloads as exposure context,
+      not a confirmed victim count.
   references:
   - url: https://www.wiz.io/blog/lottie-player-supply-chain-attack
-  - url: https://www.sonatype.com/blog/lottie-player-compromised-in-supply-chain-attack-all-you-need-to-know
-  - url: https://www.reversinglabs.com/blog/differential-analysis-raises-red-flags-over-lottiefiles/lottie-player
+    title: 'Supply chain attack on lottie-player: everything you need to know'
+  - url: 
+      https://www.sonatype.com/blog/lottie-player-compromised-in-supply-chain-attack-all-you-need-to-know
+    title: Lottie Player Compromised in Supply Chain Attack - All You Need to Know
+  - url: 
+      https://www.reversinglabs.com/blog/differential-analysis-raises-red-flags-over-lottiefiles/lottie-player
+    title: Differential analysis raises red flags over @lottiefiles/lottie-player
   - url: https://github.com/LottieFiles/lottie-player/issues/593
-  - url: https://lottiefiles.com/blog/lottiefiles-updates/incident-report-unauthorized-versions-of-lottie-player-npm-package
+    title: Malicious code in Web Lottie Player CDN files
+  - url: 
+      https://lottiefiles.com/blog/lottiefiles-updates/incident-report-unauthorized-versions-of-lottie-player-npm-package
+    title: Incident report for unauthorized versions of lottie-player npm package

@@ -1,17 +1,28 @@
 ---
 - id: gom-player
-  title: GOM Player update mechanism abused to deliver malware to Korean targets
-  synopsis: In mid-2013, suspected DPRK-aligned actors abused the auto-update mechanism of GOM Player — a popular Korean media player by Gretech — to deliver malware to selected South Korean targets. Compromised at the same broad period as SimDisk and other Korean software supply-chain incidents in the DarkSeoul cluster. The malicious update was served through GOM Player's official update channel and signed/packaged to appear legitimate. Public technical detail is sparser than for SimDisk; the incident is most often referenced in roundups of Korean software-update supply-chain compromises rather than a single canonical writeup.
-  start_date: 2013-07-01
-  end_date: 2013-12-31
+  title: GOM Player update served Miancha
+  synopsis: >-
+    GRETECH's GOM Player update path redirected Japanese users to a malicious
+    installer. The package ran the real update and installed Miancha through a
+    staged RAR payload.
+  story: |
+    GOM Player's Japanese update service was abused in late 2013 and early 2014. GRETECH initially warned that users who updated between December 27 and January 16 could have been infected; later investigation extended the exposure back to November 27. The issue became public after a system associated with the Monju fast breeder reactor was reported infected.
+
+    The delivery used trust, not novelty. A user ran the ordinary GOM Player update flow and was redirected to a third-party site. The downloaded file, `GoMPLAYER_JPSETUP.EXE`, was a RAR-packed executable that contained a legitimate GOM Player updater and another packed executable named `GOMPLAYERBETASETUP_JP.EXE`.
+
+    The second layer carried the malicious work. `install.exe` checked whether it was running on 32-bit or 64-bit Windows, decrypted `dll.tmp` or `dll64.tmp` with XOR key `x14`, wrote `install.ocx`, copied a matching PDF-like payload, and registered the OCX under a COM CLSID. It then restarted `explorer.exe` so the payload loaded inside Explorer.
+
+    Kaspersky detected the malware as `Backdoor.Win32.Miancha.b`. The payload extracted command-and-control data from marker strings at the end of the PDF-like file, decoded it, and used it for callback configuration. The compromise was narrow and effective: official updater, real installer, hidden backdoor.
+  start_date: 2013-11-27
+  end_date: 2014-01-16
   target:
-    name: gom-player
+    name: GOM Player
     kind: application
     website: https://gomlab.com
   actor:
     name: Nation-state
     kind: state
-  language: c++
+  language: C++
   method:
     cause: update_infrastructure_compromise
     phase: distribution
@@ -20,14 +31,75 @@
   impact:
     types:
     - backdoor
-    - espionage
+    - remote_access
+    - data_exfiltration
   artifacts:
   - id: gom-player
-    name: gom-player
-    kind: binary_archive
+    name: GOM Player Japanese updater
+    package: GOM Player
+    ecosystem: windows updater
+    kind: update
     website: https://gomlab.com
-    start_date: 2013-07-01
-    end_date: 2013-12-31
+    start_date: 2013-11-27
+    end_date: 2014-01-16
+    locations:
+    - uri: https://www.gomlab.com
+      role: distribution
+    indicators:
+    - kind: file
+      value: GoMPLAYER_JPSETUP.EXE
+    - kind: file
+      value: GOMPLAYERJPSETUP_JP.EXE
+    - kind: file
+      value: GOMPLAYERBETASETUP_JP.EXE
+    - kind: file
+      value: install.exe
+    - kind: file
+      value: dll.tmp
+    - kind: file
+      value: dll64.tmp
+    - kind: file
+      value: install.ocx
+    - kind: file
+      value: instructions.pdf
+    - kind: file
+      value: instructions64.pdf
+    - kind: malware
+      value: Miancha
+    - kind: detection
+      value: Backdoor.Win32.Miancha.b
+    - kind: registry_key
+      value: HKEY_CLASSES_ROOT\CLSID\{ECD4FC4D-521C-11D0-B792-00A0C90312E1}\InProcServer32
+    - kind: registry_value
+      value: ThreadingModel=Apartment
+    - kind: process
+      value: explorer.exe
+    - kind: api
+      value: IsWow64Process
+    - kind: xor_key
+      value: x14
+    - kind: marker
+      value: AAAAAAAA
+    - kind: marker
+      value: PPPPPPPP
+    - kind: marker
+      value: BBBBBBBB
+    notes:
+    - GRETECH initially identified December 27, 2013 through January 16, 2014 as the
+      affected update window; later reporting said investigation extended the start
+      date to November 27, 2013.
+    - The Reddit thread supplied for review appears to discuss later user concerns
+      about bundled unwanted software, not evidence for this update-server compromise.
   references:
-  - url: https://www.symantec.com/connect/blogs/four-years-darkseoul-cyberattacks-against-south-korea-continue-anniversary-korean-war
+  - url: https://securelist.com/abused-update-of-gom-player-poses-a-threat/58240/
+    title: Abused Update of GOM Player Poses a Threat
+  - url: https://internet.watch.impress.co.jp/docs/news/632516.html
+    title: GOM Player update server unauthorized access disclosed
+  - url: https://forest.watch.impress.co.jp/docs/news/638849.html
+    title: GRETECH publishes detailed investigation results on targeted attack abusing
+      GOM Player
+  - url: 
+      https://www.symantec.com/connect/blogs/four-years-darkseoul-cyberattacks-against-south-korea-continue-anniversary-korean-war
+    title: Four Years of DarkSeoul Cyberattacks Against South Korea Continue
   - url: https://www.welivesecurity.com/2013/07/01/south-korea-malware-watering-hole/
+    title: South Korea malware watering hole

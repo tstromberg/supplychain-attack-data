@@ -1,33 +1,123 @@
 ---
 - id: ask-partner-network
-  title: Ask Partner Network update channel delivered fileless malware
-  synopsis: Carbon Black and Red Canary disclosed in late 2017 that the Ask Partner Network (APN) — the update infrastructure behind the Ask.com Toolbar bundled with many freeware installers — was abused to push a multi-stage fileless malware loader through its official update channel. Endpoints with the Ask Toolbar installed received the malicious update via the trusted updater process, complicating detection. The campaign was characterized as targeted, with downstream payloads tailored to specific organizations rather than mass cryptojacking. APN/IAC pushed a clean update after notification.
-  start_date: 2017-06-01
-  end_date: 2017-11-30
+  title: APN updater delivered signed backdoor
+  synopsis: >-
+    Ask Partner Network's signed updater path executed attacker-controlled
+    payloads. Later activity used a signed APN update binary to launch a remote
+    shell and credential theft.
+  story: |
+    Ask Partner Network was unwanted software, but it was still a real distribution channel. It was bundled with common installers and present across many enterprise endpoints. That reach made the updater valuable to an attacker.
+
+    Red Canary saw the first compromise on November 5, 2016. A signed Ask component, `apnmcp.exe`, wrote and executed a PE file named `logo.png`. The filename looked like an image. The behavior did not. `logo.png` downloaded two or three later-stage binaries, executed them, then deleted itself.
+
+    Carbon Black saw a second wave on December 16, 2016. `Apnmcp.exe` contacted `tbapi.search.ask.com`, then redirected to a VPS outside the APN environment. It downloaded `ApnUpdateMgr.exe`, a remote-access trojan signed with an APN LLC certificate issued after the November incident.
+
+    The attacker moved fast. VMware reported a reverse command shell, credential theft, network enumeration, lateral movement, and persistence through `C:\ProgramData\System.bat` and encoded PowerShell that loaded obfuscated shellcode. APN revoked the compromised certificate and shipped updates. The lesson is plain: signed updater plumbing is code execution.
+  start_date: 2016-11-05
+  end_date: 2016-12-16
   target:
-    name: ask-partner-network
-    kind: application
+    name: Ask Partner Network
+    kind: update_service
     website: https://apn.ask.com
   actor:
     name: Unknown attacker
-    kind: unknown
-  language: c++
+    kind: group
+  language: C++
   method:
     cause: update_infrastructure_compromise
     phase: distribution
     motive: espionage
-    transitive: true
+    transitive: false
   impact:
     types:
     - backdoor
     - remote_access
+    - credential_theft
   artifacts:
-  - id: ask-partner-network
-    name: ask-partner-network
-    kind: binary_archive
+  - id: apn-updater
+    name: Ask Partner Network updater
+    package: APN Updater
+    ecosystem: windows update
+    kind: update
     website: https://apn.ask.com
-    start_date: 2017-06-01
-    end_date: 2017-11-30
+    start_date: 2016-11-05
+    end_date: 2016-12-16
+    locations:
+    - uri: https://apn.ask.com
+      role: distribution
+    - uri: https://tbapi.search.ask.com
+      role: distribution
+    - uri: https://www.virustotal.com/gui/file/b31e8146b37b6c54068437086e9bd4ed6a64f4cb65374dc71e88d9896457e89f
+      role: mirror
+    - uri: https://www.virustotal.com/gui/file/d01c7abc39e1b24a76641b597426aa377db0e27369f32dfe3522f364cec4495b
+      role: mirror
+    hashes:
+    - sha256:d01c7abc39e1b24a76641b597426aa377db0e27369f32dfe3522f364cec4495b
+    indicators:
+    - kind: file
+      value: apnmcp.exe
+    - kind: file
+      value: logo.png
+    - kind: file
+      value: ApnUpdateMgr.exe
+    - kind: file
+      value: C:\ProgramData\System.bat
+    - kind: file
+      value: system.bin
+    - kind: file_md5
+      value: logo.png d2c77120acd8bdc4cd25bbb510b9cb51
+    - kind: file_md5
+      value: logo.png 31cee09cd77a3606187b523613ec972e
+    - kind: file_md5
+      value: logo.png e4774925aab6688d723715b2acc5efdf
+    - kind: file_sha256
+      value: apnmcp.exe b31e8146b37b6c54068437086e9bd4ed6a64f4cb65374dc71e88d9896457e89f
+    - kind: file_sha256
+      value: ApnUpdateMgr.exe d01c7abc39e1b24a76641b597426aa377db0e27369f32dfe3522f364cec4495b
+    - kind: file_sha256
+      value: System.bat 083cf77766ce9e0c7378da74a1a729b380629b875fc791c37890850f5ecbf508
+    - kind: file_sha256
+      value: system.bin a3255ad4099745e791d85dc1a9b0917909a6b2e91d32b96911cb488e18a601d8
+    - kind: domain
+      value: tbapi.search.ask.com
+    - kind: ip
+      value: 45.76.221.212
+    - kind: url
+      value: http://45.76.221.212/logo.gif?1
+    - kind: certificate_signer
+      value: APN LLC
+    - kind: pdb
+      value: E:\u6d4b\u8bd5\apache2\u52ab\u6301\2016-11-24\downloader\loader\Release\loader.pdb
+    - kind: xor_key
+      value: 0xB4
+    - kind: process
+      value: powershell.exe
+    - kind: capability
+      value: reverse command shell
+    - kind: capability
+      value: credential theft
+    - kind: capability
+      value: lateral movement
+    - kind: capability
+      value: persistence through Run keys
+    notes:
+    - Red Canary reported a November 5, 2016 APN compromise; VMware Carbon Black
+      reported a December 16, 2016 second compromise and described the broader
+      activity as spanning late 2016 into 2017.
+    - The signed `apnmcp.exe` updater component was the trusted parent process; the
+      malicious second-stage `ApnUpdateMgr.exe` hash is stored as the affected
+      delivered artifact hash.
   references:
-  - url: https://redcanary.com/blog/ask-partner-network-supply-chain-attack/
-  - url: https://www.bleepingcomputer.com/news/security/ask-partner-network-blamed-for-supplying-malware-to-millions-of-pcs/
+  - url: https://redcanary.com/blog/opinions-insights/ask-partner-network-compromise/
+    title: 'Ask Partner Network Compromise: Operational Lessons on Software Supply Chain Risk'
+  - url: 
+      https://blogs.vmware.com/security/2017/03/second-ask-partner-network-apn-compromise-highlights-attackers-commandeering-widely-used-general-tools-sophisticated-targeted-attacks.html
+    title: Second Ask Partner Network Compromise Highlights How Attackers Are
+      Commandeering Widely Used General Tools for Sophisticated Targeted Attacks
+  - url: 
+      https://www.bleepingcomputer.com/news/security/ask-partner-network-blamed-for-supplying-malware-to-millions-of-pcs/
+    title: Ask Partner Network blamed for supplying malware to millions of PCs
+  - url: https://www.scworld.com/news/ask-partner-network-compromised-second-time-in-two-months
+    title: Ask Partner Network compromised second time in two months
+  - url: https://www.networkworld.com/article/961532/ask-com-serves-as-a-conduit-for-malware-again.html
+    title: Ask.com serves as a conduit for malware again

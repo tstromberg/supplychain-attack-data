@@ -1,15 +1,16 @@
----
 - id: vgca
-  title: Vietnam Government Certificate Authority website served backdoored installers
-  synopsis: ESET disclosed Operation SignSight on 2020-12-17 — between 2020-07-23
-    and 2020-08-16, attackers compromised the Vietnam Government Certification Authority's
-    website (ca.gov.vn) and replaced the official `gca01-client-v2-x32-8.3.msi` and
-    `gca01-client-v2-x64-8.3.msi` digital-signature toolkit installers with trojanized
-    versions. The malicious MSIs ran the legitimate signing client while side-loading
-    PhantomNet (a.k.a. Smanager), a modular backdoor compiled 2020-04-26, that beaconed
-    to `vgca.homeunix.org` and `office365.blogdns.com`. The trojanized installers
-    carried the same SafeNet certificate as the legitimate ones. ESET noted tooling
-    similarities to TA428.
+  title: VGCA website served backdoored installers
+  synopsis: >-
+    Operation SignSight replaced official VGCA signing-toolkit MSI installers. The
+    packages installed the legitimate app and the PhantomNet espionage backdoor.
+  story: |
+    Vietnam's Government Certification Authority distributes software that organizations use for digital signatures. In 2020, attackers compromised the VGCA website and replaced the official x86 and x64 MSI installers for version 8.3.
+
+    The installers still delivered the expected signing toolkit. They also dropped a modified `eToken.exe` and a backdoor ESET named PhantomNet. That made the compromise hard to spot: the product installed, the workflow continued, and the implant started beside it.
+
+    ESET placed the malicious installers on the VGCA site between 2020-07-23 and 2020-08-16. Victim telemetry pointed to government and private-sector organizations in Vietnam, consistent with espionage rather than bulk monetization.
+
+    VGCA said it notified affected users and restored clean installers. This record tracks the official website distribution of the MSI packages, not the certificate authority's cryptographic root trust.
   start_date: 2020-07-23
   end_date: 2020-08-16
   target:
@@ -17,7 +18,7 @@
     kind: application
     website: https://ca.gov.vn
   actor:
-    name: Nation-state
+    name: Unknown espionage actor
     kind: state
   language: c++
   method:
@@ -49,9 +50,9 @@
     - uri: https://ca.gov.vn/
       role: distribution
     notes:
-    - The published filename was gca01-client-v2-x32-8.3.msi; hashes remain at the
-      attack level because the current record does not map each SHA1 to installer
-      or payload.
+    - The published filename was gca01-client-v2-x32-8.3.msi; hashes remain at the 
+      attack level because the current record does not map each SHA1 to installer or 
+      payload.
   - id: gca01-client-v2-x64
     name: VGCA x64 signing toolkit installer
     package: gca01-client-v2-x64
@@ -66,10 +67,25 @@
     - uri: https://ca.gov.vn/
       role: distribution
     notes:
-    - The published filename was gca01-client-v2-x64-8.3.msi; hashes remain at the
-      attack level because the current record does not map each SHA1 to installer
-      or payload.
+    - The published filename was gca01-client-v2-x64-8.3.msi; hashes remain at the 
+      attack level because the current record does not map each SHA1 to installer or 
+      payload.
+  indicators:
+  - kind: family
+    value: PhantomNet
+  - kind: file
+    value: gca01-client-v2-x32-8.3.msi
+  - kind: file
+    value: gca01-client-v2-x64-8.3.msi
+  - kind: file
+    value: eToken.exe
   references:
-  - url: https://www.welivesecurity.com/2020/12/17/operation-signsight-supply-chain-attack-southeast-asia/
-  - url: https://www.eset.com/sg/about/newsroom/press-releases1/announcements/eset-discovers-operation-signsight-supply-chain-attack/
+  - url: 
+      https://www.welivesecurity.com/2020/12/17/operation-signsight-supply-chain-attack-southeast-asia/
+    title: 'Operation SignSight: Supply-chain attack against a certification authority
+      in Southeast Asia'
+  - url: 
+      https://www.eset.com/sg/about/newsroom/press-releases1/announcements/eset-discovers-operation-signsight-supply-chain-attack/
+    title: ESET discovers Operation SignSight supply-chain attack
   - url: https://www.zdnet.com/article/vietnam-targeted-in-complex-supply-chain-attack/
+    title: Vietnam targeted in complex supply-chain attack

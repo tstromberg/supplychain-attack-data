@@ -1,48 +1,72 @@
----
 - id: kmplayer
-  title: KMPlayer installer/updates distributed malware.
-  synopsis: KMPlayer, a freeware media player, reportedly distributed unwanted software,
-    adware, or potentially more malicious payloads through some installer and update
-    channels. Users who expected a media player instead encountered bundled programs
-    and advertisements, a gray-zone supply chain where monetization blurred into unwanted
-    execution.
-  start_date: 2018-01-01
-  end_date: 2018-12-31
+  title: KMPlayer updater pushed fake malware release
+  synopsis: >-
+    KMPlayer's update flow offered a fake 3.7.0.87 release that installed malware.
+    KMP Media confirmed external attack activity and warned July-August 2013 users.
+  story: |
+    KMPlayer users saw an update prompt for version 3.7.0.87 even though the vendor's current clean release was 3.6.0.87. The updater connected to `cdn.kmplayer.com/player/update` and downloaded `KMP_3.7.0.87.exe`, which did not perform a normal upgrade.
+
+    Taiwanese security reporting said the fake updater installed malware into a hidden folder. It also described relay or command domains under `abacocafe.com`, including `pen.abacocafe.com`, `pens.abacocafe.com`, `cdn.abacocafe.com`, and `vpen.abacocafe.com`.
+
+    KMP Media acknowledged an external attack through a KMPlayer emergency notice. The company warned users who downloaded or installed KMPlayer between 2013-07-26 and 2013-08-08 to scan their systems, said it had strengthened software security, and referred the matter to investigators.
+
+    This record replaces weaker 2018 adware-bundling notes. The 2013 event fits the archive better: a real product update path, a fake release executable, a vendor confirmation, and concrete infrastructure indicators.
+  start_date: 2013-07-26
+  end_date: 2013-08-08
   target:
     name: KMPlayer
     kind: application
     website: https://kmplayer.com
   actor:
-    name: Adware bundlers
-    kind: company
+    name: Unknown
+    kind: unknown
   language: Various
   method:
-    cause: bundled_software
+    cause: update_infrastructure_compromise
     phase: distribution
-    motive: financial_gain
+    motive: unknown
     transitive: false
   impact:
     types:
-    - adware
-    - potentially_unwanted_programs_pups
+    - malware_delivery
+    - keylogging
+    - remote_access
   artifacts:
-  - id: kmplayer
-    name: KMPlayer
+  - id: kmp-3-7-0-87
+    name: KMPlayer fake 3.7.0.87 updater
+    package: KMP_3.7.0.87.exe
+    ecosystem: kmplayer update
     kind: binary_archive
     website: https://kmplayer.com
-    start_date: 2018-01-01
-    end_date: 2018-12-31
+    start_date: 2013-07-26
+    end_date: 2013-08-08
+    versions:
+    - 3.7.0.87
+    fixed_versions:
+    - 3.6.0.87
     locations:
-    - uri: https://www.ghacks.net/2018/02/05/kmplayer-serves-adware/
+    - uri: http://cdn.kmplayer.com/player/update
+      role: distribution
+    - uri: https://www.ithome.com.tw/news/82002
       role: mirror
-    - uri: https://www.reddit.com/r/software/comments/c1x1lz/kmplayer_now_has_malwarecryptominer/
+    - uri: https://www.informationsecurity.com.tw/article/article_detail.aspx?aid=7592
       role: mirror
     indicators:
-    - kind: observable
-      value: KMPlayer installers downloaded from kmplayer.com or various third-party
-        download sites around 2018, reported to bundle adware or PUPs.
+    - kind: file
+      value: KMP_3.7.0.87.exe
+    - kind: domain
+      value: pen.abacocafe.com
+    - kind: domain
+      value: pens.abacocafe.com
+    - kind: domain
+      value: cdn.abacocafe.com
+    - kind: domain
+      value: vpen.abacocafe.com
     notes:
-    - Affected KMPlayer scope covered various 2018-era builds tied to download sources.
+    - Taiwanese reporting described 3.6.0.87 as the current legitimate vendor release
+      while the update mechanism presented a fake 3.7.0.87 update.
   references:
-  - url: https://www.ghacks.net/2018/02/05/kmplayer-serves-adware/
-  - url: https://www.reddit.com/r/software/comments/c1x1lz/kmplayer_now_has_malwarecryptominer/
+  - url: https://www.ithome.com.tw/news/82002
+    title: KMPlayer officially confirms malware distribution and refers case to investigators
+  - url: https://www.informationsecurity.com.tw/article/article_detail.aspx?aid=7592
+    title: KM Player compromised, update mechanism downloads malware

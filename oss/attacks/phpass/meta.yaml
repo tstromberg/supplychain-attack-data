@@ -1,31 +1,35 @@
----
 - id: phpass-hautelook-fork-on-github-packagist
-  title: hautelook/phpass library hijacked via GitHub org.
-  synopsis: The GitHub organization 'hautelook', which maintained a popular fork of
-    the phpass PHP password hashing library, was deleted. An attacker later registered
-    the 'hautelook' organization name and created a repository named 'phpass' with
-    the same URL as the original. This new repository contained a malicious version
-    of phpass designed to steal AWS credentials by exfiltrating environment variables.
-    Packagist, which mirrored the original GitHub repository, then began serving this
-    malicious version to users who updated the dependency.
+  title: hautelook/phpass hijacked through GitHub organization
+  synopsis: >-
+    Attackers re-registered the deleted hautelook GitHub organization and recreated its phpass
+    repository. Packagist then served code from the hostile replacement path.
+  story: |-
+    hautelook/phpass failed through namespace reuse. The original GitHub organization was deleted after the project moved, but the Packagist package still pointed at the old repository path. An attacker registered the abandoned organization name and recreated the phpass repository.
+
+    Composer and Packagist trusted the coordinate. Installers resolving hautelook/phpass could fetch from the attacker's repository because the URL still matched the package metadata. No source forge was needed; the abandoned namespace became the source.
+
+    The malicious replacement carried code to collect environment data and secrets. Concrete CMS traced exposure through dependency resolution and published a replacement package while Packagist and GitHub removed the hostile repository.
+
+    This differs from a typosquat. The package name was established, and the attacker took over the exact upstream location that package metadata still referenced. The failure was stale ownership on an official dependency path.
   start_date: 2022-05-19
   end_date: 2022-05-24
   target:
     name: phpass (Hautelook fork on GitHub / Packagist)
     kind: library
   actor:
-    name: Individual Hacker
+    name: Sockpuppets
     kind: person
   language: PHP
   method:
-    cause: compromised_account_credentials
+    cause: abandoned_namespace_takeover
     phase: source
     motive: credential_theft
     transitive: false
   impact:
     types:
+    - credential_theft
     - data_exfiltration
-    users: 2500000
+    users: 0
   artifacts:
   - id: phpass-hautelook-fork-on-github-packagist
     name: phpass (Hautelook fork on GitHub / Packagist)
@@ -38,16 +42,47 @@
       role: distribution
     - uri: https://github.com/hautelook/phpass
       role: distribution
-    - uri: https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking
+    - uri: 
+        https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking
       role: mirror
     - uri: https://github.com/concrete5/hautelook_phpass_rsa
       role: mirror
     hashes:
     - sha256:bc9cf9f18f5c41cc27d53d46b579f95f3ea45a70f94a8da3060b864d3e2d18c4
+    indicators:
+    - kind: domain
+      value: anti-theft-web.herokuapp.com
+    - kind: url
+      value: https://anti-theft-web.herokuapp.com/hacked/
+    - kind: package
+      value: hautelook/phpass
+    - kind: package
+      value: bordoni/phpass
+    - kind: organization
+      value: hautelook
+    - kind: observable
+      value: Malicious PHP code attempted to exfiltrate AWS_ACCESS_KEY and
+        AWS_SECRET_KEY.
     notes:
-    - Affected Packagist scope covered hautelook/phpass versions pulled between 2022-05-19
-      and 2022-05-24.
+    - Affected Packagist scope covered hautelook/phpass versions pulled between 
+      2022-05-19 and 2022-05-24.
+    - Packagist reported the affected package had not seen many installs recently and was
+      rewired to the maintained bordoni/phpass repository.
+    - Public claims of millions of combined users are not treated as confirmed impacted
+      users for this specific Packagist package.
   references:
-  - url: https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking
+  - url: 
+      https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking
+    title: Supply chain hack phpass repo jacking
+  - url: https://orca.security/resources/blog/python-supply-chain-attack-ctx-phpass/
+    title: 'Supply Chain Attack: CTX Account Takeover and PHPass Hijack Explained'
+  - url: 
+      https://www.crowdstrike.com/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass/
+    title: 'Detecting Poisoned Python Packages: CTX and PHPass'
+  - url: https://www.sonatype.com/blog/pypi-package-ctx-compromised-are-you-at-risk
+    title: PyPI Package 'ctx' and PHP Library 'phpass' Compromised to Steal
+      Environment Variables
   - url: https://thehackernews.com/2022/05/pypi-package-ctx-and-php-library-phpass.html
+    title: PyPI package ctx and PHP library phpass compromised
   - url: https://cybersecuritynews.com/attackers-compromised-pypi-package/
+    title: Attackers compromised PyPI package to steal AWS keys

@@ -1,12 +1,15 @@
----
 - id: wp-social-warfare
-  title: WordPress.org Supply Chain Attack on Social Warfare
+  title: Social Warfare plugin created backdoors
   campaigns:
   - wordpress-plugin-backdoor-2024
-  synopsis: Malicious code was injected directly into the Social Warfare plugin repository
-    on WordPress.org. The malware created a new administrative user account (Options
-    or PluginAuth) to gain full administrative control over affected sites and injected
-    malicious JavaScript into website footers to generate SEO spam.
+  synopsis: >-
+    Malicious code was injected directly into the Social Warfare plugin repository on WordPress.org.
+  story: |
+    Social Warfare was the plugin that brought the June 2024 WordPress.org campaign into view. Wordfence learned of the compromise through a WordPress.org Plugin Review Team forum post, then used the malicious file to find four related plugin compromises.
+
+    Wordfence listed Social Warfare versions 4.4.6.4 through 4.4.7.1 as infected and 4.4.7.3 as patched. The risk was in the trusted update path: sites pulling plugin updates from WordPress.org received attacker code from the official channel.
+
+    The payload tried to create administrator accounts named `Options` or `PluginAuth`, sent the details to `94.156.79.8`, and injected footer JavaScript for SEO spam. The plugin was later delisted while cleanup proceeded.
   start_date: 2024-06-21
   end_date: 2024-06-24
   target:
@@ -30,6 +33,7 @@
   artifacts:
   - id: wp-social-warfare
     name: wp-social-warfare
+    ecosystem: wordpress
     kind: extension
     repo: https://wordpress.org/plugins/social-warfare/
     start_date: 2024-06-21
@@ -37,8 +41,19 @@
     versions:
     - 4.4.6.4
     - 4.4.7.1
+    fixed_versions:
+    - 4.4.7.3
     locations:
     - uri: https://wordpress.org/plugins/social-warfare/
-      role: mirror
+      role: distribution
+    indicators:
+    - kind: ip
+      value: 94.156.79.8
+    - kind: user
+      value: Options
+    - kind: user
+      value: PluginAuth
   references:
-  - url: https://www.wordfence.com/blog/2024/06/supply-chain-attack-on-wordpress-org-plugins-leads-to-5-maliciously-compromised-wordpress-plugins/
+  - url: 
+      https://www.wordfence.com/blog/2024/06/supply-chain-attack-on-wordpress-org-plugins-leads-to-5-maliciously-compromised-wordpress-plugins/
+    title: Supply Chain Attack on WordPress.org Plugins Leads to 5 Maliciously Compromised WordPress Plugins

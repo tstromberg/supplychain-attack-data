@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>rand-user-agent Package Hijacked With RAT</title>
+  <title>rand-user-agent carried RAT</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>rand-user-agent Package Hijacked With RAT</h1>
+  <h1>rand-user-agent carried RAT</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> rand-user-agent · <a href="https://github.com/WebScrapingAPI/rand-user-agent" target="_blank">repo</a></div>
@@ -30,8 +30,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Attackers compromised the NPM account of the maintainer and published malicious versions of the rand-user-agent package. The compromised versions contained obfuscated code that installed a Remote Access Trojan (RAT), which established a connection to a command-and-control server. The malware could execute arbitrary commands, upload files from victims&#39; machines, and modify the PATH environment variable to hijack Python execution.</p>
+  <p class="synopsis">rand-user-agent 1.0.110, 2.0.83, and 2.0.84 carried obfuscated RAT code. The payload connected to attacker C2 and exposed shell and file-upload commands.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Aikido detected the first malicious `rand-user-agent` release on May 5, 2025 at 16:00 UTC. The project repository still pointed at older clean source, but npm held newer package versions with code that did not belong.</p>
+    
+      <p>The attacker hid the first stage in `dist/index.js`, using obfuscation and horizontal scroll space to bury the payload in a file reviewers might skim. After decoding, the code installed or loaded `axios` and `socket.io-client` under a custom `.node_modules` path in the user&#39;s home directory.</p>
+    
+      <p>The payload behaved as a remote access trojan. It connected to `85.239.62.36:3306`, uploaded files through `85.239.62.36:27017/u/f`, sent hostname and username details, accepted directory and upload commands, and executed arbitrary shell input through `child_process.exec()`.</p>
+    
+      <p>On Windows, it also prepended `%LOCALAPPDATA%&#92;Programs&#92;Python&#92;Python3127` to `PATH`, giving the attacker a quiet way to influence commands that resolved Python tooling by name. The affected npm versions were 1.0.110, 2.0.83, and 2.0.84.</p>
+    
+  </div>
   
 
   
@@ -53,7 +66,7 @@
           <td>
             <strong>rand-user-agent</strong>
             
-            <br><span>source_archive</span>
+            <br><span>npm · source_archive</span>
             
             <br><a href="https://github.com/WebScrapingAPI/rand-user-agent" target="_blank">https://github.com/WebScrapingAPI/rand-user-agent</a>
           </td>
@@ -92,9 +105,9 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.aikido.dev/blog/catching-a-rat-remote-access-trojian-rand-user-agent-supply-chain-compromise" target="_blank">https://www.aikido.dev/blog/catching-a-rat-remote-access-trojian-rand-user-agent-supply-chain-compromise</a></li>
+      <li><a href="https://www.aikido.dev/blog/catching-a-rat-remote-access-trojian-rand-user-agent-supply-chain-compromise" target="_blank">RATatouille: A Malicious Recipe Hidden in rand-user-agent</a></li>
     
-      <li><a href="https://www.npmjs.com/package/rand-user-agent" target="_blank">https://www.npmjs.com/package/rand-user-agent</a></li>
+      <li><a href="https://www.npmjs.com/package/rand-user-agent" target="_blank">rand-user-agent</a></li>
     
   </ul>
   

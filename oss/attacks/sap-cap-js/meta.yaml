@@ -1,15 +1,19 @@
----
 - id: sap-cap-js
-  title: SAP CAP Packages Mini Shai-Hulud
+  title: SAP CAP packages hit by Mini Shai-Hulud
   campaigns:
   - teampcp-2026
-  synopsis: 'Mini Shai-Hulud compromised SAP ecosystem npm packages mbt, @cap-js/sqlite,
-    @cap-js/postgres, and @cap-js/db-service through two release paths: a stolen static
-    npm token for mbt and an abused GitHub Actions OIDC publishing flow for cap-js/cds-dbs.
-    The malicious releases ran a Bun-based credential stealer, exfiltrated encrypted
-    secrets through attacker-created GitHub repositories, added IDE persistence through
-    Claude Code and VS Code hooks, injected repository-secret stealing workflows,
-    and attempted propagation through stolen npm tokens.'
+  synopsis: >-
+    Mini Shai-Hulud compromised SAP ecosystem npm packages mbt, @cap-js/sqlite, @cap-js/postgres,
+    and @cap-js/db-service through two release paths: a stolen static npm token for mbt and
+    an abused GitHub Actions OIDC publishing flow for cap-js/cds-dbs.
+  story: |
+    The SAP CAP compromise was the April 2026 Mini Shai-Hulud wave in enterprise JavaScript clothing. Four packages carried the same `preinstall` hook: `mbt@1.2.48`, `@cap-js/sqlite@2.2.2`, `@cap-js/postgres@2.2.2`, and `@cap-js/db-service@2.10.1`.
+
+    The loader was small and direct. `setup.mjs` downloaded Bun 1.3.13 from GitHub releases, then ran an 11.6 MB obfuscated `execution.js` payload. The working package stayed useful, which kept the install quiet while credential collection ran.
+
+    The publish paths differed. `mbt` used a stolen static npm automation token from the normal cloudmtabot account. The `@cap-js` packages came through abused npm trusted publishing: a compromised SAP developer account changed release workflow behavior, exchanged a GitHub OIDC token for an npm token, and published from a non-main branch.
+
+    The payload harvested secrets, read GitHub Actions runner memory, created dead-drop repositories named "A Mini Shai-Hulud has Appeared", and wrote persistence hooks into `.claude/settings.json` and `.vscode/tasks.json`. This record carries the SAP package artifacts; the TeamPCP campaign carries the shared worm machinery.
   start_date: 2026-04-29
   end_date: 2026-04-30
   target:
@@ -60,8 +64,8 @@
     - sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34
     - sha256:80a3d2877813968ef847ae73b5eeeb70b9435254e74d7f07d8cf4057f0a710ac
     notes:
-    - Clean predecessor identified as mbt@1.2.47. StepSecurity reported mbt was published
-      at 09:55 UTC with a stolen static npm automation token.
+    - Clean predecessor identified as mbt@1.2.47. StepSecurity reported mbt was 
+      published at 09:55 UTC with a stolen static npm automation token.
   - id: cap-js-sqlite
     name: "@cap-js/sqlite"
     package: "@cap-js/sqlite"
@@ -78,7 +82,7 @@
     - sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34
     - sha256:6f933d00b7d05678eb43c90963a80b8947c4ae6830182f89df31da9f568fea95
     notes:
-    - Clean predecessor identified as @cap-js/sqlite@2.2.1. Published through abused
+    - Clean predecessor identified as @cap-js/sqlite@2.2.1. Published through abused 
       OIDC trusted publishing from cap-js/cds-dbs.
   - id: cap-js-postgres
     name: "@cap-js/postgres"
@@ -95,7 +99,7 @@
     hashes:
     - sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34
     notes:
-    - Clean predecessor identified as @cap-js/postgres@2.2.1. StepSecurity later noted
+    - Clean predecessor identified as @cap-js/postgres@2.2.1. StepSecurity later noted 
       this release was unpublished from npm.
   - id: cap-js-db-service
     name: "@cap-js/db-service"
@@ -112,10 +116,14 @@
     hashes:
     - sha256:4066781fa830224c8bbcc3aa005a396657f9c8f9016f9a64ad44a9d7f5f45e34
     notes:
-    - Clean predecessor identified as @cap-js/db-service@2.10.0. Published through
+    - Clean predecessor identified as @cap-js/db-service@2.10.0. Published through 
       abused OIDC trusted publishing from cap-js/cds-dbs.
   references:
   - url: https://www.stepsecurity.io/blog/a-mini-shai-hulud-has-appeared
+    title: 'A Mini Shai-Hulud Has Appeared: Obfuscated Bun Runtime Payloads Hit SAP-Related npm Packages'
   - url: https://github.com/SAP/cloud-mta-build-tool/issues/1651
+    title: MBT 1.2.48 compromised package
   - url: https://github.com/cap-js/cds-dbs/issues/1328
+    title: Compromised @cap-js package releases
   - url: https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/
+    title: Monitoring npm Supply Chain Attacks

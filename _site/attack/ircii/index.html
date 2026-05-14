@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ircII FTP distribution backdoored for remote access</title>
+  <title>ircII FTP tarball enabled remote access</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>ircII FTP distribution backdoored for remote access</h1>
+  <h1>ircII FTP tarball enabled remote access</h1>
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> ircII · <a href="https://ftp.irc.org" target="_blank">website</a></div>
@@ -30,8 +30,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The official FTP server (ftp.irc.org) hosting the ircII source code was compromised. The `ircii-2.8.2.tar.gz` distribution was modified; specifically, the file `ircd/s_bsd.c` had a backdoor inserted. This backdoor connected to IP 198.168.253.139 on TCP port 30000 and attempted to start an interactive shell (`/bin/sh -i`), allowing remote access with the privileges of the user running ircII.</p>
+  <p class="synopsis">The official FTP server (ftp.irc.org) hosting the ircII source code was compromised. The `ircii-2.8.2.tar.gz` distribution was modified; specifically, the file `ircd/s_bsd.c` had a backdoor inserted.</p>
 
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The 1998 ircII incident followed the old pattern: the source archive lived on a trusted FTP site, and the attacker changed the archive in place. Users who fetched `ircii-2.8.2.tar.gz` from `ftp.irc.org` or mirrored paths could receive source that looked normal until it was compared with known-good copies.</p>
+    
+      <p>The malicious change was narrow. The record identifies `ircd/s_bsd.c` as the modified file. That matters because source-level changes in network code can survive review by habit: the file is expected to contain socket and connection handling, and a small backdoor can hide among ordinary control flow.</p>
+    
+      <p>The impact was remote access after installation. The attacker did not need to reach every host directly. The distribution path carried the code to administrators, who compiled and installed it inside their own trust boundary.</p>
+    
+      <p>CERT’s later 1999 material treated these cases as part of a larger pattern: central FTP archives were easy to mirror and hard to authenticate. For ircII, as with tcp-wrappers and util-linux, the practical defense was checksum comparison, fresh trusted source, and distrust of archive timestamps.</p>
+    
+  </div>
   
 
   
@@ -92,9 +105,9 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.cert.org/historical/advisories/CA-1999-01.cfm" target="_blank">https://www.cert.org/historical/advisories/CA-1999-01.cfm</a></li>
+      <li><a href="https://www.cert.org/historical/advisories/CA-1999-01.cfm" target="_blank">CERT Advisory CA-1999-01: Trojan horse version of TCP Wrappers</a></li>
     
-      <li><a href="https://web.archive.org/web/20091027105544/http://geocrawler.com/archives/3/55/1998/10/0/2177558/" target="_blank">https://web.archive.org/web/20091027105544/http://geocrawler.com/archives/3/55/1998/10/0/2177558/</a></li>
+      <li><a href="https://web.archive.org/web/20091027105544/http://geocrawler.com/archives/3/55/1998/10/0/2177558/" target="_blank">Geocrawler archive: ircII 2.8.2 distribution modified</a></li>
     
   </ul>
   

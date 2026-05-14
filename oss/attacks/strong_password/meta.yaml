@@ -1,12 +1,18 @@
----
 - id: strong-password
-  title: strong_password Ruby gem compromised with backdoor code
-  synopsis: Similar to the 'rest-client' incident around the same time, the 'strong_password'
-    Ruby gem had a malicious version published. This compromised version contained
-    a backdoor designed to steal environment variables and potentially execute code.
-    It's suspected the same actor compromised both gems.
-  start_date: 2019-08-16
-  end_date: 2019-08-21
+  title: strong_password Ruby gem backdoor stole secrets
+  synopsis: >-
+    strong_password 0.0.7 was published on RubyGems without maintainer control.
+    In Rails production, it fetched Pastebin code and installed a cookie-driven RCE backdoor.
+  story: |-
+    strong_password was compromised before the rest-client incident but exposed the same failure mode. Attackers published version 0.0.7 under the legitimate RubyGems name while the GitHub repository still showed no corresponding project change.
+
+    Tute Costa found the mismatch while reviewing dependency updates. The malicious code had been appended to `lib/strong_password/strength_checker.rb`; it started a thread, waited a random interval, fetched Ruby from Pastebin, and evaluated it only when `Rails.env[0] == "p"`.
+
+    The fetched payload inserted a Rack middleware hook that evaluated Base64 from a crafted `___id` cookie. It also phoned home with host URL data. A password-strength library has no reason to read cookies or fetch executable code, but once loaded into Rails it runs inside the application process.
+
+    The maintainer confirmed the bogus 0.0.7 release was created on June 25, 2019 and that he no longer had ownership in RubyGems. RubyGems yanked the release, locked the publishing account used for the attack, and restored the maintainer.
+  start_date: 2019-06-25
+  end_date: 2019-06-29
   target:
     name: strong_password
     kind: library
@@ -22,12 +28,13 @@
   impact:
     types:
     - data_exfiltration
+    - remote_code_execution
   artifacts:
   - id: strong-password
     name: strong_password
     kind: source_archive
-    start_date: 2019-08-16
-    end_date: 2019-08-21
+    start_date: 2019-06-25
+    end_date: 2019-06-29
     versions:
     - 0.0.7
     locations:
@@ -35,13 +42,42 @@
       role: distribution
     - uri: https://rubygems.org/downloads/strong_password-0.0.7.gem
       role: distribution
-    - uri: https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/
+    - uri: https://www.sonatype.com/blog/cve-2019-13354-strong-password
+      role: mirror
+    - uri: https://withatwist.dev/strong-password-rubygem-hijacked.html
+      role: mirror
+    - uri: 
+        https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/
       role: mirror
     - uri: https://www.helpnetsecurity.com/2019/08/21/backdoored-ruby-gems/
       role: mirror
     hashes:
     - sha256:c3a46b979b941ecc456639033754f3bad3f5d379df064d4ccd0b54d0fb8e46ea
+    indicators:
+    - kind: cve
+      value: CVE-2019-13354
+    - kind: file
+      value: lib/strong_password/strength_checker.rb
+    - kind: service
+      value: pastebin.com
+    - kind: url
+      value: https://pastebin.com/raw/xa456PFt
+    - kind: domain
+      value: smiley.zzz.com.ua
+    - kind: observable
+      value: Backdoor only ran when Rails.env[0] == "p".
+    - kind: observable
+      value: Crafted ___id cookie carried Base64-encoded Ruby for eval.
+    notes:
+    - The malicious 0.0.7 release was created on 2019-06-25 and appeared only on
+      RubyGems, not in the GitHub repository.
   references:
-  - url: https://github.com/rest-client/rest-client/issues/713
-  - url: https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/
+  - url: https://www.sonatype.com/blog/cve-2019-13354-strong-password
+    title: "CVE-2019-13354: strong_password embedded malicious code"
+  - url: https://withatwist.dev/strong-password-rubygem-hijacked.html
+    title: strong_password v0.0.7 rubygem hijacked
+  - url: 
+      https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/
+    title: Code execution back door found in Ruby's rest-client library
   - url: https://www.helpnetsecurity.com/2019/08/21/backdoored-ruby-gems/
+    title: Backdoored Ruby gems stole credentials, injected cryptomining code

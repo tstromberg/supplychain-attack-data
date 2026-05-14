@@ -1,41 +1,139 @@
----
 - id: able-desktop
-  title: Able Desktop installer distributed malware
-  synopsis: Attackers compromised Able Desktop's website and used the Korean software
-    company's own download path to distribute a trojanized installer. The malicious
-    build carried a remote access backdoor, turning a routine desktop installation
-    into a foothold delivered from a familiar vendor domain.
-  start_date: 2020-11-01
-  end_date: 2020-12-31
+  title: Able Desktop updates delivered APT malware
+  synopsis: >-
+    Able Desktop, a Mongolian business suite used by government agencies, delivered HyperBro,
+    Korplug, and Tmanger through trojanized installers and a likely compromised update path.
+  story: |
+    ESET found Able Desktop in the middle of Operation StealthyTrident. The software was part of a Mongolian business-management suite and was advertised as used by more than 430 government agencies. ENISA later used it as a supply-chain taxonomy case; the Atlantic Council treated it as one of the historical roots that made Sunburst easier to understand.
+
+    The delivery was not a single file. ESET saw two trojanized 7-Zip SFX installers, and also saw legitimate Able Desktop clients download malware through the normal update mechanism. The update path saved the fetched executable as `%USERPROFILE%\Documents\Able\Able Desktop.exe` and then ran it.
+
+    The payloads changed over time. Trojanized installers carried the legitimate application plus HyperBro or Korplug. The update path delivered HyperBro by mid-2018 patterns and Tmanger by July 2020. The installers used DLL side-loading with legitimate Symantec and McAfee executables, loader DLLs, and XOR-encoded payloads in files such as `thumb.db`.
+
+    Attribution stayed cautious. HyperBro is associated with LuckyMouse, Tmanger with TA428, and one Tmanger command server overlapped ShadowPad infrastructure. Avast/GenDigital separately described a related East Asia campaign against Mongolian government networks. The stronger fact is the supply-chain failure: trusted Able Desktop distribution and update plumbing delivered remote-access malware into government environments.
+  start_date: 2018-05-01
+  end_date: 2020-07-31
   target:
     name: Able Desktop
     kind: application
-    website: https://able.co.kr
+    website: https://web.able.mn
   actor:
-    name: Nation-state
+    name: China-linked APT operators
     kind: state
   language: C++
   method:
-    cause: website_compromise
+    cause: update_infrastructure_compromise
     phase: distribution
     motive: espionage
     transitive: false
   impact:
     types:
     - remote_access
-    users: 30000
+    - credential_theft
+    - data_exfiltration
   artifacts:
-  - id: able-desktop
-    name: Able Desktop
-    kind: binary_archive
-    website: https://able.co.kr
-    start_date: 2020-11-01
-    end_date: 2020-12-31
-    versions:
-    - 3.5.2
+  - id: able-desktop-update
+    name: Able Desktop update mechanism
+    kind: installer
+    website: https://web.able.mn
+    start_date: 2020-06-01
+    end_date: 2020-07-31
     locations:
-    - uri: http://download.able.co.kr/abledesktop/AbleDesktopSetup_3.5.2.exe
+    - uri: https://able.mn:8989
       role: distribution
+    - uri: https://release.able.mn:8989
+      role: distribution
+    - uri: https://web.able.mn
+      role: distribution
+    - uri: 
+        https://www.welivesecurity.com/2020/12/10/luckymouse-ta428-compromise-able-desktop/
+      role: mirror
+    hashes:
+    - sha1:8fff5c6eb4daee2052b3578b73789eb15711feee
+    - sha1:0550aae6e3ceabcef2a3f926339e68817112059a
+    - sha1:ed6cecfdaaeb7f41a824757862640c874ef3f7ae
+    indicators:
+    - kind: file
+      value: '%USERPROFILE%\Documents\Able\Able Desktop.exe'
+    - kind: malware
+      value: HyperBro
+    - kind: malware
+      value: Tmanger
+    - kind: ip
+      value: 45.77.55.145
+    - kind: ip
+      value: 139.180.208.225
+    notes:
+    - ESET assessed the update mechanism as compromised because the real Able Desktop
+      client fetched malware from the expected update filename and path over HTTPS.
+    - Able Soft told ESET that updates were halted after notification and that it had
+      not observed further use after July 2020.
+  - id: able-desktop-trojanized-installers
+    name: Able Desktop trojanized installers
+    kind: installer
+    website: https://web.able.mn
+    start_date: 2018-05-01
+    end_date: 2020-07-31
+    locations:
+    - uri: 
+        https://www.welivesecurity.com/2020/12/10/luckymouse-ta428-compromise-able-desktop/
+      role: mirror
+    hashes:
+    - sha1:0b0cf4ada30797b0488857f9a3b1429f44335fb6
+    - sha1:b51835a5d8da77a49e3266494a8ae96764c4c152
+    - sha1:23a227dd9b77913d15735a25efb0882420b1de81
+    - sha1:2a630e25d0c1006b6dbd7277f8e52a3574beffec
+    - sha1:5d066113534a9e31f49befda560cf8f8890496d0
+    indicators:
+    - kind: file
+      value: data.dat
+    - kind: file
+      value: data1.dat
+    - kind: file
+      value: data1.exe
+    - kind: file
+      value: thumb.db
+    - kind: file
+      value: IntgStat.exe
+    - kind: file
+      value: pcalocalresloader.dll
+    - kind: file
+      value: siteadv.exe
+    - kind: file
+      value: siteadv.dll
+    - kind: malware
+      value: HyperBro
+    - kind: malware
+      value: Korplug
+    - kind: domain
+      value: developer.firefoxapi.com
+    - kind: ip
+      value: 45.77.173.124
+    notes:
+    - ESET observed two trojanized Able Desktop installers but did not confirm whether
+      they were downloadable from Able's website or another distribution source.
+    - The installers bundled the legitimate Able Desktop application with malware loaded
+      through side-loaded DLLs and XOR-encoded payload files.
   references:
-  - url: https://securelist.com/apt-actor-compromises-website-to-distribute-malware/100170/
-  - url: https://blog.malwarebytes.com/threat-analysis/2021/01/able-desktop-supply-chain/
+  - url: https://www.welivesecurity.com/2020/12/10/luckymouse-ta428-compromise-able-desktop/
+    title: 'Operation StealthyTrident: corporate software under attack'
+  - url: 
+      https://www.enisa.europa.eu/sites/default/files/publications/ENISA%20Threat%20Landscape%20for%20Supply%20Chain%20Attacks.pdf
+    title: ENISA Threat Landscape for Supply Chain Attacks
+  - url: https://www.atlanticcouncil.org/in-depth-research-reports/report/broken-trust-lessons-from-sunburst/
+    title: 'Broken Trust: Lessons from Sunburst'
+  - url: https://www.gendigital.com/blog/insights/research/apt-group-targeting-governmental-agencies-in-east-asia
+    title: APT group targeting governmental agencies in East Asia
+  - url: 
+      https://www.zdnet.com/article/chinese-apt-suspected-of-supply-chain-attack-on-mongolian-government-agencies/
+    title: Chinese APT suspected of supply chain attack on Mongolian government agencies
+  - url: https://scceu.org/chinese-apt-suspected-of-supply-chain-attack-on-mongolian-government-agencies/
+    title: Chinese APT suspected of supply chain attack on Mongolian government agencies
+  - url: https://blog.avast.com/apt-group-targeting-mongolian-government-agencies-avast
+    title: The APT group targeting Mongolia's government
+  - url: 
+      https://securelist.com/apt-actor-compromises-website-to-distribute-malware/100170/
+    title: APT actor compromises website to distribute malware
+  - url: 
+      https://blog.malwarebytes.com/threat-analysis/2021/01/able-desktop-supply-chain/
+    title: Able Desktop supply chain analysis

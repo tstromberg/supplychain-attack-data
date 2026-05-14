@@ -1,10 +1,16 @@
----
 - id: sqgame
-  title: ScarCruft compromised sqgame distributing BirdCall.
-  synopsis: ScarCruft (APT37) compromised the sqgame gaming platform's website to
-    distribute trojanized Android APKs and a malicious Windows update package. The
-    campaign, active since late 2024, utilized the BirdCall backdoor and RokRAT downloader
-    to steal personal data and perform surveillance on ethnic Koreans in China.
+  title: sqgame downloads delivered BirdCall
+  synopsis: >-
+    ScarCruft compromised sqgame downloads for Yanbian-themed games. Android APKs
+    carried BirdCall, while a Windows update package led to RokRAT and BirdCall.
+  story: |
+    ESET found sqgame through a suspicious Android APK on VirusTotal. The file was a trojanized Yanbian Red Ten game, and the same APK was available from sqgame's official website. A second Android game, New Drawing, carried the same backdoor.
+
+    ScarCruft appears to have compromised the website or web server, not the original source tree. The Android packages were repackaged with a new entry activity and service definitions for BirdCall, then arranged to start the original game after the implant initialized.
+
+    The Windows side used the desktop client's update path. ESET found a trojanized `mono.dll` library from `dating/20240429.zip`; the added downloader fetched shellcode, which carried RokRAT, and telemetry showed RokRAT later installing BirdCall.
+
+    The likely target was the Yanbian Korean community in China, including people of interest to North Korea. BirdCall collected contacts, SMS, call logs, files, screenshots, audio, and device metadata, using cloud services for command and control.
   start_date: 2024-10-01
   end_date: Ongoing
   target:
@@ -12,8 +18,9 @@
     kind: game
     website: https://sqgame.com
   actor:
-    name: Nation-state
+    name: ScarCruft
     kind: state
+    country: North Korea
   language: C++, Java
   method:
     cause: website_compromise
@@ -27,23 +34,19 @@
     - remote_access
     users: 1000
   artifacts:
-  - id: sqgame
-    name: sqgame
+  - id: yanbian-red-ten-android
+    name: Yanbian Red Ten
+    package: sqybhs.apk
+    ecosystem: android
     kind: binary_archive
     website: https://sqgame.com
     start_date: 2024-10-01
     end_date: Ongoing
     versions:
     - '1.0'
-    - '1.3'
     - '1.5'
-    - '2.0'
     locations:
-    - uri: http://www.sqgame.com
-      role: distribution
     - uri: http://www.sqgame.com/down/sqybhs.apk
-      role: distribution
-    - uri: http://www.sqgame.com/down/ybht.apk
       role: distribution
     - uri: https://www.virustotal.com/gui/file/01a33066fbc6253304c92760916329abd50c3191
       role: mirror
@@ -53,21 +56,68 @@
       role: mirror
     - uri: https://www.virustotal.com/gui/file/59a9b9d47ae36411b277544f25ad2cc955d8dd2c
       role: mirror
-    - uri: https://www.virustotal.com/gui/file/7356d7868c81499fb4e720f7c9530e5763b4c1d0
-      role: mirror
-    - uri: https://www.virustotal.com/gui/file/fc0c691db7e2d2bd3b0b4c1e24d18df72168b7d9
-      role: mirror
-    - uri: https://www.virustotal.com/gui/file/95bdb94f6767a3cce6d92363bbf5bc84b786bdb0
-      role: mirror
     hashes:
     - sha1:01A33066FBC6253304C92760916329ABD50C3191
     - sha1:03E3ECE9F48CF4104AAFC535790CA2FB3C6B26CF
     - sha1:2B81F78EC4C3F8D6CF8F677D141C5D13C35333AF
     - sha1:59A9B9D47AE36411B277544F25AD2CC955D8DD2C
+    indicators:
+    - kind: family
+      value: BirdCall
+    - kind: package
+      value: com.example.zhuagou
+  - id: new-drawing-android
+    name: New Drawing
+    package: ybht.apk
+    ecosystem: android
+    kind: binary_archive
+    website: https://sqgame.com
+    start_date: 2024-10-01
+    end_date: Ongoing
+    versions:
+    - '1.3'
+    - '2.0'
+    locations:
+    - uri: http://www.sqgame.com/down/ybht.apk
+      role: distribution
+    - uri: https://www.virustotal.com/gui/file/7356d7868c81499fb4e720f7c9530e5763b4c1d0
+      role: mirror
+    - uri: https://www.virustotal.com/gui/file/fc0c691db7e2d2bd3b0b4c1e24d18df72168b7d9
+      role: mirror
+    hashes:
     - sha1:7356D7868C81499FB4E720F7C9530E5763B4C1D0
     - sha1:FC0C691DB7E2D2BD3B0B4C1E24D18DF72168B7D9
+    indicators:
+    - kind: family
+      value: BirdCall
+    - kind: package
+      value: com.mob.util.MobSs
+  - id: sqgame-windows-update
+    name: sqgame Windows update package
+    package: dating/20240429.zip
+    ecosystem: sqgame windows updater
+    kind: binary_archive
+    website: https://sqgame.com
+    start_date: 2024-10-01
+    end_date: Ongoing
+    locations:
+    - uri: http://xiazai.sqgame.com.cn/dating/20240429.zip
+      role: distribution
+    - uri: https://www.virustotal.com/gui/file/95bdb94f6767a3cce6d92363bbf5bc84b786bdb0
+      role: mirror
+    hashes:
     - sha1:95BDB94F6767A3CCE6D92363BBF5BC84B786BDB0
+    indicators:
+    - kind: file
+      value: mono.dll
+    - kind: family
+      value: RokRAT
+    - kind: family
+      value: BirdCall
     notes:
-    - Affected SQGame artifact was BirdCall.
+    - ESET described a trojanized Windows update package served from sqgame alongside 
+      the Android APKs, but did not publish a precise version identifier.
   references:
-  - url: https://www.welivesecurity.com/en/eset-research/rigged-game-scarcruft-compromises-gaming-platform-supply-chain-attack/
+  - url: 
+      https://www.welivesecurity.com/en/eset-research/rigged-game-scarcruft-compromises-gaming-platform-supply-chain-attack/
+    title: 'Rigged game: ScarCruft compromises gaming platform in supply-chain attack'

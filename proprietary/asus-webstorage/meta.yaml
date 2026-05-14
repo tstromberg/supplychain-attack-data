@@ -1,0 +1,83 @@
+---
+- id: asus-webstorage
+  title: ASUS WebStorage update served PLEAD
+  synopsis: >-
+    BlackTech abused ASUS WebStorage's HTTP update flow to deliver PLEAD in
+    Taiwan. The legitimate signed client executed a malicious update pushed
+    through likely router-level interception.
+  story: |
+    ASUS WebStorage was not the same incident as ShadowHammer. In late April 2019, ESET saw the legitimate `AsusWSPanel.exe` process create and execute PLEAD malware on systems in Taiwan. The process belonged to ASUS WebStorage and was digitally signed by ASUS Cloud Corporation.
+
+    ESET's favored explanation was router-level man-in-the-middle delivery. ASUS WebStorage requested and transferred updates over HTTP, then executed the downloaded file without validating its authenticity. If an attacker controlled the network path, the update mechanism became a delivery slot.
+
+    The surrounding tradecraft pointed to BlackTech. ESET noted that PLEAD had been used by the group in regional espionage, and that affected organizations often had internet-accessible routers from the same manufacturer. Prior BlackTech operations had also used compromised routers as command infrastructure.
+
+    The payload was PLEAD, a backdoor built for espionage. Reporting described host and file collection, command execution, file upload, and a document-exfiltration module that used Google Drive. ASUS WebStorage supplied the trust boundary; the router supplied the position.
+  start_date: 2019-04-30
+  end_date: 2019-05-14
+  target:
+    name: ASUS WebStorage
+    kind: application
+    website: https://www.asuswebstorage.com
+  actor:
+    name: BlackTech
+    kind: group
+  method:
+    cause: insecure_update_mechanism
+    phase: distribution
+    motive: espionage
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_access
+    - data_exfiltration
+  artifacts:
+  - id: asus-webstorage-update
+    name: ASUS WebStorage update flow
+    package: ASUS WebStorage
+    ecosystem: windows update
+    kind: update
+    website: https://www.asuswebstorage.com
+    start_date: 2019-04-30
+    end_date: 2019-05-14
+    locations:
+    - uri: https://www.asuswebstorage.com
+      role: distribution
+    indicators:
+    - kind: file
+      value: AsusWSPanel.exe
+    - kind: malware
+      value: PLEAD
+    - kind: actor
+      value: BlackTech
+    - kind: certificate_signer
+      value: ASUS Cloud Corporation
+    - kind: protocol
+      value: HTTP update request
+    - kind: observable
+      value: Legitimate ASUS WebStorage process created and executed PLEAD.
+    - kind: observable
+      value: Update was downloaded over HTTP and executed without authenticity validation.
+    - kind: capability
+      value: command execution
+    - kind: capability
+      value: file upload
+    - kind: capability
+      value: document exfiltration via Google Drive
+    notes:
+    - ESET assessed router-level man-in-the-middle delivery as the most probable
+      scenario and said a supply-chain compromise could not be fully discounted.
+    - Start date is approximate; ESET described the activity as late April 2019.
+    - Exact affected ASUS WebStorage versions and hashes were not published in the
+      cited sources.
+  references:
+  - url: 
+      https://www.eset.com/ca/about/newsroom/press-releases/plead-malware-now-uses-compromised-routers-and-likely-man-in-the-middle-attack-against-asus-webstora/
+    title: PLEAD malware now uses compromised routers and likely man-in-the-middle
+      attack against ASUS Webstorage software
+  - url: 
+      https://www.eset.com/gr-en/about/newsroom/press-releases-1/plead-malware-now-uses-compromised-routers-against-asus-webstorage-software/
+    title: Plead malware now uses compromised routers against ASUS Webstorage software
+  - url: https://socprime.com/news/blacktech-group-abuses-asus-webstorage-to-install-plead-malware/
+    title: BlackTech Group Abuses ASUS WebStorage to Install Plead Malware

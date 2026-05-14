@@ -1,0 +1,176 @@
+- id: mimi-chat
+  title: MiMi installers carried Iron Tiger backdoors
+  synopsis: >-
+    Iron Tiger compromised MiMi's official desktop installers. Windows builds carried
+    HyperBro, while macOS and Linux installers delivered rshell for cross-platform
+    remote access.
+  story: |
+    MiMi was an Electron chat application distributed from the vendor's own site. Trend Micro reported that attackers replaced or built official desktop packages with malware for Windows, macOS, and Linux, so users received a working chat client and a covert access channel.
+
+    The Windows compromise was closest to the build. Trend Micro found backdoor code inserted before the main MiMi window was created, then compiled into MiMi 2.2.0 and 2.2.1. The added loader started HyperBro and passed control back to the application.
+
+    The macOS and Linux path delivered rshell. SEKOIA documented a MiMi 2.3.0 DMG hosted at `mimi.mimi3.org` on 2022-05-26, with the payload placed under `MiMi.app/Contents/Resources/rshell`. The implant collected host data and opened a remote shell.
+
+    Public reporting attributed the operation to Iron Tiger, also tracked as LuckyMouse or APT27. The campaign was espionage-focused and cross-platform; public sources did not give a reliable victim count.
+  start_date: 2021-11-23
+  end_date: 2022-08-16
+  target:
+    name: MiMi
+    kind: application
+    website: https://mimi.mimi3.org
+  actor:
+    name: Iron Tiger
+    kind: state
+    country: China
+  language: JavaScript
+  method:
+    cause: website_compromise
+    phase: distribution
+    motive: espionage
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_access
+    - data_theft
+    users: 0
+  indicators:
+  - kind: family
+    value: HyperBro
+  - kind: family
+    value: rshell
+  - kind: group
+    value: Iron Tiger
+  - kind: group
+    value: LuckyMouse
+  - kind: group
+    value: APT27
+  - kind: url
+    value: https://mimi.mimi3.org:443/mimi/mimi-mac.dmg
+  - kind: file
+    value: mimi32.exe
+  - kind: file
+    value: mimi32 2.exe
+  - kind: file
+    value: rshell
+  - kind: path
+    value: /Volumes/MiMi 2.3.0/MiMi.app/Contents/Resources/rshell
+  - kind: ip
+    value: 139.180.216.65
+  - kind: ip
+    value: 103.79.76.88
+  - kind: ip
+    value: 103.79.77.178
+  artifacts:
+  - id: mimi-windows
+    name: MiMi Windows installer
+    package: MiMi
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://mimi.mimi3.org
+    start_date: 2021-11-23
+    end_date: 2022-08-16
+    versions:
+    - 2.2.0
+    - 2.2.1
+    locations:
+    - uri: https://mimi.mimi3.org
+      role: distribution
+    - uri: 
+        https://www.trendmicro.com/en_us/research/22/h/irontiger-compromises-chat-app-Mimi-targets-windows-mac-linux-users.html
+      role: mirror
+    indicators:
+    - kind: family
+      value: HyperBro
+    - kind: file_sha1
+      value: mimi32.exe f0dce203dcdb9619e83b66b0de6fec711b0df9e1
+    - kind: file_sha256
+      value: mimi32.exe 64b6e640abf1561a284a7985010ebf945b76cd33f911d59f22532b460ca9879f
+    - kind: file_sha1
+      value: mimi32 2.exe 16b27867fbb2da0b0b0925569928711a43c33274
+    - kind: file_sha256
+      value: mimi32 2.exe 4f69806411cea9c8525ce6f9dd7408a6522bcdcc33ea1cb788d377ac8a4c98d7
+    notes:
+    - Trend Micro reported that the Windows backdoor code was present in MiMi 2.2.0
+      and 2.2.1 before compilation.
+  - id: mimi-macos
+    name: MiMi macOS DMG
+    package: MiMi
+    ecosystem: macos dmg
+    kind: binary_archive
+    website: https://mimi.mimi3.org
+    start_date: 2022-05-26
+    end_date: 2022-08-16
+    versions:
+    - 2.3.0 - 2.3.3
+    locations:
+    - uri: https://mimi.mimi3.org/mimi/mimi-mac.dmg
+      role: distribution
+    - uri: https://blog.sekoia.io/luckymouse-uses-a-backdoored-electron-app-to-target-macos/
+      role: mirror
+    hashes:
+    - sha256:f6e0e5c9b9d43e008805644d937770b399f859cbba475ad837805d9adec13a2c
+    - sha256:4742c1987fdd968d7f094dc5a3ea3e9b5340b47e5a61846ac6ac7ae03fc7288f
+    - sha256:64e771c894616100202e83f3574f8accc8453138af6709367c99157e33bb613a
+    - sha256:466981b6aa38ae35a2c0e21a2066b4e803cc0bf76409eeb605892604c20ccf3a
+    indicators:
+    - kind: family
+      value: rshell
+    - kind: path
+      value: /Volumes/MiMi 2.3.0/MiMi.app/Contents/Resources/rshell
+    - kind: file_sha256
+      value: rshell 8c3be245cbbe9206a5d146017c14b8f965ab7045268033d70811d5bcc4b796ec
+    - kind: file_sha256
+      value: rshell 3a9e72b3810b320fa6826a1273732fee7a8e2b2e5c0fd95b8c36bbab970e830a
+    notes:
+    - SEKOIA observed the MiMi 2.3.0 DMG on the official MiMi site with a 2022-05-26
+      timestamp.
+  - id: mimi-linux
+    name: MiMi Linux installer
+    package: MiMi
+    ecosystem: linux installer
+    kind: binary_archive
+    website: https://mimi.mimi3.org
+    start_date: 2022-05-26
+    end_date: 2022-08-16
+    locations:
+    - uri: https://mimi.mimi3.org
+      role: distribution
+    - uri: 
+        https://www.trendmicro.com/en_us/research/22/h/irontiger-compromises-chat-app-Mimi-targets-windows-mac-linux-users.html
+      role: mirror
+    indicators:
+    - kind: family
+      value: rshell
+    - kind: file_sha256
+      value: rshell d0fec5c5e2687e76af07a4a3c6e2e2b02789838c0b802f5041443ab482bc3498
+    - kind: file_sha256
+      value: rshell 07aa739fa4942cfd68d4a075568456797f11ae34db5cd56f88d80185bc1d7a29
+    - kind: file_sha256
+      value: rshell d67aebfafa347a21805dbded3fa310e2268a5d2255fcb7f1c8004502a95e7538
+    - kind: file_sha256
+      value: rshell e909c4dac832e9d1ecd1673c5bff6e1939d9c832a2509cb64931e4aa1e334077
+    - kind: file_sha256
+      value: rshell c10a3a78cdf1e48189ac270767f7f718bd15a9d4e48e580a9ef6ceff5f4abf46
+    - kind: file_sha256
+      value: rshell 8019b7deaf41b48c38b8b48e016f208a28e0909d437d4e35e3e35f7995758564
+    notes:
+    - Public sources did not name a specific affected Linux package version.
+  references:
+  - url: 
+      https://www.trendmicro.com/en_us/research/22/h/irontiger-compromises-chat-app-Mimi-targets-windows-mac-linux-users.html
+    title: Iron Tiger Compromises Chat Application MiMi, Targets Windows, Mac, and
+      Linux Users
+  - url: https://securityaffairs.com/134366/apt/iron-tiger-apt-is-behind-a-supply-chain-attack-that-employed-messaging-app-mimi.html
+    title: Iron Tiger APT is behind a supply chain attack that employed messaging
+      app MiMi
+  - url: https://thehackernews.com/2022/08/chinese-hackers-backdoored-mimi-chat.html
+    title: Chinese Hackers Backdoored MiMi Chat App to Target Windows, Linux, macOS
+      Users
+  - url: https://www.infosecurity-magazine.com/news/chinese-hacker-compromised-mimi/
+    title: Chinese Hacker Compromised MiMi Chat App Supply Chain
+  - url: https://cybersecuritynews.com/chinese-hackers-backdoor-chat-app/
+    title: Chinese Hackers Backdoored MiMi Chat App to Target Windows, Linux, macOS
+      Users
+  - url: https://blog.sekoia.io/luckymouse-uses-a-backdoored-electron-app-to-target-macos/
+    title: LuckyMouse uses a backdoored Electron App to target macOS

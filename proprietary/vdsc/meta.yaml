@@ -1,9 +1,19 @@
----
-- id: vsdc-video-editor
-  title: VSDC download portal compromised
-  synopsis: The official VSDC Video Editor website was compromised multiple times, and attackers replaced legitimate download links with trojanized installers carrying banking malware. The public source trail has thinned over time, but the pattern remains clear as a trusted media tool became a rotating delivery point.
-  start_date: 2018-11-01
-  end_date: 2019-07-31
+- id: vsdc-video-editor-2018
+  title: VSDC links served stealer chain
+  synopsis: >-
+    VSDC's official website replaced download links with attacker URLs on three
+    days in 2018. Victims received JavaScript that staged a stealer, keylogger,
+    and DarkVNC.
+  story: |
+    The first documented VSDC compromise was a direct attack on the vendor website. Qihoo 360 reported that the official `videosoftdev.com` download links were changed on 2018-06-18, 2018-07-02, and 2018-07-06.
+
+    The substituted links did not serve the normal installer. They redirected users to `5.79.100.218/_files/file.php` or `drbillbailey.us/tw/file.php`, where a JavaScript file posed as VSDC software. That script launched PowerShell and pulled additional payloads from attacker infrastructure.
+
+    The payload chain included AZORult Stealer, X-Key Keylogger, and DarkVNC. 360 described stolen data going to `system-check.xyz`; BleepingComputer also reported Telegram, Steam, Skype, Electrum, screenshots, keystrokes, and remote-control capability.
+
+    VSDC confirmed that attackers reached the administrative side of the website and tried to replace distribution-file links, while the distributives themselves were not damaged. The company said it restored site files, removed fake files, changed passwords, added two-factor access controls, and installed server-side file validation.
+  start_date: 2018-06-18
+  end_date: 2018-07-06
   target:
     name: VSDC Video Editor
     kind: application
@@ -11,7 +21,92 @@
   actor:
     name: Cybercriminal
     kind: group
-  language: C++
+  language: JavaScript
+  method:
+    cause: website_compromise
+    phase: distribution
+    motive: financial_gain
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - keylogging
+    - remote_access
+    - malware_delivery
+    users: 0
+  artifacts:
+  - id: vsdc-video-editor-2018
+    name: VSDC Free Video Editor download link
+    package: VSDC Free Video Editor
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://videosoftdev.com
+    start_date: 2018-06-18
+    end_date: 2018-07-06
+    locations:
+    - uri: https://www.videosoftdev.com/free-video-editor/download
+      role: distribution
+    - uri: https://www.videosoftdev.com/news/attacks-successfully-stopped
+      role: mirror
+    indicators:
+    - kind: url
+      value: hxxp://5.79.100.218/_files/file.php
+    - kind: url
+      value: hxxp://drbillbailey.us/tw/file.php
+    - kind: url
+      value: hxxp://185.25.51.133/_files/
+    - kind: domain
+      value: system-check.xyz
+    - kind: ip
+      value: 185.25.51.133
+    - kind: ip
+      value: 185.25.51.152
+    - kind: family
+      value: AZORult
+    - kind: family
+      value: X-Key Keylogger
+    - kind: family
+      value: DarkVNC
+    - kind: process
+      value: PowerShell
+    notes:
+    - VSDC said the attackers replaced links to the distribution file, but the original
+      distributives themselves were not damaged.
+  references:
+  - url: 
+      https://www.bleepingcomputer.com/news/security/popular-software-site-hacked-to-redirect-users-to-keylogger-infostealer-more/
+    title: Popular Software Site Hacked to Redirect Users to Keylogger, Infostealer,
+      More
+  - url: 
+      https://blog.360totalsecurity.com/en/famous-software-vsdc-official-website-was-hacked-and-affected-more-than-30-countries/
+    title: Famous software VSDC official website was hacked and affected more than
+      30 countries
+  - url: https://www.videosoftdev.com/news/attacks-successfully-stopped
+    title: VSDC Video Editor team has detected and stopped hacker attacks on the website
+
+- id: vsdc-video-editor-2019
+  title: VSDC downloads delivered Bolik and KPOT
+  synopsis: >-
+    VSDC's official site was compromised again in 2019. Geofenced JavaScript replaced
+    download links for some users with Bolik banking trojan and KPOT stealer installers.
+  story: |
+    Doctor Web reported a second VSDC official-site compromise in 2019. This time the attack ran from 2019-02-21 to 2019-03-23 and used malicious JavaScript embedded in the VSDC website rather than a simple static link swap.
+
+    The script checked visitor geolocation and replaced download links for users in the United Kingdom, United States, Canada, and Australia. Native VSDC links were substituted with `thedoctorwithin.com` URLs for the video editor x64, video editor x86, and video converter installers.
+
+    The first payload was Win32.Bolik.2, a polymorphic banking trojan with web injection, traffic interception, keylogging, and bank-client theft features. On 2019-03-22, attackers switched the payload to KPOT Stealer, which targeted browsers, Microsoft accounts, messengers, and other stored credentials.
+
+    Doctor Web reported at least 565 Bolik infections and 83 KPOT downloads through the VSDC site. VSDC confirmed the site was briefly affected, said the administrative side and program files were not affected, and stated that the vulnerability had been detected and patched.
+  start_date: 2019-02-21
+  end_date: 2019-03-23
+  target:
+    name: VSDC Video Editor
+    kind: application
+    website: https://videosoftdev.com
+  actor:
+    name: Cybercriminal
+    kind: group
+  language: JavaScript
   method:
     cause: website_compromise
     phase: distribution
@@ -20,14 +115,73 @@
   impact:
     types:
     - banking_trojan
-    users: 565000
+    - credential_theft
+    - keylogging
+    - malware_delivery
+    users: 648
   artifacts:
-  - id: vsdc-video-editor
-    name: VSDC Video Editor
+  - id: vsdc-video-editor-x64-2019
+    name: VSDC Video Editor x64 substituted download
+    package: video_editor_x64.exe
+    ecosystem: windows installer
     kind: binary_archive
     website: https://videosoftdev.com
-    start_date: 2018-11-01
-    end_date: 2019-07-31
+    start_date: 2019-02-21
+    end_date: 2019-03-23
+    locations:
+    - uri: https://www.videosoftdev.com/free-video-editor/download
+      role: distribution
     indicators:
-    - kind: observable
-      value: Trojanized VSDC Video Editor installers downloaded from videosoftdev.com during 2018-2019.
+    - kind: url
+      value: https://thedoctorwithin[.]com/video_editor_x64.exe
+    - kind: family
+      value: Win32.Bolik.2
+    - kind: family
+      value: KPOT Stealer
+  - id: vsdc-video-editor-x86-2019
+    name: VSDC Video Editor x86 substituted download
+    package: video_editor_x32.exe
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://videosoftdev.com
+    start_date: 2019-02-21
+    end_date: 2019-03-23
+    locations:
+    - uri: https://www.videosoftdev.com/free-video-editor/download
+      role: distribution
+    indicators:
+    - kind: url
+      value: https://thedoctorwithin[.]com/video_editor_x32.exe
+    - kind: family
+      value: Win32.Bolik.2
+    - kind: family
+      value: KPOT Stealer
+  - id: vsdc-video-converter-2019
+    name: VSDC Video Converter substituted download
+    package: video_converter.exe
+    ecosystem: windows installer
+    kind: binary_archive
+    website: https://videosoftdev.com
+    start_date: 2019-02-21
+    end_date: 2019-03-23
+    locations:
+    - uri: https://www.videosoftdev.com/free-video-converter/download
+      role: distribution
+    indicators:
+    - kind: url
+      value: https://thedoctorwithin[.]com/video_converter.exe
+    - kind: family
+      value: Win32.Bolik.2
+    - kind: family
+      value: KPOT Stealer
+  notes:
+  - The 2020 Dr.Web CNET/download.com case is not modeled here because the known
+    compromised distribution point was a third-party download portal, not VSDC's own
+    official website.
+  references:
+  - url: 
+      https://www.bleepingcomputer.com/news/security/vsdc-site-hacked-again-to-spread-password-stealing-malware/
+    title: VSDC Site Hacked Again to Spread Password Stealing Malware
+  - url: https://news.drweb.com/show/?i=13242
+    title: The official website of a popular video editing software was infected with
+      a banking trojan

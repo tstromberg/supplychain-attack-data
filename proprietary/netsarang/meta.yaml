@@ -1,11 +1,18 @@
 ---
 - id: netsarang
-  title: NetSarang server tools shipped with ShadowPad backdoor.
-  synopsis: Legitimate updates for NetSarang's popular server management software
-    (Xmanager, Xshell, etc.) were compromised to include the ShadowPad backdoor. This
-    allowed attackers to potentially control and exfiltrate data from infected systems
-    in highly sensitive organizations worldwide. The backdoor was discovered after
-    being active for a short period.
+  title: NetSarang server tools shipped ShadowPad backdoor
+  synopsis: >-
+    Legitimate updates for NetSarang server tools, including Xmanager and Xshell,
+    shipped with the ShadowPad backdoor. The payload gave attackers remote control
+    and data theft capability inside sensitive organizations.
+  story: |
+    In August 2017, Kaspersky traced suspicious DNS traffic inside a financial institution to NetSarang server-management software. The affected products were legitimate, signed NetSarang builds. The compromise lived inside software used by administrators, on machines with useful access.
+
+    The malicious code was embedded in `nssock2.dll`, a library loaded by the NetSarang tools. It was compiled on July 13, 2017 and signed with a legitimate NetSarang certificate. Public guidance later bounded distribution to NetSarang's website and in-application update utilities between July 18 and August 4, 2017.
+
+    ShadowPad stayed quiet until activated. The first layer sent host, domain, and user details every eight hours, then waited for a specially crafted DNS TXT record for a month-derived domain such as `nylalobghyhirgh.com`. A returned key decrypted the next stage. The packet marker decoded to `DOOR`.
+
+    Once active, the backdoor could upload files, create processes, download and execute attacker code, and keep an encrypted virtual file system in the registry. NetSarang removed the affected packages after notification and issued clean builds. The lesson was direct: a signed admin tool can become a patient access broker.
   start_date: 2017-07-18
   end_date: 2017-08-04
   target:
@@ -13,8 +20,8 @@
     kind: application
     website: https://netsarang.com
   actor:
-    name: Nation-state
-    kind: state
+    name: Unknown Chinese-speaking actor
+    kind: group
   method:
     cause: build_system_compromise
     phase: ci_cd
@@ -23,18 +30,70 @@
   impact:
     types:
     - backdoor
+    - remote_code_execution
+    - data_theft
     users: 10000
   locations:
   - uri: https://securelist.com/shadowpad-in-corporate-networks/79953/
     role: mirror
-  - uri: https://www.virustotal.com/gui/file/db67eaef6a31d392a0240a92494c9058d864f3fc7be5b42767e5c978c690023c
+  - uri: https://securelist.com/shadowpad-in-corporate-networks/81432/
+    role: mirror
+  - uri: 
+      https://www.virustotal.com/gui/file/db67eaef6a31d392a0240a92494c9058d864f3fc7be5b42767e5c978c690023c
     role: mirror
   - uri: https://github.com/malware-research/samples/tree/main/shadowpad
     role: mirror
-  hashes:
-  - sha256:db67eaef6a31d392a0240a92494c9058d864f3fc7be5b42767e5c978c690023c
-  - sha256:5554bf896a8f77a2f12df4af39e7baeebb411953d4158249b87688f9c8d35ba5
-  - md5:97363d50a279492fda14cbab53429e75
+  indicators:
+  - kind: file
+    value: nssock2.dll
+  - kind: file_md5
+    value: nssock2.dll 97363d50a279492fda14cbab53429e75
+  - kind: file_md5
+    value: clean nssock2.dll ef0af7231360967c08efbdd2a94f9808
+  - kind: file_sha256
+    value: ShadowPad sample db67eaef6a31d392a0240a92494c9058d864f3fc7be5b42767e5c978c690023c
+  - kind: file_sha256
+    value: ShadowPad sample 5554bf896a8f77a2f12df4af39e7baeebb411953d4158249b87688f9c8d35ba5
+  - kind: malware
+    value: ShadowPad
+  - kind: detection
+    value: Backdoor.Win32.Shadowpad.a
+  - kind: cve
+    value: CVE-2017-20203
+  - kind: cve
+    value: CVE-2025-34252
+  - kind: cwe
+    value: CWE-506
+  - kind: domain
+    value: ribotqtonut.com
+  - kind: domain
+    value: nylalobghyhirgh.com
+  - kind: domain
+    value: jkvmdmjyfcvkf.com
+  - kind: domain
+    value: bafyvoruzgjitwr.com
+  - kind: domain
+    value: xmponmzmxkxkh.com
+  - kind: domain
+    value: tczafklirkl.com
+  - kind: domain
+    value: notped.com
+  - kind: domain
+    value: dnsgogle.com
+  - kind: domain
+    value: operatingbox.com
+  - kind: domain
+    value: paniesx.com
+  - kind: domain
+    value: techniciantext.com
+  - kind: marker
+    value: DOOR
+  - kind: certificate_serial
+    value: 53 0C E1 4C 81 F3 62 10 A1 68 2A FF 17 9E 25 80
+  - kind: observable
+    value: DNS TXT activation record unlocked the encrypted second-stage payload.
+  - kind: observable
+    value: Payload could store an encrypted virtual file system in the Windows registry.
   artifacts:
   - id: xmanager-enterprise
     name: Xmanager Enterprise installer
@@ -46,12 +105,17 @@
     end_date: 2017-08-04
     versions:
     - 5.0-build-1232
+    fixed_versions:
+    - 5.0-build-1236
     locations:
     - uri: https://netsarang.com/downloads/Xmanager-enterprise-5.0-build-1232.exe
       role: distribution
+    hashes:
+    - md5:0009f4b9972660eeb23ff3a9dccd8d86
+    - sha1:12180ff028c1c38d99e8375dd6d01f47f6711b97
     notes:
-    - Shared ShadowPad DLL and installer hashes remain at the attack level because
-      public reporting does not map each digest to a specific product installer.
+    - Kaspersky mapped MD5 and SHA1 installer hashes to each affected package. 
+      ShadowPad sample and nssock2.dll hashes are retained as file indicators.
   - id: xmanager
     name: Xmanager installer
     package: Xmanager
@@ -62,9 +126,14 @@
     end_date: 2017-08-04
     versions:
     - 5.0-build-1045
+    fixed_versions:
+    - 5.0-build-1049
     locations:
     - uri: https://netsarang.com/downloads/Xmanager-5.0-build-1045.exe
       role: distribution
+    hashes:
+    - md5:b69ab19614ef15aa75baf26c869c9cdd
+    - sha1:35c9dae68c129ebb7e7f65511b3a804ddbe4cf1d
   - id: xshell
     name: Xshell installer
     package: Xshell
@@ -75,9 +144,14 @@
     end_date: 2017-08-04
     versions:
     - 5.0-build-1322
+    fixed_versions:
+    - 5.0-build-1326
     locations:
     - uri: https://netsarang.com/downloads/Xshell-5.0-build-1322.exe
       role: distribution
+    hashes:
+    - md5:b2c302537ce8fbbcff0d45968cc0a826
+    - sha1:7cf07efe04fe0012ed8beaa2dec5420a9b5561d6
   - id: xftp
     name: Xftp installer
     package: Xftp
@@ -88,9 +162,14 @@
     end_date: 2017-08-04
     versions:
     - 5.0-build-1218
+    fixed_versions:
+    - 5.0-build-1222
     locations:
     - uri: https://netsarang.com/downloads/Xftp-5.0-build-1218.exe
       role: distribution
+    hashes:
+    - md5:78321ad1deefce193c8172ec982ddad1
+    - sha1:08a67be4a4c5629ac3d12f0fdd1efc20aa4bdb2b
   - id: xlpd
     name: Xlpd installer
     package: Xlpd
@@ -101,10 +180,34 @@
     end_date: 2017-08-04
     versions:
     - 5.0-build-1220
+    fixed_versions:
+    - 5.0-build-1224
     locations:
     - uri: https://netsarang.com/downloads/Xlpd-5.0-build-1220.exe
       role: distribution
+    hashes:
+    - md5:28228f337fdbe3ab34316a7132123c49
+    - sha1:3d69fdd4e29ad65799be33ae812fe278b2b2dabe
   references:
   - url: https://securelist.com/shadowpad-in-corporate-networks/79953/
-  - url: https://www.kaspersky.com/about/press-releases/2017_shadowpad-how-attackers-hide-backdoor-in-software-used-by-hundreds-of-large-companies-around-the-world
+    title: ShadowPad in corporate networks
+  - url: https://securelist.com/shadowpad-in-corporate-networks/81432/
+    title: ShadowPad in corporate networks
+  - url: https://www.theregister.com/2017/08/15/netsarang_software_backdoor/
+    title: Creepy backdoor found in NetSarang server management software
+  - url: 
+      https://netsarang.atlassian.net/wiki/spaces/ENFA/pages/1320681748/Recovering+from+nssock2.dll+by+Support
+    title: Recovering from nssock2.dll by Support
+  - url: https://github.com/advisories/ghsa-r7vf-6c3r-53c3
+    title: NetSarang Xmanager Enterprise 5.0 Build 1232, Xmanager 5.0 Build
+      1045, Xshell 5.0 Build 1322, Xftp 5.0 Build 1218, and Xlpd 5.0 Build
+      1220 contain malicious nssock2.dll
+  - url: https://www.scworld.com/news/shadowpad-attack-sabotaged-netsarang-software-with-backdoor
+    title: ShadowPad attack sabotaged NetSarang software with backdoor
+  - url: 
+      https://www.kaspersky.com/about/press-releases/2017_shadowpad-how-attackers-hide-backdoor-in-software-used-by-hundreds-of-large-companies-around-the-world
+    title: 'ShadowPad: How Attackers Hide Backdoor in Software Used by Hundreds of Large Companies Around the World'
   - url: https://www.cyber.gc.ca/en/alerts/software-compromised-backdoor-trojan-0
+    title: Software Compromised with Backdoor Trojan
+  - url: https://www.vulncheck.com/advisories/netsarang-malicious-backdoor-supply-chain-compromise
+    title: NetSarang v5.0 Malicious Backdoor Supply Chain Compromise

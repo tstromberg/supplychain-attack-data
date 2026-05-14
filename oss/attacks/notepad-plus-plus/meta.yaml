@@ -1,12 +1,19 @@
----
 - id: notepad-plus-plus
-  title: Notepad++ Update Infrastructure Compromise
-  synopsis: Attackers compromised Notepad++ update infrastructure at the hosting provider
-    layer and distributed malicious update.exe files through the trusted update path.
-    Between June and October 2025, the operation delivered Cobalt Strike Beacons and
-    Chrysalis backdoors to selected organizations in specific regions.
+  title: Notepad++ updater delivered backdoors
+  synopsis: >-
+    A hosting-provider compromise let attackers selectively redirect Notepad++ update
+    traffic in 2025. Victims received malicious update.exe chains that led to Cobalt
+    Strike and custom backdoors.
+  story: |
+    Notepad++ disclosed the incident on 2026-02-02, but the attack window sat in 2025. The project's update infrastructure was affected by a hosting provider-level compromise that let attackers redirect selected update requests.
+
+    Kaspersky telemetry showed rotating chains from late July through October 2025. The legitimate updater process `GUP.exe` launched attacker-supplied `update.exe` files, which gathered host data, staged files under user profile directories, and delivered second-stage payloads.
+
+    The payloads changed over time. Some chains led to Cobalt Strike Beacon through Metasploit-style loaders; later chains used different infrastructure and backdoor components. The operation was targeted, with Kaspersky observing about a dozen machines across individuals and organizations.
+
+    Direct manual downloads from the official website were not the main path described here. The value was the updater trust boundary: a user asking Notepad++ to update could receive attacker code through infrastructure the project and its users expected to be boring.
   start_date: 2025-06-01
-  end_date: 2025-10-31
+  end_date: 2025-12-02
   target:
     name: notepad-plus-plus
     kind: application
@@ -28,13 +35,17 @@
     users: 0
   artifacts:
   - id: notepad-plus-plus
-    name: notepad-plus-plus
+    name: Notepad++ updater-delivered payloads
+    package: update.exe
+    ecosystem: windows updater
     kind: application
     website: https://notepad-plus-plus.org
     repo: https://github.com/notepad-plus-plus/notepad-plus-plus
     start_date: 2025-06-01
-    end_date: 2025-10-31
+    end_date: 2025-12-02
     locations:
+    - uri: https://notepad-plus-plus.org/news/hijacked-incident-info-update/
+      role: distribution
     - uri: https://github.com/notepad-plus-plus/notepad-plus-plus
       role: mirror
     hashes:
@@ -47,6 +58,21 @@
     - sha1:06a6a5a39193075734a32e0235bde0e979c27228
     - sha1:ca4b6fe0c69472cd3d63b212eb805b7f65710d33
     - sha1:f7910d943a013eede24ac89d6388c1b98f8b3717
+    indicators:
+    - kind: file
+      value: update.exe
+    - kind: process
+      value: GUP.exe
+    - kind: malware
+      value: Cobalt Strike
+    - kind: domain
+      value: cdncheck.it.com
+    - kind: ip
+      value: 45.76.155.202
+    - kind: ip
+      value: 45.77.31.210
   references:
   - url: https://securelist.com/notepad-supply-chain-attack/118708/
+    title: The Notepad++ supply chain attack - unnoticed execution chains and new IoCs
   - url: https://hackingpassion.com/notepad-plus-plus-supply-chain-attack/
+    title: Notepad++ Supply Chain Attack

@@ -1,15 +1,24 @@
 ---
 - id: aws-toolkit-vscode
-  title: Malicious script injected into Amazon Q Developer for Visual Studio
-  synopsis: A threat actor exploited an inappropriately scoped GitHub token in the
-    extension's CodeBuild configuration to commit malicious code into the open-source
-    repository. This code was automatically included in the version 1.84.0 release.
-    Fortunately, the malicious code failed to execute due to a syntax error.
+  title: Amazon Q extension prompt injection
+  synopsis: A threat actor used an overbroad GitHub token in AWS CodeBuild to commit
+    malicious prompt-injection code into Amazon Q Developer for VS Code 1.84.0.
+    The code shipped through the official extension release, but a syntax error prevented
+    execution.
+  story: |
+    AWS investigated the Amazon Q Developer for VS Code extension in July 2025 and found that its CodeBuild configuration exposed a GitHub token with too much repository access. The token let the attacker commit code into the open-source repository.
+
+    The malicious change was automatically included in Amazon Q Developer for VS Code 1.84.0. It targeted the assistant's code-context path rather than a normal binary payload: the injected content acted as a prompt intended to make the agent perform destructive local and AWS actions.
+
+    AWS said the malicious code was distributed with the extension but did not execute because of a syntax error. ReversingLabs and later case-study writeups framed the incident as a near miss because Amazon Q can operate with local files and cloud resources available to the developer.
+
+    AWS revoked and replaced credentials, removed the malicious code, removed 1.84.0 from distribution channels, and released 1.85.0. Existing 1.84.0 installations still contained the inert malicious code and were directed to upgrade.
   start_date: 2025-07-25
   end_date: 2025-07-25
   target:
-    name: aws-toolkit-vscode
+    name: Amazon Q Developer for VS Code
     kind: plugin
+    website: https://marketplace.visualstudio.com/items?itemName=AmazonWebServices.amazon-q-vscode
     repo: https://github.com/aws/aws-toolkit-vscode
   actor:
     name: Third Party
@@ -26,17 +35,41 @@
     users: 0
   artifacts:
   - id: aws-toolkit-vscode
-    name: aws-toolkit-vscode
+    name: Amazon Q Developer for VS Code
+    package: aws-toolkit-vscode
+    ecosystem: vscode_marketplace
     kind: extension
+    website: https://marketplace.visualstudio.com/items?itemName=AmazonWebServices.amazon-q-vscode
     repo: https://github.com/aws/aws-toolkit-vscode
     start_date: 2025-07-25
     end_date: 2025-07-25
     versions:
     - 1.84.0
+    fixed_versions:
+    - 1.85.0
     locations:
+    - uri: https://marketplace.visualstudio.com/items?itemName=AmazonWebServices.amazon-q-vscode
+      role: distribution
     - uri: https://github.com/aws/aws-toolkit-vscode
       role: mirror
     hashes:
     - sha256:47f7840ecab6312d2733e1274c513050405886c70f2037fb2f1e9099872b0464
+    indicators:
+    - kind: cve
+      value: CVE-2025-8217
+    - kind: ghsa
+      value: GHSA-7g7f-ff96-5gcw
+    - kind: observable
+      value: Malicious prompt-injection code was present in Amazon Q Developer for
+        VS Code 1.84.0 but failed to execute because of a syntax error.
+    notes:
+    - AWS reported no changes to services or customer environments because the malicious
+      code did not execute.
   references:
   - url: https://github.com/aws/aws-toolkit-vscode/security/advisories/GHSA-7g7f-ff96-5gcw
+    title: Malicious script injected into Amazon Q Developer for Visual Studio Code
+      Extension
+  - url: https://www.reversinglabs.com/blog/aws-amazonq-ai-incident
+    title: How AWS averted an AI supply chain disaster
+  - url: https://github.com/vectara/awesome-agent-failures/blob/main/docs/case-studies/amazon-q-supply-chain-attack.md
+    title: Amazon Q VS Code Prompt Injection Supply Chain Attack - 2025

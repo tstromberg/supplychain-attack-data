@@ -1,17 +1,22 @@
----
 - id: noxplayer
-  title: NoxPlayer updates distributed targeted malware.
-  synopsis: BigNox, the company behind NoxPlayer (an Android emulator for PC/Mac),
-    had its update mechanism compromised. Attackers delivered tailored malware payloads
-    to specific users, primarily in Asian countries, without compromising the NoxPlayer
-    software itself initially. The attackers gained access to BigNox's update infrastructure
-    to deliver these malicious updates.
+  title: NoxPlayer updates delivered targeted malware
+  synopsis: >-
+    BigNox's NoxPlayer update mechanism delivered tailored malware to a few Asian
+    users. The payloads favored surveillance, not mass monetization.
+  story: |
+    Operation NightScout used NoxPlayer's own update flow. On launch, `Nox.exe` queried `api.bignox.com` for update metadata, then passed the returned URL, size, and hash to `NoxPack.exe`, which downloaded and installed the update.
+
+    ESET found enough evidence to say BigNox infrastructure was part of the delivery path. `res06.bignox.com` hosted malware, and the API response may have been changed so selected clients received attacker-chosen update URLs. ESET could reproduce malware downloads from BigNox infrastructure over HTTPS, which made a simple network-manipulation explanation unlikely.
+
+    The campaign stayed narrow. ESET saw more than 100,000 protected machines with NoxPlayer installed, but only five received malicious updates, in Taiwan, Hong Kong, and Sri Lanka. The malware families included a custom monitor, Gh0st RAT, and PoisonIvy, all consistent with surveillance.
+
+    BigNox first denied compromise, then told ESET it would use HTTPS for updates, add MD5 and signature checks, and scan installed application files at startup. Later ESET research linked victims from the supply-chain attack to Gelsemium tooling, but the original NightScout report left attribution cautious.
   start_date: 2020-09-01
   end_date: 2021-01-25
   target:
     name: NoxPlayer
     kind: application
-    website: https://api.bignox.com
+    website: https://www.bignox.com
   actor:
     name: Nation-state
     kind: state
@@ -28,28 +33,132 @@
     - spyware
     users: 5
   artifacts:
-  - id: noxplayer
-    name: NoxPlayer
-    kind: binary_archive
-    website: https://api.bignox.com
+  - id: noxplayer-malicious-update-variant-1
+    name: NoxPlayer malicious update variant 1
+    ecosystem: NoxPlayer update service
+    kind: installer
+    website: https://www.bignox.com
     start_date: 2020-09-01
+    end_date: 2020-09-30
+    locations:
+    - uri: https://api.bignox.com
+      role: distribution
+    - uri: http://res06.bignox.com/player/upgrade/202009/6c99c19d6da741af943a35016bb05b35.exe
+      role: distribution
+    - uri: http://res06.bignox.com/player/upgrade/202009/42af40f99512443cbee03d090658da64.exe
+      role: distribution
+    - uri: https://www.welivesecurity.com/2021/02/01/operation-nightscout-supply-chain-attack-online-gaming-asia/
+      role: mirror
+    hashes:
+    - sha1:ca4276033a7cbdccde26105dec911b215a1ce5cf
+    indicators:
+    - kind: file
+      value: C:\Program Files\Internet Explorer\ieproxysocket64.dll
+    - kind: file
+      value: C:\Program Files\Internet Explorer\ieproxysocket.dll
+    - kind: file
+      value: KB911911.LOG
+    - kind: malware
+      value: Win32/Agent.UOJ
+    - kind: ip
+      value: 210.209.72.180
+    - kind: ip
+      value: 103.255.177.138
+    notes:
+    - ESET described this as a preliminary malicious update hosted on compromised
+      BigNox infrastructure.
+  - id: noxplayer-malicious-update-variant-2
+    name: NoxPlayer malicious update variant 2
+    ecosystem: NoxPlayer update service
+    kind: installer
+    website: https://www.bignox.com
+    start_date: 2020-09-01
+    end_date: 2020-09-30
+    locations:
+    - uri: https://api.bignox.com
+      role: distribution
+    - uri: https://res06.bignox.com
+      role: distribution
+    - uri: https://www.welivesecurity.com/2021/02/01/operation-nightscout-supply-chain-attack-online-gaming-asia/
+      role: mirror
+    hashes:
+    - sha1:e45a5d9b03cfbe7eb2e90181756fdf0dd690c00c
+    indicators:
+    - kind: file
+      value: C:\ProgramData\Sandboxie\SandboxieBITS.exe
+    - kind: file
+      value: C:\ProgramData\Sandboxie\SbieDll.dll
+    - kind: file
+      value: C:\ProgramData\Sandboxie\SbieIni.dat
+    - kind: file
+      value: C:\Users\Administrator\AppData\Local\Temp\delself.bat
+    - kind: malware
+      value: Gh0st RAT
+    - kind: ip
+      value: 185.239.226.172
+    - kind: domain
+      value: update.boshiamys.com
+    notes:
+    - This variant used a trident-style bundle with a signed Sandboxie executable,
+      a malicious DLL, and an encrypted payload.
+  - id: noxplayer-malicious-update-variant-3
+    name: NoxPlayer malicious update variant 3
+    ecosystem: NoxPlayer update service
+    kind: installer
+    website: https://www.bignox.com
+    start_date: 2020-10-20
     end_date: 2021-01-25
     locations:
-    - uri: 'https://securelist.com/operation-noxplayer/100644/ # Original Securelist
-        (Kaspersky) analysis (Link confirmed dead, needs alternative or removal)'
+    - uri: https://api.bignox.com
+      role: distribution
+    - uri: https://cdn.cloudfronte.com/player/upgrade/ext/20201020/1/c697ad8c21ce7aca0a98e6bbd1b81dff.exe
+      role: distribution
+    - uri: http://cdn.cloudfronter.com/player/upgrade/ext/20201030/1/35e3797508c555d5f5e19f721cf94700.exe
+      role: distribution
+    - uri: http://cdn.cloudfronter.com/player/upgrade/ext/20201101/1/bf571cb46afc144cab53bf940da88fe2.exe
+      role: distribution
+    - uri: http://cdn.cloudfronter.com/player/upgrade/ext/20201123/1/2ca0a5f57ada25657552b384cf33c5ec.exe
+      role: distribution
+    - uri: http://cdn.cloudfronter.com/player/upgrade/ext/20201225/7c21bb4e5c767da80ab1271d84cc026d.exe
+      role: distribution
+    - uri: http://cdn.cloudfronter.com/player/upgrade/ext/20210119/842497c20072fc9b92f2b18e1d690103.exe
+      role: distribution
+    - uri: https://www.welivesecurity.com/2021/02/01/operation-nightscout-supply-chain-attack-online-gaming-asia/
       role: mirror
-    - uri: 'https://www.eset.com/int/about/newsroom/press-releases/research/eset-discovers-operation-noxplayer-supply-chain-attack-infiltrates-gaming-community-in-asia/
-        # Original ESET Press Release (Link confirmed dead, needs alternative or removal)'
-      role: mirror
+    hashes:
+    - sha1:5732126743640525680c1f9460e52d361acf6bb0
     indicators:
-    - kind: observable
-      value: Malicious updates delivered via BigNox's update infrastructure (e.g.,
-        api.bignox.com, res06.bignox.com) to targeted users.
+    - kind: file
+      value: C:\ProgramData\LoGiTech\LoGitech.exe
+    - kind: file
+      value: C:\ProgramData\LoGiTech\LBTServ.dll
+    - kind: malware
+      value: PoisonIvy
+    - kind: domain
+      value: cdn.cloudistcdn.com
+    - kind: domain
+      value: q.cloudistcdn.com
+    - kind: ip
+      value: 45.158.32.65
     notes:
-    - NoxPlayer compromise used the update mechanism rather than a specific recorded
-      application version.
+    - ESET saw this variant downloaded from attacker-controlled infrastructure after
+      the initial malicious updates. The domains mimicked the BigNox CDN naming pattern.
+    - ESET also published `AA3D31A1A6FE6888E4B455DADDA4755A6D42BEEB` as a SHA-1,
+      but it is 41 hexadecimal characters and is not stored as a normalized hash.
+  notes:
+  - ESET found no evidence that BigNox's build system was compromised; malicious files
+    were unsigned, pointing to update distribution rather than source or build tampering.
+  - ESET later linked victims originally compromised by NightScout to Gelsemium tooling,
+    but the original report did not attribute the supply-chain compromise to a named group.
   references:
-  - url: 'https://securelist.com/operation-noxplayer/100644/ # Original Kaspersky
-      report (Link confirmed dead, needs alternative)'
-  - url: 'https://www.eset.com/int/about/newsroom/press-releases/research/eset-discovers-operation-noxplayer-supply-chain-attack-infiltrates-gaming-community-in-asia/
-      # Original ESET press release (Link confirmed dead, needs alternative)'
+  - url: https://www.welivesecurity.com/2021/02/01/operation-nightscout-supply-chain-attack-online-gaming-asia/
+    title: 'Operation NightScout: Supply-chain attack targets online gaming in Asia'
+  - url: 
+      https://www.eset.com/in/about/newsroom/press-releases/research/eset-uncovers-operation-nightscout-cyberespionage-supply-chain-attack-on-gamers-in-asia/
+    title: 'ESET uncovers Operation NightScout: Cyberespionage supply-chain attack on gamers in Asia'
+  - url: https://www.zdnet.com/article/hacker-group-inserted-malware-in-noxplayer-android-emulator/
+    title: Hacker group inserted malware in NoxPlayer Android emulator
+  - url: https://securityaffairs.com/114090/hacking/noxplayer-supply-chain-attack.html
+    title: 'Operation NightScout: supply chain attack on NoxPlayer Android emulator'
+  - url: https://thehackernews.com/2021/06/noxplayer-supply-chain-attack-is-likely.html
+    title: NoxPlayer Supply-Chain Attack is Likely the Work of Gelsemium Hackers

@@ -1,15 +1,18 @@
----
 - id: telnyx
-  title: Telnyx PyPI WAV Steganography Credential Stealer
+  title: Telnyx PyPI release hid WAV stealer
   campaigns:
   - teampcp-2026
-  synopsis: TeamPCP compromised Telnyx Python SDK releases 4.87.1 and 4.87.2 by adding
-    import-time malware to the PyPI artifacts. The payload hid a second-stage credential
-    stealer inside WAV audio data, collected developer, cloud, package-manager, and
-    wallet secrets, encrypted them with the same TeamPCP RSA/AES scheme seen in LiteLLM,
-    and exfiltrated them as tpcp.tar.gz. Version 4.87.2 also repaired a Windows branch
-    intended to decode and persist a PE backdoor. The case stands out for using audio
-    steganography inside a legitimate communications SDK package.
+  synopsis: >-
+    TeamPCP compromised Telnyx Python SDK releases 4.87.1 and 4.87.2 by adding import-time
+    malware to the PyPI artifacts.
+  story: |
+    The Telnyx Python SDK compromise put TeamPCP code into a communications library with a large install base. On March 27, 2026, PyPI releases 4.87.1 and 4.87.2 added malicious import-time logic to `telnyx/_client.py`.
+
+    The code ran when an application imported `telnyx`. On Linux and macOS, `FetchAudio()` spawned a detached Python subprocess, fetched `ringtone.wav` from `83.142.209.203:8080`, decoded a hidden credential harvester from the audio data, and posted encrypted results as `tpcp.tar.gz`.
+
+    Windows had its own path. Version 4.87.1 called `Setup()` with the wrong case, so the Windows function did not run. Version 4.87.2 fixed that to `setup()`, downloaded `hangup.wav`, decoded a PE binary, wrote it as `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\msbuild.exe`, and used a lock file to mark execution.
+
+    StepSecurity tied the package to TeamPCP through the same RSA-4096 public key, encryption scheme, and `tpcp.tar.gz` exfiltration marker seen in the LiteLLM compromise. The 742,000 download figure is pre-compromise package reach, not a confirmed victim count.
   start_date: 2026-03-27
   end_date: 2026-03-27
   target:
@@ -28,7 +31,7 @@
   impact:
     types:
     - credential_theft
-    users: 742000
+    users: 0
   artifacts:
   - id: telnyx
     name: telnyx
@@ -50,7 +53,32 @@
     hashes:
     - sha256:f66c1ea3b25ec95d0c6a07be92c761551e543a7b256f9c78a2ff781c77df7093
     - sha256:a9235c0eb74a8e92e5a0150e055ee9dcdc6252a07785b6677a9ca831157833a5
+    indicators:
+    - kind: file
+      value: telnyx/_client.py
+    - kind: ip
+      value: 83.142.209.203
+    - kind: url
+      value: http://83.142.209.203:8080/ringtone.wav
+    - kind: url
+      value: http://83.142.209.203:8080/hangup.wav
+    - kind: file
+      value: tpcp.tar.gz
+    - kind: http_header
+      value: "X-Filename: tpcp.tar.gz"
+    - kind: file
+      value: '%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\msbuild.exe'
+    - kind: file
+      value: '%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\msbuild.exe.lock'
+    notes:
+    - StepSecurity reported roughly 742,000 downloads in the 30 days before compromise;
+      this is package reach, not a confirmed victim count.
   references:
-  - url: https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next
-  - url: https://www.stepsecurity.io/blog/teampcp-plants-wav-steganography-credential-stealer-in-telnyx-pypi-package
+  - url: 
+      https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next
+    title: Five Supply Chain Attacks in Twelve Days
+  - url: 
+      https://www.stepsecurity.io/blog/teampcp-plants-wav-steganography-credential-stealer-in-telnyx-pypi-package
+    title: TeamPCP Plants WAV Steganography Credential Stealer in telnyx PyPI Package
   - url: https://github.com/team-telnyx/telnyx-python/issues/235
+    title: Compromised Telnyx Python SDK releases 4.87.1 and 4.87.2

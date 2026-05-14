@@ -1,15 +1,17 @@
----
 - id: forcememo-python-repos
-  title: ForceMemo GitHub Python repository force-push campaign
-  synopsis: ForceMemo was a GitHub account-takeover campaign that force-pushed similar
-    malware into hundreds of Python repositories across Django apps, ML research,
-    Streamlit dashboards, Flask APIs, and projects installed directly from GitHub.
-    The attacker preserved legitimate commit authorship and messages while appending
-    an obfuscated Python loader to common entry points. The malware used the shared
-    marker lzcdrtfxyqiplpd, avoided Russian/CIS systems, and pulled encrypted follow-on
-    instructions through a Solana memo wallet. This grouped record captures the campaign
-    because the affected set was a moving GitHub code-search population rather than
-    a stable package list.
+  title: ForceMemo force-pushed Python malware
+  synopsis: >-
+    ForceMemo was a GitHub account-takeover campaign that force-pushed similar malware into
+    hundreds of Python repositories across Django apps, ML research, Streamlit dashboards,
+    Flask APIs, and projects installed directly from GitHub.
+  story: |-
+    ForceMemo was a source-repository attack. StepSecurity found hundreds of GitHub Python repositories where attacker-controlled credentials were used to rewrite the default branch. The earliest observed injections were on March 8, 2026.
+
+    The attacker preserved the latest legitimate commit message, author, and author date, then rebased the commit with obfuscated Python appended to files such as `setup.py`, `main.py`, and `app.py`. The force-push made history look familiar unless reviewers checked committer dates or file tails.
+
+    The appended payload used base64, zlib, and XOR obfuscation around a shared marker variable, `lzcdrtfxyqiplpd`. After decoding, it queried Solana transaction memos for command data, downloaded Node.js v22.9.0 when needed, fetched encrypted JavaScript, and left a two-day persistence marker in `~/init.json`.
+
+    StepSecurity tied the account takeover path to GlassWorm credential theft from malicious VS Code and Cursor extensions. The two waves used different injection techniques, but shared Solana C2 infrastructure. This record tracks the ForceMemo Python repository delivery path.
   start_date: 2026-03-08
   end_date: 2026-03-14
   target:
@@ -77,8 +79,27 @@
       role: distribution
     - uri: https://github.com/search?q=lzcdrtfxyqiplpd&type=code
       role: mirror
+    indicators:
+    - kind: variable
+      value: lzcdrtfxyqiplpd
+    - kind: account
+      value: "null"
+    - kind: wallet
+      value: BjVeAjPrSKFiingBn4vZvghsGj9KCE8AJVtbc9S8o8SC
+    - kind: file
+      value: setup.py
+    - kind: file
+      value: main.py
+    - kind: file
+      value: app.py
+    - kind: file
+      value: ~/init.json
+    - kind: process
+      value: node-v22.9.0
     notes:
     - The ForceMemo scope included more than 240 Python repositories.
     - The related GlassWorm scope included more than 151 GitHub repositories.
   references:
-  - url: https://www.stepsecurity.io/blog/forcememo-hundreds-of-github-python-repos-compromised-via-account-takeover-and-force-push
+  - url: 
+      https://www.stepsecurity.io/blog/forcememo-hundreds-of-github-python-repos-compromised-via-account-takeover-and-force-push
+    title: ForceMemo compromised hundreds of GitHub Python repos via account takeover and force-push

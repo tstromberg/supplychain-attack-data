@@ -1,7 +1,17 @@
----
 - id: stylish
-  title: Stylish browser extension exfiltrated browsing history
-  synopsis: After SimilarWeb acquired Stylish (Chrome version in January 2017, Firefox version in March 2018), official store updates began silently exfiltrating users' complete browsing history — full URLs, Google search results, and unique tracking identifiers tied to user accounts — to api.userstyles.org. Robert Heaton publicly disclosed the behaviour on 2018-07-02 after observing the requests; Mozilla and Google removed the extension from their stores within two days. The exfiltrated data included sensitive URLs such as password reset tokens and medical record links.
+  title: Stylish extension exfiltrated browsing history
+  synopsis: >-
+    After SimilarWeb acquired Stylish, official browser-extension updates began silently
+    exfiltrating complete browsing histories. The data included full URLs, search
+    results, and account-linked tracking identifiers.
+  story: |
+    Stylish was a popular browser extension for applying custom CSS to websites. After SimilarWeb acquired it, official extension updates added analytics code that collected browsing history at a level users would not expect from a style manager.
+
+    Robert Heaton's analysis showed that the extension sent full URLs to `api.userstyles.org`, along with tracking identifiers that could link activity to a user. That meant search queries, private pages with tokenized URLs, and account-specific browsing behavior could leave the browser.
+
+    The code was distributed through normal extension stores. Users who installed or auto-updated Stylish received the behavior as part of the trusted package, not through a separate exploit.
+
+    Mozilla and Google removed Stylish from their extension stores after the reporting. The record is included because the official distribution channel shipped privacy-invasive code after an ownership change, converting a trusted extension into a surveillance endpoint.
   start_date: 2017-01-01
   end_date: 2018-07-04
   target:
@@ -24,10 +34,23 @@
   artifacts:
   - id: stylish
     name: stylish
+    package: Stylish
+    ecosystem: browser extension store
     kind: extension_package
     start_date: 2017-01-01
     end_date: 2018-07-04
+    indicators:
+    - kind: domain
+      value: api.userstyles.org
+    - kind: observable
+      value: Full browser URLs and search results were transmitted with tracking identifiers.
   references:
-  - url: https://robertheaton.com/2018/07/02/stylish-browser-extension-steals-your-internet-history/
+  - url: 
+      https://robertheaton.com/2018/07/02/stylish-browser-extension-steals-your-internet-history/
+    title: Stylish browser extension steals all your internet history
   - url: https://www.theregister.com/2018/07/05/stylish_browser_extension_dropped/
-  - url: https://www.bleepingcomputer.com/news/security/stylish-firefox-and-chrome-extension-banned-for-tracking-browsing-history/
+    title: Stylish browser extension dropped by Chrome and Firefox after data slurp
+      report
+  - url: 
+      https://www.bleepingcomputer.com/news/security/stylish-firefox-and-chrome-extension-banned-for-tracking-browsing-history/
+    title: Stylish Firefox and Chrome extension banned for tracking browsing history

@@ -1,10 +1,17 @@
----
 - id: ledger-connect-kit
-  title: Ledger Connect Kit Supply Chain Attack
-  synopsis: A former Ledger employee fell victim to a phishing attack, allowing attackers
-    to access their NPM account and publish malicious versions of the @ledgerhq/connect-kit
-    package. The payload contained a drainer that rerouted cryptocurrency funds to
-    the attacker, affecting major dApps like SushiSwap and Revoke.cash.
+  title: Ledger Connect Kit shipped wallet drainer
+  synopsis: >-
+    A phished former Ledger employee's npm session let attackers publish Connect Kit
+    1.1.5, 1.1.6, and 1.1.7. The browser payload rerouted EVM signing through a wallet
+    drainer.
+  story: |
+    Ledger disclosed the incident on 2023-12-20. A former employee had fallen for phishing, and the attacker reused the npm session token to publish new versions of `@ledgerhq/connect-kit`.
+
+    The malicious releases were published on 2023-12-14 at 09:49, 10:44, and 11:37 CET. The package was not just used by Ledger applications. Web3 dApps loaded it to connect wallets, so a compromised dependency could appear inside many unrelated front ends.
+
+    The injected code used a rogue WalletConnect project and Angel Drainer infrastructure to present transaction prompts. Users who signed the wrong transaction could drain their own signer. Ledger said active draining lasted less than two hours, though CDN caches kept the malicious file reachable longer.
+
+    Ledger shipped a clean replacement quickly and coordinated with WalletConnect to disable the rogue project. The attack was small in time and large in trust: a package update became a browser-side transaction attack against downstream dApp users.
   start_date: 2023-12-14
   end_date: 2023-12-14
   target:
@@ -23,10 +30,11 @@
   impact:
     types:
     - financial_exploitation
-    users: 500000
+    users: 0
   artifacts:
   - id: ledger-connect-kit
-    name: ledger-connect-kit
+    name: Ledger Connect Kit malicious npm releases
+    package: '@ledgerhq/connect-kit'
     ecosystem: npm
     kind: source_archive
     repo: https://github.com/LedgerHQ/connect-kit
@@ -36,8 +44,26 @@
     - 1.1.5
     - 1.1.6
     - 1.1.7
+    fixed_versions:
+    - 1.1.8
     locations:
+    - uri: https://www.npmjs.com/package/@ledgerhq/connect-kit
+      role: distribution
     - uri: https://github.com/LedgerHQ/connect-kit
       role: mirror
+    indicators:
+    - kind: malware
+      value: Angel Drainer
+    - kind: observable
+      value: Rogue WalletConnect project rerouted EVM signing prompts to attacker-controlled wallets.
+    notes:
+    - Public loss estimates were reported in dollars rather than confirmed affected-user
+      counts, so impact.users is left at zero.
   references:
-  - url: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-49954
+  - url: https://www.ledger.com/blog/security-incident-report
+    title: Security Incident Report
+  - url: https://www.blockaid.io/blog/attack-report-ledger-connect-kit
+    title: 'Attack Report: Ledger Connect Kit'
+  - url: 
+      https://www.bleepingcomputer.com/news/security/ledger-dapp-supply-chain-attack-steals-600k-from-crypto-wallets/
+    title: Ledger dApp supply chain attack steals $600K from crypto wallets

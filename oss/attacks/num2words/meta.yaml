@@ -1,12 +1,16 @@
----
 - id: num2words
-  title: num2words Maintainer Phishing and Account Takeover
-  synopsis: Attackers used the lookalike pypj.org domain to phish PyPI maintainers,
-    steal credentials and 2FA codes, create a new API token, and upload malicious
-    num2words releases. The first suspicious release, 0.5.15, appeared on PyPI without
-    a matching GitHub tag, commit, or release. The later GitHub advisory confirmed
-    that both 0.5.15 and 0.5.16 contained malware and were removed from PyPI. The
-    incident is part of the broader Scavenger-era maintainer phishing wave.
+  title: num2words maintainer phishing shipped malware
+  synopsis: >-
+    A pypj.org phishing page stole PyPI credentials and led to malicious num2words releases.
+    Versions 0.5.15 and 0.5.16 appeared on PyPI without matching upstream GitHub releases.
+  story: |
+    The num2words compromise followed a familiar Python package path: phishing first, registry publishing second. Attackers used the lookalike `pypj.org` domain to capture PyPI credentials and 2FA codes.
+
+    StepSecurity reported that the attacker created a new API token and published suspicious releases to PyPI. The first release, `0.5.15`, had no matching GitHub tag, commit, or release, which made the registry artifact diverge from the project source.
+
+    The package converts numbers to words, but its install base gave the attacker reach. The malicious releases were published through the official PyPI project, so ordinary package installation and dependency resolution were the delivery mechanism.
+
+    The record keeps both affected versions as artifacts and leaves broad download counts as exposure context. The durable lesson is simpler: package registry authority was enough, even when the source repository did not match.
   start_date: 2025-07-28
   end_date: 2025-07-31
   target:
@@ -25,10 +29,11 @@
   impact:
     types:
     - credential_theft
-    users: 50000
+    users: 0
   artifacts:
   - id: num2words
-    name: num2words
+    name: num2words PyPI releases
+    package: num2words
     ecosystem: pypi
     kind: source_archive
     repo: https://github.com/savoirfairelinux/num2words
@@ -46,6 +51,17 @@
       role: distribution
     - uri: https://github.com/savoirfairelinux/num2words
       role: mirror
+    indicators:
+    - kind: domain
+      value: pypj.org
+    - kind: observable
+      value: PyPI releases lacked matching GitHub tags, commits, or releases.
+    notes:
+    - StepSecurity cited package popularity as exposure context; no confirmed affected-user
+      count is stored.
   references:
-  - url: https://www.stepsecurity.io/blog/supply-chain-security-alert-num2words-pypi-package-shows-signs-of-compromise
+  - url: 
+      https://www.stepsecurity.io/blog/supply-chain-security-alert-num2words-pypi-package-shows-signs-of-compromise
+    title: Supply Chain Security Alert - num2words PyPI Package Shows Signs of Compromise
   - url: https://github.com/advisories/GHSA-jxr6-qrxx-2ph2
+    title: num2words subjected to phishing attack, two versions published containing malware

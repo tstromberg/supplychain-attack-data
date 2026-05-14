@@ -1,11 +1,17 @@
----
 - id: node-ipc
-  title: node-ipc NPM package maintainer adds protestware malware
-  synopsis: The maintainer added protestware to node-ipc, a widely used interprocess
-    communication library, targeting users resolving from Russian or Belarusian IP
-    addresses. The code attempted to recursively overwrite files with a heart character
-    during normal package use, turning geopolitical protest into selective data destruction
-    that could ripple through dependent JavaScript applications.
+  title: node-ipc maintainer shipped protestware
+  synopsis: >-
+    The node-ipc maintainer published protestware releases that targeted Russian and
+    Belarusian IP ranges. The code wrote political messages and, in some paths, overwrote
+    files with heart symbols.
+  story: |
+    node-ipc was not taken over by an outsider. Its maintainer published the disputed releases during the first weeks of Russia's 2022 invasion of Ukraine, turning a trusted dependency into political code.
+
+    The dangerous behavior was geofenced. Snyk reported destructive file-overwrite behavior for systems resolving to Russia or Belarus, while other versions pulled in `peacenotwar`, which wrote a desktop message file. The package sat in dependency paths large enough for unrelated projects to inherit the blast radius.
+
+    The incident became a reference point for protestware because the code was intentional, public, and shipped through the official npm package. That makes it different from a credential theft compromise, but not harmless: consumers still received behavior they did not consent to.
+
+    The record keeps affected versions explicit and treats download counts as exposure, not confirmed file-destruction victims. The trust failure was the same one supply-chain records are meant to show: dependency updates execute with the user's authority.
   start_date: 2022-03-07
   end_date: 2022-03-16
   target:
@@ -15,7 +21,7 @@
   actor:
     name: Author
     kind: maintainer
-  language: Javascript
+  language: JavaScript
   method:
     cause: sabotage
     phase: source
@@ -25,10 +31,12 @@
     types:
     - service_disruption
     - data_destruction
-    users: 1000000
+    users: 0
   artifacts:
   - id: node-ipc
-    name: node-ipc
+    name: node-ipc npm releases
+    package: node-ipc
+    ecosystem: npm
     kind: source_archive
     repo: https://github.com/RIAEvangelist/node-ipc
     start_date: 2022-03-07
@@ -49,7 +57,8 @@
       role: distribution
     - uri: https://snyk.io/blog/peacenotwar-protestware-node-ipc-package-vulnerability/
       role: mirror
-    - uri: https://github.com/RIAEvangelist/node-ipc/commit/f3ff376905550597f05410771031cc67a446f662
+    - uri: 
+        https://github.com/RIAEvangelist/node-ipc/commit/f3ff376905550597f05410771031cc67a446f662
       role: mirror
     - uri: https://socket.dev/npm/package/node-ipc/versions
       role: mirror
@@ -58,7 +67,21 @@
     - sha256:03190b659f9ad3c0e0bb337a958cbfa49c0bbfd8baff63d5a178c0eb6c8ea292
     commits:
     - f3ff376905550597f05410771031cc67a446f662
+    indicators:
+    - kind: package
+      value: peacenotwar
+    - kind: file
+      value: WITH-LOVE-FROM-AMERICA.txt
+    - kind: observable
+      value: Geofenced destructive behavior for Russian and Belarusian IP address ranges.
+    notes:
+    - Public reporting used large dependency/download figures as exposure context; no
+      confirmed affected-user count is stored.
   references:
   - url: https://snyk.io/blog/peacenotwar-protestware-node-ipc-package-vulnerability/
+    title: peacenotwar module sabotages npm developers in the node-ipc package
   - url: https://github.com/advisories/GHSA-97m3-w2cp-4xx6
-  - url: https://arstechnica.com/information-technology/2022/03/sabotage-code-added-to-popular-npm-package-wiped-files-in-russia-and-belarus/
+    title: Embedded Malicious Code in node-ipc
+  - url: 
+      https://arstechnica.com/information-technology/2022/03/sabotage-code-added-to-popular-npm-package-wiped-files-in-russia-and-belarus/
+    title: Sabotage code added to popular npm package wiped files in Russia and Belarus

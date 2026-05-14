@@ -1,33 +1,71 @@
----
 - id: inbenta
-  title: Inbenta chatbot script compromised, hit Ticketmaster.
-  synopsis: A third-party chatbot script provided by Inbenta Technologies to Ticketmaster
-    UK (and potentially others) was compromised by attackers (Magecart group). Malicious
-    JavaScript skimming code was injected into the legitimate script, allowing theft
-    of payment card details and PII from users on Ticketmaster's payment pages where
-    the widget was active.
+  title: Inbenta chatbot script skimmed Ticketmaster payments
+  synopsis: >-
+    Magecart modified a custom Inbenta chatbot script used by Ticketmaster UK. The script
+    skimmed payment and account data from checkout pages for months.
+  story: |
+    Ticketmaster put a customized Inbenta chatbot script on payment pages. That decision turned a support widget into checkout code: the script ran where customers entered names, addresses, login details, and card data.
+
+    Inbenta said the vulnerable code was a single custom JavaScript file made for Ticketmaster, not a standard product component or a compromise of all Inbenta deployments. Attackers modified that script and used it to extract data submitted through Ticketmaster's payment forms between February and June 2018.
+
+    Banks saw the damage before Ticketmaster fully accepted it. Monzo, Barclaycard, and American Express all reported suspicious card activity tied to Ticketmaster purchases. Ticketmaster disabled the Inbenta product on June 23 and later said fewer than 5% of global customers were affected.
+
+    The UK ICO later fined Ticketmaster, saying the incident potentially exposed 9.4 million people, including 1.5 million in the UK, and led to 66,000 cards being replaced. This record is scoped to the compromised Inbenta-hosted custom script, not to Inbenta's entire chatbot platform.
   start_date: 2018-02-10
   end_date: 2018-06-23
   target:
-    name: Inbenta
-    kind: library
+    name: Inbenta custom Ticketmaster chatbot script
+    kind: script
+    website: https://www.inbenta.com
   actor:
-    name: Cybercriminal group
+    name: Magecart
     kind: group
   method:
     cause: vendor_compromise
-    phase: distribution
+    phase: dependency
     motive: financial_gain
-    transitive: false
+    transitive: true
   impact:
     types:
     - skimming
     - data_theft
     - credential_theft
-    users: 40000
+    - payment_card_theft
+    users: 0
+  locations:
+  - uri: https://www.inbenta.com
+    role: distribution
+  indicators:
+  - kind: family
+    value: Magecart
+  - kind: organization
+    value: Ticketmaster UK
+  - kind: organization
+    value: Monzo
+  - kind: organization
+    value: Barclaycard
+  - kind: organization
+    value: American Express
+  - kind: data
+    value: names
+  - kind: data
+    value: addresses
+  - kind: data
+    value: email addresses
+  - kind: data
+    value: telephone numbers
+  - kind: data
+    value: payment details
+  - kind: data
+    value: Ticketmaster login details
+  - kind: observable
+    value: ICO said 9.4 million people were potentially affected, including 1.5 million
+      in the UK, and 66,000 cards were replaced.
   artifacts:
   - id: inbenta
-    name: Inbenta
+    name: Inbenta customized Ticketmaster JavaScript
+    package: custom Inbenta chatbot JavaScript
+    ecosystem: hosted javascript
     kind: source_archive
     start_date: 2018-02-10
     end_date: 2018-06-23
@@ -36,20 +74,28 @@
       role: mirror
     - uri: https://thehackernews.com/2018/06/ticketmaster-data-breach.html
       role: mirror
-    - uri: https://www.bankinfosecurity.com/ticketmaster-fined-17-million-for-data-security-failures-a-15369
+    - uri: 
+        https://www.bankinfosecurity.com/ticketmaster-fined-17-million-for-data-security-failures-a-15369
       role: mirror
     - uri: https://datadome.co/learning-center/magecart-attacks/
       role: mirror
     indicators:
     - kind: observable
-      value: A customized JavaScript file provided by Inbenta to Ticketmaster, which
-        was compromised and served on Ticketmaster's payment pages between February
-        and June 2018.
+      value: A customized JavaScript file provided by Inbenta to Ticketmaster, which was
+        compromised and served on Ticketmaster's payment pages between February and June
+        2018.
     notes:
-    - Affected Inbenta scope covered customized JavaScript provided to Ticketmaster
+    - Affected Inbenta scope covered customized JavaScript provided to Ticketmaster 
       active from February through June 2018.
   references:
   - url: https://www.wired.co.uk/article/ticketmaster-hack-inbenta-security-breach
+    title: Ticketmaster admits user data stolen in breach
   - url: https://thehackernews.com/2018/06/ticketmaster-data-breach.html
-  - url: https://www.bankinfosecurity.com/ticketmaster-fined-17-million-for-data-security-failures-a-15369
+    title: Ticketmaster Suffers Security Breach - Personal and Payment Data Stolen
+  - url: 
+      https://www.bankinfosecurity.com/ticketmaster-fined-17-million-for-data-security-failures-a-15369
+    title: Ticketmaster Fined $1.7 Million for Data Security Failures
+  - url: https://www.theregister.com/2020/11/13/ticketmaster_fined_1_25m_magecart_breach/
+    title: Ticketmaster cops 1.25m GBP ICO fine for 2018 Magecart breach
   - url: https://datadome.co/learning-center/magecart-attacks/
+    title: Magecart Attacks

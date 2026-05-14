@@ -1,0 +1,128 @@
+- id: buddyboss
+  title: BuddyBoss updates backdoored WordPress sites
+  synopsis: >-
+    Attackers used stolen BuddyBoss infrastructure secrets to publish backdoored
+    Platform and Theme updates through the trusted Caseproof update path. Hundreds
+    of WordPress sites exposed credentials, databases, and payment keys.
+  story: |
+    BuddyBoss was compromised at the update pipeline, not at each customer site. The attacker already had access to BuddyBoss GitHub organization resources before the public timeline begins. A malicious GitHub Actions workflow ran under a legitimate developer identity and exfiltrated runner tokens, SSH keys, application secrets, and the Caseproof Mothership API key.
+
+    Those secrets opened the publishing path. The attacker used SSH access to BuddyBoss infrastructure, reached root on an AWS publishing server, and used the `appcenter_key` to talk to the Caseproof licensing system at `licenses.caseproof.com`. Cloudflare blocked the large multipart upload, so the attacker found the Heroku origin behind Cloudflare and uploaded directly with the correct Host header.
+
+    The malicious artifacts were normal-looking BuddyBoss updates. BuddyBoss Platform was published as version 2.20.3, with later reporting showing a malicious 2.20.4 as well. BuddyBoss Theme was published as 2.19.2. Each package changed one core PHP file: `bp-loader.php` in the platform plugin and `functions.php` in the theme.
+
+    The backdoors stole WordPress database credentials, secret keys, environment variables, plugin lists, user counts, and server data. They also exposed command execution, file read, reverse shell, and later standalone webshell paths. Ctrl-Alt-Intel recovered C2 logs from 246 or more victim sites; Cybernews reported 309 compromised sites and live Stripe keys among the stolen data.
+  start_date: 2026-03-17
+  end_date: 2026-03-24
+  target:
+    name: BuddyBoss
+    kind: application
+    website: https://www.buddyboss.com
+  actor:
+    name: Unknown French-speaking attacker
+    kind: unknown
+  language: php
+  method:
+    cause: compromised_credentials
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - credential_theft
+    - data_exfiltration
+    - remote_code_execution
+    users: 309
+  artifacts:
+  - id: buddyboss-platform
+    name: BuddyBoss Platform
+    ecosystem: wordpress
+    kind: plugin
+    website: https://www.buddyboss.com/platform/
+    start_date: 2026-03-17
+    end_date: 2026-03-24
+    versions:
+    - 2.20.3
+    - 2.20.4
+    locations:
+    - uri: https://www.buddyboss.com/platform/
+      role: distribution
+    - uri: https://licenses.caseproof.com
+      role: distribution
+    indicators:
+    - kind: file
+      value: bp-loader.php
+    - kind: file_sha256
+      value: bp-loader.php ddda12b545a7b817883641421cf6a213f4c5100effa40cdb55018efce11bbe42
+    - kind: file
+      value: bp-compatibility.php
+    - kind: domain
+      value: licenses.caseproof.com
+    - kind: ip
+      value: 18.208.60.216
+    - kind: ip
+      value: 195.178.110.242
+    - kind: ip
+      value: 95.217.100.226
+    - kind: parameter
+      value: bp_compat_check
+    - kind: parameter
+      value: mode=diag
+    - kind: parameter
+      value: mode=exec
+    - kind: parameter
+      value: mode=read
+    - kind: observable
+      value: Backdoored BuddyBoss Platform update exfiltrated WordPress secrets and
+        exposed reverse shell, command execution, and file read paths.
+    notes:
+    - Cybernews initially identified BuddyBoss Platform 2.20.3 as compromised; Ctrl-Alt-Intel
+      later reported that the attacker deployed a malicious 2.20.4 with additional
+      execution methods and a standalone webshell.
+    - The malicious package was reportedly prepared from a clean 2.13.1 package and
+      uploaded as a newer production release.
+  - id: buddyboss-theme
+    name: BuddyBoss Theme
+    ecosystem: wordpress
+    kind: theme
+    website: https://www.buddyboss.com/wordpress-themes/buddyboss-theme/
+    start_date: 2026-03-17
+    end_date: 2026-03-24
+    versions:
+    - 2.19.2
+    locations:
+    - uri: https://www.buddyboss.com/wordpress-themes/buddyboss-theme/
+      role: distribution
+    - uri: https://licenses.caseproof.com
+      role: distribution
+    indicators:
+    - kind: file
+      value: functions.php
+    - kind: file_sha256
+      value: functions.php 5027a0e77eca13a5cc120d3e37262c4073452569ad341cd1558051b5a91ce144
+    - kind: domain
+      value: licenses.caseproof.com
+    - kind: ip
+      value: 18.208.60.216
+    - kind: ip
+      value: 195.178.110.242
+    - kind: parameter
+      value: bb_theme_compat
+    - kind: observable
+      value: Backdoored BuddyBoss Theme update hooked early WordPress execution to
+        exfiltrate site credentials and server data.
+    notes:
+    - Ctrl-Alt-Intel reported the theme upload completed around 19:15 UTC on March
+      17, 2026 and was verified live on the official Caseproof CDN.
+  references:
+  - url: https://cybernews.com/security/buddyboss-hack-compromises-hundreds-of-websites/
+    title: BuddyBoss platform compromised, hundreds of websites already hacked
+  - url: https://ctrlaltintel.com/research/BuddyBoss-1/
+    title: "The BuddyBoss Attack: Claude's Supply-Chain Attack"
+  - url: https://ctrlaltintel.com/research/BuddyBoss-2/
+    title: 'The BuddyBoss Attack: Full Incident Analysis'
+  - url: https://securityboulevard.com/2026/03/buddyboss-platform-compromised-as-hundreds-of-websites-are-hacked/
+    title: BuddyBoss Platform Compromised as Hundreds of Websites Are Hacked
+  - url: https://threats.wiz.io/all-incidents/buddyboss-supply-chain-attack
+    title: BuddyBoss supply chain attack

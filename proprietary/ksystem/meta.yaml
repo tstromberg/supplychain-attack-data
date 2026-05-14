@@ -1,10 +1,16 @@
----
 - id: ksystem-erp
-  title: KSystem ERP update program compromised.
-  synopsis: The KSystem ERP update program was compromised by the Andariel group,
-    turning ClientUpdater.exe into a delivery path for Xctdoor. The malicious routines
-    enabled data theft and remote control, placing an espionage backdoor inside the
-    operational rhythm of enterprise resource planning software.
+  title: KSystem ERP updater stole data
+  synopsis: >-
+    A Korean ERP updater was modified to launch Xctdoor through Regsvr32. ASEC linked
+    the method to Andariel-style ERP update abuse against Korean companies.
+  story: |
+    ASEC described a May 2024 attack against Korean companies in defense and manufacturing. The attacker appears to have abused a Korean ERP update server, then used the ERP update program as the trusted local execution path.
+
+    The changed program was `ClientUpdater.exe`. In the older 2017 pattern, Andariel inserted downloader logic into the ERP updater to fetch HotCroissant. In the 2024 case, ASEC saw a simpler routine that executed a DLL from a specific path with `Regsvr32.exe`.
+
+    The payload was Xctdoor, a Go DLL backdoor named from strings such as `XctMain`. It injected into processes including `taskhost.exe`, `taskhostex.exe`, `taskhostw.exe`, and `explorer.exe`, copied itself to an Edge package settings path as `roaming.dat`, and installed startup persistence.
+
+    This record stays scoped to the ERP update path. Public reporting did not prove a broad customer compromise or publish victim counts, but it did identify the affected mechanism, payload family, and Korean industrial target set.
   start_date: 2024-05-01
   end_date: 2024-05-31
   target:
@@ -12,8 +18,9 @@
     kind: application
     website: https://ksystem.co.kr
   actor:
-    name: Nation-state
+    name: Andariel
     kind: state
+    country: North Korea
   language: C
   method:
     cause: server_compromise
@@ -27,7 +34,9 @@
     - backdoor
   artifacts:
   - id: ksystem-erp
-    name: KSystem ERP
+    name: KSystem ERP updater
+    package: ClientUpdater.exe
+    ecosystem: ksystem updater
     kind: binary_archive
     website: https://ksystem.co.kr
     start_date: 2024-05-01
@@ -49,10 +58,29 @@
     - md5:11465d02b0d7231730f3c4202b0400b8
     - md5:2e325935b2d1d0a82e63ff2876482956
     indicators:
-    - kind: observable
+    - kind: domain
       value: devout.ksystem.co.kr
-    - kind: observable
-      value: ClientUpdater.exe (via KSystem ERP update mechanism)
+    - kind: file
+      value: ClientUpdater.exe
+    - kind: file
+      value: roaming.dat
+    - kind: process
+      value: Regsvr32.exe
+    - kind: process
+      value: taskhost.exe
+    - kind: process
+      value: taskhostex.exe
+    - kind: process
+      value: taskhostw.exe
+    - kind: process
+      value: explorer.exe
+    - kind: path
+      value: '%LOCALAPPDATA%\Packages\Microsoft.MicrosoftEdge.Current_8wekyb3d8bbwe\Settings\roaming.dat'
+    - kind: family
+      value: Xctdoor
   references:
-  - url: https://blog.ksystem.co.kr/%EB%B3%B4%EC%95%88%EC%B9%A8%ED%95%B4%EB%B0%A9%EC%A7%80%EB%A5%BC-%EC%9C%84%ED%95%9C-%EC%B7%A8%EC%95%BD%EC%84%B1-%EC%A0%90%EA%B2%80-%EC%A1%B0%EC%B9%98-%EC%95%88%EB%82%B4/?ckattempt=1
+  - url: 
+      https://blog.ksystem.co.kr/%EB%B3%B4%EC%95%88%EC%B9%A8%ED%95%B4%EB%B0%A9%EC%A7%80%EB%A5%BC-%EC%9C%84%ED%95%9C-%EC%B7%A8%EC%95%BD%EC%84%B1-%EC%A0%90%EA%B2%80-%EC%A1%B0%EC%B9%98-%EC%95%88%EB%82%B4/?ckattempt=1
+    title: KSystem security breach prevention vulnerability inspection guidance
   - url: https://asec.ahnlab.com/en/74835/
+    title: Xctdoor Malware Used in Attacks Against Korean Companies (Andariel)
