@@ -547,10 +547,10 @@ func validateStory(path, id, field, value string) []issue {
 		return nil
 	}
 	count := len(storyParagraphs(value))
-	if count >= 3 && count <= 4 {
+	if count >= 2 && count <= 4 {
 		return nil
 	}
-	return []issue{{"error", field, strconv.Itoa(count), path, id, "story must be 3 to 4 paragraphs separated by blank lines"}}
+	return []issue{{"error", field, strconv.Itoa(count), path, id, "story must be 2 to 4 paragraphs separated by blank lines"}}
 }
 
 func storyParagraphs(value string) []string {
