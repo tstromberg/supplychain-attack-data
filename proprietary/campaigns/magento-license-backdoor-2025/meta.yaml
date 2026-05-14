@@ -1,0 +1,48 @@
+---
+- title: Magento extension vendors shipped license backdoors
+  synopsis: Tigren, Meetanshi, and MGS extension downloads carried PHP license-check
+    backdoors. Sansec found 21 affected Magento modules, with abuse active by April
+    2025.
+  story: |
+    This is not a generic Magento backdoor record. Magento is an ecosystem, and most Magento malware reaches stores through stolen admin credentials, old vulnerabilities, uploaded webshells, or injected checkout JavaScript. This record is narrower: Sansec found vendor-distributed extension packages that already carried the same PHP backdoor.
+
+    The confirmed supply-chain scope covered Tigren, Meetanshi, and Magesolution (MGS). Sansec identified 21 affected modules published between 2019 and 2022, and reported that the vendor download servers had been breached. A Weltpixel GoogleTagManager package looked suspicious too, but Sansec could not establish where it had been altered.
+
+    The inserted code posed as license logic. A fake `License.php` or `LicenseApi.php` file was loaded from `registration.php`, and `adminLoadLicense` executed attacker-controlled `$licenseFile` content as PHP. Older 2019 variants did not require authentication; later variants added vendor-specific keys such as `requestKey` and `dataSign` checks.
+
+    The code stayed quiet for years. Sansec reported active use since at least 2025-04-20 and estimated that 500 to 1,000 stores were running affected software, including one large multinational. Vendor response was uneven: Meetanshi confirmed a server hack while disputing package tampering, Tigren denied compromise, and MGS did not respond.
+  start_date: 2019-01-01
+  end_date: 2025-05-01
+  actor:
+    name: Unknown
+    kind: unknown
+  impact:
+    types:
+    - backdoor
+    - remote_access
+    - data_theft_potential
+    users: 1000
+  references:
+  - url: https://www.bleepingcomputer.com/news/security/magento-supply-chain-attack-compromises-hundreds-of-e-stores/
+    title: Magento supply chain attack compromises hundreds of e-stores
+  - url: https://sansec.io/research/license-backdoor
+    title: Backdoor found in popular ecommerce components
+  - url: https://securityaffairs.com/177436/malware/sansec-uncovered-a-supply-chain-attack-via-21-backdoored-magento-extensions.html
+    title: Sansec uncovered a supply chain attack via 21 backdoored Magento extensions
+  - url: https://cyberinsider.com/backdoor-activates-in-magento-supply-chain-attack-impacting-1000-stores/
+    title: Backdoor Activates in Magento Supply Chain Attack Impacting 1000 Stores
+  - url: https://arstechnica.com/security/2025/05/hundreds-of-e-commerce-sites-hacked-in-supply-chain-attack/
+    title: Hundreds of e-commerce sites hacked in supply-chain attack
+  notes:
+  - The `users` value records Sansec's upper estimate of stores running affected software,
+    not individual shoppers or confirmed data-theft victims.
+  - FishPig's 2022 Magento extension compromise is tracked separately because it involved
+    a different vendor, payload, and date window.
+  - PolyShell, Xurum, MagnetoCore, and generic Magento webshell reports describe post-install
+    exploitation or store compromise. They are related Magento ecosystem activity,
+    but not modeled here as vendor-distributed poisoned artifacts.
+  - Tigren, Meetanshi, and MGS are modeled as separate attacks because each vendor
+    download path is a separate trust boundary.
+  - Weltpixel remains campaign context because the reporting treated it as suspicious
+    but did not confirm where the package was altered.
+  id: magento-license-backdoor-2025

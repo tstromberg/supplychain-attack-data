@@ -1,0 +1,91 @@
+- id: rvtools
+  title: RVTools installers carried Bumblebee
+  synopsis: >-
+    RVTools reporting split between official-site compromise and lookalike-domain delivery.
+    The trojanized installer sideloaded version.dll to launch Bumblebee.
+  story: |
+    RVTools is an administrator tool for VMware environments, so its installer lands near privileged infrastructure. In May 2025, researchers reported a trojanized RVTools installer that dropped a malicious `version.dll` and loaded Bumblebee.
+
+    The official-site question is unresolved in public reporting. ZeroDay Labs researcher Aidan Leon said the malicious file was downloaded from RVTools or Robware, with a mismatch between the published hash and the actual download. Dell later said its investigation found no evidence that Robware.net or RVTools.com served the malware and instead pointed to fake domains plus DDoS against the legitimate sites.
+
+    Other reporting supports both sides of the risk. Truesec and The Hacker News initially described an official-site compromise, while Arctic Wolf observed trojanized installers from typosquatted domains with changed top-level domains, likely promoted through SEO poisoning or malvertising.
+
+    This record is kept as an edge case. It tracks the real RVTools-branded trojanized installer and the strong claims of official-site exposure, but the notes preserve Dell's denial and the confirmed lookalike-domain delivery channel.
+  start_date: 2025-05-12
+  end_date: 2025-05-21
+  target:
+    name: RVTools
+    kind: application
+    website: https://www.robware.net/rvtools/
+  actor:
+    name: Unknown attacker
+    kind: unknown
+  language: C++
+  method:
+    cause: contested_distribution_compromise
+    phase: distribution
+    motive: initial_access
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_access
+    - ransomware_staging
+    users: 0
+  locations:
+  - uri: https://www.robware.net/rvtools/
+    role: distribution
+  - uri: https://www.rvtools.com/
+    role: distribution
+  indicators:
+  - kind: family
+    value: Bumblebee
+  - kind: file
+    value: version.dll
+  - kind: file
+    value: RVTools installer
+  - kind: observable
+    value: Public reports conflict on whether official sites served the malicious installer.
+  - kind: observable
+    value: Dell said fake websites mimicking Robware.net and RVTools.com distributed malicious RVTools installers.
+  - kind: observable
+    value: A researcher reported a mismatch between the hash listed on the RVTools website and the actual downloaded installer.
+  artifacts:
+  - id: rvtools-installer
+    name: RVTools trojanized installer
+    package: RVTools
+    ecosystem: rvtools website download
+    kind: binary_archive
+    website: https://www.robware.net/rvtools/
+    start_date: 2025-05-12
+    end_date: 2025-05-21
+    locations:
+    - uri: https://www.robware.net/rvtools/
+      role: distribution
+    - uri: https://www.rvtools.com/
+      role: distribution
+    notes:
+    - The official-distribution status is contested. Aidan Leon reported direct official-site
+      download and hash mismatch; Dell said it found no evidence of official-site or
+      official-download compromise.
+    - Arctic Wolf reported trojanized RVTools installers from typosquatted domains, a
+      confirmed malicious delivery path that overlaps the same RVTools-branded payload.
+    - Public reports did not provide a stable malicious RVTools version in text; some
+      secondary reporting mentioned 4.7.1, but this record leaves the version unset until
+      confirmed from primary evidence.
+  references:
+  - url: https://thehackernews.com/2025/05/rvtools-official-site-hacked-to-deliver.html
+    title: RVTools Official Site Hacked to Deliver Bumblebee Malware via Trojanized Installer
+  - url: https://www.bleepingcomputer.com/news/security/trojanized-rvtools-push-bumblebee-malware-in-seo-poisoning-campaign/
+    title: Trojanized RVTools push Bumblebee malware in SEO poisoning campaign
+  - url: https://arcticwolf.com/resources/blog/rvtools-supply-chain-attack-delivers-bumblebee-malware/
+    title: RVTools Supply Chain Attack Delivers Bumblebee Malware
+  - url: https://www.truesec.com/hub/blog/official-download-site-for-rvtools-hacked
+    title: Official Download site for RVTools Hacked
+  - url: 
+      https://dailysecurityreview.com/cyber-security/rvtools-supply-chain-attack-delivered-bumblebee-malware-via-trojanized-installer/
+    title: RVTools Supply Chain Attack Delivered Bumblebee Malware via Trojanized Installer
+  - url: https://fieldeffect.com/blog/thunderstruck-malicious-ads-rvtools-thundershell-payload
+    title: Thunderstruck! Malicious ads for RVTools lead to ThunderShell payload
+  - url: https://it.ucsf.edu/052225-malicious-rvtools-installer-found-official-site
+    title: Malicious RVTools Installer Found on Official Site

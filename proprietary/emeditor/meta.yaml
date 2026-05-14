@@ -1,0 +1,119 @@
+- id: emeditor
+  title: EmEditor download button served malware
+  synopsis: >-
+    EmEditor's official Download Now path was altered in December 2025. The redirected MSI
+    installed EmEditor while launching PowerShell stages for credential theft and profiling.
+  story: |
+    EmEditor was compromised at a narrow but trusted point: the homepage Download Now button. Emurasoft said the affected window ran from December 19, 2025 18:39 to December 22, 2025 12:50 Pacific time, and that the redirect behind the button could serve a file not produced by Emurasoft.
+
+    The confirmed artifact was `emed64_25.4.3.msi`. The legitimate installer was signed by Emurasoft and had a published SHA-256 hash. The suspicious installer used the same filename, installed the real editor, but was signed by WALSHAM INVESTMENTS LIMITED and carried a modified MSI CustomAction.
+
+    The malicious action spawned PowerShell. Trend Micro and ReversingLabs described staged scripts that contacted lookalike EmEditor domains, disabled or interfered with PowerShell telemetry, collected credentials and screenshots, fingerprinted the host, checked locale and security tooling, and reported to `cachingdrive.com`.
+
+    Later related samples and domains suggest the operators continued building around the same theme after the vendor advisory. This record keeps the official-distribution claim to the vendor-confirmed 25.4.3 Download Now window and records later infrastructure as campaign indicators, not as confirmed Emurasoft-distributed artifacts.
+  start_date: 2025-12-19
+  end_date: 2025-12-22
+  target:
+    name: EmEditor
+    kind: application
+    website: https://www.emeditor.com
+  actor:
+    name: Unknown attacker
+    kind: unknown
+  language: PowerShell
+  method:
+    cause: website_compromise
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - data_theft
+    - remote_access
+    users: 0
+  locations:
+  - uri: https://support.emeditor.com/en/downloads/latest/installer/64
+    role: distribution
+  indicators:
+  - kind: file
+    value: emed64_25.4.3.msi
+  - kind: file
+    value: emed64_25.4.4.msi
+  - kind: signer
+    value: WALSHAM INVESTMENTS LIMITED
+  - kind: signer
+    value: Emurasoft, Inc.
+  - kind: domain
+    value: emeditorjp.com
+  - kind: domain
+    value: emeditorgb.com
+  - kind: domain
+    value: emeditorde.com
+  - kind: domain
+    value: cachingdrive.com
+  - kind: domain
+    value: emeditorjapan.com
+  - kind: domain
+    value: emedorg.com
+  - kind: domain
+    value: emeditorltd.com
+  - kind: domain
+    value: emedjp.com
+  - kind: domain
+    value: nc7d8p7u8j3n4hgm.com
+  - kind: url
+    value: https://emeditorgb.com/run/mg8heP0r
+  - kind: url
+    value: https://emeditorde.com/gate/start/2daef8cd
+  - kind: url
+    value: https://cachingdrive.com/gate/init/2daef8cd
+  - kind: campaign_tag
+    value: 2daef8cd
+  - kind: file_sha256
+    value: malicious emed64_25.4.3.msi 3d1763b037e66bbde222125a21b23fc24abd76ebab40589748ac69e2f37c27fc
+  - kind: file_sha256
+    value: malicious emed64_25.4.3.msi 4bea333d3d2f2a32018cd6afe742c3b25bfcc6bfe8963179dad3940305b13c98
+  - kind: file_sha256
+    value: related malicious emed64_25.4.3.msi ad84f28e9bb0fcaf30846b2563a353b649ab6dc85b36d4bf58ee61a2a95b740a
+  - kind: file_sha256
+    value: related malicious emed64_25.4.4.msi da59acc764bbd6b576bef6b1b9038f592ad4df0eed894b0fbd3931f733622a1a
+  - kind: file_sha256
+    value: legitimate emed64_25.4.3.msi e5f9c1e9b586b59712cefa834b67f829ccbed183c6855040e6d42f0c0c3fcb3e
+  artifacts:
+  - id: emeditor-25-4-3
+    name: EmEditor installer
+    package: EmEditor
+    ecosystem: emeditor website download
+    kind: binary_archive
+    website: https://www.emeditor.com
+    start_date: 2025-12-19
+    end_date: 2025-12-22
+    versions:
+    - 25.4.3
+    locations:
+    - uri: https://support.emeditor.com/en/downloads/latest/installer/64
+      role: distribution
+    - uri: https://www.emeditor.com/general/important-security-incident-notice-regarding-the-emeditor-installer-download-link/
+      role: mirror
+    hashes:
+    - sha256:3d1763b037e66bbde222125a21b23fc24abd76ebab40589748ac69e2f37c27fc
+    - sha256:4bea333d3d2f2a32018cd6afe742c3b25bfcc6bfe8963179dad3940305b13c98
+    notes:
+    - Emurasoft confirmed the affected file name and signer mismatch but did not publish
+      a malicious SHA-256. ReversingLabs listed two malicious 25.4.3 MSI samples tied
+      to the EmEditor campaign and the `emeditorjp.com` C2 domain.
+    - The legitimate Emurasoft-signed 25.4.3 MSI SHA-256 was
+      e5f9c1e9b586b59712cefa834b67f829ccbed183c6855040e6d42f0c0c3fcb3e.
+  references:
+  - url: 
+      https://www.emeditor.com/general/important-security-incident-notice-regarding-the-emeditor-installer-download-link/
+    title: Security Incident Notice Regarding the EmEditor Installer Download Link
+  - url: https://www.trendmicro.com/en_us/research/26/a/watering-hole-attack-targets-emeditor-users.html
+    title: Watering Hole Attack Targets EmEditor Users with Information-Stealing Malware
+  - url: https://www.reversinglabs.com/blog/emeditor-supply-chain-compromise
+    title: Researcher's Notebook - Inside the EmEditor supply chain compromise
+  - url: https://www.stormshield.com/news/investigation-on-the-emeditor-supply-chain-attack/
+    title: Investigation on the EmEditor Supply Chain Cyberattack
+  - url: https://cybersecuritynews.com/emeditor-editor-website-hacked/
+    title: EmEditor Editor Website Hacked to Deliver Infostealer Malware in Supply Chain Attack

@@ -343,6 +343,9 @@ func validateEntry(entry Entry, campaignIDs map[string]bool) []issue {
 	issues = append(issues, validateImpact(entry.SourcePath, entry.ID, "impact", entry.Impact)...)
 	issues = append(issues, validateHashes(entry.SourcePath, entry.ID, "hashes", entry.Hashes)...)
 	issues = append(issues, validateVersions(entry.SourcePath, entry.ID, "versions", nil)...)
+	if len(entry.Campaigns) > 1 {
+		issues = append(issues, issue{"error", "campaigns", strings.Join(entry.Campaigns, ","), entry.SourcePath, entry.ID, "attack records must be associated with at most one campaign"})
+	}
 	for _, campaign := range entry.Campaigns {
 		if strings.TrimSpace(campaign) == "" {
 			issues = append(issues, issue{"error", "campaigns", "", entry.SourcePath, entry.ID, "campaign id is empty"})

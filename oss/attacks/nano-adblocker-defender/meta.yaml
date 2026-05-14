@@ -1,0 +1,81 @@
+- id: nano-adblocker-defender
+  title: Nano extensions shipped malicious updates
+  synopsis: >-
+    After Nano Adblocker and Nano Defender changed hands, Chrome Web Store updates added
+    malicious code that collected browsing data and abused logged-in social sessions.
+  story: |
+    Nano Adblocker and Nano Defender were Chromium extensions derived from the uBlock Origin ecosystem. In October 2020, maintainer Hugo Xu announced he no longer had time to maintain the projects and transferred the Chrome Web Store rights to new developers.
+
+    The trust boundary moved with the store listing. Existing users did not install a lookalike extension; their browsers accepted updates under the established Nano extension identities. Raymond Hill and community reviewers quickly warned that the new releases contained malicious code.
+
+    The payload collected browsing data and sent a `report` file to `def.dev-nano.com`. Users also observed browser sessions issuing Instagram likes without user action, which showed that extension privileges reached authenticated social sessions.
+
+    Google removed the extensions from the Chrome Web Store after the reports. The Firefox variants were maintained separately and were reported not to have received the malicious Chrome Web Store code, so this record is scoped to the Chromium distribution path.
+  start_date: 2020-10-16
+  end_date: 2020-10-20
+  target:
+    name: Nano Adblocker and Nano Defender
+    kind: extension
+    repo: https://github.com/NanoAdblocker/NanoCore
+  actor:
+    name: New maintainer
+    kind: maintainer
+  language: javascript
+  method:
+    cause: maintainer_ownership_transfer
+    phase: distribution
+    motive: data_theft
+    transitive: false
+  impact:
+    types:
+    - data_theft
+    - session_abuse
+    - tracking
+    users: 300000
+  artifacts:
+  - id: nano-adblocker
+    name: Nano Adblocker Chrome extension
+    package: Nano Adblocker
+    ecosystem: chrome web store
+    kind: extension_package
+    repo: https://github.com/NanoAdblocker/NanoCore
+    start_date: 2020-10-16
+    end_date: 2020-10-20
+    locations:
+    - uri: https://chrome.google.com/webstore/detail/nano-adblocker/
+      role: distribution
+    notes:
+    - Public reporting gives the Chrome Web Store extension identity but not a durable
+      malicious version number in the cited sources.
+  - id: nano-defender
+    name: Nano Defender Chrome extension
+    package: Nano Defender
+    ecosystem: chrome web store
+    kind: extension_package
+    repo: https://github.com/NanoAdblocker/NanoCore
+    start_date: 2020-10-16
+    end_date: 2020-10-20
+    locations:
+    - uri: https://chrome.google.com/webstore/detail/nano-defender/ggolfgbegefeeoocgjbmkembbncoadlb
+      role: distribution
+    notes:
+    - Public reporting separated the Chrome Web Store releases from Firefox variants,
+      which were maintained by a different developer.
+  indicators:
+  - kind: domain
+    value: def.dev-nano.com
+  - kind: url
+    value: https://def.dev-nano.com/
+  - kind: file
+    value: report
+  - kind: observable
+    value: Browsers issued Instagram likes without user action.
+  - kind: observable
+    value: Chrome Web Store rights were sold to new developers before malicious updates.
+  references:
+  - url: https://arstechnica.com/information-technology/2020/10/popular-chromium-ad-blockers-caught-stealing-user-data-and-accessing-accounts/
+    title: Adblockers installed 300,000 times are malicious and should be removed now
+  - url: https://github.com/jspenguin2017/Snippets/issues/2
+    title: Discussions regarding recent changes to the Nano projects
+  - url: https://github.com/NanoAdblocker/NanoCore/issues/362
+    title: Announcement - Recent and upcoming changes to the Nano projects

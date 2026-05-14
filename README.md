@@ -13,7 +13,7 @@ This repository only includes cases where an open-source project or commercial p
 
 ## Data
 
-- Campaigns describe shared actor, tooling, infrastructure, and timeline across multiple attacks. OSS campaigns live under `oss/campaigns/`; attacks link to them with `campaigns:`
+- Campaigns describe one bounded operation across multiple attacks. OSS campaigns live under `oss/campaigns/`; attacks link to them with `campaigns:`. Actor groups such as TeamPCP belong in `actor`, not as broad campaign records, and each attack should link to at most one campaign.
 - Attacks describe one compromised trust boundary: a vendor, maintainer account, project organization, provider, registry account, release pipeline, or official distribution surface
 - `id` is a stable machine identifier. Keep it lowercase, URL-safe, and durable; do not rewrite it just to improve display text
 - `target.name` is the canonical attacked entity: the project, vendor, product, service, maintainer account, registry, or distribution surface whose trust boundary failed
