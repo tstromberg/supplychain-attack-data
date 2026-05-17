@@ -1,0 +1,131 @@
+- id: bfunky-http-parser
+  title: bfunky/http-parser Packagist package backdoored with host stealer
+  synopsis: >-
+    An attacker pushed an Analytics.php payload into bfunky/http-parser and re-tagged 11
+    historical releases on GitHub, causing Packagist to serve a host-data stealer to anyone
+    installing the abandoned PHP HTTP parser.
+  story: |-
+    bfunky/http-parser is a small PHP HTTP message parser whose original maintainer had not
+    published a release since 2018. On 2026-05-08 a commit landed on the repository that added
+    `src/Analytics.php` and a `require_once` in `src/AbstractHttpParser.php`, so the new file
+    executes automatically whenever any class in the library is autoloaded.
+
+    The same day, the attacker tagged versions 2.1.0 and 2.2.0 through 2.2.4 against the new
+    commits, and on 2026-05-14 force-tagged the 1.0.0 through 1.0.4 historical releases and
+    cut a 2.2.5 tag on top of the same backdoor. Packagist picked up every retagged release
+    and began serving the trojanised zipballs from GitHub. The attacker also altered the file
+    header to change the author from "Jairo Rodríguez" to "jairo.rodriguez", and the commit
+    message on the 2.1.0 retag is "[2.2.3]", suggesting an account compromise rather than a
+    deliberate maintainer republish.
+
+    Analytics.php disables TLS verification, then POSTs a JSON blob to the URL stored in
+    base64 as `URL_DIGEST` — `https://44.210.94.38/packagist.php`. The payload exfiltrates
+    `gethostname()`, `$_SERVER['SERVER_NAME']`, `$_SERVER['SERVER_ADDR']`, the current working
+    directory, `php_uname()`, and the entire process environment via `getenv()`. A marker
+    file under the system temp directory, named `md5(URL_DIGEST . gethostname())`, is written
+    after a successful send so the beacon fires once per host. The file's comment header
+    copies the boilerplate from Composer's generated files to look benign.
+
+    The exfiltration of `getenv()` makes this a credential stealer in practice: PHP processes
+    routinely hold database passwords, API keys, and cloud credentials in the environment.
+    Packagist reports 36,469 lifetime downloads and roughly 675 monthly, so the exposed
+    population is small but the payload runs on every autoload of any class in the library.
+  start_date: 2026-05-08
+  end_date: 2026-05-17
+  target:
+    name: bfunky/http-parser
+    kind: library
+    repo: https://github.com/bfunky/http-parser
+    website: https://packagist.org/packages/bfunky/http-parser
+  actor:
+    name: Unknown
+    kind: person
+  language: PHP
+  method:
+    cause: maintainer_account_compromise
+    phase: source
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+    users: 0
+  artifacts:
+  - id: bfunky-http-parser
+    name: bfunky/http-parser Packagist releases
+    package: bfunky/http-parser
+    ecosystem: packagist
+    kind: source_archive
+    repo: https://github.com/bfunky/http-parser
+    start_date: 2026-05-08
+    end_date: 2026-05-17
+    versions:
+    - 1.0.0
+    - 1.0.1
+    - 1.0.2
+    - 1.0.3
+    - 1.0.4
+    - 2.1.0
+    - 2.2.0
+    - 2.2.1
+    - 2.2.2
+    - 2.2.3
+    - 2.2.4
+    - 2.2.5
+    fixed_versions:
+    - 2.0.0
+    locations:
+    - uri: https://packagist.org/packages/bfunky/http-parser
+      role: distribution
+    - uri: https://github.com/bfunky/http-parser
+      role: distribution
+    - uri:
+        https://github.com/bfunky/http-parser/commit/d1c67b2a59301c753e69eabee2ef1c265b111936
+      role: mirror
+    - uri:
+        https://www.reddit.com/r/blueteamsec/comments/1tfhhl9/somebody_backdoored_the_package_bfunkyhttpparser/
+      role: mirror
+    commits:
+    - d1c67b2a59301c753e69eabee2ef1c265b111936
+    - 0e520693b867eb5d8e88acbafe717c2f1e4bc7ec
+    - 36729b0f022d2a5f5d39500d529ae1a5676049c7
+    - f384d1c0
+    indicators:
+    - kind: url
+      value: https://44.210.94.38/packagist.php
+    - kind: ip
+      value: 44.210.94.38
+    - kind: file
+      value: src/Analytics.php
+    - kind: file_sha256
+      value: src/Analytics.php f8f0914ff8690a26390cc5aee741bc6e12db439f669fcb5e643038fde9725ae4
+    - kind: string
+      value: aHR0cHM6Ly80NC4yMTAuOTQuMzgvcGFja2FnaXN0LnBocA==
+    - kind: observable
+      value: require_once(__DIR__ . "/Analytics.php") inserted into
+        src/AbstractHttpParser.php so the payload runs on autoload
+    - kind: observable
+      value: CURLOPT_SSL_VERIFYHOST and CURLOPT_SSL_VERIFYPEER disabled on the exfiltration
+        request
+    - kind: observable
+      value: Exfiltrated fields include gethostname, SERVER_NAME, SERVER_ADDR, getcwd,
+        php_uname, and the full process environment via getenv()
+    notes:
+    - Package had no releases between 2018 and 2026-05-08; the May 2026 retagging of historic
+      1.0.x releases pinned them to a new attacker-authored commit that also embeds
+      Analytics.php.
+    - Author header in src/AbstractHttpParser.php was changed from "Jairo Rodríguez" to
+      "jairo.rodriguez" in the malicious commit, and the 2.1.0 retag commit message is
+      "[2.2.3]", indicating account compromise rather than a deliberate maintainer release.
+    - Packagist reports 36469 lifetime downloads and roughly 675 monthly; affected-user count
+      is not separately confirmed.
+  references:
+  - url:
+      https://www.reddit.com/r/blueteamsec/comments/1tfhhl9/somebody_backdoored_the_package_bfunkyhttpparser/
+    title: Somebody backdoored the package bfunky/http-parser on packagist with a stealer
+  - url:
+      https://github.com/bfunky/http-parser/commit/d1c67b2a59301c753e69eabee2ef1c265b111936
+    title: bfunky/http-parser commit d1c67b2 introducing Analytics.php
+  - url: https://packagist.org/packages/bfunky/http-parser
+    title: bfunky/http-parser on Packagist
