@@ -80,23 +80,11 @@ artifacts:
     role: distribution
 ```
 
-## OSS Pwn Count
+## Browse the data
 
-* 56 OSS projects
-* 59 incidents
+For graphs and an easy-to-read view of the data, see the compendium: https://isotope13.ai/compendium/
 
-To the best of my knowledge, this data is complete, but if you know of any cases where an open-source project distributed malware, please open an issue.
-
-![OSS supply-chain compromises over time](assets/chart.png)
-![OSS supply-chain compromises: insertion point](assets/where.png)
-![OSS supply-chain compromises: insertion point](assets/attack_vector.png)
-![OSS supply-chain compromises: insertion point](assets/impact.png)
-
-## Proprietary Pwn Count
-
-* 45 products & incidents
-
-Note: Available data is limited as many commercial attacks go unreported.
+To the best of my knowledge, the OSS data is complete. If you know of any cases where an open-source project distributed malware, please open an issue. Proprietary data is limited as many commercial attacks go unreported.
 
 ## PR's welcome!
 
