@@ -21,8 +21,8 @@
     <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> library</div>
     <div class="meta-item"><strong>Language:</strong> JavaScript</div>
-    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
-    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Cause:</strong> maintainer_account_compromise</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft_data_exfiltration</div>
     <div class="meta-item"><strong>Transitive:</strong> true</div>
     <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration, remote_access</div>
     <div class="meta-item"><strong>User Impact:</strong> 822257</div>
@@ -30,19 +30,19 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Three malicious node-ipc npm releases were published on May 14, 2026, adding an obfuscated runtime payload that attempted to collect developer, cloud, SSH, and CI/CD secrets.</p>
+  <p class="synopsis">Three malicious node-ipc npm releases were published on 2026-05-14 after the dormant `atiertant` co-maintainer account was recovered via an expired email domain. The obfuscated payload harvested developer, cloud, SSH, and CI/CD secrets and exfiltrated them over DNS TXT queries.</p>
 
   
   <h2>Story</h2>
   <div class="story">
     
-      <p>This was a new node-ipc supply-chain event, separate from the 2022 protestware incident. On 2026-05-14, the npm package received three new releases across active and legacy version lines: 12.0.1, 9.2.3, and 9.1.6.</p>
+      <p>This was a new node-ipc supply-chain event, separate from the 2022 protestware incident. On 2026-05-14 the npm package received three new releases across active and legacy version lines: 12.0.1 at 14:25:30 UTC, 9.2.3 at 14:26:01 UTC, and 9.1.6 at 14:26:25 UTC — all three signed by the dormant co-maintainer `atiertant` inside a 56-second window. Socket traced the entry to expired email domain takeover: the attacker re-registered the lapsed domain behind the maintainer&#39;s account, ran a standard npm password reset, and reached publish without touching the project&#39;s GitHub repository or any active maintainer&#39;s machine. Socket&#39;s scanner flagged the publishes within roughly three minutes.</p>
     
-      <p>StepSecurity reported the releases as malicious and said the payload fired when the package was required at runtime, then attempted to exfiltrate cloud credentials, SSH keys, and CI/CD secrets to external command-and-control infrastructure. Socket independently described the same event as a developing npm compromise with obfuscated stealer and backdoor behavior.</p>
+      <p>Static comparison against 12.0.0 showed the main ESM file unchanged; an identical 80 KB obfuscated block was appended to `node-ipc.cjs` after the legitimate exports in all three tarballs, making CommonJS consumers the execution path. The payload fired via `setImmediate()` during module load, exported under `__ntRun`, and forked a detached child process with the `__ntw=1` environment marker as both anti-re-execution flag and process tag. The collector swept 113 paths on Linux and 127 on macOS, covering SSH keys, AWS/Azure/GCP credentials, `.npmrc`, `.env` files, Kubernetes and Docker configs, npm tokens, database connection strings, and AI tool configs including `.claude.json` and `.kiro/settings/mcp.json`. It also captured the full `process.env` and host details from `uname` and `/etc/hosts`.</p>
     
-      <p>Registry metadata showed the releases were published minutes apart by the `atiertant` npm account. Static comparison against 12.0.0 showed the main ESM file unchanged, while `node-ipc.cjs` gained a large obfuscated block appended after the legitimate exports. That made CommonJS consumers the visible execution path in the sampled tarballs.</p>
+      <p>Output was staged under `&lt;tmpdir&gt;/nt-&lt;pid&gt;/`, tarballed with a fixed `1985-10-26` timestamp on every file (a memorable forensic tell), HMAC-signed with the embedded key `qZ8pL3vNxR9wKmTyHbVcFgDsJaEoUi`, and exfiltrated over DNS TXT queries against the `bt.node.js` zone using the prefixes `xh`, `xd`, and `xf` with a custom base-16 reversed-nibble encoding. Bootstrap name resolution went through `sh.azurestaticprovider.net:443` (37.16.75.69), a deliberate Azure-domain masquerade. DNS-only exfiltration bypassed most CI egress controls that would have blocked an outbound HTTPS POST.</p>
     
-      <p>The package still looked like node-ipc: the normal package name, repository metadata, README, certificates, and API files were present. The trust break was in the official distribution channel, where a fresh install or permissive semver range could resolve to the malicious release without a downstream code review.</p>
+      <p>The package still looked like node-ipc: name, repository metadata, README, certificates, and API files were all intact. The trust break was in the registry distribution channel, where a fresh install or permissive semver range could resolve to the malicious release without a downstream code review. dist-tags pointed `latest` to 12.0.1, so unversioned installs picked up the malicious build until npm pulled the releases.</p>
     
   </div>
   
@@ -108,6 +108,8 @@
       <li><a href="https://socket.dev/blog/node-ipc-package-compromised" target="_blank">node-ipc npm Package Compromised in Supply Chain Attack</a></li>
     
       <li><a href="https://www.stepsecurity.io/blog/node-ipc-npm-supply-chain-attack" target="_blank">Active Supply Chain Attack: Malicious node-ipc Versions Published to npm</a></li>
+    
+      <li><a href="https://safedep.io/malicious-node-ipc-npm-compromise/" target="_blank">Malicious node-ipc npm Compromise - SafeDep</a></li>
     
       <li><a href="https://registry.npmjs.org/node-ipc" target="_blank">node-ipc npm registry metadata</a></li>
     
