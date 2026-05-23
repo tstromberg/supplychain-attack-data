@@ -1,0 +1,109 @@
+- id: nx-console
+  title: Nx Console VS Code extension shipped credential stealer
+  campaigns:
+  - shai-hulud-here-we-go-again
+  synopsis: >-
+    A compromised contributor published Nx Console 18.95.0 to the VS Code Marketplace and OpenVSX
+    on 2026-05-18. The malicious build fetched an obfuscated payload that harvested Vault, npm,
+    AWS, GitHub, 1Password, and SSH credentials and installed a Python LaunchAgent on macOS.
+  story: |
+    After the August 2025 s1ngularity attack, Nrwl added a manual-approval step to the `nx` npm publish pipeline. Nx Console kept the older setup, in which a single organization member could publish a new VS Code extension version unattended. On 2026-05-18 an attacker used a stolen contributor credential to publish a malicious 18.95.0 build to the Visual Studio Marketplace and to OpenVSX.
+
+    The credential came from the TanStack Mini Shai-Hulud compromise a week earlier. That payload had taken GitHub CLI tokens from a Nrwl developer's machine. The tokens were sufficient to run workflows on the Nx Console repository as a contributor and to reach the extension publish step. The build was on the Visual Studio Marketplace from 12:30 to 12:48 UTC, 18 minutes, and on OpenVSX from 12:33 to 13:09 UTC, 36 minutes.
+
+    The extension fetched and ran an obfuscated multi-channel stealer. The collectors covered Vault tokens, `.npmrc` credentials, AWS metadata endpoints and Secrets Manager, GitHub `ghp_`/`gho_`/`ghs_` tokens and Actions secrets, 1Password CLI sessions, on-disk private keys, database connection strings, GCP service accounts, and Docker credentials. Exfiltration used HTTPS, the GitHub API with the victim's own tokens, and DNS. On Linux the payload attempted sudoers injection. On macOS it wrote `~/.local/share/kitty/cat.py` and registered `~/Library/LaunchAgents/com.user.kitty-monitor.plist` as a LaunchAgent. StepSecurity also identified Sigstore code in the payload: requests for Fulcio short-lived certificates from `fulcio.sigstore.dev`, log entries to `rekor.sigstore.dev`, and `slsa.dev/provenance/v1` attestations through npm's OIDC trusted-publisher flow. With the right OIDC material and enough time, the attacker could have published follow-on npm versions that carried valid provenance attestations. The exposure window closed before any such publish landed. The s1ngularity payload from August 2025 had no equivalent capability.
+
+    Microsoft and OpenVSX reported 28 and 41 downloads respectively. Nrwl's internal analytics counted about 6,000 18.95.0 activations from VS Code in the two days that followed. Nrwl shipped 18.100.0, added a two-admin approval step to Nx Console publishes to match the `nx` npm pipeline, and asked affected users to update, kill any `cat.py` or `__DAEMONIZED` processes, unload the LaunchAgent, delete the persistence files, and rotate every credential reachable from the machine.
+  start_date: 2026-05-18
+  end_date: 2026-05-18
+  target:
+    name: nx-console
+    kind: plugin
+    repo: https://github.com/nrwl/nx-console
+    website: https://nx.dev/getting-started/editor-setup
+  actor:
+    name: Unknown
+    kind: unknown
+  language: TypeScript
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+    - backdoor
+    users: 6000
+  locations:
+  - uri: https://marketplace.visualstudio.com/items?itemName=nrwl.angular-console
+    role: distribution
+  - uri: https://open-vsx.org/extension/nrwl/angular-console
+    role: distribution
+  - uri: https://github.com/nrwl/nx-console/security/advisories/GHSA-c9j4-9m59-847w
+    role: mirror
+  - uri: https://github.com/nrwl/nx-console/issues/3139
+    role: mirror
+  indicators:
+  - kind: cve
+    value: CVE-2026-48027
+  - kind: ghsa
+    value: GHSA-c9j4-9m59-847w
+  - kind: file
+    value: ~/.local/share/kitty/cat.py
+  - kind: file
+    value: ~/Library/LaunchAgents/com.user.kitty-monitor.plist
+  - kind: file
+    value: /var/tmp/.gh_update_state
+  - kind: file
+    value: /tmp/kitty-*
+  - kind: command
+    value: python cat.py
+  - kind: environment_variable
+    value: __DAEMONIZED=1
+  - kind: domain
+    value: api.github.com
+  - kind: domain
+    value: fulcio.sigstore.dev
+  - kind: domain
+    value: rekor.sigstore.dev
+  - kind: url
+    value: https://slsa.dev/provenance/v1
+  notes:
+  - Microsoft and OpenVSX reported 28 and 41 downloads for 18.95.0, but Nrwl's internal
+    analytics counted roughly 6,000 extension activations in the two days following the
+    incident. The impact users field uses the activation figure.
+  - Nrwl attributes the contributor compromise to the TanStack Mini Shai-Hulud incident a
+    week earlier (see [[tanstack-router]]), which leaked GitHub CLI credentials and let the
+    attacker reach the Nx Console publishing path.
+  - The earlier August 2025 s1ngularity attack on nx and @nrwl/nx packages is recorded
+    separately as [[nx-build]]; that record's nx-console artifact covers extension
+    exposure during the npm compromise, not this direct marketplace publish.
+  artifacts:
+  - id: nx-console
+    name: Nx Console
+    package: nrwl.angular-console
+    ecosystem: vs code marketplace
+    kind: extension
+    start_date: 2026-05-18
+    end_date: 2026-05-18
+    versions:
+    - 18.95.0
+    fixed_versions:
+    - 18.100.0
+    locations:
+    - uri: https://marketplace.visualstudio.com/items?itemName=nrwl.angular-console
+      role: distribution
+    - uri: https://open-vsx.org/extension/nrwl/angular-console
+      role: distribution
+    notes:
+    - Available on the Visual Studio Marketplace from 12:30 UTC to 12:48 UTC and on
+      OpenVSX from 12:33 UTC to 13:09 UTC on 2026-05-18.
+  references:
+  - url: https://github.com/nrwl/nx-console/security/advisories/GHSA-c9j4-9m59-847w
+    title: GHSA-c9j4-9m59-847w - Compromised Nx Console version 18.95.0
+  - url: https://www.stepsecurity.io/blog/nx-console-vs-code-extension-compromised
+    title: Nx Console VS Code Extension Compromised - StepSecurity
+  - url: https://github.com/nrwl/nx-console/issues/3139
+    title: nrwl/nx-console issue 3139 - Nx Console removed from VSCode Marketplace

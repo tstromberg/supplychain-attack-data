@@ -1,0 +1,110 @@
+- id: actions-cool
+  title: actions-cool GitHub Actions tags rewritten by TeamPCP
+  campaigns:
+  - shai-hulud-here-we-go-again
+  synopsis: >-
+    TeamPCP re-pointed all 53 issues-helper tags and all 15 maintain-one-comment tags to a
+    single dangling imposter commit on 2026-05-18. The injected step downloaded Bun,
+    scraped Runner.Worker memory for masked secrets, and exfiltrated them to t.m-kosche.com.
+  story: |
+    `actions-cool/issues-helper` and `actions-cool/maintain-one-comment` are two widely consumed GitHub Actions for issue and comment triage. Issues-helper alone is referenced by roughly 3,000 public workflow configurations. On 2026-05-18, between 19:10:24 and 19:13:40 UTC, the attacker re-pointed every existing tag on both repositories to a single dangling commit. All 53 issues-helper version tags moved in roughly three minutes. All 15 maintain-one-comment tags moved in 39 seconds. The imposter commit had no branch reachability. It was an orphan, labeled `Build action for vX.Y.Z` to resemble a legitimate release commit. Workflows pinned by tag picked up the malicious code on the next run. Workflows pinned by full commit SHA did not.
+
+    The injected action.yaml step downloaded the Bun JavaScript runtime to `/home/runner/.bun/bin/bun` and then spawned a Python process to read `/proc/<PID>/mem` of the GitHub Actions `Runner.Worker`. Runner.Worker holds workflow secrets in decrypted form once they bind to the running job, each marked `"isSecret":true`. The script filtered memory for that marker, extracted `GITHUB_TOKEN`, ran `gh auth token` for redundancy, escalated with `sudo python3` where the runner allowed passwordless sudo, and posted the harvested material over HTTPS to `t.m-kosche.com` on port 443. That host is the same OpenTelemetry-trace masquerade used the same day in the @antv npm wave, the durabletask PyPI publish, and the Nx Console extension publish.
+
+    StepSecurity's Harden-Runner caught the imposter commits and the runner-memory read, added `t.m-kosche.com` to its global block list, and shipped a compromised-actions policy that prevents workflow execution against the affected refs. GitHub later disabled both repositories. The disable removes the malicious tags from new clones. It does not retroactively protect workflows that already cached the imposter SHAs.
+
+    The actions-cool tag rewrite is the opening move of TeamPCP's 2026-05-18/19 cluster. It ran about five hours before the @antv npm wave began at 01:56 UTC. The Actions tokens it harvested are a plausible source of the credentials Wiz later observed feeding the same-day [[nx-console]] and [[durabletask-pypi]] compromises. The cross-ecosystem aggregate sits on [[shai-hulud-here-we-go-again]]. This record holds the GitHub Actions evidence.
+  start_date: 2026-05-18
+  end_date: 2026-05-18
+  target:
+    name: actions-cool
+    kind: organization
+    repo: https://github.com/actions-cool
+  actor:
+    name: TeamPCP
+    kind: group
+  language: JavaScript
+  method:
+    cause: compromised_repository_access
+    phase: ci_cd
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+    users: 3000
+  locations:
+  - uri: https://github.com/actions-cool/issues-helper
+    role: distribution
+  - uri: https://github.com/actions-cool/maintain-one-comment
+    role: distribution
+  commits:
+  - 1c9e803c80cc7fed000022d4c94f4b5bc2e90062
+  indicators:
+  - kind: file
+    value: /home/runner/.bun/bin/bun
+  - kind: file
+    value: /proc/<Runner.Worker PID>/mem
+  - kind: command
+    value: gh auth token
+  - kind: command
+    value: sudo python3
+  - kind: technique
+    value: tag rewrite to dangling commit
+  - kind: technique
+    value: runner.worker process memory read for isSecret values
+  - kind: domain
+    value: t.m-kosche.com
+  - kind: account
+    value: actions-cool (GitHub org)
+  notes:
+  - All 53 issues-helper tags were re-pointed between 19:10:24 UTC and 19:13:40 UTC on
+    2026-05-18; all 15 maintain-one-comment tags were re-pointed within a 39-second
+    window in the same period. Both sets pointed to the same imposter commit
+    1c9e803c80cc7fed000022d4c94f4b5bc2e90062.
+  - Workflows that pinned either action by full commit SHA were not affected; only
+    tag-pinned consumers picked up the malicious code on next run.
+  - Roughly 3,000 public repositories referenced actions-cool/issues-helper in
+    workflow files at time of compromise. No confirmed harvested-credentials count
+    is published.
+  - GitHub subsequently disabled both repositories. The disable state suggests GitHub
+    treated the namespace itself as untrusted rather than only removing the malicious
+    refs.
+  - The t.m-kosche.com C2 is shared with the same-week TeamPCP operations against
+    @antv npm packages (see [[antv-npm]]), the Nx Console VS Code extension (see
+    [[nx-console]]), and Microsoft's durabletask PyPI package (see [[durabletask-pypi]]).
+  artifacts:
+  - id: issues-helper
+    name: actions-cool/issues-helper
+    package: actions-cool/issues-helper
+    ecosystem: github actions
+    kind: ci_cd_action
+    start_date: 2026-05-18
+    end_date: 2026-05-18
+    locations:
+    - uri: https://github.com/actions-cool/issues-helper
+      role: distribution
+    notes:
+    - All 53 version tags from v1.0.0 through v3.8.0 were re-pointed to the imposter
+      commit. GitHub later disabled the repository.
+  - id: maintain-one-comment
+    name: actions-cool/maintain-one-comment
+    package: actions-cool/maintain-one-comment
+    ecosystem: github actions
+    kind: ci_cd_action
+    start_date: 2026-05-18
+    end_date: 2026-05-18
+    locations:
+    - uri: https://github.com/actions-cool/maintain-one-comment
+      role: distribution
+    notes:
+    - All 15 version tags were re-pointed to the same imposter commit as
+      issues-helper. GitHub later disabled the repository.
+  references:
+  - url:
+      https://www.stepsecurity.io/blog/actions-cool-issues-helper-github-action-compromised-all-tags-point-to-imposter-commit-that-exfiltrates-ci-cd-credentials
+    title: actions-cool/issues-helper GitHub Action Compromised - All Tags Point to
+      Imposter Commit That Exfiltrates CI/CD Credentials - StepSecurity
+  - url: https://cybersecuritynews.com/compromised-github-action-exfiltrates-workflow-credentials/
+    title: Compromised GitHub Action Exfiltrates Workflow Credentials - Cyber Security News

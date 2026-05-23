@@ -1,0 +1,147 @@
+- id: tiledesk
+  title: Tiledesk GitHub org poisoned by Megalodon, npm followed
+  campaigns:
+  - megalodon-2026
+  synopsis: >-
+    On 2026-05-18 nine Tiledesk repositories received Megalodon's Optimize-Build workflow
+    commit. The maintainer published @tiledesk/tiledesk-server 2.18.6 through 2.18.12 from
+    the poisoned tree between 2026-05-19 and 2026-05-21, bundling the workflow file into
+    every tarball.
+  story: |
+    Tiledesk is an open-source LLM agent platform. The server publishes to npm as
+    `@tiledesk/tiledesk-server` and builds Docker images through repository
+    workflows. On 2026-05-18 at 12:50 UTC the first Megalodon commit landed on
+    `Tiledesk/tiledesk-server`, forged as a build-bot author with a routine chore
+    message. The diff replaced one workflow file with one named `Optimize-Build`,
+    gated on `workflow_dispatch`, that decoded and ran the Megalodon credential
+    collector. See [[megalodon-2026]] for the payload.
+
+    Eight more Tiledesk repositories took the same commit within the hour. Every
+    push went direct to the default branch with no pull request, consistent with
+    a stolen PAT or deploy key. SafeDep attributes the access to the Tiledesk
+    side.
+
+    The maintainer kept publishing. Between 2026-05-19 and 2026-05-21, seven
+    releases — 2.18.6 through 2.18.12 — shipped from the poisoned tree, each
+    tarball carrying the workflow file. `npm install` does not execute workflow
+    files, so npm consumers were not poisoned at runtime. Anyone cloning,
+    forking, or rebuilding from the tarball was. And the `workflow_dispatch`
+    trigger meant the attacker controlled timing — the file could sit dormant
+    between detection sweeps.
+
+    SafeDep's Malysis engine flagged the npm package on a routine scan, traced
+    the workflow file back to GitHub, and pivoted from there to the broader
+    Megalodon scope.
+  start_date: 2026-05-18
+  end_date: 2026-05-21
+  target:
+    name: Tiledesk
+    kind: organization
+    repo: https://github.com/Tiledesk
+    website: https://tiledesk.com
+  actor:
+    name: Unknown
+    kind: group
+  language: JavaScript
+  method:
+    cause: compromised_repository_access
+    phase: source
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+  locations:
+  - uri: https://github.com/Tiledesk/tiledesk-server
+    role: distribution
+  - uri: https://www.npmjs.com/package/@tiledesk/tiledesk-server
+    role: distribution
+  commits:
+  - acac5a9854650c4ae2883c4740bf87d34120c038
+  indicators:
+  - kind: file
+    value: .github/workflows/docker-community-worker-push-latest.yml
+  - kind: ip
+    value: 216.126.225.129
+  - kind: url
+    value: http://216.126.225.129:8443?h=megalodon&l=gh_dump
+  - kind: technique
+    value: workflow_dispatch dormant backdoor in CI workflow file
+  - kind: technique
+    value: workflow file bundled into npm tarball via missing .npmignore
+  - kind: account
+    value: build-bot <build-system@noreply.dev> (forged commit author)
+  notes:
+  - The commit pushed directly to the default branch with no pull request, consistent
+    with a stolen PAT or deploy key holding write access. Tiledesk's branch protection
+    state at the time of the push is not publicly documented.
+  - Workflow files in an npm tarball do not execute on `npm install`. The downstream
+    consumer is exposed only if it clones, forks, or extracts the tarball and runs the
+    workflow in its own GitHub Actions environment.
+  - Versions 2.18.6 through 2.18.12 were published from the poisoned tree between
+    2026-05-19 and 2026-05-21. 2.18.5 is the last clean release.
+  - The same `Optimize-Build` workflow shape, payload, and C2 (216.126.225.129:8443)
+    appear in 5,560 other repositories in the same six-hour window. See
+    [[megalodon-2026]].
+  artifacts:
+  - id: tiledesk-server
+    name: '@tiledesk/tiledesk-server'
+    package: '@tiledesk/tiledesk-server'
+    ecosystem: npm
+    kind: source_archive
+    repo: https://github.com/Tiledesk/tiledesk-server
+    start_date: 2026-05-19
+    end_date: 2026-05-21
+    versions:
+    - 2.18.6
+    - 2.18.7
+    - 2.18.8
+    - 2.18.9
+    - 2.18.10
+    - 2.18.11
+    - 2.18.12
+    fixed_versions:
+    - 2.18.5
+    locations:
+    - uri: https://www.npmjs.com/package/@tiledesk/tiledesk-server
+      role: distribution
+    notes:
+    - The malicious workflow file was bundled into each tarball; the runtime entry
+      points (`server.js` and friends) were unchanged.
+  - id: tiledesk-org-repos
+    name: Tiledesk org repositories
+    package: Tiledesk/*
+    ecosystem: github
+    kind: source_archive
+    start_date: 2026-05-18
+    end_date: 2026-05-18
+    locations:
+    - uri: https://github.com/Tiledesk/tiledesk-server
+      role: distribution
+    - uri: https://github.com/Tiledesk/tiledesk-dashboard
+      role: distribution
+    - uri: https://github.com/Tiledesk/tiledesk-telegram-connector
+      role: distribution
+    - uri: https://github.com/Tiledesk/tiledesk-llm
+      role: distribution
+    - uri: https://github.com/Tiledesk/tiledesk-docker-proxy
+      role: distribution
+    - uri: https://github.com/Tiledesk/tiledesk-community-app
+      role: distribution
+    - uri: https://github.com/Tiledesk/tiledesk-campaign-dashboard
+      role: distribution
+    - uri: https://github.com/Tiledesk/tiledesk-helpcenter-template
+      role: distribution
+    - uri: https://github.com/Tiledesk/tiledesk-ai
+      role: distribution
+    notes:
+    - All nine repositories received the same Optimize-Build workflow commit within the
+      Megalodon six-hour window on 2026-05-18.
+  references:
+  - url: https://safedep.io/megalodon-mass-github-repo-backdooring-ci-workflows/
+    title: 'Megalodon: Mass GitHub Repository Backdooring via CI Workflows - SafeDep'
+  - url: https://www.ox.security/blog/megalodon-cicd-malware-github/
+    title: 'Megalodon: A New CI/CD Malware Campaign on GitHub - OX Security'
+  - url: https://github.com/Tiledesk/tiledesk-server/commit/acac5a9854650c4ae2883c4740bf87d34120c038
+    title: Tiledesk/tiledesk-server commit acac5a9 installing Optimize-Build workflow

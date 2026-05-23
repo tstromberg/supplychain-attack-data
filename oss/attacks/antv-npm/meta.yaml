@@ -1,0 +1,190 @@
+- id: antv-npm
+  title: AntV ecosystem npm packages hit by TeamPCP
+  campaigns:
+  - shai-hulud-here-we-go-again
+  synopsis: >-
+    On 2026-05-19, TeamPCP took the shared `atool` npm account and published 639 malicious
+    versions across 323 packages — most of the @antv ecosystem and a long tail of standalone
+    neighbors. The bun-based dropper harvested CI/CD secrets and self-propagated via npm.
+  story: |
+    The @antv ecosystem is Alibaba's data-visualization stack. It shares publishing authority with a long tail of standalone packages — chart wrappers, time utilities, test helpers — through a single npm account called `atool`. On 2026-05-19 that account belonged to TeamPCP. Two automated waves between 01:39 and 02:56 UTC published 639 malicious versions across 323 packages, out of the 547 the account could reach. The wider Mini Shai-Hulud day-of total was 1,055 versions across 502 packages spanning npm, PyPI, and Composer; this one account drove most of it.
+
+    Two delivery paths. Most packages had `package.json` rewritten with a `preinstall` or `postinstall` of `bun run index.js`, with the script shipped at the root. A second set added an `optionalDependencies` pointer to a poisoned commit in `antvis/G2`, where a `prepare` hook ran the same code. The payload was a half-megabyte obfuscated Bun script. It walked the disk for credentials across every major cloud, kube, Vault, SSH, and database, then read `/proc/*/mem` on the GitHub Actions runner and pulled masked CI/CD secrets out of `Runner.Worker` in plaintext.
+
+    Given an npm token, the payload propagated as a worm: validate the token, enumerate the publishable packages, fetch each latest tarball, inject the same dropper, republish. Exfiltration went to `t.m-kosche.com` over HTTPS disguised as OpenTelemetry traces; bodies were AES-256-GCM ciphertext wrapped with RSA-OAEP. When that channel failed, the payload fell back to GitHub — committing harvested data to public repositories on stolen accounts, named under a Dune theme, with the campaign banner reversed in the description. Socket counted 2,200 to 2,500 such repositories by end of day. On the host, the payload also injected hooks into editor and CI configurations and, on macOS, registered a LaunchAgent for the kitty backdoor.
+
+    Socket flagged most versions within six to twelve minutes of publish, median 6.7. npm reclassified them as known malware. Wiz attributed the operation to TeamPCP at moderate confidence on shared infrastructure, the `firedalazer` dead-drop tag, payload kinship, and reuse of the kitty backdoor and Dune repos elsewhere in the campaign. The same backdoor appeared a few hours later in [[nx-console]], and Wiz traced credentials from here into [[durabletask-pypi]] that night. The cross-ecosystem aggregate lives on [[shai-hulud-here-we-go-again]]; this record holds the @antv-account evidence.
+  start_date: 2026-05-19
+  end_date: 2026-05-19
+  target:
+    name: '@antv'
+    kind: organization
+    repo: https://github.com/antvis
+    website: https://antv.vision/
+  actor:
+    name: TeamPCP
+    kind: group
+  language: JavaScript
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: credential_theft_data_exfiltration
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+    - self_propagation
+    - backdoor
+  locations:
+  - uri: https://www.npmjs.com/~atool
+    role: distribution
+  - uri: https://github.com/antvis
+    role: mirror
+  indicators:
+  - kind: file
+    value: index.js
+  - kind: command
+    value: bun run index.js
+  - kind: file
+    value: ~/.local/share/kitty/cat.py
+  - kind: file
+    value: ~/Library/LaunchAgents/com.user.kitty-monitor.plist
+  - kind: file
+    value: ~/.config/systemd/user/kitty-monitor.service
+  - kind: file
+    value: .claude/settings.json
+  - kind: file
+    value: .claude/setup.mjs
+  - kind: file
+    value: .vscode/tasks.json
+  - kind: file
+    value: .vscode/setup.mjs
+  - kind: file
+    value: .github/workflows/codeql.yml
+  - kind: domain
+    value: t.m-kosche.com
+  - kind: domain
+    value: m-kosche.com
+  - kind: ipv4
+    value: 185.95.159.32
+  - kind: url
+    value: https://t.m-kosche.com:443/api/public/otel/v1/traces
+  - kind: tag
+    value: firedalazer
+  - kind: tag
+    value: 'niagA oG eW ereH :duluH-iahS'
+  - kind: file_sha256
+    value: 'cat.py: fb5c97557230a27460fdab01fafcfabeaa49590bafd5b6ef30501aa9e0a51142'
+  - kind: file_sha1
+    value: 'cat.py: 783b4019fc5b942a29846132d28441c8fc31bed8'
+  - kind: file_md5
+    value: 'cat.py: b06b126b9e26af03a7ef2f8b8e90d446'
+  - kind: account
+    value: atool (npm)
+  notes:
+  - Compromised maintainer was the shared npm account `atool` per Socket. Wiz tracked
+    the same account's GitHub credentials being reused to enter the
+    microsoft/durabletask-python repository later the same day.
+  - Socket's count of 639 weaponized versions across 323 unique packages is the most
+    inclusive published number. Lower counts elsewhere (SafeDep 637/314, StepSecurity
+    500+, Wiz 400+ @antv) reflect earlier or scope-limited tallies. The atool account
+    maintained 547 packages total. The broader same-day Mini Shai-Hulud total per
+    Socket was 1,055 versions across 502 unique packages spanning npm, PyPI, and
+    Composer.
+  - 'Publishing windows reported differ slightly: SafeDep places the two automated
+    waves at 01:39 to 02:06 UTC; Socket places overall publish activity at 01:56
+    to 02:56 UTC. Both agree on the May 19 date and the two-wave structure.'
+  - Compromised maintainer was the shared `atool` npm account, email i@hust.cc,
+    associated with @antv, @lint-md, @openclaw-cn, @starmind scopes plus a long
+    tail of standalone JavaScript and tooling packages.
+  - SafeDep notes the payload is identical to the Mini Shai-Hulud toolkit used in the
+    earlier SAP compromise the same week.
+  - Wiz also reported same-day compromises of the GitHub Actions actions-cool/issues-helper
+    and actions-cool/maintain-one-comment using shared infrastructure, plus the
+    nrwl.angular-console VS Code extension v18.95.0 (tracked separately as nx-console).
+  artifacts:
+  - id: antv-namespace
+    name: '@antv namespace'
+    package: '@antv/*'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    notes:
+    - Includes @antv/g2, @antv/g6, @antv/x6, @antv/l7, @antv/s2, @antv/f2, @antv/g,
+      @antv/g2plot, @antv/graphin, @antv/data-set, and roughly 150 additional supporting
+      libraries; per-version coverage is enumerated in the Socket and StepSecurity posts.
+  - id: echarts-for-react
+    name: echarts-for-react
+    package: echarts-for-react
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    locations:
+    - uri: https://www.npmjs.com/package/echarts-for-react
+      role: distribution
+    notes:
+    - Reported at 1.1 to 1.5 million weekly downloads at time of compromise.
+  - id: timeago-js
+    name: timeago.js
+    package: timeago.js
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    locations:
+    - uri: https://www.npmjs.com/package/timeago.js
+      role: distribution
+    notes:
+    - Reported at roughly 1.5 million weekly downloads at time of compromise.
+  - id: size-sensor
+    name: size-sensor
+    package: size-sensor
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    locations:
+    - uri: https://www.npmjs.com/package/size-sensor
+      role: distribution
+  - id: jest-canvas-mock
+    name: jest-canvas-mock
+    package: jest-canvas-mock
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    locations:
+    - uri: https://www.npmjs.com/package/jest-canvas-mock
+      role: distribution
+  - id: jest-date-mock
+    name: jest-date-mock
+    package: jest-date-mock
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    locations:
+    - uri: https://www.npmjs.com/package/jest-date-mock
+      role: distribution
+  - id: canvas-nest-js
+    name: canvas-nest.js
+    package: canvas-nest.js
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    locations:
+    - uri: https://www.npmjs.com/package/canvas-nest.js
+      role: distribution
+  references:
+  - url: https://www.wiz.io/blog/mini-shai-hulud-teampcp-hits-antv-supply-chain
+    title: 'Mini Shai-Hulud: TeamPCP Hits @antv Supply Chain - Wiz'
+  - url:
+      https://www.stepsecurity.io/blog/shai-hulud-here-we-go-again-mass-npm-supply-chain-attack-hits-the-antv-ecosystem
+    title: Shai-Hulud Here We Go Again - Mass npm Supply Chain Attack Hits the AntV
+      Ecosystem - StepSecurity
+  - url: https://socket.dev/blog/antv-packages-compromised
+    title: '@antv Packages Compromised - Socket'

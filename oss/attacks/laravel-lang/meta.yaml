@@ -1,0 +1,155 @@
+- id: laravel-lang
+  title: laravel-lang Packagist packages re-tagged from a compromised org credential
+  synopsis: >-
+    Between 2026-05-22 22:32 UTC and 2026-05-23 00:00 UTC an attacker with push access
+    to the Laravel-Lang organization rewrote every tag in lang, attributes, actions,
+    and http-statuses to commits that eager-loaded src/helpers.php through composer's
+    autoload. The dropper fetched a PHP stage 2 from flipboxstudio.info, which executed
+    an ELF binary and exfiltrated runner environment data to the same host.
+  story: |
+    laravel-lang publishes Laravel translation packages on Packagist. Four GitHub repositories under the Laravel-Lang organization back four Composer packages. Between 2026-05-22 22:32 UTC and 2026-05-23 00:00 UTC an attacker rewrote every tag in all four to point at malicious commits — 502 on the lang repository alone, the rest in proportion. Each commit was authored as `Your Name <you@example.com>` and changed two files: `composer.json` and a new `src/helpers.php`. Identical diffs and one fake-author string across four repos point to a single compromised organization-wide push credential.
+
+    The `composer.json` change appended `src/helpers.php` to the `autoload.files` array. Composer includes every file on that list when an application loads `vendor/autoload.php`, which is the standard Laravel boot path. No call site needed convincing. `composer update`, or `composer install` without a pre-attack lockfile, resolved each version constraint to the new tag SHA and ran the helper on the next request. Pre-attack lockfiles were safe until refreshed.
+
+    The dropper fetched a second stage from `flipboxstudio.info` — a typosquat of `flipboxstudio.com` — executed it in a detached process, and unlinked itself. Stage two read the CI runner environment, dropped an ELF binary under `/tmp`, executed it, and deleted the path so the process kept running from a deleted inode. Exfiltration POSTed to the same host.
+
+    Packagist removed the malicious versions and temporarily delisted the four packages. Downstream remediation is straightforward: halt `composer update` until lockfiles are verified against pre-attack SHAs, scan affected hosts for the `/tmp/.laravel_locale/` artifacts and orphan PHP or ELF processes, and rotate any CI tokens, cloud credentials, GitHub PATs, and deploy keys reachable from a runner that ran during the window.
+
+    The fork-tag delivery used four days earlier against [[actions-cool]] is a separate cluster. There TeamPCP made tags on official refs resolve to commits in an attacker-owned fork without pushing to the official repository. The Laravel-Lang attacker held push access and rewrote tags directly. `flipboxstudio.info` does not appear in the Mini Shai-Hulud infrastructure.
+  start_date: 2026-05-22
+  end_date: 2026-05-23
+  target:
+    name: laravel-lang
+    kind: organization
+    repo: https://github.com/Laravel-Lang
+  actor:
+    name: Unknown
+    kind: group
+  language: PHP
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+  locations:
+  - uri: https://github.com/Laravel-Lang
+    role: mirror
+  - uri: https://packagist.org/packages/laravel-lang/lang
+    role: distribution
+  - uri: https://packagist.org/packages/laravel-lang/attributes
+    role: distribution
+  - uri: https://packagist.org/packages/laravel-lang/actions
+    role: distribution
+  - uri: https://packagist.org/packages/laravel-lang/http-statuses
+    role: distribution
+  indicators:
+  - kind: file
+    value: src/helpers.php
+  - kind: file
+    value: /tmp/.laravel_locale/<md5>
+  - kind: file
+    value: /tmp/.laravel_locale/<12 hex>.php
+  - kind: file
+    value: /tmp/.laravel_locale/<8 hex>.vbs
+  - kind: file
+    value: /tmp/.<8 hex>
+  - kind: domain
+    value: flipboxstudio.info
+  - kind: url
+    value: https://flipboxstudio.info/payload
+  - kind: url
+    value: https://flipboxstudio.info/exfil
+  - kind: account
+    value: Your Name <you@example.com>
+  - kind: technique
+    value: composer autoload.files injection
+  - kind: technique
+    value: orphaned php and ELF processes with parent PID 1
+  notes:
+  - StepSecurity counted 502 rewritten tags on laravel-lang/lang, 86 on laravel-lang/attributes,
+    46 on laravel-lang/actions, and every tag from v1.0.0 through v3.4.5 on
+    laravel-lang/http-statuses. An earlier Aikido report on 2026-05-22 cited 233 tags
+    across three packages and missed laravel-lang/actions.
+  - The attacker held org-wide push access and rewrote tags directly on the official
+    repositories. An earlier Aikido analysis described a fork-tag mechanism; StepSecurity's
+    git evidence ("Your Name <you@example.com>" commits on the official refs, identical
+    across all four repos) contradicts that and indicates direct push.
+  - Compromise window was 2026-05-22 22:32 UTC to 2026-05-23 00:00 UTC, with the first
+    rewrite landing on laravel-lang/lang and the campaign extending across the four
+    repositories within roughly 90 minutes.
+  - The dropper writes a per-host marker so the stealer runs once per machine. The
+    second-stage PHP drops and runs an ELF at /tmp/.<8 hex> and removes it from the
+    directory tree; the live ELF carries parent PID 1 and a deleted executable path.
+  - flipboxstudio.info is a typosquat of the legitimate flipboxstudio.com.
+  artifacts:
+  - id: laravel-lang-lang
+    name: laravel-lang/lang
+    package: laravel-lang/lang
+    ecosystem: packagist
+    kind: source_archive
+    start_date: 2026-05-22
+    end_date: 2026-05-23
+    locations:
+    - uri: https://packagist.org/packages/laravel-lang/lang
+      role: distribution
+    - uri: https://github.com/Laravel-Lang/lang
+      role: mirror
+    notes:
+    - All 502 tags rewritten. Packagist delisted the package after the malicious versions
+      were removed.
+  - id: laravel-lang-attributes
+    name: laravel-lang/attributes
+    package: laravel-lang/attributes
+    ecosystem: packagist
+    kind: source_archive
+    start_date: 2026-05-22
+    end_date: 2026-05-23
+    locations:
+    - uri: https://packagist.org/packages/laravel-lang/attributes
+      role: distribution
+    - uri: https://github.com/Laravel-Lang/attributes
+      role: mirror
+    notes:
+    - All 86 tags rewritten.
+  - id: laravel-lang-actions
+    name: laravel-lang/actions
+    package: laravel-lang/actions
+    ecosystem: packagist
+    kind: source_archive
+    start_date: 2026-05-22
+    end_date: 2026-05-23
+    locations:
+    - uri: https://packagist.org/packages/laravel-lang/actions
+      role: distribution
+    - uri: https://github.com/Laravel-Lang/actions
+      role: mirror
+    notes:
+    - All 46 tags rewritten, covering 1.0.0 through 1.12.2. Not flagged in the initial
+      Aikido report.
+  - id: laravel-lang-http-statuses
+    name: laravel-lang/http-statuses
+    package: laravel-lang/http-statuses
+    ecosystem: packagist
+    kind: source_archive
+    start_date: 2026-05-22
+    end_date: 2026-05-23
+    locations:
+    - uri: https://packagist.org/packages/laravel-lang/http-statuses
+      role: distribution
+    - uri: https://github.com/Laravel-Lang/http-statuses
+      role: mirror
+    notes:
+    - Every tag from v1.0.0 through v3.4.5 rewritten.
+  references:
+  - url: https://www.stepsecurity.io/blog/laravel-lang-supply-chain-attack
+    title: Laravel-Lang Supply Chain Attack - StepSecurity
+  - url: https://github.com/Laravel-Lang/lang/issues/8295
+    title: 'Laravel-Lang/lang issue #8295 - Compromised version tags'
+  - url: https://www.aikido.dev/blog/supply-chain-attack-targets-laravel-lang-packages-with-credential-stealer
+    title: Supply Chain Attack Targets Laravel-Lang Packages With Credential Stealer - Aikido
+  - url: https://github.com/Laravel-Lang/common/issues/257
+    title: 'Laravel-Lang/common issue #257 - Compromised version tags'

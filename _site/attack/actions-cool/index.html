@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>actions-cool GitHub Actions tags rewritten by TeamPCP</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>actions-cool GitHub Actions tags rewritten by TeamPCP</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> actions-cool · <a href="https://github.com/actions-cool" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-05-18</div>
+    <div class="meta-item"><strong>Actor:</strong> TeamPCP (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> organization</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_repository_access</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration</div>
+    <div class="meta-item"><strong>User Impact:</strong> 3000</div>
+    <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
+    <div class="meta-item"><strong>Campaigns:</strong>
+      
+        <a href="/campaign/shai-hulud-here-we-go-again/">Shai-Hulud hits npm and PyPI</a>
+      
+    </div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">TeamPCP re-pointed all 53 issues-helper tags and all 15 maintain-one-comment tags to a single dangling imposter commit on 2026-05-18. The injected step downloaded Bun, scraped Runner.Worker memory for masked secrets, and exfiltrated them to t.m-kosche.com.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>`actions-cool/issues-helper` and `actions-cool/maintain-one-comment` are two widely consumed GitHub Actions for issue and comment triage. Issues-helper alone is referenced by roughly 3,000 public workflow configurations. On 2026-05-18, between 19:10:24 and 19:13:40 UTC, the attacker re-pointed every existing tag on both repositories to a single dangling commit. All 53 issues-helper version tags moved in roughly three minutes. All 15 maintain-one-comment tags moved in 39 seconds. The imposter commit had no branch reachability. It was an orphan, labeled `Build action for vX.Y.Z` to resemble a legitimate release commit. Workflows pinned by tag picked up the malicious code on the next run. Workflows pinned by full commit SHA did not.</p>
+    
+      <p>The injected action.yaml step downloaded the Bun JavaScript runtime to `/home/runner/.bun/bin/bun` and then spawned a Python process to read `/proc/&lt;PID&gt;/mem` of the GitHub Actions `Runner.Worker`. Runner.Worker holds workflow secrets in decrypted form once they bind to the running job, each marked `&quot;isSecret&quot;:true`. The script filtered memory for that marker, extracted `GITHUB_TOKEN`, ran `gh auth token` for redundancy, escalated with `sudo python3` where the runner allowed passwordless sudo, and posted the harvested material over HTTPS to `t.m-kosche.com` on port 443. That host is the same OpenTelemetry-trace masquerade used the same day in the @antv npm wave, the durabletask PyPI publish, and the Nx Console extension publish.</p>
+    
+      <p>StepSecurity&#39;s Harden-Runner caught the imposter commits and the runner-memory read, added `t.m-kosche.com` to its global block list, and shipped a compromised-actions policy that prevents workflow execution against the affected refs. GitHub later disabled both repositories. The disable removes the malicious tags from new clones. It does not retroactively protect workflows that already cached the imposter SHAs.</p>
+    
+      <p>The actions-cool tag rewrite is the opening move of TeamPCP&#39;s 2026-05-18/19 cluster. It ran about five hours before the @antv npm wave began at 01:56 UTC. The Actions tokens it harvested are a plausible source of the credentials Wiz later observed feeding the same-day [[nx-console]] and [[durabletask-pypi]] compromises. The cross-ecosystem aggregate sits on [[shai-hulud-here-we-go-again]]. This record holds the GitHub Actions evidence.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>actions-cool/issues-helper</strong>
+            
+            <br><span>github actions · ci_cd_action</span>
+            
+            
+          </td>
+          <td>2026-05-18</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>actions-cool/maintain-one-comment</strong>
+            
+            <br><span>github actions · ci_cd_action</span>
+            
+            
+          </td>
+          <td>2026-05-18</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://github.com/actions-cool/issues-helper</code></li>
+    
+      <li><code>distribution</code>: <code>https://github.com/actions-cool/maintain-one-comment</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file:/home/runner/.bun/bin/bun</code></li>
+    
+      <li><code>file:/proc/&lt;Runner.Worker PID&gt;/mem</code></li>
+    
+      <li><code>command:gh auth token</code></li>
+    
+      <li><code>command:sudo python3</code></li>
+    
+      <li><code>technique:tag rewrite to dangling commit</code></li>
+    
+      <li><code>technique:runner.worker process memory read for isSecret values</code></li>
+    
+      <li><code>domain:t.m-kosche.com</code></li>
+    
+      <li><code>account:actions-cool (GitHub org)</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+  <h2>Commits</h2>
+  <ul>
+    
+      <li><code>1c9e803c80cc7fed000022d4c94f4b5bc2e90062</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.stepsecurity.io/blog/actions-cool-issues-helper-github-action-compromised-all-tags-point-to-imposter-commit-that-exfiltrates-ci-cd-credentials" target="_blank">actions-cool/issues-helper GitHub Action Compromised - All Tags Point to Imposter Commit That Exfiltrates CI/CD Credentials - StepSecurity</a></li>
+    
+      <li><a href="https://cybersecuritynews.com/compromised-github-action-exfiltrates-workflow-credentials/" target="_blank">Compromised GitHub Action Exfiltrates Workflow Credentials - Cyber Security News</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>
