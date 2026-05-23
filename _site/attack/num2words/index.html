@@ -36,13 +36,13 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The num2words compromise followed a familiar Python package path: phishing first, registry publishing second. Attackers used the lookalike `pypj.org` domain to capture PyPI credentials and 2FA codes.</p>
+      <p>On July 28, 2025, an attacker used a phished PyPI credential to publish two malicious releases of `num2words`, the widely used Python library that turns numbers into their written-out form across dozens of languages. The compromise extended a string of registry takeovers that ran through the summer, this time on the Python side rather than npm.</p>
     
-      <p>StepSecurity reported that the attacker created a new API token and published suspicious releases to PyPI. The first release, `0.5.15`, had no matching GitHub tag, commit, or release, which made the registry artifact diverge from the project source.</p>
+      <p>According to StepSecurity, the maintainer was lured to `pypj.org`, a typosquat of the legitimate `pypi.org` domain, where the attacker harvested credentials and a 2FA code. The stolen session was used to mint a fresh PyPI API token and to push version 0.5.15 to the registry, with 0.5.16 following soon after. Neither release had a matching commit, tag, or GitHub Release on the upstream `savoirfairelinux/num2words` repository, the divergence that first drew the analysts&#39; attention. The bad version sat on PyPI for roughly two hours before being flagged, long enough for automated dependency-update bots to begin opening pull requests against downstream projects.</p>
     
-      <p>The package converts numbers to words, but its install base gave the attacker reach. The malicious releases were published through the official PyPI project, so ordinary package installation and dependency resolution were the delivery mechanism.</p>
+      <p>Researchers tied the incident to an actor commonly tracked as Scavenger, which has been linked to a series of supply-chain intrusions earlier in the year. Public reporting on the num2words payload itself remains thin: the advisory tracked as GHSA-jxr6-qrxx-2ph2 rates it critical and confirms the releases shipped malicious code, but neither StepSecurity&#39;s writeup nor GitHub&#39;s advisory enumerates the specific behavior.</p>
     
-      <p>The record keeps both affected versions as artifacts and leaves broad download counts as exposure context. The durable lesson is simpler: package registry authority was enough, even when the source repository did not match.</p>
+      <p>PyPI removed both versions, and the project&#39;s legitimate maintainers continued publishing from the unaffected GitHub branch. Operators who installed 0.5.15 or 0.5.16, or whose dependency bots resolved them automatically, were advised to pin to a known-good version and rotate any credential reachable from the affected host.</p>
     
   </div>
   

@@ -4,13 +4,37 @@
     TeamPCP compromised three consecutive xinference PyPI releases, 2.6.0 through 2.6.2, by
     adding an import-time two-stage Python credential stealer to xinference/__init__.py.
   story: |
-    The xinference compromise put malware into the top-level import path of an LLM inference framework. On April 22, 2026, PyPI releases 2.6.0, 2.6.1, and 2.6.2 carried code added to `xinference/__init__.py`.
+    On April 22, 2026, three consecutive releases of xinference, a
+    widely deployed open-source framework for serving large language
+    models, went to PyPI carrying a credential stealer wired into the
+    package's top-level import.
 
-    Version 2.6.0 ran a base64 payload at module scope. Version 2.6.1 moved the payload into `_install()` and used synchronous `exec()`. Version 2.6.2 kept the function-level hiding but restored detached execution with `subprocess.Popen`.
+    Researchers at StepSecurity said the malicious code was added to
+    `xinference/__init__.py` in versions 2.6.0, 2.6.1, and 2.6.2, so
+    any process that imported the library, including the inference
+    server itself on startup, ran the payload. The attacker iterated
+    visibly across the three releases. Version 2.6.0 executed a
+    base64-decoded blob at module scope. Version 2.6.1 wrapped the
+    same logic in an `_install()` function and ran it synchronously
+    with `exec()`. Version 2.6.2 kept the function-level hiding but
+    moved execution into a detached `subprocess.Popen` call so the
+    parent import would return cleanly.
 
-    The decoded first stage contained the marker `# hacked by teampcp`. It launched a second Python collector, wrote collected data into a temporary file, compressed it as `love.tar.gz`, and posted it to `whereisitat.lucyatemysuperbox.space` with the header `X-QT-SR: 14`.
+    The decoded first stage carried the marker `# hacked by teampcp`.
+    It launched a second Python collector, wrote the harvested
+    material to a temporary file, compressed it as `love.tar.gz`, and
+    POSTed it to `whereisitat.lucyatemysuperbox.space` with the
+    custom header `X-QT-SR: 14`. The collector targeted what tends to
+    sit on a model-serving host: SSH keys, cloud credentials,
+    Kubernetes tokens, Docker auth files, `.env` files, shell
+    histories, TLS private keys, and cryptocurrency wallets.
 
-    The collector targeted the material expected on inference servers: SSH keys, cloud credentials, Kubernetes tokens, Docker auth, `.env` files, shell histories, TLS private keys, and cryptocurrency wallets. StepSecurity noted that this variant lacked the RSA wrapping seen in LiteLLM and Telnyx, leaving a copycat possibility, but the marker, placement, and rapid version iteration match TeamPCP tradecraft.
+    StepSecurity noted that this variant did not carry the RSA
+    wrapping seen in earlier TeamPCP payloads against LiteLLM and
+    Telnyx, leaving open the possibility of a copycat. The on-disk
+    marker, the choice to plant in `__init__.py`, and the rapid
+    three-version iteration over a few hours nonetheless match
+    TeamPCP tradecraft from the same week.
   start_date: 2026-04-22
   end_date: 2026-04-22
   target:

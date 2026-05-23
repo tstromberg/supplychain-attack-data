@@ -5,6 +5,14 @@
   synopsis: >-
     JuiceLedger used phished PyPI credentials to publish malicious spam 2.0.2 and 4.0.2.
     The releases collected environment data and ran a downloaded trojan at install time.
+  story: |-
+    spam was one of the legitimate PyPI projects hit during the JuiceLedger phishing campaign. The attacker did not have to create a lookalike package or wait for a typo. Stolen maintainer credentials gave them the ability to publish under the real `spam` project name.
+
+    The poisoned releases were versions 2.0.2 and 4.0.2. Like the companion exotel compromise, the malicious code ran during package installation, collected host and environment details, contacted attacker-controlled infrastructure, and downloaded a larger trojan payload.
+
+    That made the exposure surface broader than production applications that explicitly imported spam. Developer machines, build jobs, and automated dependency refreshes could execute the setup path simply by resolving and installing the package from PyPI.
+
+    PyPI removed the malicious releases and advisories were published through GitHub, PyPA, and GitLab. This page keeps the record narrow to the real spam package compromise; the broader JuiceLedger activity also included exotel and a large typosquat cleanup campaign.
   start_date: 2022-08-24
   end_date: 2022-08-24
   target:
@@ -54,10 +62,14 @@
     hashes:
     - sha256:60434af3ebe924efabc96558e6c8d8176bf4eb06dd6cc47b4c491da9964be874
     indicators:
+    - kind: file
+      value: setup.py
     - kind: observable
       value: 2.0.2
     - kind: observable
       value: 4.0.2
+    - kind: observable
+      value: Install-time code collected host environment data and downloaded a trojan payload.
   references:
   - url: https://github.com/advisories/GHSA-2r6g-7r83-jg72
     title: "`spam` project on PyPI compromised, malicious releases made"

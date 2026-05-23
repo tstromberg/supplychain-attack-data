@@ -6,13 +6,30 @@
     Glassworm published @aifabrix/miso-client 4.7.2 with invisible Unicode JavaScript.
     The code looked empty in review but decoded to malware at runtime.
   story: |
-    Glassworm's March 2026 wave hid code in characters people do not see. The `@aifabrix/miso-client` package carried the same invisible Unicode decoder pattern Aikido tracked across npm, VS Code, and GitHub repositories.
+    On March 12, 2026, an npm package called `@aifabrix/miso-client` shipped a
+    new version, 4.7.2, that to anyone scanning the diff looked unchanged. The
+    visible JavaScript was clean. The payload, researchers at Aikido reported
+    the following day, was hidden inside Unicode variation selectors, code
+    points that render as nothing in every editor and code-review interface in
+    common use.
 
-    The visible JavaScript looked harmless because the payload lived inside variation selector characters. At runtime, a decoder converted those hidden code points back into bytes and passed the result to `eval`.
+    At runtime a small decoder pulled those invisible characters back into
+    executable bytes and passed the result to `eval()`. Aikido named miso-client
+    as one of two npm artifacts caught in the March wave of Glassworm, the
+    same family that hid identical loaders inside more than 150 GitHub
+    repositories and a VS Code extension around the same time. Earlier
+    Glassworm samples staged second-stage code through Solana-based dead drops
+    and harvested tokens, cloud credentials, and other developer secrets.
 
-    Aikido listed `@aifabrix/miso-client@4.7.2` as one of the npm artifacts published on 2026-03-12. The broader Glassworm pattern used staged loaders, Solana-based dead drops, and credential theft from developer environments.
+    This record covers the npm artifact, since that is the path through which
+    miso-client could enter an unrelated dependency graph during a normal
+    install. The wider campaign scope is tracked at
+    [[glassworm-march-2026]].
 
-    This record stays narrow. The campaign file carries the 150-plus repository scope; this attack records the npm package version that could enter a dependency graph through normal installation.
+    The response problem was different from a normal suspicious-string hunt.
+    Teams had to search package contents and source trees for invisible code
+    points, then map any hits back to the install path that could have executed
+    the decoder on a developer machine or CI runner.
   start_date: 2026-03-12
   end_date: 2026-03-13
   target:

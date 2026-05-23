@@ -4,13 +4,13 @@
     extension updates. The campaign injected ads, redirected traffic, and collected
     credentials.
   story: |
-    In 2017, a threat actor phished Chrome extension developers by impersonating the Chrome Web Store team. The lure sent maintainers to fake Google login pages, giving attackers the credentials needed to publish new versions of legitimate extensions.
+    In 2017, a threat actor phished Chrome extension developers by impersonating the Chrome Web Store team. The lure sent maintainers to fake Google login pages, giving attackers the credentials needed to publish new versions of legitimate extensions through the normal Chrome Web Store update channel.
 
-    Copyfish and Web Developer were prominent cases, but Proofpoint tied the spree to a broader set that included Chrometana, Infinity New Tab, Web Paint, and Social Fixer. The extensions reached large installed bases, so the Chrome Web Store became the distribution path.
+    Copyfish and Web Developer were the first visible cases, but Proofpoint tied the spree to a broader set that included Chrometana, Infinity New Tab, Web Paint, and Social Fixer, and believed TouchVPN and Betternet VPN were hit the same way. BleepingComputer counted nearly 4.8 million installs across the eight extensions, while the six modeled leaf records here track the cases with public version evidence.
 
-    The malicious updates loaded JavaScript from attacker infrastructure such as `wd7bdb20e4d622f6569f3e8503138c859d.win`, `searchtab.win`, and `redirect2.top`. The code substituted ads, redirected traffic to affiliate programs, and in some paths exfiltrated credentials.
+    The payload was built for patience and reach. Proofpoint and Cloudflare both described a ten-minute delay after install or update, then a request for `ga.js` from a DGA-generated `.win` domain such as `wd7bdb20e4d622f6569f3e8503138c859d.win`. The loader could call second-stage scripts for ad replacement, fake repair popups, affiliate redirects, and Cloudflare credential harvesting from the victim's browser.
 
-    The campaign shows why extension stores are software supply chains. A maintainer account is a release key; once stolen, the attacker can ship code through the same automatic update channel users already trust.
+    The ad-fraud work was not generic spray. The substituted banners covered 33 common ad sizes and focused heavily on adult sites and known ad networks, while the traffic redirection infrastructure overlapped with older fake browser-update and cookie-consent campaigns. The campaign shows why extension stores are software supply chains: a maintainer account is a release key, and once it is stolen the attacker can ship code through the same automatic update path users already trust.
   start_date: 2017-07-28
   end_date: 2017-08-15
   actor:
@@ -20,7 +20,7 @@
     types:
     - adware
     - ad_fraud
-    users: 1500000
+    users: 4800000
   references:
   - url: https://www.bleepingcomputer.com/news/security/chrome-extension-developers-under-a-barrage-of-phishing-attacks/
     title: Chrome extension developers under a barrage of phishing attacks
@@ -28,6 +28,16 @@
     title: Chrome extension developers under attack
   - url: https://www.proofpoint.com/us/threat-insight/post/threat-actor-goes-chrome-extension-hijacking-spree
     title: Threat actor goes on a Chrome extension hijacking spree
+  - url: https://blog.cloudflare.com/keeping-our-users-safe/
+    title: Keeping our users safe
+  - url: https://www.bleepingcomputer.com/news/security/eight-chrome-extensions-hijacked-to-deliver-malicious-code-to-4-8-million-users/
+    title: Eight Chrome Extensions Hijacked to Deliver Malicious Code to 4.8 Million Users
+  - url: https://securityaffairs.com/62090/hacking/chrome-extensions-risks.html
+    title: Chrome extensions risks after hijacking spree
+  - url: https://www.itnews.com.au/news/chrome-browser-extensions-hijacked-470951
+    title: Chrome browser extensions hijacked
+  - url: https://news.ycombinator.com/item?id=14888010
+    title: Chrome Web Developer extension compromised
   indicators:
   - kind: domain
     value: click.rdr11.top
@@ -40,6 +50,8 @@
   - kind: domain
     value: wd7bdb20e4d622f6569f3e8503138c859d.win
   - kind: domain
+    value: wd8a2b7d68f1c7c7f34381dc1a198465b4.win
+  - kind: domain
     value: searchtab.win
   - kind: domain
     value: redirect2.top
@@ -49,8 +61,28 @@
     value: partner-net.men
   - kind: url
     value: http://partner-net[.]men/code/pid/973820_BNX.js?rev=133
+  - kind: url
+    value: https://wd7bdb20e4d622f6569f3e8503138c859d[.]win/ga.js
+  - kind: url
+    value: b.partner-net[.]men/code/x/b/?pid=973820&adu=0&s=468x60
+  - kind: observable
+    value: Malicious extension code waited at least ten minutes after install or update
+      before fetching a remote payload.
+  - kind: observable
+    value: DGA-generated .win domains served ga.js, a first-stage loader for follow-on
+      scripts.
+  - kind: observable
+    value: Ad replacement logic handled 33 common banner sizes and redirected users to
+      affiliate programs through fake repair alerts.
+  - kind: observable
+    value: Some follow-on scripts attempted to harvest Cloudflare credentials from the
+      victim's browser session.
   notes:
   - This campaign groups separate Chrome Web Store developer-account compromises.
     Each extension is modeled as its own attack record because each developer account
     and extension listing was a distinct distribution boundary.
+  - TouchVPN and Betternet VPN are included in campaign scope because Proofpoint and
+    Cloudflare named them as likely same-method compromises, but they are not modeled
+    as leaf records because the public sources do not provide the same version-level
+    detail as the six Chrome extension records above.
   id: chrome-extension-hijacking-2017

@@ -1,0 +1,238 @@
+- id: squirrelmail
+  title: SquirrelMail release tarballs enabled remote file inclusion
+  synopsis: >-
+    SquirrelMail 1.4.11 and 1.4.12 release archives were modified after release
+    through a compromised maintainer account, turning official downloads into
+    remote file-inclusion backdoors until 1.4.13 replaced them.
+  story: |
+    SquirrelMail's December 2007 compromise was found the boring way: the published MD5 sums for 1.4.12 did not match the package sitting on the download servers. The project investigated and concluded that the final release package had been altered after release, likely through a compromised account belonging to one of the release maintainers. The source-control history was not the delivery path; the tainted code was in the official packaged archives.
+
+    The first public note sounded cautious because the inserted code seemed to depend on a PHP global variable the maintainers could not immediately trace. Within a day, outside review had turned that uncertainty into a concrete exploit path. The injected logic let a request-supplied `HTTP_BASE_PATH` value define `SM_PATH`, which in SquirrelMail's PHP include flow could become remote file inclusion and then server-side code execution.
+
+    The scope also widened from 1.4.12 to 1.4.11. SquirrelMail released 1.4.13 on December 14 and told users of both affected versions to upgrade immediately. Red Hat and Fedora bug traffic is useful context: those distributions determined their shipped packages were based on clean tarballs, while the upstream archives themselves were treated as compromised.
+
+    The episode is a compact early example of why release artifacts need their own verification trail. The attacker did not need a public commit, a plugin ecosystem, or a complex installer. Replacing the source archive on trusted project infrastructure was enough to put a remote-execution primitive in front of administrators who believed they were downloading a routine webmail maintenance release.
+  start_date: 2007-12-08
+  end_date: 2007-12-14
+  target:
+    name: squirrelmail
+    kind: application
+    website: https://squirrelmail.org
+    repo: https://sourceforge.net/projects/squirrelmail/
+  actor:
+    name: Unknown
+    kind: unknown
+  language: PHP
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - remote_code_execution
+  artifacts:
+  - id: squirrelmail-1-4-12
+    name: squirrelmail
+    kind: source_archive
+    website: https://squirrelmail.org
+    repo: https://sourceforge.net/projects/squirrelmail/
+    start_date: 2007-12-08
+    end_date: 2007-12-14
+    versions:
+    - 1.4.12
+    fixed_versions:
+    - 1.4.13
+    locations:
+    - uri: http://www.squirrelmail.org/download.php
+      role: distribution
+    - uri: https://sourceforge.net/projects/squirrelmail/files/stable/1.4.12/
+      role: distribution
+    hashes:
+    - md5:ea5e750797628c9f0f247009f8ae0e14
+    - md5:d17c1d9f1ee3dde2c1c21a22fc4f9d0e
+    - md5:3f6514939ea1ebf69f6f8c92781886ab
+    indicators:
+    - kind: cve
+      value: CVE-2007-6348
+    - kind: package
+      value: squirrelmail-1.4.12.tar.bz2
+    - kind: package
+      value: squirrelmail-1.4.12.tar.gz
+    - kind: package
+      value: squirrelmail-1.4.12.zip
+    - kind: code
+      value: $_SERVER['HTTP_BASE_PATH']
+    - kind: code
+      value: define('SM_PATH', $_SERVER['HTTP_BASE_PATH'])
+    - kind: observable
+      value: Official MD5 sums no longer matched the 1.4.12 archive served from 
+        the SquirrelMail download path.
+  - id: squirrelmail-1-4-11
+    name: squirrelmail
+    kind: source_archive
+    website: https://squirrelmail.org
+    repo: https://sourceforge.net/projects/squirrelmail/
+    start_date: 2007-12-08
+    end_date: 2007-12-14
+    versions:
+    - 1.4.11
+    fixed_versions:
+    - 1.4.13
+    locations:
+    - uri: http://www.squirrelmail.org/download.php
+      role: distribution
+    - uri: https://sourceforge.net/projects/squirrelmail/files/stable/1.4.11/
+      role: distribution
+    indicators:
+    - kind: cve
+      value: CVE-2007-6348
+    - kind: package
+      value: squirrelmail-1.4.11
+    - kind: code
+      value: $_SERVER['HTTP_BASE_PATH']
+    - kind: code
+      value: define('SM_PATH', $_SERVER['HTTP_BASE_PATH'])
+    - kind: observable
+      value: SquirrelMail's 1.4.13 announcement expanded the compromise scope 
+        from 1.4.12 to both 1.4.11 and 1.4.12.
+    notes:
+    - The project said the altered code did not enter source control; the trusted 
+      release packages were the compromised artifacts.
+    - LWN reported no public evidence that systems had been compromised through 
+      the poisoned archives, and Fedora and Red Hat concluded their packaged 
+      builds came from clean tarballs.
+  references:
+  - url: https://marc.info/?l=squirrelmail-devel&m=119756462212214
+    title: 'SquirrelMail-devel: SECURITY: 1.4.12 Package Compromise'
+  - url: http://marc.info/?l=squirrelmail-devel&m=119765235203392&w=2
+    title: SquirrelMail-devel discussion of HTTP_BASE_PATH injection
+  - url: http://marc.info/?l=bugtraq&m=119765643909825&w=2
+    title: 'Bugtraq: ANNOUNCE: SquirrelMail 1.4.13 Released'
+  - url: https://lwn.net/Articles/262688/
+    title: The backdooring of SquirrelMail
+  - url: https://lwn.net/Articles/262090/
+    title: SquirrelMail package compromise
+  - url: https://lwn.net/Articles/262691/
+    title: SquirrelMail 1.4.13 released
+  - url: https://www.helpnetsecurity.com/2007/12/14/latest-squirrelmail-download-compromised/
+    title: Latest SquirrelMail download compromised
+  - url: https://www.zdnet.com/article/squirrelmail-warns-of-high-risk-package-compromise/
+    title: SquirrelMail warns of high-risk package compromise
+  - url: https://bugzilla.redhat.com/show_bug.cgi?id=425291
+    title: CVE-2007-6348 Squirrelmail compromise
+  - url: https://bugzilla.redhat.com/show_bug.cgi?id=424791
+    title: Upgrade to SquirrelMail 1.4.13
+  - url: https://github.com/advisories/GHSA-pcg6-p3v7-qgr9
+    title: SquirrelMail package compromise advisory
+  - url: https://tag-security.cncf.io/community/catalog/compromises/2007/squirrelmail/
+    title: CNCF TAG Security catalog entry for SquirrelMail
+  - url: https://it.slashdot.org/story/07/12/18/1847233/squirrelmail-repository-poisoned
+    title: SquirrelMail repository poisoned
+
+- id: squirrelmail-plugins
+  title: SquirrelMail plugin archives stole passwords
+  synopsis: >-
+    After a SquirrelMail web-server compromise in June 2009, the project found
+    that three official plugin archives had been modified to mail user passwords
+    to an offsite server.
+  story: |
+    SquirrelMail had another distribution problem in 2009, but this one lived in the plugin channel rather than the core webmail release. The project disclosed in June that its web server had been compromised, locked accounts, reset critical passwords, and took the plugin repository offline while it investigated. At first, the team said it believed the plugins themselves had not been altered.
+
+    The follow-up was worse. On July 30, SquirrelMail announced that three plugin packages on its own site were in fact compromised: `sasql-3.2.0`, `multilogin-2.4-1.2.9`, and `change_pass-3.0-1.4.0`. Those were not lookalike downloads. They were plugins administrators expected to obtain from the SquirrelMail plugin repository.
+
+    The injected PHP attempted to send mail to an offsite server containing passwords. That made the affected plugin set especially sensitive: two of the names, `multilogin` and `change_pass`, sit close to authentication and account-management workflows, where administrators would least want silent exfiltration code running inside the webmail stack.
+
+    SquirrelMail could not establish when the plugin packages had been modified. The practical advice was blunt: anyone using the affected versions should download fresh copies and compare against the clean MD5 hashes published with the July 30 notice. Unlike the 2007 release-tarball incident, this compromise came after an already-known server intrusion and showed why "we think the downloads are fine" has to be treated as a hypothesis until every artifact has been re-verified.
+  start_date: 2009-06-18
+  end_date: 2009-07-30
+  target:
+    name: squirrelmail-plugins
+    kind: package_repository
+    website: https://squirrelmail.org/plugins.php
+    repo: https://sourceforge.net/projects/squirrelmail/
+  actor:
+    name: Unknown
+    kind: unknown
+  language: PHP
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+  artifacts:
+  - id: squirrelmail-sasql
+    name: sasql
+    kind: plugin
+    website: https://squirrelmail.org/plugins.php
+    start_date: 2009-06-18
+    end_date: 2009-07-30
+    versions:
+    - 3.2.0
+    locations:
+    - uri: https://squirrelmail.org/plugins.php
+      role: distribution
+    hashes:
+    - md5:a492922e5b0d2245d4e9bc255a7c5755
+    indicators:
+    - kind: package
+      value: sasql-3.2.0.tar.gz
+    - kind: observable
+      value: Modified plugin code attempted to send mail to an offsite server 
+        containing passwords.
+  - id: squirrelmail-multilogin
+    name: multilogin
+    kind: plugin
+    website: https://squirrelmail.org/plugins.php
+    start_date: 2009-06-18
+    end_date: 2009-07-30
+    versions:
+    - 2.4-1.2.9
+    locations:
+    - uri: https://squirrelmail.org/plugins.php
+      role: distribution
+    hashes:
+    - md5:b143f2dc82f9e98dd43c632855255075
+    indicators:
+    - kind: package
+      value: multilogin-2.4-1.2.9.tar.gz
+    - kind: observable
+      value: Modified plugin code attempted to send mail to an offsite server 
+        containing passwords.
+  - id: squirrelmail-change-pass
+    name: change_pass
+    kind: plugin
+    website: https://squirrelmail.org/plugins.php
+    start_date: 2009-06-18
+    end_date: 2009-07-30
+    versions:
+    - 3.0-1.4.0
+    locations:
+    - uri: https://squirrelmail.org/plugins.php
+      role: distribution
+    hashes:
+    - md5:2cff7c5d4f6f5d8455683bb5d96bb9fe
+    indicators:
+    - kind: package
+      value: change_pass-3.0-1.4.0.tar.gz
+    - kind: observable
+      value: Modified plugin code attempted to send mail to an offsite server 
+        containing passwords.
+    notes:
+    - SquirrelMail said it could not establish when the three plugin packages were 
+      compromised, so the start date follows the public June 2009 web-server 
+      compromise disclosure rather than a confirmed first malicious package date.
+  references:
+  - url: https://lwn.net/Articles/344727/
+    title: SquirrelMail plugins compromised
+  - url: https://sourceforge.net/mailarchive/forum.php?forum_name=squirrelmail-announce
+    title: SquirrelMail announce mailing list
+  - url: https://www.zdnet.com/article/plugins-compromised-in-squirrelmails-web-server-hack/
+    title: Plugins compromised in SquirrelMail's web server hack
+  - url: https://www.infosecurity-magazine.com/news/squirrelmail-open-source-email-project-hacked/
+    title: SquirrelMail open source email project hacked

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PureScript installer dependencies were sabotaged</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>PureScript installer dependencies were sabotaged</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> PureScript npm installer · <a href="https://github.com/purescript/npm-installer" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2019-07-05 to 2019-07-12 (6 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
+    <div class="meta-item"><strong>Language:</strong> Javascript</div>
+    <div class="meta-item"><strong>Cause:</strong> malicious_dependency</div>
+    <div class="meta-item"><strong>Motive:</strong> sabotage</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> sabotage, denial_of_service</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> dependency</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Malicious npm releases of load-from-cwd-or-npm and rate-map targeted the PureScript npm installer, making compiler installation hang rather than stealing credentials or installing a backdoor.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The PureScript incident was a supply-chain attack with an unusually personal-looking payload. The purescript package was not itself republished with credential theft code. Instead, two dependencies maintained outside the PureScript team were changed so they would break the new PureScript npm installer while trying to avoid obvious failure in other paths.</p>
+    
+      <p>The timing mattered. PureScript 0.13.2 shipped on July 5, 2019, after the compiler maintainers had taken over the purescript npm package and replaced the older install-purescript-cli path with their own purescript-installer. About eight hours later, load-from-cwd-or-npm 3.0.2 was published. When pulled through dl-tar during a normal install, it returned a PassThrough stream where the installer expected the request module, so the binary download step silently went nowhere.</p>
+    
+      <p>The first sabotage looked enough like a bug that maintainers initially worked around it. Then, on July 9, rate-map 1.0.3 appeared with a sharper version of the same idea. It used similar activation logic, resolved the local dl-tar package through an obfuscated string, removed the callback that let the download stream advance, and then rewrote its own installed file to erase the malicious block after it ran.</p>
+    
+      <p>The targeting logic is what made the case stand out. The code tried not to fire when the old install-purescript-cli path was in use, and it checked for nearby Git directories to make local reproduction harder. Jarrod Overson later summarized the oddity well: there was no obvious monetization, no miner, no token theft, and no remote shell. The effect was sabotage of one installer lineage after a messy maintainer handoff.</p>
+    
+      <p>Harry Garrood reported rate-map to npm support around 11:30 UTC on July 9 and published purescript-installer 0.2.5 around 14:00 UTC, dropping or vendoring the dependencies maintained by the former installer maintainer. npm later removed load-from-cwd-or-npm 3.0.2 and rate-map 1.0.3 from the registry, and the maintainer told npm the packages were published after an account compromise. The public record still leaves attribution unresolved, so this catalog keeps the actor unknown and focuses on the registry packages that actually carried the sabotage.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>load-from-cwd-or-npm</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2019-07-05T21:00:00Z<br>to 2019-07-12</td>
+          <td>
+            
+              <code>3.0.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>rate-map</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2019-07-09T08:00:00Z<br>to 2019-07-12</td>
+          <td>
+            
+              <code>1.0.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://harry.garrood.me/blog/malicious-code-in-purescript-npm-installer/" target="_blank">Malicious code in the PureScript npm installer</a></li>
+    
+      <li><a href="https://github.com/purescript/npm-installer/issues/12" target="_blank">Installation hangs during Check if a prebuilt binary is provided for your platform</a></li>
+    
+      <li><a href="https://jarrodoverson.com/post/how-two-malicious-npm-packages-targeted-sabotaged-one-other-fed7199099c8/" target="_blank">How Two Malicious NPM Packages Targeted and Sabotaged One Other</a></li>
+    
+      <li><a href="https://www.theregister.com/security/2019/07/15/malicious-code-ousted-from-purescripts-npm-installer-but-who-put-it-there-in-the-first-place/457385" target="_blank">Malicious code ousted from PureScript&#39;s npm installer</a></li>
+    
+      <li><a href="https://securityaffairs.com/88433/hacking/npm-installer-purescript-compromised.html" target="_blank">npm installer for PureScript package compromised</a></li>
+    
+      <li><a href="https://sechub.in/view/1744975" target="_blank">Malicious code in PureScript npm installer mirror</a></li>
+    
+      <li><a href="https://5stars217.github.io/2021-08-11-my_favourite_dep_malware/" target="_blank">My favourite dependency malware</a></li>
+    
+      <li><a href="https://www.packtpub.com/en-us/learning/how-to-tutorials/purescript-npm-installers-infected-dependencies-prevented-it-from-running-successfully/" target="_blank">PureScript npm installer&#39;s infected dependencies prevented it from running successfully</a></li>
+    
+      <li><a href="https://www.threatshub.org/blog/malicious-code-ousted-from-purescripts-npm-installer/" target="_blank">Malicious code ousted from PureScript&#39;s npm installer mirror</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

@@ -36,13 +36,34 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The VeloraDEX compromise was registry-only. The attacker published `@velora-dex/sdk@9.4.1` to npm without changing the GitHub repository, so source review of the default branch would not show the payload.</p>
+      <p>On April 7, 2026, an attacker pushed a malicious release of
+`@velora-dex/sdk`, the JavaScript toolkit used to integrate with the
+VeloraDEX decentralized exchange, directly to npm without ever touching
+the corresponding GitHub repository. The compromised version, 9.4.1, was
+a registry-only attack: developers reviewing the project&#39;s default
+branch would have seen nothing wrong.</p>
     
-      <p>The malicious delta was small. `package.json` carried the version bump, and `dist/index.js` gained three prepended lines. Those lines decoded and ran a shell command when application code imported the package.</p>
+      <p>Aikido researcher Charlie Eriksen reported the package on the project&#39;s
+GitHub tracker, and StepSecurity published a teardown. The diff in the
+tarball was small. `package.json` carried the version bump, and
+`dist/index.js` gained three prepended lines that base64-decoded a shell
+command and ran it through `child_process.exec()` as soon as application
+code imported the SDK. The command used curl to pull
+`install.sh` from `89.36.224.5`, suppressing all output.</p>
     
-      <p>The command downloaded `install.sh` from `89.36.224.5`. On macOS, the script created `~/Library/Application Support/com.apple.Terminal/`, selected an ARM64 or Intel `profiler` binary, made it executable, and registered it with `launchctl submit -l zsh.profiler`.</p>
+      <p>On macOS, the script created `~/Library/Application Support/com.apple.Terminal/`,
+fetched either an ARM64 or Intel build of a binary named `profiler` from
+the same host, made it executable, and registered it as a persistent
+user service through `launchctl submit -l zsh.profiler`. The naming
+borrowed from Apple&#39;s own bundle conventions to blend into a developer
+laptop.</p>
     
-      <p>The attack did not depend on npm lifecycle hooks. `--ignore-scripts` would not stop it; the trigger was `require(&#39;@velora-dex/sdk&#39;)`. StepSecurity recommended pinning to 9.4.0 or earlier, removing the launchctl service and dropped binary, and rotating secrets from affected machines.</p>
+      <p>The trigger here was not an npm lifecycle hook. Passing `--ignore-scripts`,
+a common defense against malicious `postinstall` payloads, did nothing,
+because the malicious code ran at `require(&#39;@velora-dex/sdk&#39;)` time.
+StepSecurity told downstream operators to pin to 9.4.0 or earlier,
+remove the launchctl service and the dropped binary, and rotate any
+secret reachable from an affected machine.</p>
     
   </div>
   

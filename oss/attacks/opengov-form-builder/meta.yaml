@@ -4,13 +4,35 @@
     @opengov/form-builder 0.12.3 added a postinstall backdoor during TeamPCP's
     CanisterWorm campaign. The worm used npm tokens stolen through the second Trivy compromise.
   story: |
-    CanisterWorm reached the `@opengov` namespace after the second Trivy compromise. StepSecurity traced the path: malicious Trivy tooling harvested CI/CD secrets, and the stolen npm tokens were then used to publish new package versions across reachable scopes.
+    On March 21, 2026, a self-spreading npm worm that StepSecurity christened
+    CanisterWorm reached the `@opengov` namespace and republished
+    `@opengov/form-builder` with a backdoor. The compromised release, 0.12.3,
+    was one of a series of packages the worm rewrote that week using npm
+    publishing tokens stolen days earlier in the second compromise of the
+    Trivy scanner.
 
-    `@opengov/form-builder@0.12.3` changed the install surface. Earlier releases had no lifecycle script; the compromised release added `postinstall: node index.js`. That gave the package code execution at install time, before application code ran.
+    StepSecurity attributed the activity to the threat actor it tracks as
+    TeamPCP. According to the firm's writeup, malicious Trivy tooling
+    harvested CI/CD environment variables and runner process memory through
+    `/proc/<pid>/mem`, and the resulting npm credentials became the worm's
+    propagation fuel. Anywhere a stolen token could reach, CanisterWorm
+    enumerated the account's packages, bumped a patch version, and pushed a
+    backdoored release.
 
-    The JavaScript loader carried a base64-encoded Python implant. It wrote `~/.local/share/pgmon/service.py`, installed a user-level systemd service, and polled an Internet Computer canister for commands. A propagation component searched npm configuration and environment variables for publish tokens, then republished the payload to other packages the victim could reach.
+    The diff in `@opengov/form-builder` was straightforward. Earlier releases
+    carried no lifecycle script; 0.12.3 added `"postinstall": "node index.js"`,
+    giving the package code execution at install time, before any application
+    code ran. The JavaScript loader carried a base64-encoded Python implant
+    that wrote `~/.local/share/pgmon/service.py`, registered a user-level
+    systemd unit at `~/.config/systemd/user/pgmon.service` with
+    `Restart=always`, and polled an Internet Computer canister at
+    `tdtqy-oyaaa-aaaae-af2dq-cai.raw.icp0.io` for commands. A propagation
+    component scanned npm configuration and environment variables for any
+    further publish tokens and used them to keep the worm moving.
 
-    The record is scoped to the `@opengov/form-builder` artifact. The TeamPCP campaign record carries the broader Trivy credential theft, self-propagation, and destructive Kubernetes payload behavior.
+    This record covers the `@opengov/form-builder` artifact. The broader
+    Trivy credential theft, self-propagation behavior, and destructive
+    Kubernetes payloads sit on the TeamPCP campaign page.
   start_date: 2026-03-21
   end_date: 2026-03-21
   target:

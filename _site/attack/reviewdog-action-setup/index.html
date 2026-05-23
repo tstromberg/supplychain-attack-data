@@ -41,13 +41,32 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The reviewdog/action-setup compromise was the first step in the March 2025 GitHub Actions chain that later exposed `tj-actions/changed-files`. A contributor token leaked earlier through SpotBugs had write access, and the attacker used it against the reviewdog repository.</p>
+      <p>On March 11, 2025, an attacker quietly re-pointed the `v1` tag on
+`reviewdog/action-setup`, a widely used GitHub Action, to a commit that
+printed CI secrets into workflow logs. The move was the opening play in a
+chain that, three days later, would expose secrets across more than 23,000
+repositories using `tj-actions/changed-files`.</p>
     
-      <p>The attacker moved the `v1` tag to malicious commits. Because GitHub Actions workflows commonly pin actions by tag rather than immutable commit SHA, downstream workflows pulled attacker-controlled code without changing their own repositories.</p>
+      <p>Reviewdog is a popular open-source code-review automation tool, and
+`action-setup` is the GitHub Action that installs it inside a workflow.
+Because most consumers pinned the action by tag rather than by an immutable
+commit SHA, the moved tag silently shipped attacker-controlled code on the
+next run.</p>
     
-      <p>The malicious action printed CI secrets into logs in a recoverable form. That exposed tokens from projects using the action and supplied the path to compromise `tj-actions/changed-files`, where the same secret-leaking pattern reached a much larger set of repositories.</p>
+      <p>Researchers at Wiz, StepSecurity, and Palo Alto Networks&#39; Unit 42 traced the
+initial access to a Personal Access Token that had been leaked through an
+earlier compromise of the SpotBugs project. The token carried write access
+to the reviewdog repository, which the attacker used to swap the tag to
+commits including `f0d342d24037bb11d26b9bd8496e0808ba32e9ec`. The malicious
+action wrote secrets from the runner into the workflow log in a recoverable
+form, where any reader of a public log could harvest them.</p>
     
-      <p>CISA, NVD, Wiz, StepSecurity, and Unit 42 all treat reviewdog and tj-actions as related supply-chain incidents. This record stays scoped to reviewdog/action-setup; the campaign record carries the two-action chain.</p>
+      <p>The exposure that mattered most was not the credentials of reviewdog users
+directly, but a token reachable from those logs that carried write access to
+`tj-actions/changed-files`. CISA, Wiz, StepSecurity, and Unit 42 all
+described the two incidents as a single chain: reviewdog supplied the
+pivot, and tj-actions (tracked separately as [[tj-actions-changed-files]])
+delivered the broad blast radius.</p>
     
   </div>
   

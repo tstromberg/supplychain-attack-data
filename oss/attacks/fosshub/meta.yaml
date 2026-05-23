@@ -1,0 +1,131 @@
+- id: fosshub
+  title: FossHub served MBR-overwriting installers
+  synopsis: >-
+    FossHub's developer and distribution infrastructure was compromised on
+    August 2, 2016, and Windows downloads for Audacity and Classic Shell were
+    replaced with malware that overwrote the master boot record.
+  story: |
+    This was not really an Audacity incident or a Classic Shell incident. Those projects were the visible victims, but the compromised trust surface was FossHub, the shared download partner that users reached through normal project download flows.
+
+    On August 2, 2016, attackers used compromised FossHub-side access to replace Windows `.exe` downloads for Audacity and Classic Shell with a destructive lookalike installer. Audacity later said its download server served a hacked Audacity 2.1.2 Windows installer for about three hours, and that no Audacity infrastructure was compromised beyond one external FossHub developer account. FossHub's own update said attackers logged in through compromised users, escalated access, uploaded malware to the Classic Shell page, and later appeared to reach an FTP account, prompting FossHub to shut down the main site and reinstall services.
+
+    The payload was blunt: an MBR-overwriting trojan. Victims who ran the substituted installer could reboot into a damaged boot path and a message from the attacker instead of Windows. Softpedia's contemporaneous reporting attributed the operation to PeggleCrew and said the attacker claimed access to FossHub production machines, backup and mirror locations, FTP credentials for the caching service, and Google Apps-hosted email; the official FossHub update separately said attempts against DNSMadeEasy, CloudFlare, personal email, and CDN accounts had failed.
+
+    The affected projects mattered because they were popular, but they were not the root of the compromise. FossHub was the authority that accepted uploads and delivered binaries. Once that layer fell, the attacker could make legitimate project download pages serve hostile installers without changing either project's source tree. FossHub removed the Classic Shell malware after roughly 300 downloads, reacted faster on Audacity, and kept services offline while rotating passwords, rebuilding access controls, and reinstalling infrastructure. Audacity's follow-up also noted that OldFoss.com had been compromised and taken offline.
+  start_date: 2016-08-02
+  end_date: 2016-08-03
+  target:
+    name: FossHub
+    kind: distribution_site
+    website: https://www.fosshub.com
+  actor:
+    name: PeggleCrew
+    kind: group
+  language: C++
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: disruption_prank
+    transitive: false
+  impact:
+    types:
+    - data_destruction
+    - service_disruption
+  artifacts:
+  - id: fosshub-audacity
+    name: Audacity Windows installer
+    package: audacity
+    ecosystem: windows
+    kind: binary_installer
+    website: https://www.audacityteam.org
+    start_date: 2016-08-02
+    end_date: 2016-08-03
+    versions:
+    - 2.1.2
+    locations:
+    - uri: https://www.fosshub.com/Audacity.html
+      role: distribution
+    - uri: https://www.audacityteam.org/download/windows/
+      role: distribution
+    - uri: https://web.archive.org/web/20160807013940/http://www.audacityteam.org/compromised-download-partner/
+      role: advisory
+    indicators:
+    - kind: file
+      value: Audacity 2.1.2 Windows installer
+    - kind: malware
+      value: MBR-overwriting trojan
+    - kind: observable
+      value: Audacity said FossHub served the hacked Audacity Windows installer
+        for about three hours on August 2, 2016.
+    notes:
+    - Audacity said no Audacity infrastructure was compromised except one external
+      developer account on FossHub.com.
+  - id: fosshub-classic-shell
+    name: Classic Shell Windows installer
+    package: classic-shell
+    ecosystem: windows
+    kind: binary_installer
+    website: http://www.classicshell.net
+    repo: https://github.com/coddec/Classic-Shell
+    start_date: 2016-08-02
+    end_date: 2016-08-03
+    locations:
+    - uri: https://www.fosshub.com/Classic-Shell.html
+      role: distribution
+    - uri: http://www.classicshell.net/downloads/
+      role: distribution
+    - uri: https://coddec.github.io/Classic-Shell/www.classicshell.net/forum/viewtopic7812.html?f=7&t=6441
+      role: advisory
+    hashes:
+    - sha256:ccbb6cd10c0b0cfb68cf7c4203c9e9b75eb28b9a69a639e2c11a69d623456fa7
+    - md5:55a76272c2e42285ad4414e328b88e16
+    indicators:
+    - kind: malware
+      value: MBR-overwriting trojan
+    - kind: observable
+      value: FossHub said the Classic Shell malware was downloaded approximately
+        300 times before removal.
+  - id: oldfoss
+    name: OldFoss
+    kind: distribution_site
+    website: http://www.oldfoss.com
+    start_date: 2016-08-03
+    end_date: 2016-08-03
+    locations:
+    - uri: http://www.oldfoss.com
+      role: distribution
+    - uri: https://web.archive.org/web/20160807013940/http://www.audacityteam.org/compromised-download-partner/
+      role: advisory
+    indicators:
+    - kind: observable
+      value: Audacity's security update said OldFoss.com was also compromised and
+        had been put offline.
+    notes:
+    - Public sources tied the confirmed malicious downloads to FossHub-hosted
+      Audacity and Classic Shell installers; OldFoss is included as related
+      compromised distribution infrastructure noted by Audacity.
+  references:
+  - url: https://web.archive.org/web/20160807013940/http://www.audacityteam.org/compromised-download-partner/
+    title: Audacity - Compromised Download Partner
+  - url: https://web.archive.org/web/20161118223300/http://www.audacityteam.org/compromised-download-partner/
+    title: Audacity - Compromised Download Partner archived update
+  - url: https://web.archive.org/web/20161030034854/http://news.softpedia.com/news/hacker-compromises-fosshub-to-distribute-mbr-hijacking-malware-506932.shtml
+    title: Hacker Compromises Fosshub to Distribute MBR-Hijacking Malware
+  - url: https://www.zdnet.com/article/fosshub-serves-up-mbr-compromising-versions-of-audacity-and-classic-shell/
+    title: FossHub serves up MBR-compromising versions of Audacity and Classic Shell
+  - url: https://www.theregister.com/security/2016/08/05/classic-shell-hackers-we-infected-fosshub-so-ransomware-couldnt-and-yeah-also-for-fun/1258425
+    title: 'Classic Shell hackers: We infected FossHub so ransomware could not'
+  - url: https://coddec.github.io/Classic-Shell/www.classicshell.net/forum/viewtopic7812.html?f=7&t=6441
+    title: Classic Shell forum - The Classic Shell software got hacked
+  - url: https://forum.audacityteam.org/t/warning-fosshub-apparently-hacked-audacity-dls-affected/43134
+    title: 'Audacity Forum: Warning: FossHub Apparently Hacked'
+  - url: https://www.ghacks.net/2016/08/03/attention-fosshub-downloads-compromised/
+    title: Attention! FossHub downloads compromised
+  - url: 
+      https://www.bleepingcomputer.com/news/security/classicshell-and-fosshub-hacked-mbr-wiper-installed-instead-of-app/
+    title: ClassicShell and FossHub hacked, MBR-wiper installed instead of app
+  - url: https://thehackernews.com/2016/08/FossHub-malware.html
+    title: FossHub hacked to distribute malware
+  - url: 
+      https://arstechnica.com/information-technology/2016/08/malicious-classic-shell-installer-deliberately-trashes-windows-pcs/
+    title: Malicious Classic Shell installer deliberately trashes Windows PCs

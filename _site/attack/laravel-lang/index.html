@@ -61,16 +61,42 @@ an application loads `vendor/autoload.php`, which is the standard Laravel
 boot path, so no individual call site needed to import the helper. Any
 `composer update`, or any `composer install` without a pre-attack lockfile,
 would resolve each version constraint to the new tag SHA and execute the
-helper on the next request. Pre-attack lockfiles were safe until they were
-refreshed.</p>
+helper on the next request — and, because the entry sits in the autoload
+list, on every subsequent PHP request the application served. Pre-attack
+lockfiles were safe until they were refreshed.</p>
     
-      <p>According to StepSecurity, the dropper fetched a second stage from
-`flipboxstudio.info` — a typosquat of the legitimate `flipboxstudio.com` —
-executed it in a detached process, and then unlinked itself from disk.
-Stage two read the CI runner environment, dropped an ELF binary under
-`/tmp`, executed it, and deleted the on-disk path so the process kept
-running from a deleted inode. Exfiltration POSTed to the same typosquatted
-host.</p>
+      <p>The dropper assembled its C2 hostname at runtime from character codes to
+avoid plain-text strings, fetched a second stage from `flipboxstudio.info`
+— a typosquat of the legitimate `flipboxstudio.com` — over a TLS connection
+with certificate verification disabled and a spoofed Mozilla User-Agent,
+wrote it under `sys_get_temp_dir()/.laravel_locale/`, executed it in a
+detached process, and unlinked itself from disk. A per-host MD5 marker kept
+the stealer from running twice on the same machine. On Unix the helper
+invoked the staged PHP via `exec(&quot;php ...&quot;)`; on Windows it dropped a `.vbs`
+file and ran it through `cscript`. StepSecurity also observed a Linux
+variant in which stage two dropped an ELF at `/tmp/.&lt;8 hex&gt;`, executed it,
+and removed the path so the process kept running from a deleted inode with
+parent PID 1.</p>
+    
+      <p>Socket&#39;s reverse engineering of stage two describes a credential-harvesting
+framework with seventeen collectors. It scraped cloud-instance metadata
+from AWS IMDS at `169.254.169.254` along with Azure, Google Cloud,
+DigitalOcean, Heroku, Netlify, and Vercel endpoints; read Kubernetes
+service-account tokens from `/var/run/secrets/` and HashiCorp Vault tokens
+from the environment; pulled secrets from Jenkins, GitLab Runner, GitHub
+Actions, CircleCI, TravisCI, and ArgoCD working directories; harvested SSH
+keys, Git credentials, Docker tokens, VPN configs, and per-process
+environments from `/proc/&lt;pid&gt;/environ`; and walked profile directories for
+Chrome, Edge, Firefox, Brave, and Opera along with the local stores for
+1Password, Bitwarden, LastPass, KeePass, Dashlane, and NordPass and a
+catalog of cryptocurrency wallets and browser extensions. On Windows the
+payload shipped an embedded `DebugChromium.exe` that abused Chrome&#39;s own
+debugging interface to extract the v127+ app-bound encryption key and
+decrypt cookies and saved passwords that Chrome&#39;s newer protections would
+otherwise have kept out of reach. Exfiltration POSTed the collected
+material to `https://flipboxstudio.info/exfil`. The XOR key
+`k9X2mP7vL4nQ8wR1` recurs across the obfuscated strings and is itself a
+useful hunt artifact.</p>
     
       <p>Packagist removed the malicious versions and temporarily delisted the four
 packages. StepSecurity advised downstream operators to halt `composer
@@ -117,7 +143,7 @@ does not appear in the Mini Shai-Hulud campaign.</p>
           <td>2026-05-22<br>to 2026-05-23</td>
           <td>
             
-              N/A
+              <code>1.0.2</code><br><code>2.0.1</code><br><code>2.0.2</code><br><code>2.0.3</code><br><code>2.0.4</code><br><code>2.0.5</code><br><code>2.0.6</code><br><code>2.0.7</code><br><code>2.0.8</code><br><code>2.0.9</code><br><code>2.0.10</code><br><code>2.0.11</code><br><code>2.0.12</code><br><code>2.0.13</code><br><code>2.0.14</code><br><code>2.0.15</code><br><code>2.0.16</code><br><code>2.0.17</code><br><code>2.0.18</code><br><code>2.0.19</code><br><code>2.0.20</code><br><code>2.0.21</code><br><code>2.0.22</code><br><code>2.0.23</code><br><code>2.0.24</code><br><code>2.0.25</code><br><code>2.0.26</code><br><code>2.0.27</code><br><code>2.0.28</code><br><code>2.0.29</code><br><code>2.0.30</code><br><code>2.0.31</code><br><code>2.0.32</code><br><code>2.0.33</code><br><code>2.0.34</code><br><code>2.0.35</code><br><code>2.0.36</code><br><code>2.0.37</code><br><code>2.0.38</code><br><code>2.0.39</code><br><code>2.0.40</code><br><code>2.0.41</code><br><code>2.0.42</code><br><code>2.0.43</code><br><code>3.0.0</code><br><code>3.0.1</code><br><code>3.0.2</code><br><code>3.0.3</code><br><code>3.0.4</code><br><code>3.0.5</code><br><code>3.0.6</code><br><code>3.0.7</code><br><code>3.0.8</code><br><code>3.0.9</code><br><code>3.0.10</code><br><code>3.0.11</code><br><code>3.0.12</code><br><code>3.0.13</code><br><code>3.0.14</code><br><code>3.0.15</code><br><code>3.0.16</code><br><code>3.0.17</code><br><code>3.0.18</code><br><code>3.0.19</code><br><code>3.0.20</code><br><code>3.0.21</code><br><code>3.0.22</code><br><code>3.0.23</code><br><code>3.0.24</code><br><code>3.0.25</code><br><code>3.0.26</code><br><code>3.0.27</code><br><code>3.0.28</code><br><code>3.0.29</code><br><code>3.0.30</code><br><code>3.0.31</code><br><code>3.0.32</code><br><code>3.0.33</code><br><code>3.0.34</code><br><code>3.0.35</code><br><code>3.0.36</code><br><code>3.0.37</code><br><code>3.0.38</code><br><code>3.0.39</code><br><code>3.0.40</code><br><code>3.0.41</code><br><code>3.0.42</code><br><code>3.0.43</code><br><code>3.0.44</code><br><code>3.0.45</code><br><code>3.0.46</code><br><code>3.0.47</code><br><code>3.0.48</code><br><code>3.0.49</code><br><code>3.0.50</code><br><code>3.0.51</code><br><code>3.0.52</code><br><code>3.0.53</code><br><code>3.0.54</code><br><code>3.0.56</code><br><code>3.0.57</code><br><code>3.0.58</code><br><code>3.0.59</code><br><code>3.0.60</code><br><code>3.0.61</code><br><code>3.0.62</code><br><code>4.0.0</code><br><code>4.0.1</code><br><code>4.0.2</code><br><code>4.0.3</code><br><code>4.0.4</code><br><code>4.0.5</code><br><code>4.0.6</code><br><code>4.0.7</code><br><code>4.0.8</code><br><code>4.0.9</code><br><code>4.0.10</code><br><code>4.0.11</code><br><code>5.0.0</code><br><code>6.0.0</code><br><code>6.0.1</code><br><code>6.0.2</code><br><code>6.0.3</code><br><code>6.1.0</code><br><code>6.1.1</code><br><code>6.1.2</code><br><code>6.1.3</code><br><code>6.1.4</code><br><code>7.0.0</code><br><code>7.0.1</code><br><code>7.0.2</code><br><code>7.0.3</code><br><code>7.0.4</code><br><code>7.0.5</code><br><code>7.0.6</code><br><code>7.0.7</code><br><code>7.0.8</code><br><code>7.0.9</code><br><code>8.0.0</code><br><code>8.0.1</code><br><code>8.0.2</code><br><code>8.0.3</code><br><code>8.1.0</code><br><code>8.1.1</code><br><code>8.1.2</code><br><code>8.1.3</code><br><code>9.0.0</code><br><code>9.0.1</code><br><code>9.1.0</code><br><code>9.1.1</code><br><code>9.1.2</code><br><code>9.1.3</code><br><code>10.0.0</code><br><code>10.0.1</code><br><code>10.0.2</code><br><code>10.1.0</code><br><code>10.1.1</code><br><code>10.1.2</code><br><code>10.1.3</code><br><code>10.1.4</code><br><code>10.1.5</code><br><code>10.1.6</code><br><code>10.1.7</code><br><code>10.1.8</code><br><code>10.1.9</code><br><code>10.1.10</code><br><code>10.1.11</code><br><code>10.1.12</code><br><code>10.2.0</code><br><code>10.3.0</code><br><code>10.4.0</code><br><code>10.4.1</code><br><code>10.4.2</code><br><code>10.4.3</code><br><code>10.4.4</code><br><code>10.4.5</code><br><code>10.4.6</code><br><code>10.4.7</code><br><code>10.4.8</code><br><code>10.4.9</code><br><code>10.4.10</code><br><code>10.4.11</code><br><code>10.4.12</code><br><code>10.4.13</code><br><code>10.4.14</code><br><code>10.5.0</code><br><code>10.5.1</code><br><code>10.5.2</code><br><code>10.6.0</code><br><code>10.7.0</code><br><code>10.7.1</code><br><code>10.7.2</code><br><code>10.8.0</code><br><code>10.9.0</code><br><code>10.9.1</code><br><code>10.9.2</code><br><code>10.9.3</code><br><code>10.9.4</code><br><code>10.9.5</code><br><code>10.9.6</code><br><code>11.0.0</code><br><code>11.0.1</code><br><code>11.0.2</code><br><code>11.0.3</code><br><code>11.0.4</code><br><code>11.0.5</code><br><code>11.0.6</code><br><code>11.0.7</code><br><code>11.0.8</code><br><code>11.0.9</code><br><code>11.0.10</code><br><code>11.0.11</code><br><code>11.0.12</code><br><code>11.0.13</code><br><code>11.0.14</code><br><code>11.0.15</code><br><code>11.0.16</code><br><code>11.0.17</code><br><code>11.0.18</code><br><code>11.0.19</code><br><code>11.0.20</code><br><code>12.0.0</code><br><code>12.0.1</code><br><code>12.0.2</code><br><code>12.0.3</code><br><code>12.0.4</code><br><code>12.0.5</code><br><code>12.0.6</code><br><code>12.0.7</code><br><code>12.0.8</code><br><code>12.0.9</code><br><code>12.0.10</code><br><code>12.1.0</code><br><code>12.1.1</code><br><code>12.1.2</code><br><code>12.1.3</code><br><code>12.1.4</code><br><code>12.1.5</code><br><code>12.2.0</code><br><code>12.2.1</code><br><code>12.2.2</code><br><code>12.2.3</code><br><code>12.3.0</code><br><code>12.3.1</code><br><code>12.3.2</code><br><code>12.4.0</code><br><code>12.5.0</code><br><code>12.5.1</code><br><code>12.5.2</code><br><code>12.5.3</code><br><code>12.5.4</code><br><code>12.5.5</code><br><code>12.5.6</code><br><code>12.5.7</code><br><code>12.5.8</code><br><code>12.6.0</code><br><code>12.6.1</code><br><code>12.7.0</code><br><code>12.7.1</code><br><code>12.7.2</code><br><code>12.7.3</code><br><code>12.8.0</code><br><code>12.8.1</code><br><code>12.8.2</code><br><code>12.8.4</code><br><code>12.9.0</code><br><code>12.9.1</code><br><code>12.9.2</code><br><code>12.9.3</code><br><code>12.9.4</code><br><code>12.9.5</code><br><code>12.9.6</code><br><code>12.9.7</code><br><code>12.9.8</code><br><code>12.9.9</code><br><code>12.10.0</code><br><code>12.11.0</code><br><code>12.11.1</code><br><code>12.11.2</code><br><code>12.11.3</code><br><code>12.11.4</code><br><code>12.11.5</code><br><code>12.12.0</code><br><code>12.13.0</code><br><code>12.13.1</code><br><code>12.14.0</code><br><code>12.14.1</code><br><code>12.14.2</code><br><code>12.15.0</code><br><code>12.15.1</code><br><code>12.15.2</code><br><code>12.16.0</code><br><code>12.16.1</code><br><code>12.17.0</code><br><code>12.17.1</code><br><code>12.18.0</code><br><code>12.18.1</code><br><code>12.18.2</code><br><code>12.18.3</code><br><code>12.18.4</code><br><code>12.18.5</code><br><code>12.18.6</code><br><code>12.19.0</code><br><code>12.19.1</code><br><code>12.19.2</code><br><code>12.19.3</code><br><code>12.19.4</code><br><code>12.20.0</code><br><code>12.20.1</code><br><code>12.20.2</code><br><code>12.20.3</code><br><code>12.20.4</code><br><code>12.20.5</code><br><code>12.21.0</code><br><code>12.21.1</code><br><code>12.21.2</code><br><code>12.21.3</code><br><code>12.21.4</code><br><code>12.21.5</code><br><code>12.21.6</code><br><code>12.21.7</code><br><code>12.21.8</code><br><code>12.21.9</code><br><code>12.21.10</code><br><code>12.22.0</code><br><code>12.22.1</code><br><code>12.23.0</code><br><code>12.23.1</code><br><code>12.23.2</code><br><code>12.24.0</code><br><code>12.24.1</code><br><code>12.24.2</code><br><code>12.24.3</code><br><code>13.0.0</code><br><code>13.0.1</code><br><code>13.1.0</code><br><code>13.1.1</code><br><code>13.1.2</code><br><code>13.1.3</code><br><code>13.1.4</code><br><code>13.2.0</code><br><code>13.2.1</code><br><code>13.2.2</code><br><code>13.2.3</code><br><code>13.2.4</code><br><code>13.2.5</code><br><code>13.2.6</code><br><code>13.2.7</code><br><code>13.2.8</code><br><code>13.3.0</code><br><code>13.4.0</code><br><code>13.5.0</code><br><code>13.5.1</code><br><code>13.6.0</code><br><code>13.6.1</code><br><code>13.7.0</code><br><code>13.8.0</code><br><code>13.9.0</code><br><code>13.9.1</code><br><code>13.10.0</code><br><code>13.11.0</code><br><code>13.12.0</code><br><code>13.12.1</code><br><code>14.0.0</code><br><code>14.0.1</code><br><code>14.1.0</code><br><code>14.1.1</code><br><code>14.1.2</code><br><code>14.1.3</code><br><code>14.1.4</code><br><code>14.1.5</code><br><code>14.2.0</code><br><code>14.2.1</code><br><code>14.2.2</code><br><code>14.2.3</code><br><code>14.2.4</code><br><code>14.2.5</code><br><code>14.2.6</code><br><code>14.2.7</code><br><code>14.2.8</code><br><code>14.2.9</code><br><code>14.3.0</code><br><code>14.3.1</code><br><code>14.3.2</code><br><code>14.3.3</code><br><code>14.3.4</code><br><code>14.3.5</code><br><code>14.3.6</code><br><code>14.3.7</code><br><code>14.4.0</code><br><code>14.5.0</code><br><code>14.5.1</code><br><code>14.5.2</code><br><code>14.6.0</code><br><code>14.7.0</code><br><code>14.8.0</code><br><code>14.8.1</code><br><code>15.0.0</code><br><code>15.1.0</code><br><code>15.1.1</code><br><code>15.1.2</code><br><code>15.1.3</code><br><code>15.1.4</code><br><code>15.1.5</code><br><code>15.2.0</code><br><code>15.2.1</code><br><code>15.2.2</code><br><code>15.3.0</code><br><code>15.3.1</code><br><code>15.4.0</code><br><code>15.4.1</code><br><code>15.5.0</code><br><code>15.5.1</code><br><code>15.5.2</code><br><code>15.5.3</code><br><code>15.5.4</code><br><code>15.5.5</code><br><code>15.5.6</code><br><code>15.6.0</code><br><code>15.6.1</code><br><code>15.6.2</code><br><code>15.7.0</code><br><code>15.7.1</code><br><code>15.7.2</code><br><code>15.7.3</code><br><code>15.7.4</code><br><code>15.7.5</code><br><code>15.8.0</code><br><code>15.8.1</code><br><code>15.9.0</code><br><code>15.9.1</code><br><code>15.9.2</code><br><code>15.9.3</code><br><code>15.9.4</code><br><code>15.9.5</code><br><code>15.9.6</code><br><code>15.9.7</code><br><code>15.10.0</code><br><code>15.11.0</code><br><code>15.11.1</code><br><code>15.11.2</code><br><code>15.11.3</code><br><code>15.11.4</code><br><code>15.11.5</code><br><code>15.11.6</code><br><code>15.11.7</code><br><code>15.12.0</code><br><code>15.12.1</code><br><code>15.13.0</code><br><code>15.14.0</code><br><code>15.15.0</code><br><code>15.16.0</code><br><code>15.17.0</code><br><code>15.17.1</code><br><code>15.18.0</code><br><code>15.19.0</code><br><code>15.19.1</code><br><code>15.19.2</code><br><code>15.19.3</code><br><code>15.19.4</code><br><code>15.19.5</code><br><code>15.19.6</code><br><code>15.19.7</code><br><code>15.19.8</code><br><code>15.19.9</code><br><code>15.20.0</code><br><code>15.20.1</code><br><code>15.20.2</code><br><code>15.21.0</code><br><code>15.21.1</code><br><code>15.22.0</code><br><code>15.22.1</code><br><code>15.22.2</code><br><code>15.22.3</code><br><code>15.22.4</code><br><code>15.22.5</code><br><code>15.22.6</code><br><code>15.22.7</code><br><code>15.22.8</code><br><code>15.23.0</code><br><code>15.23.1</code><br><code>15.23.2</code><br><code>15.23.3</code><br><code>15.24.0</code><br><code>15.24.1</code><br><code>15.24.2</code><br><code>15.24.3</code><br><code>15.24.4</code><br><code>15.24.5</code><br><code>15.25.0</code><br><code>15.26.0</code><br><code>15.26.1</code><br><code>15.26.2</code><br><code>15.26.3</code><br><code>15.26.4</code><br><code>15.26.5</code><br><code>15.27.0</code><br><code>15.28.0</code><br><code>15.28.1</code><br><code>15.28.2</code><br><code>15.28.3</code><br><code>15.28.4</code><br><code>15.28.5</code><br><code>15.30.0</code>
             
           </td>
           <td>
@@ -143,7 +169,7 @@ does not appear in the Mini Shai-Hulud campaign.</p>
           <td>2026-05-22<br>to 2026-05-23</td>
           <td>
             
-              N/A
+              <code>1.1.4</code><br><code>1.1.5</code><br><code>2.5.0</code><br><code>2.5.1</code><br><code>2.6.0</code><br><code>2.6.1</code><br><code>2.6.2</code><br><code>2.7.0</code><br><code>2.8.0</code><br><code>2.8.1</code><br><code>2.9.0</code><br><code>2.9.1</code><br><code>2.9.2</code><br><code>2.9.3</code><br><code>2.9.4</code><br><code>2.9.5</code><br><code>2.10.0</code><br><code>2.10.1</code><br><code>2.10.2</code><br><code>2.10.3</code><br><code>2.10.4</code><br><code>2.10.5</code><br><code>2.10.6</code><br><code>2.10.7</code><br><code>2.10.8</code><br><code>2.10.9</code><br><code>2.10.10</code><br><code>2.11.0</code><br><code>2.11.1</code><br><code>2.11.2</code><br><code>2.11.3</code><br><code>2.11.4</code><br><code>2.12.0</code><br><code>2.12.1</code><br><code>2.13.0</code><br><code>2.13.1</code><br><code>2.13.2</code><br><code>2.13.3</code><br><code>2.13.4</code><br><code>2.13.5</code><br><code>2.13.6</code><br><code>2.14.0</code><br><code>2.14.1</code><br><code>2.14.2</code><br><code>2.15.8</code><br><code>2.16.0</code><br><code>v1.0.0</code><br><code>v1.0.1</code><br><code>v1.0.2</code><br><code>v1.0.3</code><br><code>v1.0.4</code><br><code>v1.0.5</code><br><code>v1.0.6</code><br><code>v1.0.7</code><br><code>v1.0.8</code><br><code>v1.0.9</code><br><code>v1.0.10</code><br><code>v1.0.11</code><br><code>v1.1.0</code><br><code>v1.1.1</code><br><code>v1.1.2</code><br><code>v1.1.3</code><br><code>v2.0.0</code><br><code>v2.0.1</code><br><code>v2.0.2</code><br><code>v2.0.3</code><br><code>v2.0.4</code><br><code>v2.0.5</code><br><code>v2.0.6</code><br><code>v2.0.7</code><br><code>v2.0.8</code><br><code>v2.0.9</code><br><code>v2.1.0</code><br><code>v2.1.1</code><br><code>v2.1.2</code><br><code>v2.2.0</code><br><code>v2.3.0</code><br><code>v2.3.1</code><br><code>v2.3.2</code><br><code>v2.3.3</code><br><code>v2.3.4</code><br><code>v2.4.0</code><br><code>v2.4.1</code>
             
           </td>
           <td>
@@ -169,7 +195,7 @@ does not appear in the Mini Shai-Hulud campaign.</p>
           <td>2026-05-22<br>to 2026-05-23</td>
           <td>
             
-              N/A
+              <code>1.0.0</code><br><code>1.0.1</code><br><code>1.1.0</code><br><code>1.1.1</code><br><code>1.1.2</code><br><code>1.1.3</code><br><code>1.2.0</code><br><code>1.2.1</code><br><code>1.3.0</code><br><code>1.3.1</code><br><code>1.4.0</code><br><code>1.4.1</code><br><code>1.4.2</code><br><code>1.4.3</code><br><code>1.4.4</code><br><code>1.4.5</code><br><code>1.5.0</code><br><code>1.5.1</code><br><code>1.5.2</code><br><code>1.5.3</code><br><code>1.5.4</code><br><code>1.5.5</code><br><code>1.5.6</code><br><code>1.6.0</code><br><code>1.6.1</code><br><code>1.7.0</code><br><code>1.8.0</code><br><code>1.8.1</code><br><code>1.8.2</code><br><code>1.8.3</code><br><code>1.8.4</code><br><code>1.8.5</code><br><code>1.8.6</code><br><code>1.8.7</code><br><code>1.8.8</code><br><code>1.8.9</code><br><code>1.8.10</code><br><code>1.9.0</code><br><code>1.10.0</code><br><code>1.10.1</code><br><code>1.10.2</code><br><code>1.11.0</code><br><code>1.11.1</code><br><code>1.12.4</code><br><code>1.13.0</code>
             
           </td>
           <td>
@@ -195,7 +221,7 @@ does not appear in the Mini Shai-Hulud campaign.</p>
           <td>2026-05-22<br>to 2026-05-23</td>
           <td>
             
-              N/A
+              <code>1.0.11</code><br><code>2.1.4</code><br><code>3.5.0</code><br><code>3.6.0</code><br><code>3.6.1</code><br><code>3.6.2</code><br><code>3.6.3</code><br><code>3.7.0</code><br><code>3.8.0</code><br><code>3.8.1</code><br><code>3.8.2</code><br><code>3.8.3</code><br><code>3.8.4</code><br><code>3.8.5</code><br><code>3.9.0</code><br><code>3.10.0</code><br><code>3.10.1</code><br><code>3.10.2</code><br><code>3.10.3</code><br><code>3.10.4</code><br><code>3.10.5</code><br><code>3.11.0</code><br><code>3.11.1</code><br><code>3.12.0</code><br><code>3.12.1</code><br><code>3.13.0</code><br><code>v1.0.0</code><br><code>v1.0.1</code><br><code>v1.0.2</code><br><code>v1.0.3</code><br><code>v1.0.4</code><br><code>v1.0.5</code><br><code>v1.0.6</code><br><code>v1.0.7</code><br><code>v1.0.8</code><br><code>v1.0.9</code><br><code>v1.0.10</code><br><code>v2.0.0</code><br><code>v2.0.1</code><br><code>v2.1.0</code><br><code>v2.1.1</code><br><code>v2.1.2</code><br><code>v2.1.3</code><br><code>v3.0.0</code><br><code>v3.0.1</code><br><code>v3.0.2</code><br><code>v3.0.3</code><br><code>v3.0.4</code><br><code>v3.0.5</code><br><code>v3.0.6</code><br><code>v3.0.7</code><br><code>v3.0.8</code><br><code>v3.1.0</code><br><code>v3.1.1</code><br><code>v3.1.2</code><br><code>v3.1.3</code><br><code>v3.1.4</code><br><code>v3.1.5</code><br><code>v3.2.0</code><br><code>v3.2.1</code><br><code>v3.2.2</code><br><code>v3.3.0</code><br><code>v3.3.1</code><br><code>v3.4.0</code><br><code>v3.4.1</code><br><code>v3.4.2</code><br><code>v3.4.3</code><br><code>v3.4.4</code><br><code>v3.4.5</code>
             
           </td>
           <td>
@@ -254,9 +280,17 @@ does not appear in the Mini Shai-Hulud campaign.</p>
     
       <li><code>account:Your Name &lt;you@example.com&gt;</code></li>
     
+      <li><code>file:DebugChromium.exe</code></li>
+    
+      <li><code>string:k9X2mP7vL4nQ8wR1</code></li>
+    
       <li><code>technique:composer autoload.files injection</code></li>
     
       <li><code>technique:orphaned php and ELF processes with parent PID 1</code></li>
+    
+      <li><code>technique:AWS IMDS scrape from 169.254.169.254</code></li>
+    
+      <li><code>technique:Chrome v127+ app-bound key extraction via DebugChromium.exe</code></li>
     
   </ul>
   
@@ -274,6 +308,8 @@ does not appear in the Mini Shai-Hulud campaign.</p>
       <li><a href="https://github.com/Laravel-Lang/lang/issues/8295" target="_blank">Laravel-Lang/lang issue #8295 - Compromised version tags</a></li>
     
       <li><a href="https://www.aikido.dev/blog/supply-chain-attack-targets-laravel-lang-packages-with-credential-stealer" target="_blank">Supply Chain Attack Targets Laravel-Lang Packages With Credential Stealer - Aikido</a></li>
+    
+      <li><a href="https://socket.dev/blog/laravel-lang-compromise" target="_blank">Laravel Lang Supply Chain Compromise - Socket</a></li>
     
       <li><a href="https://github.com/Laravel-Lang/common/issues/257" target="_blank">Laravel-Lang/common issue #257 - Compromised version tags</a></li>
     

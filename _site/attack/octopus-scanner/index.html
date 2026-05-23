@@ -36,13 +36,15 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>GitHub Security Lab disclosed Octopus Scanner in May 2020 after finding 26 affected open-source NetBeans projects. The malware targeted a developer workflow rather than a runtime server.</p>
+      <p>Octopus Scanner reached GitHub as a strange abuse report: repositories were serving malware, but the maintainers did not appear to be the attackers. GitHub Security Lab traced the problem to 26 open-source NetBeans projects whose checked-in sources and artifacts had already been infected.</p>
     
-      <p>Once present in a NetBeans project, Octopus Scanner modified build files and planted a payload so future builds produced infected JARs. Developers who cloned and built a compromised project could spread the infection into their own build outputs.</p>
+      <p>The malware looked for NetBeans project metadata on a developer machine, copied a payload named `cache.dat` into `nbproject/cache.dat`, and modified `nbproject/build-impl.xml`. That edit hooked the normal NetBeans build flow so the payload ran whenever the project was built.</p>
     
-      <p>The malware also installed remote-access capability, turning the build step into a persistence and access path. That made it a source-level supply-chain attack: the repository looked like the product, but the build product carried something else.</p>
+      <p>The build step was the distribution mechanism. A developer who cloned and built an infected project could produce infected JARs; GitHub also found variants that backdoored existing JAR dependencies checked into the project. Deleting one obvious file was not enough if the repository still carried tainted artifacts.</p>
     
-      <p>GitHub removed affected projects and published indicators for defenders. This record treats the 26 projects as artifact scope, not as a human victim count.</p>
+      <p>The payload chain then moved from project infection to host persistence. The first-stage dropper unpacked `octopus.dat`, installed autostart or scheduled-task persistence depending on platform, and spawned a remote administration tool that attempted to reach command-and-control infrastructure. GitHub reported that the C2 servers did not appear active during analysis, but the repositories still exposed anyone who cloned and built them.</p>
+    
+      <p>GitHub removed or cleaned affected projects and published hashes for defenders. This record treats the 26 projects as artifact scope, not as a human victim count. The important lesson is the trust boundary: source review may miss a build-system backdoor if the project file that orchestrates compilation is already part of the attack.</p>
     
   </div>
   
@@ -105,11 +107,19 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://securitylab.github.com/research/octopus-scanner-malware-open-source-supply-chain/" target="_blank">The Octopus Scanner Malware - Attacking the open source supply chain</a></li>
+      <li><a href="https://github.blog/security/vulnerability-research/the-octopus-scanner-malware-attacking-the-open-source-supply-chain/" target="_blank">The Octopus Scanner Malware - Attacking the open source supply chain</a></li>
     
-      <li><a href="https://www.darkreading.com/cyberattacks-data-breaches/researchers-uncover-malware-attacking-supply-chain-with-26-open-source-projects-in-its-clutches" target="_blank">Researchers Uncover Malware Attacking Supply Chain With 26 Open Source Projects in Its Clutches</a></li>
+      <li><a href="https://cycode.com/blog/beyond-solarwinds-the-octopus-scanner-supply-chain-attack/" target="_blank">Beyond SolarWinds - The Octopus Scanner supply chain attack</a></li>
     
-      <li><a href="https://thehackernews.com/2020/05/github-malware-supply-chain.html" target="_blank">GitHub Finds 26 Open Source Projects Infected With Octopus Scanner Malware</a></li>
+      <li><a href="https://www.darkreading.com/vulnerabilities-threats/github-supply-chain-attack-uses-octopus-scanner-malware" target="_blank">Researchers Uncover Malware Attacking Supply Chain With 26 Open Source Projects in Its Clutches</a></li>
+    
+      <li><a href="https://www.sonatype.com/blog/octopus-scanner-compromises-26-oss-projects-on-github" target="_blank">Octopus Scanner compromises 26 OSS projects on GitHub</a></li>
+    
+      <li><a href="https://cyberscoop.com/github-octopus-malware-supply-chain/" target="_blank">GitHub finds 26 projects compromised by Octopus Scanner malware</a></li>
+    
+      <li><a href="https://www.techtarget.com/searchsecurity/news/252483808/Supply-chain-attack-hits-26-open-source-projects-on-GitHub" target="_blank">Supply chain attack hits 26 open source projects on GitHub</a></li>
+    
+      <li><a href="https://cloudsecurityalliance.org/blog/2020/06/10/the-octopus-scanner-malware-attacking-the-open-source-supply-chain" target="_blank">The Octopus Scanner Malware - Attacking the Open Source Supply Chain</a></li>
     
   </ul>
   

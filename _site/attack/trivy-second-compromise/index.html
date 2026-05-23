@@ -36,13 +36,33 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The second Trivy compromise was a containment failure with a long tail. After the February takeover, attackers still had usable access. On March 19, 2026, they used compromised credentials to publish Trivy v0.69.4 artifacts and to change action tags that existing CI/CD workflows already trusted.</p>
+      <p>On March 19, 2026, attackers who still held credentials from the February
+takeover of Aqua Security&#39;s Trivy repository used them to publish a
+malicious Trivy v0.69.4 release and to rewrite the tags of two companion
+GitHub Actions, `trivy-action` and `setup-trivy`, that thousands of CI/CD
+pipelines already trusted by name. Docker Hub images for 0.69.4, 0.69.5,
+and 0.69.6 followed days later.</p>
     
-      <p>The delivery path was not one file. It included the Trivy release, `trivy-action`, `setup-trivy`, and later Docker Hub images for 0.69.4, 0.69.5, and 0.69.6. Many workflows referenced mutable action tags instead of pinned commits, so force-pushed tags changed code under stable-looking configuration.</p>
+      <p>The delivery worked because most consumers pinned by mutable tag rather
+than full commit SHA. Force-pushed tags swapped the underlying code without
+changing the workflow files that referenced them. StepSecurity, which
+documented the second wave, said the compromised setup-trivy commit
+`8afa9b9` was itself benign but pointed workflows at the poisoned v0.69.4
+binary.</p>
     
-      <p>The payload read GitHub Actions runner memory and process environments, collected developer and cloud secrets, encrypted the archive, and tried to exfiltrate it to `scan.aquasecurtiy.org` or fallback public repositories. Trivy was valuable to the attacker because it already ran where secrets live: inside build and deployment pipelines.</p>
+      <p>The payload read GitHub Actions runner memory and per-process environments,
+collected developer and cloud secrets, encrypted the archive, and tried to
+exfiltrate it to `scan.aquasecurtiy.org`, a typosquat of Aqua&#39;s own domain,
+with public GitHub repositories as a fallback drop. Trivy was an unusually
+rich target because it already ran inside build and deployment pipelines,
+where secrets live in plaintext.</p>
     
-      <p>The Register reported Mandiant&#39;s estimate of more than 1,000 impacted SaaS environments, with researchers warning that the number could grow. Aqua removed affected tags, released fixed action versions, and published GHSA-69fq-xp46-6x23. The incident then bled into adjacent tools, including LiteLLM, through secrets stolen from CI/CD.</p>
+      <p>The Register, citing Mandiant, reported that more than 1,000 SaaS
+environments were affected, with researchers warning the number was likely
+to grow. Aqua removed the malicious tags, published clean releases, and
+issued advisory GHSA-69fq-xp46-6x23. Stolen CI/CD secrets later bled into
+adjacent projects, including LiteLLM, extending the blast radius beyond
+Trivy itself.</p>
     
   </div>
   

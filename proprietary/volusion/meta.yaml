@@ -1,18 +1,23 @@
 - id: volusion-via-google-cloud-storage-script
   title: Volusion storefront script skimmed payments
   synopsis: >-
-    A Volusion-hosted script in Google Cloud Storage was modified with Magecart code.
-    Roughly 29,500 storefronts inherited the payment skimmer.
+    A Volusion storefront JavaScript path loaded a Magecart skimmer from Google Cloud
+    Storage. Confirmed scope landed in the low thousands of shops, with later fraud
+    reporting tying hundreds of thousands of card records to the breach.
   story: |
-    Volusion served common storefront JavaScript from a Google Cloud Storage bucket. In October 2019, attackers modified `volusion.js`, a script loaded by merchants on the hosted ecommerce platform.
+    The Volusion breach surfaced from a checkout page, not from a malware alert. In October 2019, researcher Marcel Afrahim noticed that the Sesame Street Live Store, a Volusion-hosted merchant, was loading an odd JavaScript file from `storage.googleapis.com/volusionapi/resources.js`.
 
-    The injected code loaded a skimmer from `gogogolo.com`. On checkout pages, it collected payment-card data and sent it to attacker infrastructure. Customers saw the merchant storefront; the compromised dependency lived underneath it.
+    That file was reached through Volusion's normal storefront JavaScript path, including `/a/j/vnav.js`, so it looked like part of the platform rather than a third-party add-on chosen by one merchant. The payload masqueraded as ordinary cookie-handling code while it watched the checkout flow.
 
-    Trend Micro reported more than 29,500 affected Volusion-hosted sites. The scale came from centralization: one platform script was reused across many stores, so one storage-object compromise became many checkout compromises.
+    Trend Micro later described the injected code as a Magecart skimmer active on 3,126 Volusion-hosted shops, with data showing activity from September 7, 2019. Other reporting and Gemini Advisory connected 6,589 to 6,593 domains to the compromised Volusion path. Some early reports speculated about up to 20,000 stores because Volusion's customer base was larger, but the confirmed infected-domain counts were lower.
 
-    This record is scoped to the hosted Volusion script, not to individual merchant breaches. The artifact was a production JavaScript dependency served from Volusion-controlled cloud storage.
-  start_date: 2019-10-07
-  end_date: 2019-10-09
+    The skimmer copied payment-form data, encoded and permuted it, stored it in browser `sessionStorage` under `__utmz_opt_in_out`, and then posted it to `volusion-cdn.com/analytics/beacon`. The attacker domain mimicked Volusion's own CDN naming closely enough to blend into a noisy checkout page.
+
+    Trend Micro assessed the activity as likely Magecart Group 6, also known as FIN6, based on the victim selection, exfiltration-domain style, and similarities to earlier British Airways and Newegg skimmers. Volusion said it resolved the issue within hours of notification and that a limited portion of customer information from a subset of merchants was compromised.
+
+    The later fraud story is related but should not be confused with the store count. Gemini Advisory found 239,000 compromised card-not-present records offered for sale after the incident and estimated that potential exposure could reach nearly 20 million records if the average small-merchant breach scale held across the confirmed Volusion merchant set.
+  start_date: 2019-09-07
+  end_date: 2019-10-10
   target:
     name: Volusion (via Google Cloud Storage script)
     kind: script
@@ -29,33 +34,62 @@
     types:
     - credential_theft
     - data_theft
-    users: 29500
+    users: 6589
   artifacts:
   - id: volusion-via-google-cloud-storage-script
     name: Volusion (via Google Cloud Storage script)
-    package: volusion.js
+    package: resources.js
     ecosystem: hosted javascript
     kind: source_archive
     website: https://storage.googleapis.com
-    start_date: 2019-10-07
-    end_date: 2019-10-09
+    start_date: 2019-09-07
+    end_date: 2019-10-10
     locations:
-    - uri: https://storage.googleapis.com/volusionapi/resources/volusion.js
+    - uri: https://storage.googleapis.com/volusionapi/resources.js
       role: distribution
-    - uri: 
-        https://blog.trendmicro.com/trendlabs-security-intelligence/volusion-platform-compromised-by-magecart-attackers-to-skim-credit-card-details/
+    - uri:
+        https://www.trendmicro.com/en_us/research/19/j/fin6-compromised-e-commerce-platform-via-magecart-to-inject-credit-card-skimmers-into-thousands-of-online-shops.html
       role: mirror
+    hashes:
+    - sha256:2348433df49e73217969a45726c53441f092c4a6fce57d1d58a6cf79d3976058
+    - sha256:cee25c699a14a04c6e1b6e6fcd5ce7d4414c9f324b62509a7af14ae5bf749af8
+    - sha256:d03f18a71ce059a79840a38aad4944426f0524bbd68a7a8fb7003c82996e6533
     indicators:
     - kind: url
-      value: "//storage.googleapis.com/volusionapi/resources/volusion.js"
+      value: hxxps://storage[.]googleapis[.]com/volusionapi/resources.js
     - kind: url
-      value: hxxps://www[.]gogogolo[.]com/pixel/pixel.js
+      value: hxxps://volusion-cdn[.]com/analytics/beacon
     - kind: domain
-      value: gogogolo.com
+      value: volusion-cdn.com
     - kind: family
       value: Magecart
+    - kind: threat_actor
+      value: FIN6
+    - kind: threat_actor
+      value: Magecart Group 6
+    - kind: observable
+      value: Volusion storefront path /a/j/vnav.js loaded the external skimmer.
+    - kind: observable
+      value: sessionStorage key __utmz_opt_in_out used before exfiltration.
+    notes:
+    - Trend Micro reported 3,126 actively affected shops; Gemini Advisory later confirmed
+      6,589 domains connected to the compromised domain, close to the 6,593 pages found
+      by Marcel Afrahim and cited by ZDNet/TechHQ.
+    - Gemini Advisory found 239,000 card-not-present records offered for sale and modeled
+      potential exposure at nearly 20 million records; that estimate is not the confirmed
+      infected-store count.
   references:
-  - url: 
-      https://blog.trendmicro.com/trendlabs-security-intelligence/volusion-platform-compromised-by-magecart-attackers-to-skim-credit-card-details/
-    title: Volusion platform compromised by Magecart attackers to skim credit card
-      details
+  - url:
+      https://www.trendmicro.com/en_us/research/19/j/fin6-compromised-e-commerce-platform-via-magecart-to-inject-credit-card-skimmers-into-thousands-of-online-shops.html
+    title: Magecart Card Skimmers Injected Into Online Shops
+  - url: https://geminiadvisory.io/breached-volusion-card-data-surfaces-in-dark-web/
+    title: Breached Volusion Card Data Surfaces in Dark Web
+  - url:
+      https://medium.com/@marcelx/sesame-street-volusion-customers-are-comprised-how-the-cookie-monster-is-stealing-cc-numbers-21eb51ec613b
+    title: Sesame Street & Volusion customers are compromised; how the cookie monster is stealing CC numbers
+  - url: https://techhq.com/news/6500-online-stores-breached-in-volusion-cloud-supply-chain-attack/
+    title: 6,500 online stores breached in Volusion supply-chain attack
+  - url: https://www.darkreading.com/cloud-security/magecart-attack-on-volusion-highlights-supply-chain-dangers
+    title: Magecart Attack on Volusion Highlights Supply Chain Dangers
+  - url: https://www.optimum7.com/blog/how-a-magecart-attack-works-and-how-volusion-was-hacked.html
+    title: How A Magecart Attack Works And How Volusion Was Hacked

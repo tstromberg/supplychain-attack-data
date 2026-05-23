@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bitcoin Gold wallet generated weak keys</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Bitcoin Gold wallet generated weak keys</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> Bitcoin Gold · <a href="https://bitcoingold.org" target="_blank">website</a> · <a href="https://github.com/BTCGPU/BTCGPU" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2017-11-21 to 2017-11-25 (4 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
+    <div class="meta-item"><strong>Language:</strong> C++</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> cryptocurrency_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> cryptocurrency_theft, private_key_theft</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">An attacker replaced Bitcoin Gold&#39;s official Windows Core wallet installer on the project&#39;s GitHub release page with builds that generated weak private keys for newly created wallets.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Bitcoin Gold&#39;s compromise started as the sort of thing careful users are supposed to catch: a checksum mismatch. On November 25, 2017, a user opened a GitHub issue after the Windows installer downloaded from the official Bitcoin Gold release did not match the SHA-256 hash published on the project&#39;s download page.</p>
+    
+      <p>The first warning was necessarily broad. Bitcoin Gold said an unknown party had gained access to the GitHub repository and replaced the compiled Windows wallet installer. The source code was unchanged, the Linux build was not changed, and the project told users to treat any Windows wallet downloaded between November 21, 2017, 09:39 UTC and November 25, 2017, 22:30 UTC as hostile. Two different suspicious installers had been served during that window, and neither matched the public checksum.</p>
+    
+      <p>The later analysis made the attack more interesting, and more dangerous, than a generic infected installer. Bitcoin Gold reported that the planted wallet did not appear to contain a conventional virus or upload private keys. Instead, it sabotaged `CKey::MakeNewKey`, the function responsible for generating new private keys. A normal wallet draws 32 bytes of strong entropy. The malicious build replaced that with a value derived from a timestamp, one random byte, and constants, shrinking the key space from 2^256 possibilities to roughly 2^40 before accounting for the known download window.</p>
+    
+      <p>That is still too much for a person, but it is not too much for an attacker watching the blockchain. New wallets created by the phony installer could look normal, receive BTG, and later be reconstructed by someone who knew the weakened key-generation scheme. Once Bitcoin Gold understood the trick, the team scanned for vulnerable addresses, swept just under 77.5 BTG into a safe address before the attacker did, and began returning funds to owners who could prove control.</p>
+    
+      <p>The lesson is not that checksums are ceremonial. They were the first alarm. The failure was that the release channel itself, trusted by the official download page, could serve a wallet that quietly changed the math behind ownership.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>Bitcoin Gold Windows Core wallet installer</strong>
+            <br><code>Bitcoin Gold Core</code>
+            <br><span>github · binary_installer</span>
+            <br><a href="https://bitcoingold.org" target="_blank">https://bitcoingold.org</a>
+            <br><a href="https://github.com/BTCGPU/BTCGPU" target="_blank">https://github.com/BTCGPU/BTCGPU</a>
+          </td>
+          <td>2017-11-21T09:39:00Z<br>to 2017-11-25T22:30:00Z</td>
+          <td>
+            
+              <code>0.15.0</code><br><code>0.15.0.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:0ccbae26914fc36973c5b74f0c031ba324bcffc7bbb188e752498573345215d5</code><br><code>sha256:8e9d4cb73116beb173d6079792d474ba29488c6de30a05d2d77bff7850c80b0d</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://web.archive.org/web/20201109001210/https://www.bitcoingold.org/critical-warning-nov-26/" target="_blank">Bitcoin Gold critical warning, November 26, 2017</a></li>
+    
+      <li><a href="https://btgofficial.org/critical-warning-nov-26/" target="_blank">Bitcoin Gold critical warning mirror</a></li>
+    
+      <li><a href="https://www.bitcoingold.org/vulnerable-core-wallet-update/" target="_blank">Vulnerable Core Wallet Update</a></li>
+    
+      <li><a href="https://github.com/BTCGPU/BTCGPU/issues/231" target="_blank">Checksum for Setup not matching</a></li>
+    
+      <li><a href="https://www.bleepingcomputer.com/news/security/psa-bitcoin-gold-btg-official-windows-wallet-app-might-have-been-compromised/" target="_blank">PSA - Bitcoin Gold official Windows wallet app might have been compromised</a></li>
+    
+      <li><a href="https://wccftech.com/bitcoin-gold-official-wallet-compromised/" target="_blank">Bitcoin Gold official wallet app compromised</a></li>
+    
+      <li><a href="https://securityaffairs.com/66161/hacking/bitcoin-gold-security-breach.html" target="_blank">Bitcoin Gold dev team warns users about a security breach</a></li>
+    
+      <li><a href="https://malwaretips.com/threads/psa-bitcoin-gold-btg-official-windows-wallet-app-might-have-been-compromised.77668/" target="_blank">MalwareTips thread on the Bitcoin Gold wallet warning</a></li>
+    
+      <li><a href="https://bitcointalk.org/index.php?topic=2673681.0" target="_blank">BitcoinTalk discussion of the vulnerable Bitcoin Gold wallet</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

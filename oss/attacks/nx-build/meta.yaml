@@ -5,13 +5,48 @@
     pull_request_target privileges with shell injection in pull-request metadata. The attacker
     used it to publish malicious nx, @nrwl/nx, and @nx package versions.
   story: |
-    The Nx attack began in CI, not in the npm registry. A vulnerable GitHub Actions workflow combined `pull_request_target` privileges with unsanitized pull-request title handling. That gave attacker-controlled metadata a path to command execution with elevated repository permissions, and the attacker used that path to reach npm publishing.
+    Late on the evening of August 26, 2025, an attacker pushed malicious
+    releases of the `nx` build tool and several related `@nrwl/*` packages to
+    the npm registry, planting a postinstall script that searched developer
+    machines for credentials and then conscripted any locally installed AI
+    coding assistant it could find to help with the search. According to
+    The Register, publishing began at 22:32 UTC and continued for just over two
+    hours before npm removed the affected versions, alerted at 02:58 UTC the
+    following morning.
 
-    The malicious releases added a postinstall `telemetry.js` payload to Nx packages on August 26, 2025. It ran on Linux and macOS, searched for `.env` files, SSH keys, wallet material, GitHub and npm credentials, and other developer secrets. It also appended `sudo shutdown -h 0` to shell startup files, a noisy sabotage step that may have helped defenders notice the compromise quickly.
+    Nx is a popular open-source build system for JavaScript and TypeScript
+    monorepos, maintained by the company Nrwl, with several million weekly
+    downloads on npm. The intrusion path did not start in the registry. It
+    started in a GitHub Actions workflow on the Nx repository that combined
+    `pull_request_target` privileges with shell-interpolated pull-request
+    metadata, a long-recognized misconfiguration that allows attacker-supplied
+    PR titles to execute commands with the workflow's own repository
+    permissions. The attacker used that foothold to reach the npm publishing
+    pipeline and pushed the eight tainted versions.
 
-    The novel part was tool abuse. The payload prompted locally installed AI CLI tools such as Claude, Gemini, and Amazon Q with permissive flags like `--dangerously-skip-permissions`, `--yolo`, and `--trust-all-tools`, coercing trusted tools into filesystem reconnaissance. The output fed `/tmp/inventory.txt`, then exfiltration code pushed double- or triple-base64 encoded data into GitHub repositories named `s1ngularity-repository`.
+    The postinstall script, `telemetry.js`, ran on Linux and macOS and walked
+    the filesystem for `.env` files, SSH keys, cryptocurrency wallet material,
+    and GitHub and npm credentials. The unusual element, dubbed s1ngularity by
+    researchers, was tool abuse. The payload looked for the Claude, Gemini, and
+    Amazon Q command-line assistants on disk and, when present, invoked them
+    with their safety prompts disabled, passing flags such as
+    `--dangerously-skip-permissions`, `--yolo`, and `--trust-all-tools`. The
+    assistants were prompted to inventory sensitive files and write the results
+    to `/tmp/inventory.txt`, which the script then double- or triple-base64
+    encoded and pushed into public GitHub repositories named
+    `s1ngularity-repository` under the victim's own account. The script also
+    appended `sudo shutdown -h 0` to `~/.bashrc` and `~/.zshrc`, a noisy
+    sabotage step that may have accelerated discovery.
 
-    GitHub disabled the attacker-created repositories after an exposure window of roughly eight hours, but Wiz observed more than 1,000 valid GitHub tokens, dozens of cloud and npm credentials, and roughly 20,000 files in the leaked material. A second phase used leaked GitHub tokens to make more than 5,500 private repositories public across more than 400 users and organizations.
+    GitHub disabled the harvest repositories within roughly eight hours of the
+    first publish, but by that time researchers at Wiz had catalogued more than
+    1,000 valid GitHub tokens, dozens of valid cloud and npm credentials, and
+    roughly 20,000 files in the leaked material. Wiz also tracked a second
+    phase between August 28 and 29 in which leaked GitHub tokens were used to
+    flip more than 5,500 private repositories to public across more than 400
+    users and organizations. The incident's lasting significance was the AI
+    pivot: it was among the first publicly documented supply-chain payloads to
+    treat the victim's own AI tooling as a reconnaissance accelerator.
   start_date: 2025-08-26
   end_date: 2025-08-27
   target:

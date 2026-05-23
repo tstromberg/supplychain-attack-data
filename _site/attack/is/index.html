@@ -41,13 +41,13 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The `is` package compromise followed the npnjs.com phishing pattern. Attackers used social engineering against npm maintainer access, then published malicious versions of a real package with about 2.8 million weekly downloads.</p>
+      <p>On July 19, 2025, attackers used a hijacked maintainer account to publish two malicious versions of `is`, a tiny type-checking utility that pulls roughly 2.8 million downloads a week and sits deep in the dependency trees of countless Node.js projects. Unlike the Windows-only DLL droppers that had ridden the npm phishing wave the day before, this payload was pure JavaScript and ran anywhere Node.js did.</p>
     
-      <p>Socket described `is@5.0.0` as different from the Windows-only Scavenger DLL path seen in related packages. This payload was pure JavaScript and cross-platform, running under Node.js on macOS, Linux, and Windows.</p>
+      <p>The compromise extended a campaign that had begun a day earlier with phished credentials for the `eslint-config-prettier` maintainer. According to Jordan Harband, a longtime steward of dozens of foundational JavaScript packages, the attacker took ownership of `is` by social-engineering its prior maintainer through npm&#39;s account-recovery flow, then emailed Harband asking to be re-added. Malware was published the next morning.</p>
     
-      <p>The loader reconstructed its payload in memory with a custom decoder and executed it through `new Function`. It collected host, OS, CPU, and environment data, then opened a WebSocket channel. Messages from the socket were treated as executable JavaScript, making the install a live remote shell.</p>
+      <p>Socket&#39;s analysis of `is@5.0.0` described a cross-platform loader rather than the Scavenger DLL family. The package decoded an embedded payload using a custom 94-character alphabet, reconstructed it in memory, and ran it through `new Function`, leaving no readable artifact on disk. The decoded code gathered hostname, operating system, CPU, and environment data, dynamically imported the `ws` library, and opened a WebSocket back to attacker-controlled infrastructure. Anything the server pushed down that channel was passed straight to a JavaScript evaluator, turning every install into a live remote shell on macOS, Linux, or Windows.</p>
     
-      <p>The package is grouped with the broader npm phishing campaign because the method, timing, and maintainer-compromise infrastructure overlap. It remains a distinct record because `is` carried a separate cross-platform JavaScript loader rather than only the Windows DLL family.</p>
+      <p>The malicious versions were deprecated and pulled from npm within hours, though detection took longer than the earlier Prettier-tooling publishes because nothing about the install behavior looked Windows-specific. Operators who installed 3.3.1 or 5.0.0 were advised to rotate any credential reachable from the affected host.</p>
     
   </div>
   

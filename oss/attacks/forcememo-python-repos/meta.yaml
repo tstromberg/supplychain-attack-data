@@ -5,13 +5,37 @@
     hundreds of Python repositories across Django apps, ML research, Streamlit dashboards,
     Flask APIs, and projects installed directly from GitHub.
   story: |-
-    ForceMemo was a source-repository attack. StepSecurity found hundreds of GitHub Python repositories where attacker-controlled credentials were used to rewrite the default branch. The earliest observed injections were on March 8, 2026.
+    Beginning on March 8, 2026, an attacker quietly force-pushed obfuscated
+    Python malware into the default branches of more than 240 GitHub
+    repositories belonging to dozens of unrelated developers, mostly Django
+    apps, machine-learning research code, Streamlit dashboards, and small
+    Flask APIs that downstream users tended to install straight from a git
+    URL. StepSecurity, which first reported the campaign on March 14, named it
+    ForceMemo for its delivery mechanism and its command channel.
 
-    The attacker preserved the latest legitimate commit message, author, and author date, then rebased the commit with obfuscated Python appended to files such as `setup.py`, `main.py`, and `app.py`. The force-push made history look familiar unless reviewers checked committer dates or file tails.
+    The injection was designed to defeat a casual git log review. The attacker
+    took the most recent legitimate commit on each repository, kept its
+    message, author, and author date, then rebased it with a malicious tail
+    appended to a likely entry point such as `setup.py`, `main.py`, or
+    `app.py`, and force-pushed the result. Only the committer date and a
+    glance at the bottom of the file would betray the rewrite.
 
-    The appended payload used base64, zlib, and XOR obfuscation around a shared marker variable, `lzcdrtfxyqiplpd`. After decoding, it queried Solana transaction memos for command data, downloaded Node.js v22.9.0 when needed, fetched encrypted JavaScript, and left a two-day persistence marker in `~/init.json`.
+    The appended Python was wrapped in base64, zlib, and an XOR layer, all
+    organized around a shared marker variable named `lzcdrtfxyqiplpd` (still a
+    useful GitHub code search string). Once decoded, the loader queried
+    transaction memos on a Solana wallet,
+    `BjVeAjPrSKFiingBn4vZvghsGj9KCE8AJVtbc9S8o8SC`, for command instructions,
+    downloaded Node.js v22.9.0 when it needed a runtime, fetched encrypted
+    JavaScript stages, and dropped `~/init.json` as a two-day persistence
+    marker.
 
-    StepSecurity tied the account takeover path to GlassWorm credential theft from malicious VS Code and Cursor extensions. The two waves used different injection techniques, but shared Solana C2 infrastructure. This record tracks the ForceMemo Python repository delivery path.
+    StepSecurity tied the account-takeover path back to GlassWorm, the
+    credential-stealing malware shipped through poisoned VS Code and Cursor
+    extensions in the preceding weeks. The two campaigns used different
+    injection techniques but shared the same Solana wallet for command and
+    control, evidence that the same operator was behind both. This record
+    covers the Python repository delivery path; the GlassWorm campaign as a
+    whole is tracked separately.
   start_date: 2026-03-08
   end_date: 2026-03-14
   target:

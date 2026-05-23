@@ -1,59 +1,91 @@
 - id: mailparser
-  title: mailparser npm ran malicious binary
+  title: getcookies backdoor reached mailparser dependency chain
   synopsis: >-
-    A compromised npm account published mailparser 0.1.2 in March 2019. The package
-    used install-time execution to fetch and run attacker code from the registry path.
+    npm removed getcookies, two related cookie packages, and three mailparser releases
+    after a community report found a request-header backdoor in the dependency chain.
   story: |
-    The mailparser incident was a registry compromise, not a source repository change. Attackers obtained publishing access and released `mailparser@0.1.2` to npm.
+    The important package in this incident was not `mailparser` itself. On May 2, 2018, npm received a community report that `getcookies`, a package presented as a cookie parser, contained a backdoor. Two other packages, `express-cookies` and `http-fetch-cookies`, depended on it. Three `mailparser` releases then depended on `http-fetch-cookies`, pulling the chain into a deprecated but still heavily downloaded package.
 
-    The malicious release used the package installation path as execution. Anyone installing the affected version could run attacker code before application code had a chance to import the library.
+    npm's analysis found a header-driven remote-code path. The code stringified `request.headers`, searched for attacker-formatted markers, used control values to reset or append to an in-memory code buffer, and executed the buffer with `vm.runInThisContext`. In a server path that actually used the malicious module, that meant a crafted HTTP request could become arbitrary Node.js code.
 
-    Snyk and the npm advisory trail identify the release as malicious and tie it to a downloaded executable payload. The useful record is small: one package, one version, one registry artifact.
+    The attempted reach was the story. npm said download counts for `getcookies`, `express-cookies`, and `http-fetch-cookies` spiked around the time a `mailparser` version began depending on `http-fetch-cookies`. `mailparser` still had about 64,000 weekly downloads despite being deprecated, so the chain made a small cookie parser look more legitimate and gave it a path toward real production installations.
 
-    The package name is easy to confuse with later, legitimate mail parsing libraries. This record is scoped to the legacy `mailparser` npm package and its 2019 malicious `0.1.2` publication.
-  start_date: 2019-03-12
-  end_date: 2019-03-12
+    npm also drew an important boundary: published `mailparser` versions that depended on `http-fetch-cookies` did not use the dependency in a way that triggered the backdoor. npm removed `getcookies`, `express-cookies`, `http-fetch-cookies`, and `mailparser` versions 2.2.1 through 2.2.3, then reset the `mailparser` maintainer's npm tokens. This was a near miss in a dependency chain, not evidence that `mailparser` users were compromised.
+  start_date: 2018-05-02
+  end_date: 2018-05-02
   target:
-    name: mailparser
+    name: mailparser dependency chain
     kind: library
-    repo: https://github.com/mailparser-legacy/mailparser
   actor:
-    name: Individual Hacker
-    kind: person
+    name: Unknown
+    kind: unknown
   language: JavaScript
   method:
-    cause: compromised_account_credentials
-    phase: distribution
+    cause: malicious_dependency
+    phase: dependency
     motive: unauthorized_access_control
-    transitive: false
+    transitive: true
   impact:
     types:
     - backdoor
     - remote_code_execution
-    users: 100
+    users: 0
   artifacts:
-  - id: mailparser
-    name: mailparser
-    package: mailparser
+  - id: getcookies
+    name: getcookies
+    package: getcookies
     ecosystem: npm
     kind: source_archive
-    repo: https://github.com/mailparser-legacy/mailparser
-    start_date: 2019-03-12
-    end_date: 2019-03-12
-    versions:
-    - 0.1.2
+    start_date: 2018-05-02
+    end_date: 2018-05-02
     locations:
-    - uri: https://registry.npmjs.org/mailparser/-/mailparser-0.1.2.tgz
+    - uri: https://www.npmjs.com/package/getcookies
       role: distribution
-    - uri: https://security.snyk.io/vuln/npm:mailparser:20190312
+    - uri: https://blog.npmjs.org/post/173526807575/reported-malicious-module-getcookies
       role: mirror
-    hashes:
-    - sha256:a7c55ef358ba3b90def7f46fd0ad40830e0df3b6f68e32cdb8603c4ccb0cc45a
     indicators:
+    - kind: package
+      value: getcookies
+    - kind: package
+      value: express-cookies
+    - kind: package
+      value: http-fetch-cookies
+    - kind: package
+      value: mailparser 2.2.1
+    - kind: package
+      value: mailparser 2.2.2
+    - kind: package
+      value: mailparser 2.2.3
+    - kind: account
+      value: dustin87
+    - kind: function
+      value: vm.runInThisContext
     - kind: observable
-      value: Install-time package behavior downloaded and executed a malicious binary.
+      value: Backdoor parsed stringified request headers for attacker-formatted
+        gCOMMANDhDATAi markers.
+    - kind: observable
+      value: Control values reset the code buffer, appended remote code into memory,
+        or executed the buffer inside the Node.js process.
+    - kind: observable
+      value: npm found no published mailparser use path that would have triggered the
+        backdoor.
+    notes:
+    - npm removed getcookies, express-cookies, http-fetch-cookies, and mailparser
+      versions 2.2.1, 2.2.2, and 2.2.3.
+    - npm reset the mailparser maintainer's tokens as a precaution after removing the
+      affected mailparser releases.
+    - Hacker News discussion surfaced the suspicious lack of repositories and the stock
+      profile photo associated with the packages before npm published its write-up.
   references:
-  - url: https://security.snyk.io/vuln/npm:mailparser:20190312
-    title: Malicious Package Affecting mailparser package
-  - url: https://www.npmjs.com/advisories/912
-    title: Malicious Package in mailparser
+  - url: https://blog.npmjs.org/post/173526807575/reported-malicious-module-getcookies
+    title: 'Reported malicious module: getcookies'
+  - url: https://thenewstack.io/npm-attackers-sneak-a-backdoor-into-node-js-deployments-through-dependencies/
+    title: NPM Attackers Sneak a Backdoor into Node.js Deployments through Dependencies
+  - url: https://www.bleepingcomputer.com/news/security/somebody-tried-to-hide-a-backdoor-in-a-popular-javascript-npm-package/
+    title: Somebody Tried to Hide a Backdoor in a Popular JavaScript npm Package
+  - url: https://www.theregister.com/security/2018/05/05/cookie-code-compromise-caper-caught-and-crumbled/357957
+    title: Cookie code compromise caper caught and crumbled
+  - url: https://news.ycombinator.com/item?id=16975025
+    title: Backdoor injected to NPM express-cookies package
+  - url: https://dl.acm.org/doi/pdf/10.1145/3510457.3513044
+    title: What are Weak Links in the npm Supply Chain?

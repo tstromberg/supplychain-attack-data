@@ -5,13 +5,35 @@
     traffic in 2025. Victims received malicious update.exe chains that led to Cobalt
     Strike and custom backdoors.
   story: |
-    Notepad++ disclosed the incident on 2026-02-02, but the attack window sat in 2025. The project's update infrastructure was affected by a hosting provider-level compromise that let attackers redirect selected update requests.
+    Notepad++ disclosed in February 2026 that its update infrastructure had
+    been silently delivering backdoors to a small set of users through most of
+    the prior summer and fall. The compromise sat one layer below the
+    application itself: an attacker who had taken over a hosting provider
+    selectively redirected requests from the Notepad++ updater to
+    attacker-controlled servers, and the rest of the chain played out inside
+    the trust boundary users had already granted to the editor.
 
-    Kaspersky telemetry showed rotating chains from late July through October 2025. The legitimate updater process `GUP.exe` launched attacker-supplied `update.exe` files, which gathered host data, staged files under user profile directories, and delivered second-stage payloads.
+    Notepad++ is a long-running open-source Windows text editor with a large
+    install base, and `GUP.exe` is the helper process it spawns to fetch and
+    launch new versions. Researchers at Kaspersky, who first published a
+    detailed account of the operation, said the legitimate updater handed off
+    to malicious `update.exe` binaries served from the hijacked update
+    endpoint. Those binaries gathered host data, staged files under user
+    profile directories, and pulled down a second stage.
 
-    The payloads changed over time. Some chains led to Cobalt Strike Beacon through Metasploit-style loaders; later chains used different infrastructure and backdoor components. The operation was targeted, with Kaspersky observing about a dozen machines across individuals and organizations.
+    Kaspersky tracked rotating delivery chains from late July through October
+    2025. Early chains delivered a Cobalt Strike Beacon through
+    Metasploit-style loaders; later chains swapped in different infrastructure
+    and custom backdoor components, with the C2 hostname `cdncheck.it.com`
+    fronted by IPs including `45.76.155.202` and `45.77.31.210`. The operation
+    was narrow: Kaspersky said it observed roughly a dozen affected machines
+    spread across individuals and organizations, consistent with targeted
+    espionage rather than mass deployment.
 
-    Direct manual downloads from the official website were not the main path described here. The value was the updater trust boundary: a user asking Notepad++ to update could receive attacker code through infrastructure the project and its users expected to be boring.
+    The Notepad++ website's direct download path does not appear to have been
+    affected. The value to the attacker was the updater trust boundary itself:
+    a user who asked Notepad++ to update could receive attacker code through
+    infrastructure that both the project and its users expected to be boring.
   start_date: 2025-06-01
   end_date: 2025-12-02
   target:

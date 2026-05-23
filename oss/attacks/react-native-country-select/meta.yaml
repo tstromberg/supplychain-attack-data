@@ -6,11 +6,38 @@
     The astroonauta npm account takeover also compromised react-native-country-select, a direct
     dependency of react-native-international-phone-number.
   story: |
-    The first react-native-country-select payload was small at the package boundary and large after execution. Version 0.3.91 added a preinstall hook that ran node install.js before npm finished the install. Aikido found the adjacent 0.3.9 release clean, making the change narrow and easy to describe: one new loader file and one lifecycle hook.
+    On the morning of March 16, 2026, an attacker who had taken over an npm
+    account belonging to the maintainer AstrOOnauta published a malicious
+    version of react-native-country-select, a React Native picker library used
+    by tens of thousands of mobile apps each month. The release, 0.3.91, went
+    live at 10:54 UTC, five minutes after the attacker had pushed a matching
+    backdoor into the companion package react-native-international-phone-number.
 
-    The loader reached to Solana RPC, recovered a transaction memo, decoded a URL, and fetched a second stage. The recovered chain continued through AES-decrypted JavaScript and a Google Calendar URL used as another indirection point before fetching more content from attacker infrastructure. The same install.js loader hash appeared in both React Native packages compromised that morning.
+    Researchers at Aikido, who reported the incident under the campaign name
+    Glassworm, said the change at the package boundary was small: one new
+    `install.js` loader file and a single `preinstall` lifecycle hook that
+    ran it before npm finished the install. The adjacent 0.3.9 release was
+    clean, which made the diff easy to read.
 
-    The later payload was Windows-focused theft code, not a harmless beacon. It set persistence with schtasks and an HKCU Run key, wrote an init.json guard, downloaded Node.js runtimes into AppData, walked browser profile and wallet storage, killed browser processes, stole npm and GitHub credentials, and exfiltrated collected archives. StepSecurity later tracked the attacker returning with additional releases that hid delivery behind transitive dependencies.
+    The loader itself was the interesting part. It queried Solana RPC with
+    `getSignaturesForAddress` to look up a transaction memo, decoded a URL out
+    of the memo, and fetched a second stage. From there the chain ran through
+    AES-decrypted JavaScript and a Google Calendar share URL used as a further
+    indirection point before reaching attacker infrastructure at
+    `45.32.150.251` and `217.69.3.152`. The same loader hash appeared in both
+    React Native packages compromised that morning.
+
+    The recovered payload was a Windows-focused stealer. Aikido said it
+    established persistence through a scheduled task and an HKCU Run key,
+    wrote an `init.json` guard to avoid re-execution, downloaded Node.js
+    runtimes into AppData, killed browser processes before walking profile
+    and wallet storage, and posted the harvested archive to the same C2.
+    StepSecurity tracked the attacker returning over the following two days
+    with additional releases (0.4.1 and 0.4.2) that pushed delivery deeper into
+    transitive dependencies through `@agnoliaarisian7180/string-argv` and
+    `@usebioerhold8733/s-format`. The combined react-native-country-select and
+    react-native-international-phone-number packages drew roughly 130,000
+    monthly downloads at the time of compromise.
   start_date: 2026-03-16
   end_date: 2026-03-18
   target:

@@ -5,13 +5,35 @@
     privileges. The stolen token defaced the repo and replaced kubernetes.el with a
     destructive shell command.
   story: |
-    The attack began with an ordinary-looking pull request. kubernetes-el used `pull_request_target`, then explicitly checked out the pull request head. That combination ran attacker code inside a privileged GitHub Actions context.
+    In early March 2026, an attacker using the GitHub handle `quicktrinny`
+    opened what looked like an ordinary pull request against kubernetes-el, a
+    long-running Emacs interface for Kubernetes, and within hours had replaced
+    the project's main source file with an Emacs expression that called
+    `rm -rf /`. The compromise was disclosed by Emacsmirror maintainer Jonas
+    Bernoulli on March 7.
 
-    The payload evolved in the open. The attacker changed the Makefile to run `funny.sh`, tried runner memory dumping, switched tooling, fixed build syntax, and finally extracted GitHub Actions secrets to webhook.site. The important secret was the writable `GITHUB_TOKEN`.
+    The opening was a Pwn Request. kubernetes-el's CI fired on
+    `pull_request_target`, the GitHub Actions trigger that grants
+    repository-write permissions, and then explicitly checked out the pull
+    request head. That combination, which StepSecurity has flagged repeatedly,
+    let the attacker's fork code run with the project's own credentials.
 
-    With that token, commits appeared as `github-actions[bot]`. The README was defaced, then `kubernetes.el` was replaced with an Emacs expression that invoked `rm -rf /`. For users installing or updating from the repository mirror path, source code became the delivery channel.
+    The payload evolved live in the workflow logs. The attacker first changed
+    the Makefile to execute a script called `funny.sh`, then experimented with
+    runner memory dumping, swapped tools, fixed build errors, and finally
+    exfiltrated GitHub Actions secrets to a `webhook.site` endpoint. The
+    valuable secret turned out to be the workflow's own writable `GITHUB_TOKEN`.
 
-    The compromise was reported by Emacsmirror maintainer Jonas Bernoulli on March 7, 2026. MELPA removed the package and Emacsmirror blocked updates, limiting the damage to a narrow window.
+    With that token in hand, the attacker pushed commits authored as
+    `github-actions[bot]`. The README was defaced and `kubernetes.el` itself
+    was rewritten so that loading the package would invoke `rm -rf /`. For
+    Emacs users who installed or updated the package directly from the
+    repository, source code had become the delivery channel.
+
+    MELPA pulled the package and Emacsmirror blocked further updates, holding
+    the damage to a narrow window. StepSecurity, which wrote up the incident,
+    used it as a reminder that `pull_request_target` plus a fork-head checkout
+    remains one of the most reliable ways to hand a repository to a stranger.
   start_date: 2026-03-05
   end_date: 2026-03-07
   target:

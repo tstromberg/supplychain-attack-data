@@ -5,13 +5,41 @@
     payload that evolved from a proxy-module trigger to a wheel-level .pth file executed by
     Python at interpreter startup.
   story: |
-    LiteLLM was a downstream hit from the Trivy compromise. According to LiteLLM maintainers, a bad Trivy scanner ran in the project's CI/CD pipeline and exposed the PyPI publishing token. The attacker used that token to publish LiteLLM 1.82.7 and 1.82.8 to PyPI.
+    On March 24, 2026, an attacker used a stolen PyPI publishing token to
+    push two malicious releases of LiteLLM, the popular open-source proxy that
+    fronts more than a hundred large-language-model APIs behind a single
+    OpenAI-compatible interface. Versions 1.82.7 and 1.82.8 carried a
+    credential stealer; LiteLLM maintainers BerriAI traced the token theft
+    back to a compromised Trivy scanner that had been running in the project's
+    own CI pipeline.
 
-    The delivery path was direct Python package installation. The Register and LiteLLM maintainers identified `litellm_init.pth` in the compromised packages; Python processes `.pth` files at interpreter startup, so version 1.82.8 could execute before an application imported LiteLLM. The official LiteLLM Proxy Docker path was reported not impacted because it pinned dependencies and did not use the compromised PyPI packages.
+    StepSecurity, which published a teardown of the wheel alongside coverage
+    in The Register, said the two releases shipped identical payloads through
+    different injection points. Version 1.82.7 embedded a base64 blob inside
+    `litellm/proxy/proxy_server.py`, which only fired when the proxy module
+    loaded. Version 1.82.8 was more aggressive: it placed a 34,628-byte
+    `litellm_init.pth` file in the wheel's site-packages directory. Python
+    processes every `.pth` file under `site-packages` on interpreter startup
+    through the standard `site` module, so 1.82.8 ran before any application
+    code touched LiteLLM at all. BerriAI said its official LiteLLM Proxy
+    Docker image was not affected, because that build pinned dependencies and
+    did not pull the compromised PyPI artifacts.
 
-    The payload collected environment, SSH, cloud, Kubernetes, package-manager, CI/CD, and wallet secrets. It encrypted the archive using the TeamPCP RSA/AES pattern and wrote the stolen material as `tpcp.tar.gz`. Where Kubernetes permissions allowed, the malware also attempted privileged pod deployment for node access.
+    The payload swept the host for SSH keys, AWS, GCP and Azure credentials,
+    Kubernetes tokens, Docker credentials, shell history, environment
+    variables, crypto wallets, TLS certificates, and CI/CD configuration. It
+    also made live API calls to AWS Secrets Manager and any reachable
+    Kubernetes API. Stolen material was bundled into `tpcp.tar.gz` and
+    encrypted with the same RSA/AES pattern StepSecurity attributes to the
+    threat group it calls TeamPCP. Where pod permissions allowed, the malware
+    attempted a privileged pod deployment to reach the underlying node.
 
-    BerriAI removed the affected PyPI releases, deleted publishing tokens, rotated maintainer accounts, paused new releases, and engaged Mandiant while reviewing repositories and CI/CD. PyPA's advisory told anyone who installed and ran the affected package to assume credentials available to the LiteLLM environment were exposed and rotate them from clean systems.
+    BerriAI removed the affected releases from PyPI, deleted publishing
+    tokens, rotated maintainer accounts, paused new releases, and engaged
+    Mandiant for an outside review of its repositories and CI/CD. The Python
+    Packaging Authority issued an advisory telling anyone who had installed
+    and run either version to assume every credential reachable from the
+    LiteLLM environment was exposed and to rotate it from a clean system.
   start_date: 2026-03-24
   end_date: 2026-03-24
   target:

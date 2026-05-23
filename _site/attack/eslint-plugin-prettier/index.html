@@ -41,13 +41,15 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>eslint-plugin-prettier was compromised in the same npm credential theft that hit eslint-config-prettier. The attacker controlled package publishing, not the source repository.</p>
+      <p>On July 18, 2025, attackers used a phished npm publishing token belonging to the maintainer JounQin to push two malicious versions of `eslint-plugin-prettier`, a popular bridge between the Prettier code formatter and the ESLint linter that pulls millions of weekly downloads across the JavaScript ecosystem.</p>
     
-      <p>Versions 4.2.2 and 4.2.3 were published to npm as malicious releases. They rode a trusted package name used by projects that integrate Prettier formatting with ESLint, so dependency automation could pull them into workstations and CI jobs.</p>
+      <p>The poisoned releases, 4.2.2 and 4.2.3, were published only to the npm registry. No matching commits, pull requests, or tags appeared in the project&#39;s GitHub repository, a telltale that researchers at StepSecurity and Socket used to confirm the publishing pipeline had been hijacked rather than the source tree.</p>
     
-      <p>The payload family used install-time execution and a Windows DLL path. Socket reported that the injected code attempted to execute `node-gyp.dll` through `rundll32`, giving the attacker code execution at install time.</p>
+      <p>JounQin later said he had been tricked by a phishing email pointing at `npnjs.com`, a typosquat of the legitimate npm domain that harvested his credentials and let an attacker add a fresh publishing token to his account. The same token was used the same day to ship malicious versions of several other packages JounQin maintains, including `eslint-config-prettier`, `synckit`, `@pkgr/core`, and `napi-postinstall`.</p>
     
-      <p>The response followed the eslint-config-prettier cleanup: token revocation, credential rotation, deprecation of malicious versions, and coordination with npm. This record remains package-specific because the affected versions and package coordinates differ.</p>
+      <p>Socket described the payload as a Windows-only loader. On install, the package checked the platform and, on Windows, spawned `rundll32` against a bundled `node-gyp.dll`, a name chosen to blend in with the legitimate `node-gyp` build tool. The DLL was later cataloged as part of the Scavenger infostealer family and tracked as CVE-2025-54313.</p>
+    
+      <p>JounQin revoked the leaked token, deprecated the malicious versions, and worked with npm support to remove them. Downstream consumers who installed during the window were advised to treat any credentials reachable from the affected machine, including npm tokens, browser secrets, and SSH keys, as compromised.</p>
     
   </div>
   

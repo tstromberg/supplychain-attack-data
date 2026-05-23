@@ -36,13 +36,37 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>`intercom-client@7.0.4` was published on 2026-04-30 through a hijacked GitHub Actions OIDC publishing path. StepSecurity treated it as direct evidence that Mini Shai-Hulud was propagating through CI/CD tokens stolen from earlier victims.</p>
+      <p>On April 30, 2026, the official Node.js SDK for the customer
+messaging platform Intercom was published to npm carrying a
+credential stealer that researchers at StepSecurity tied to the
+Mini Shai-Hulud campaign then sweeping through CI/CD pipelines.</p>
     
-      <p>The package stayed functional but changed shape. Version 7.0.4 added a `preinstall` hook, introduced `setup.mjs`, and shipped an 11.7 MB single-line `router_runtime.js` payload. The clean 7.0.3 release had SLSA provenance; the malicious 7.0.4 release did not.</p>
+      <p>`intercom-client` is the package most Node.js applications use to
+talk to Intercom&#39;s API; it pulls roughly 360,000 weekly downloads.
+Version 7.0.4 went out through a hijacked GitHub Actions OIDC
+publishing path, which StepSecurity called direct evidence that
+Mini Shai-Hulud was now spreading on CI/CD tokens lifted from
+earlier victims rather than on stolen npm credentials alone. The
+clean 7.0.3 release shipped with SLSA provenance attached; 7.0.4
+did not.</p>
     
-      <p>The loader downloaded Bun 1.3.13 and used it to execute the obfuscated payload. The stealer expanded beyond GitHub and npm tokens into AWS metadata, GCP metadata, Azure connection strings, private keys, environment variables, and generic API-key patterns.</p>
+      <p>The package itself kept working. Underneath, it added a
+`preinstall` hook, a new `setup.mjs` loader, and an 11.7 MB
+single-line payload at `router_runtime.js`. The loader fetched Bun
+1.3.13 from GitHub and used the runtime to execute the obfuscated
+JavaScript. The stealer reached beyond GitHub and npm tokens into
+AWS instance metadata at `169.254.169.254`, GCP metadata at
+`metadata.google.internal`, Azure connection strings, PEM-encoded
+private keys, environment variables, and a set of generic API-key
+regexes.</p>
     
-      <p>Exfiltration used GitHub itself. The payload authenticated to `api.github.com`, created a private repository under the victim account, and committed encrypted stolen data there. That made ordinary egress filtering weak: the traffic went to a domain many CI systems already allow.</p>
+      <p>Exfiltration was the wrinkle. Instead of POSTing to a third-party
+endpoint, the payload authenticated against `api.github.com`,
+created a private repository under the victim&#39;s own GitHub
+account, and committed the encrypted loot there. For a CI runner
+that already allowed outbound traffic to GitHub, the exfiltration
+looked indistinguishable from ordinary developer activity, and
+network-egress filtering offered little defense.</p>
     
   </div>
   

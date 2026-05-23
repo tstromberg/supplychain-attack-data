@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SquirrelMail release tarballs enabled remote file inclusion</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>SquirrelMail release tarballs enabled remote file inclusion</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> squirrelmail · <a href="https://squirrelmail.org" target="_blank">website</a> · <a href="https://sourceforge.net/projects/squirrelmail/" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2007-12-08 to 2007-12-14 (6 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
+    <div class="meta-item"><strong>Language:</strong> PHP</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> unauthorized_access_control</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">SquirrelMail 1.4.11 and 1.4.12 release archives were modified after release through a compromised maintainer account, turning official downloads into remote file-inclusion backdoors until 1.4.13 replaced them.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>SquirrelMail&#39;s December 2007 compromise was found the boring way: the published MD5 sums for 1.4.12 did not match the package sitting on the download servers. The project investigated and concluded that the final release package had been altered after release, likely through a compromised account belonging to one of the release maintainers. The source-control history was not the delivery path; the tainted code was in the official packaged archives.</p>
+    
+      <p>The first public note sounded cautious because the inserted code seemed to depend on a PHP global variable the maintainers could not immediately trace. Within a day, outside review had turned that uncertainty into a concrete exploit path. The injected logic let a request-supplied `HTTP_BASE_PATH` value define `SM_PATH`, which in SquirrelMail&#39;s PHP include flow could become remote file inclusion and then server-side code execution.</p>
+    
+      <p>The scope also widened from 1.4.12 to 1.4.11. SquirrelMail released 1.4.13 on December 14 and told users of both affected versions to upgrade immediately. Red Hat and Fedora bug traffic is useful context: those distributions determined their shipped packages were based on clean tarballs, while the upstream archives themselves were treated as compromised.</p>
+    
+      <p>The episode is a compact early example of why release artifacts need their own verification trail. The attacker did not need a public commit, a plugin ecosystem, or a complex installer. Replacing the source archive on trusted project infrastructure was enough to put a remote-execution primitive in front of administrators who believed they were downloading a routine webmail maintenance release.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>squirrelmail</strong>
+            
+            <br><span>source_archive</span>
+            <br><a href="https://squirrelmail.org" target="_blank">https://squirrelmail.org</a>
+            <br><a href="https://sourceforge.net/projects/squirrelmail/" target="_blank">https://sourceforge.net/projects/squirrelmail/</a>
+          </td>
+          <td>2007-12-08<br>to 2007-12-14</td>
+          <td>
+            
+              <code>1.4.12</code>
+            
+          </td>
+          <td>
+            
+              <code>1.4.13</code>
+            
+          </td>
+          <td>
+            
+              <code>md5:ea5e750797628c9f0f247009f8ae0e14</code><br><code>md5:d17c1d9f1ee3dde2c1c21a22fc4f9d0e</code><br><code>md5:3f6514939ea1ebf69f6f8c92781886ab</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>squirrelmail</strong>
+            
+            <br><span>source_archive</span>
+            <br><a href="https://squirrelmail.org" target="_blank">https://squirrelmail.org</a>
+            <br><a href="https://sourceforge.net/projects/squirrelmail/" target="_blank">https://sourceforge.net/projects/squirrelmail/</a>
+          </td>
+          <td>2007-12-08<br>to 2007-12-14</td>
+          <td>
+            
+              <code>1.4.11</code>
+            
+          </td>
+          <td>
+            
+              <code>1.4.13</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://marc.info/?l=squirrelmail-devel&amp;m=119756462212214" target="_blank">SquirrelMail-devel: SECURITY: 1.4.12 Package Compromise</a></li>
+    
+      <li><a href="http://marc.info/?l=squirrelmail-devel&amp;m=119765235203392&amp;w=2" target="_blank">SquirrelMail-devel discussion of HTTP_BASE_PATH injection</a></li>
+    
+      <li><a href="http://marc.info/?l=bugtraq&amp;m=119765643909825&amp;w=2" target="_blank">Bugtraq: ANNOUNCE: SquirrelMail 1.4.13 Released</a></li>
+    
+      <li><a href="https://lwn.net/Articles/262688/" target="_blank">The backdooring of SquirrelMail</a></li>
+    
+      <li><a href="https://lwn.net/Articles/262090/" target="_blank">SquirrelMail package compromise</a></li>
+    
+      <li><a href="https://lwn.net/Articles/262691/" target="_blank">SquirrelMail 1.4.13 released</a></li>
+    
+      <li><a href="https://www.helpnetsecurity.com/2007/12/14/latest-squirrelmail-download-compromised/" target="_blank">Latest SquirrelMail download compromised</a></li>
+    
+      <li><a href="https://www.zdnet.com/article/squirrelmail-warns-of-high-risk-package-compromise/" target="_blank">SquirrelMail warns of high-risk package compromise</a></li>
+    
+      <li><a href="https://bugzilla.redhat.com/show_bug.cgi?id=425291" target="_blank">CVE-2007-6348 Squirrelmail compromise</a></li>
+    
+      <li><a href="https://bugzilla.redhat.com/show_bug.cgi?id=424791" target="_blank">Upgrade to SquirrelMail 1.4.13</a></li>
+    
+      <li><a href="https://github.com/advisories/GHSA-pcg6-p3v7-qgr9" target="_blank">SquirrelMail package compromise advisory</a></li>
+    
+      <li><a href="https://tag-security.cncf.io/community/catalog/compromises/2007/squirrelmail/" target="_blank">CNCF TAG Security catalog entry for SquirrelMail</a></li>
+    
+      <li><a href="https://it.slashdot.org/story/07/12/18/1847233/squirrelmail-repository-poisoned" target="_blank">SquirrelMail repository poisoned</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

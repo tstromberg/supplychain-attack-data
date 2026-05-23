@@ -1,19 +1,21 @@
 - id: pdfescape
-  title: PDFescape installer dropped redirector malware
+  title: PDFescape install chain delivered coin miner
   synopsis: >-
-    Minerva Labs and Malwarebytes disclosed in July 2018 that the official PDFescape Desktop
-    installer distributed from the vendor's website was modified to side-load a malicious
-    DLL that ran when the legitimate installer executed.
+    Microsoft and Comodo tied PDFescape Desktop to a 2018 multi-tier supply-chain attack
+    in which a legitimate installer pulled a poisoned Asian-font MSI from cloned partner
+    infrastructure and installed cryptocurrency-mining malware.
   story: |
-    The PDFescape incident was a small but clean desktop supply-chain case. In July 2018, researchers reported that the official PDFescape Desktop installer available from the vendor's site had been modified.
+    The PDFescape case is more subtle than a backdoored download button. Microsoft described it as a supply-chain compromise inside another supply chain: the PDF editor vendor's own systems were not the point of compromise, but its installer depended on a software partner that supplied additional font packages during setup.
 
-    The installer still performed the expected PDFescape installation, which made the attack quiet. During that normal path, it side-loaded a malicious DLL and ran redirector malware under the cover of trusted software setup.
+    Attackers recreated the partner's package infrastructure on a server they controlled, copied the legitimate MSI font packages, and modified one Asian-font MSI. An unspecified weakness let them influence the download parameters used by the PDF editor installer, so the legitimate installer reached the attacker-controlled replica server for that package.
 
-    The delivery point matters more than the malware family. Users did not fetch a fake clone from a typosquat; they fetched the vendor's installer from the vendor's distribution path.
+    Comodo later identified the visible application as PDFescape Desktop and described the package as `pdfescape-desktop-Asian-and-extended-font-pack.msi`. The malicious MSI dropped `xbox-service.exe` into `System32`, ran a DLL disguised as `setup.log` through `rundll32`, and launched a Monero miner under the cover of a normal PDFescape installation.
 
-    The public reporting does not give a durable victim count or a precise first-compromised date. The July 2018 window is therefore retained, and the impact is kept to the observed redirector/backdoor behavior.
-  start_date: 2018-07-01
-  end_date: 2018-07-31
+    The payload also tried to modify the Windows hosts file to block update or remediation traffic for PDF-related applications and security software. Microsoft saw evidence that the campaign was active between January and March 2018, affected only a handful of observed machines, and was automatically remediated for Windows Defender ATP customers.
+
+    The trust boundary is the point. Users did not install a fake PDF editor from an obvious clone site. They ran a legitimate PDFescape installer, and a second-tier package dependency inside that setup flow delivered the miner.
+  start_date: 2018-01-01
+  end_date: 2018-03-31
   target:
     name: pdfescape
     kind: application
@@ -23,25 +25,65 @@
     kind: unknown
   language: c++
   method:
-    cause: website_compromise
+    cause: compromised_dependency
     phase: distribution
-    motive: unknown
+    motive: financial_gain
     transitive: false
   impact:
     types:
-    - backdoor
-    - redirector
+    - cryptomining
+    - malware_distribution
   artifacts:
   - id: pdfescape
-    name: pdfescape
+    name: PDFescape Desktop Asian and extended font package
+    package: pdfescape-desktop-Asian-and-extended-font-pack.msi
     kind: binary_archive
     website: https://pdfescape.com
-    start_date: 2018-07-01
-    end_date: 2018-07-31
+    start_date: 2018-01-01
+    end_date: 2018-03-31
+    locations:
+    - uri: hxxp://vps11240[.]hyperhost[.]name/escape/[some_font_package].msi
+      role: distribution
+    hashes:
+    - sha256:a69a40e9f57f029c056d817fe5ce2b3a1099235ecbb0bcc33207c9cff5e8ffd0
+    - sha256:ace295558f5b7f48f40e3f21a97186eb6bea39669abcfa72d617aa355fa5941c
+    - sha256:23c5e9fd621c7999727ce09fd152a2773bc350848aedba9c930f4ae2342e7d09
+    - sha256:69570c69086e335f4b4b013216aab7729a9bad42a6ce3baecf2a872d18d23038
+    - sha256:b306264d6fc9ee22f3027fa287b5186cf34e7fb590d678ee05d1d0cff337ccbf
+    - sha256:fcf64fc09fae0b0e1c01945176fce222be216844ede0e477b4053c9456ff023e
+    - sha256:1d596d441e5046c87f2797e47aaa1b6e1ac0eabb63e119f7ffb32695c20c952b
+    indicators:
+    - kind: file
+      value: xbox-service.exe
+    - kind: file
+      value: pagefile.sys
+    - kind: file
+      value: setup.log.dll
+    - kind: malware
+      value: Trojan:Win64/CoinMiner
+    - kind: url
+      value: hxxp://data28[.]somee[.]com/data32[.]zip
+    - kind: url
+      value: hxxp://carma666[.]byethost12[.]com/32[.]html
+    - kind: ip
+      value: 91.235.129.133
+    - kind: technique
+      value: Hosts-file modification to block update and security remediation endpoints
+    notes:
+    - Microsoft did not name the PDF editor vendor, but Comodo's later writeup identified
+      the visible software as PDFescape Desktop and matched the MSI font-package chain.
+    - Microsoft estimated the active compromise window as January through March 2018 and
+      described the observed victim population as a handful of targeted computers.
   references:
   - url: 
-      https://www.malwarebytes.com/blog/threat-analysis/2018/07/pdfescape-installer-found-distributing-redirector-files
-    title: PDFescape Installer Found Distributing Redirector Files
+      https://www.microsoft.com/en-us/security/blog/2018/07/26/attack-inception-compromised-supply-chain-within-a-supply-chain-poses-new-risks/
+    title: 'Attack inception: Compromised supply chain within a supply chain poses new risks'
+  - url: https://blog.comodo.com/pc-security/cryptomining-executed-through-legitimate-software/
+    title: 'Evil clone to attack users: how cybercrooks use legitimate software to spread cryptominers'
   - url: 
-      https://www.bleepingcomputer.com/news/security/pdfescape-software-found-to-deliver-malicious-redirector-files/
-    title: PDFescape Software Found to Deliver Malicious Redirector Files
+      https://www.bleepingcomputer.com/news/security/microsoft-discovers-supply-chain-attack-at-unnamed-maker-of-pdf-software/
+    title: Microsoft Discovers Supply Chain Attack at Unnamed Maker of PDF Software
+  - url: https://gbhackers.com/evil-clone-attack-legitimate-pdf-software/
+    title: Evil Clone Attack - Legitimate PDF Software Used to Spread Cryptominers
+  - url: https://www.blackhat.com/docs/eu-18/materials/eu-18-Kazanciyan-Broken-Links.pdf
+    title: Broken Links - Emergence and Future of Software Supply Chain Compromises

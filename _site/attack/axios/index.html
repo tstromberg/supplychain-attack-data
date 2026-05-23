@@ -36,13 +36,41 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The axios compromise was short, but it sat on a very large dependency graph. On March 31, 2026, an attacker used the lead maintainer&#39;s npm access to publish axios 1.14.1 and 0.30.4. The project later described the entry point as a compromised maintainer machine reached through targeted social engineering and RAT malware.</p>
+      <p>Just after midnight UTC on March 31, 2026, an attacker with access to the
+lead maintainer&#39;s npm account published two malicious versions of axios,
+the most widely used HTTP client in the JavaScript ecosystem. The window
+was narrow, less than three hours, but the dependency graph beneath axios
+is enormous, and one of the projects that pulled the bad version was
+OpenAI&#39;s macOS app-signing pipeline.</p>
     
-      <p>The malicious axios releases did not need to rewrite the library&#39;s public API. They added a dependency on plain-crypto-js 4.2.1, moving the payload into dependency resolution and install-time execution. A normal fresh install during the window could pull the poisoned axios version, then pull the malicious helper package from npm.</p>
+      <p>The axios project later published a postmortem describing the entry point
+as a compromised maintainer workstation reached through a targeted social
+engineering campaign and a remote access trojan. The attacker did not
+bother rewriting the library&#39;s public API. Instead, axios 1.14.1 and
+0.30.4 were published with a new dependency on `plain-crypto-js@4.2.1`,
+a helper package the same actor had pushed to npm the day before. A
+normal fresh install during the window pulled the poisoned axios, then
+pulled the malicious helper, which installed a multi-platform RAT
+covering macOS, Windows, and Linux. Operators of affected machines were
+told to watch for outbound traffic to `sfrclak.com` or `142.11.206.73` on
+TCP port 8000.</p>
     
-      <p>The payload was a remote access trojan for macOS, Windows, and Linux. The postmortem told affected users to inspect lockfiles for axios 1.14.1, axios 0.30.4, or plain-crypto-js, remove the malicious dependency, check for traffic to sfrclak[.]com or 142.11.206.73 on port 8000, and rotate every secret available to the affected machine or CI runner.</p>
+      <p>The clock ran fast. Axios 1.14.1 went live at 00:21 UTC, 0.30.4 followed
+around 01:00 UTC, community detections started almost immediately, an
+axios collaborator opened a deprecation PR at 01:38 UTC, and npm pulled
+the two axios versions by 03:15 UTC, with `plain-crypto-js` removed at
+03:29 UTC. Socket reported a week later that the malicious axios had
+been pulled into OpenAI&#39;s macOS app-signing GitHub Actions workflow,
+which used a floating tag with no `minimumReleaseAge` set. OpenAI
+responded by revoking and rotating its macOS code-signing certificate
+and rebuilding ChatGPT Desktop, Codex, and Atlas with new credentials,
+setting a May 8 deadline after which older signed versions would stop
+working. OpenAI said it found no evidence the signing certificate was
+actually exfiltrated.</p>
     
-      <p>The timeline was measured in hours: axios 1.14.1 appeared at 00:21 UTC, axios 0.30.4 around 01:00 UTC, community detections followed almost immediately, and npm removed the malicious axios versions by 03:15 UTC. The project response moved toward immutable releases, OIDC publishing, stronger GitHub Actions hygiene, and a release process less dependent on one personal account.</p>
+      <p>The axios project committed to immutable releases, OIDC publishing,
+stronger GitHub Actions hygiene, and a release process less dependent
+on any one personal npm account.</p>
     
   </div>
   

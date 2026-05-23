@@ -5,13 +5,41 @@
     Solidity extensions to version 0.1.8 after nearly eight years of inactivity, with no matching
     source repository commits.
   story: |
-    IoliteLabs had three old Solidity extensions in the Visual Studio Marketplace: macOS, Windows, and Linux packages first published for the Iolite ecosystem in 2018. On 2026-03-25, all three were updated to version 0.1.8 after nearly eight years of silence.
+    On March 25, 2026, three Visual Studio Code extensions for Solidity
+    development from a publisher called IoliteLabs were updated for the first
+    time in nearly eight years. The new releases, all marked 0.1.8, replaced
+    legitimate Solidity tooling with a backdoor that targeted the wallets,
+    seed phrases, and deployment keys typically held by smart-contract
+    developers. Together the extensions had roughly 27,500 installs across
+    macOS, Windows, and Linux.
 
-    The source repository did not match the marketplace update. StepSecurity found no corresponding GitHub commits, and the VSIX shape changed sharply: the extension shrank, real Solidity functionality became hollow command stubs, and a bundled `pako` library carried the backdoor.
+    StepSecurity researcher Ashish Kurmi, who reported the activity two days
+    later, said the marketplace updates did not match the source repository:
+    the GitHub project showed no commits for version 0.1.8. The new VSIX
+    bundles had also shrunk and lost their real Solidity functionality, which
+    was reduced to hollow command stubs. The actual payload rode in a
+    tampered copy of the `pako` compression library bundled inside each
+    extension. Where the legitimate `pako@1.0.11` carried SHA-256
+    `e7ec4e35...`, the version shipping with the malicious extensions hashed
+    to `fcd398ab...`. The injected code used five obfuscation layers,
+    including Unicode escapes, bracket property notation, XOR junk variables,
+    string reversal, and dependency hiding.
 
-    The payload selected behavior by platform. Windows and macOS received separate staged payloads and C2 paths. Linux loaded the tampered dependency but public analysis did not identify an active Linux execution branch.
+    Behavior split by platform. Both Windows and macOS extensions invoked
+    `child_process.exec()` on every VS Code startup through the
+    `onStartupFinished` activation event. The Windows path pulled a batch
+    dropper from `rraghh.com` and, in a later stage, an MSI installer from
+    `oortt.com` disguised as a Chrome updater. The macOS path fetched a
+    shell script from `cdn.rraghh.com` and dropped one of two architecture-
+    specific stage-two binaries, `doc` for Intel and `doc1` for Apple Silicon.
+    Linux loaded the tampered `pako` but the dropper contained no Linux
+    branch, so compromised Linux installs never spawned a malicious process.
 
-    The attack targeted Solidity developers through a legitimate publisher account with existing installs and history. That preserved trust while removing functionality; the extension became a loader wearing the old package name.
+    The attack worked because it ran from an established publisher account
+    with eight years of legitimate history and existing installs, not from a
+    new typosquat. Trust was inherited rather than built, and once the
+    attacker had the account, the marketplace listing kept its old name while
+    its contents became a loader.
   start_date: 2026-03-25
   end_date: 2026-03-27
   target:

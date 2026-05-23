@@ -36,13 +36,37 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The gluestack incident started with `@react-native-aria/focus@0.2.10` on 2025-06-06. Over the next day, the attacker published malicious versions across React Native ARIA and `@gluestack-ui/utils`, reaching 17 package versions with more than one million combined weekly downloads.</p>
+      <p>On June 6, 2025, an attacker holding a leaked npm token began publishing
+malicious releases under the React Native ARIA and gluestack-ui namespaces,
+a popular set of accessibility primitives and UI components for React
+Native applications. Over the next two days, 17 package versions with more
+than one million combined weekly downloads carried obfuscated remote-access
+code.</p>
     
-      <p>Gluestack attributed the compromise to an npm access token that lacked two-factor protection. The attacker used that token to publish existing package names, not typosquats, so normal dependency resolution could deliver the poisoned releases.</p>
+      <p>The series began with `@react-native-aria/focus` version 0.2.10 and
+expanded the following day across `@react-native-aria/utils`, `overlays`,
+`interactions`, `toggle`, `switch`, `checkbox`, `radio`, `button`, `menu`,
+`listbox`, `tabs`, `combobox`, `disclosure`, `slider`, `separator`, and
+`@gluestack-ui/utils`. Because the attacker republished existing package
+names rather than typosquats, normal dependency resolution delivered the
+poisoned versions to any project that fetched a fresh install.</p>
     
-      <p>The payload was obfuscated JavaScript with remote-access behavior. Public reports described whitespace hiding, encoded JavaScript, fake Python persistence paths, metadata harvesting, command execution, and C2 endpoints on `136.0.9.8` and `85.239.62.36`.</p>
+      <p>Researchers at Aikido, who first disclosed the activity, said the payload
+used the same obfuscation pattern they had flagged a month earlier in
+`rand-user-agent` (see [[rand-user-agent]]): whitespace hiding to push
+payload off the visible page, encoded JavaScript, fake Python persistence
+paths, host metadata harvesting, and a command-execution channel. The
+samples beaconed to `136.0.9.8` and `85.239.62.36`, the latter being the
+same C2 address used in the rand-user-agent campaign.</p>
     
-      <p>The exposure window was short. Aikido reported the compromise, the team revoked tokens, deprecated affected versions, restricted access, and published clean replacements. Gluestack reported no confirmed system-level compromises or data exfiltration.</p>
+      <p>Gluestack said in its public incident report that the compromise traced to
+an npm publishing token that had not been protected with two-factor
+authentication. After Aikido&#39;s disclosure the project revoked tokens,
+deprecated the affected versions, tightened publishing access, and shipped
+clean replacements. Gluestack reported no confirmed system-level
+compromises or data exfiltration from downstream consumers, though given
+the install-time exposure, anyone who ran a build during the window should
+treat any reachable credentials as suspect.</p>
     
   </div>
   

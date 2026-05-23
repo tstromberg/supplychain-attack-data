@@ -4,13 +4,38 @@
     lightning 2.6.2 and 2.6.3 bundled a hidden _runtime directory. Importing the
     package launched a Bun-backed JavaScript stealer tied to Mini Shai-Hulud.
   story: |
-    The Lightning compromise put Mini Shai-Hulud into Python machine-learning environments. On April 30, 2026, malicious `lightning` wheels appeared on PyPI as versions 2.6.2 and 2.6.3. The last known clean release was 2.6.1.
+    On April 30, 2026, the Mini Shai-Hulud campaign reached Python
+    machine-learning environments through `lightning`, the PyPI
+    package behind PyTorch Lightning, a widely used training
+    framework. Researchers at StepSecurity identified two malicious
+    wheels, versions 2.6.2 and 2.6.3, and named 2.6.1 as the last
+    known clean release.
 
-    The changed wheels carried a hidden `_runtime/` directory. Importing the package started a daemon thread that downloaded the Bun JavaScript runtime from GitHub and executed `_runtime/router_runtime.js`, an obfuscated payload large enough to hide most of the attack outside ordinary Python review.
+    The compromised wheels carried a hidden `_runtime/` directory.
+    Importing `lightning` spawned a daemon thread that downloaded
+    the Bun JavaScript runtime from GitHub releases and executed
+    `_runtime/router_runtime.js`, an obfuscated single-line payload
+    large enough to hide most of its logic from any reviewer
+    skimming the source tree. Running a JavaScript stealer from
+    inside a Python ML package was the giveaway: the malware on
+    PyPI was the same Bun-driven loader StepSecurity had been
+    tracking on npm.
 
-    StepSecurity reported credential theft, environment-variable harvesting, cloud secret collection, GitHub API abuse, and npm tarball poisoning on the developer machine. That made the package both a stealer and a bridge from PyPI into npm publishing paths.
+    Once running, the payload harvested environment variables,
+    cloud credentials, and GitHub tokens, used the GitHub API to
+    move data off the host, and poisoned local npm tarballs so the
+    same loader would propagate the next time the developer
+    published a Node.js package. That made `lightning` both a
+    stealer in its own right and a bridge from PyPI back into npm
+    publishing paths.
 
-    The GitHub issue that surfaced the compromise was closed quickly with suspicious responses, suggesting account-level control around the same time as the PyPI releases. This record stays scoped to the Lightning wheels; the TeamPCP campaign carries the wider Mini Shai-Hulud propagation pattern.
+    The GitHub issue that first flagged the compromise was closed
+    quickly with dismissive responses, which StepSecurity took as
+    a sign that the attacker held some level of control over
+    project accounts during the same window as the PyPI releases.
+    This record stays scoped to the Lightning wheels; the wider
+    Mini Shai-Hulud propagation pattern is tracked under the
+    TeamPCP campaign.
   start_date: 2026-04-30
   end_date: 2026-04-30
   target:

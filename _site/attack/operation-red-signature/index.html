@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remote support updater delivered 9002 RAT</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Remote support updater delivered 9002 RAT</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> Unnamed South Korean remote support provider</div>
+    <div class="meta-item"><strong>Date:</strong> 2018-07-18 to 2018-07-31 (13 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
+    <div class="meta-item"><strong>Language:</strong> C++</div>
+    <div class="meta-item"><strong>Cause:</strong> server_compromise</div>
+    <div class="meta-item"><strong>Motive:</strong> espionage_data_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, credential_theft, data_theft, remote_access</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> update</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Operation Red Signature compromised a South Korean remote-support provider&#39;s update server so selected customer IP ranges received a signed malicious update that launched 9002 RAT.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Operation Red Signature was narrow by design. Trend Micro and IssueMakersLab found that the attackers did not simply post a poisoned installer and wait. They compromised the update server of a South Korean remote-support software provider, stole the provider&#39;s code-signing certificate, and used both pieces together.</p>
+    
+      <p>The update server acted as the selector. When the remote-support client checked in from ordinary networks, it could receive normal behavior. When it came from IP ranges belonging to targeted South Korean organizations, the server redirected the update path toward attacker-controlled infrastructure at 207.148.94.157 and delivered a malicious update.zip.</p>
+    
+      <p>That archive carried an update.ini telling the client to download file000.zip and file001.zip, extract them as rcview40u.dll and rcview.log, and run the DLL through regsvr32.exe. The DLL was signed with the stolen vendor certificate, so it fit the trust model expected by the updater. Its job was to decrypt rcview.log in memory and launch 9002 RAT, which then connected to 66.42.37.101.</p>
+    
+      <p>The payload was built for intrusion, not noise. 9002 RAT pulled down cabinet-compressed tools for Active Directory discovery, password dumping, browser-password recovery, IIS 6 WebDAV exploitation, scanning, Mimikatz-style credential checks, and a PlugX variant that used the same command-and-control server. Trend Micro saw the RAT compiled on July 17, 2018, the malicious configuration created on July 18, and an update log showing execution at about 13:35 on July 18. The malware was also coded to sleep in August, making the observed activity window short.</p>
+    
+      <p>A later Avast/Gen report on a U.S. government commission found an oci.dll decryptor that closely resembled Red Signature&#39;s rcview40u.dll. That is useful lineage evidence, but it is not the same supply-chain incident unless a compromised updater is shown. For this catalog, the scoped attack is the South Korean remote-support update channel that delivered a signed, targeted 9002 RAT payload.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>Remote support client update</strong>
+            <br><code>remote support client update</code>
+            <br><span>windows updater · updater_payload</span>
+            
+            
+          </td>
+          <td>2018-07-18T13:35:00Z<br>to 2018-07-31T23:59:59Z</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:bcfacc1ad5686aee3a9d8940e46d32af62f8e1cd1631653795778736b67b6d6e</code><br><code>sha256:52374f68d1e43f1ca6cd04e5816999ba45c4e42eb0641874be25808c9fe15005</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>9002 RAT follow-on tools</strong>
+            
+            <br><span>malware_bundle</span>
+            
+            
+          </td>
+          <td>2018-07-18T13:35:00Z<br>to 2018-07-31T23:59:59Z</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:c14ea9b81f782ba36ae3ea450c2850642983814a0f4dc0ea4888038466839c1e</code><br><code>sha256:a3a1b1cf29a8f38d05b4292524c3496cb28f78d995dfb0a9aef7b2f949ac278b</code><br><code>sha256:9415ca80c51b2409a88e26a9eb3464db636c2e27f9c61e247d15254e6fbb31eb</code><br><code>sha256:279cf1773903b7a5de63897d55268aa967a87f915a07924c574e42c9ed12de30</code><br><code>sha256:e5029808f78ec4a079e889e5823ee298edab34013e50a47c279b6dc4d57b1ffc</code><br><code>sha256:e530e16d5756cdc2862b4c9411ac3bb3b113bc87344139b4bfa2c35cd816e518</code><br><code>sha256:28c5a6aefcc57e2862ea16f5f2ecb1e7df84b68e98e5814533262595b237917d</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>ShiftDoor signed with stolen certificate</strong>
+            
+            <br><span>malware_sample</span>
+            
+            
+          </td>
+          <td>2018-04-08</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:4ae4aed210f2b4f75bdb855f6a5c11e625d56de2</code><br><code>sha256:0703a917aaa0630ae1860fb5fb1f64f3cfb4ea8c57eac71c2b0a407b738c4e19</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>campaign:Operation Red Signature</code></li>
+    
+      <li><code>family:9002 RAT</code></li>
+    
+      <li><code>family:PlugX</code></li>
+    
+      <li><code>family:ShiftDoor</code></li>
+    
+      <li><code>file:update.zip</code></li>
+    
+      <li><code>file:update.ini</code></li>
+    
+      <li><code>file:rcview40u.dll</code></li>
+    
+      <li><code>file:rcview.log</code></li>
+    
+      <li><code>process:regsvr32.exe</code></li>
+    
+      <li><code>ip:207.148.94.157</code></li>
+    
+      <li><code>ip:66.42.37.101</code></li>
+    
+      <li><code>observable:Update server delivered the malicious update only to configured target organization IP ranges.</code></li>
+    
+      <li><code>observable:Malware used a stolen remote-support provider certificate to satisfy the updater&#39;s trust path.</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.trendmicro.com/en_us/research/18/h/supply-chain-attack-operation-red-signature-targets-south-korean-organizations.html" target="_blank">Operation Red Signature Targets South Korean Companies</a></li>
+    
+      <li><a href="http://taylor-blog.issuemakerslab.com/2018/07/malware-disguised-as-company-document.html" target="_blank">Malware disguised as company document related to inter-Korean economic cooperation</a></li>
+    
+      <li><a href="https://securityaffairs.com/75562/hacking/supply-chain-attack-2.html" target="_blank">Operation Red Signature - South Korean Firms victims of a supply chain attack</a></li>
+    
+      <li><a href="https://gbhackers.com/operation-red-signature-delivers-malware/" target="_blank">Operation Red Signature delivers malware through remote support updates</a></li>
+    
+      <li><a href="https://www.gendigital.com/blog/insights/research/avast-finds-backdoor-on-us-government-commission-network" target="_blank">Avast finds backdoor on US government commission network</a></li>
+    
+      <li><a href="https://m.51dns.com/news/851.html" target="_blank">Chinese mirror of Operation Red Signature reporting</a></li>
+    
+      <li><a href="https://www.tlkjt.com/index.php/experience/23203.html" target="_blank">Operation Red Signature mirror</a></li>
+    
+      <li><a href="https://www.stackbrothersvps.com/news/40_9335.html" target="_blank">Operation Red Signature mirror</a></li>
+    
+      <li><a href="https://cloud.tencent.cn/developer/news/322883" target="_blank">Tencent Cloud mirror of Operation Red Signature reporting</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

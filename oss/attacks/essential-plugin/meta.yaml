@@ -5,13 +5,40 @@
     the new owner gained WordPress.org commit access and planted a dormant PHP backdoor across
     the plugin family.
   story: |-
-    Essential Plugin was not a single plugin failure. A portfolio of WordPress.org plugins changed hands after a Flippa sale, and the new owner received the project access needed to ship updates through the official plugin directory.
+    On April 7, 2026, WordPress.org closed thirty-one plugins from a single
+    publisher account called essentialplugin after researchers found that every
+    one of them contained a backdoor planted eight months earlier and activated
+    only days before. Combined active-install counts across the portfolio
+    exceeded 20,000 sites.
 
-    The malicious code was planted across the plugin family beginning in August 2025. It sat dormant for months, then activated in early April 2026. That delay made the change look like ordinary maintenance until many sites already had the backdoor installed.
+    The Essential Plugin portfolio, formerly published under the WP Online
+    Support brand, was a long-running family of small WordPress utilities:
+    sliders, accordions, FAQ widgets, post-grid layouts, WooCommerce add-ons.
+    None of the plugins were individually high-profile, but together they had a
+    long install tail of small business and hobby sites. According to a
+    write-up published on anchor.host, the entire portfolio was sold through
+    Flippa, the online marketplace for websites and digital assets, and the new
+    owner inherited the WordPress.org commit access needed to ship updates
+    through the official plugin directory.
 
-    The backdoor used the `wpos-analytics` code path and contacted `analytics.essentialplugin.com`. Public analysis described an unauthenticated REST endpoint, weak permission callbacks, and payloads that could write files such as `wp-comments-posts.php` or modify `wp-config.php`.
+    The malicious code first landed in plugin updates beginning August 8, 2025,
+    and sat dormant for nearly eight months. It activated between April 5 and
+    April 6, 2026. Researchers at TechNadu, WPSpear, and mysites.guru, who
+    independently analyzed the updates after the activation, described a code
+    path under `wpos-analytics/` that registered an unauthenticated REST
+    endpoint with a `__return_true` permission callback. The endpoint accepted
+    instructions over HTTPS from `analytics.essentialplugin.com` and could
+    write arbitrary files into the WordPress install, including dropping
+    `wp-comments-posts.php` and modifying `wp-config.php`. Two helper methods,
+    `fetch_ver_info` and `version_info_clean`, handled the C2 polling and
+    cleanup.
 
-    WordPress.org closed the Essential Plugin portfolio on April 7, 2026, then pushed neutralizing updates on April 8. The event matters because ownership transfer was the trust boundary: the code was distributed through real plugins under an authorized account.
+    WordPress.org closed the essentialplugin account outright on April 7, then
+    pushed neutralizing automatic updates across the affected plugins on April
+    8. The incident underscored a structural gap in WordPress's plugin
+    governance: ownership transfer was the trust boundary, and once a buyer
+    held commit access, the directory had no mechanism to re-verify the
+    intentions of an account it had previously trusted.
   start_date: 2025-08-08
   end_date: 2026-04-08
   target:

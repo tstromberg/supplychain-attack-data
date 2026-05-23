@@ -5,13 +5,42 @@
     workflow to forge release state, tag v0.23.3 at an orphan commit, and dispatch the legitimate
     release pipeline.
   story: |-
-    elementary-data was compromised through GitHub Actions, not through a maintainer manually uploading a package. An attacker posted a crafted comment to a pull request, and a workflow interpolated that comment into a shell `run:` block.
+    Between April 24 and 25, 2026, an attacker forged a release of
+    elementary-data, an open-source data-observability tool used in dbt
+    pipelines, by exploiting a script-injection flaw in one of the
+    project's own GitHub Actions workflows. No maintainer ever pushed
+    the bad version; the project's CI did it on the attacker's behalf.
 
-    The injected command used the repository's `GITHUB_TOKEN` to create an orphan release commit and tag `v0.23.3`. That commit added a large `elementary.pth` file and bumped the package version. Python `.pth` files run during interpreter startup, so the payload did not need an explicit import.
+    The entry point was a pull-request comment. According to
+    StepSecurity, which reverse-engineered the incident alongside
+    Elementary's own post-mortem, the project ran an issue-update
+    workflow that interpolated comment text directly into a shell
+    `run:` block. A crafted comment let the attacker execute arbitrary
+    commands inside the workflow with the repository's `GITHUB_TOKEN`.
 
-    The attacker then dispatched the legitimate release workflow. PyPI received `elementary-data==0.23.3`, and GHCR received a multi-architecture `ghcr.io/elementary-data/elementary` image tagged `0.23.3` and `latest`, all from the forged release state.
+    From there, the attacker used that token to create an orphan
+    commit, tag it `v0.23.3`, and add a large `elementary.pth` file
+    along with a version bump. Python's `.pth` files are evaluated by
+    the interpreter at startup, so the payload would fire without any
+    explicit `import elementary` in the victim's code. The attacker
+    then dispatched the project's normal release workflow against the
+    forged tag. PyPI accepted `elementary-data==0.23.3`, and GHCR
+    accepted a multi-architecture `ghcr.io/elementary-data/elementary`
+    image tagged both `0.23.3` and `latest`, all signed off by the
+    project's own automation.
 
-    The payload was a credential stealer. It searched SSH keys, cloud credentials, Kubernetes files, package-manager tokens, wallet material, and secrets on disk, then posted an archive to attacker infrastructure. Maintainers removed the release and published clean `0.23.4`.
+    The payload was a credential stealer of the kind familiar from
+    the broader spring 2026 wave. It walked the host for SSH keys,
+    cloud credentials, Kubernetes config, package-manager tokens,
+    cryptocurrency wallets, and other secrets, then posted an archive
+    named `trin.tar.gz` to
+    `igotnofriendsonlineorirl-imgonnakmslmao.skyhanni.cloud`.
+
+    Elementary pulled the bad release, rotated affected credentials,
+    and published a clean `0.23.4`. The incident is a textbook
+    example of how a single `${{ github.event.comment.body }}`
+    interpolated into a shell step can hand an outsider the same
+    publish authority a maintainer holds.
   start_date: 2026-04-24
   end_date: 2026-04-25
   target:

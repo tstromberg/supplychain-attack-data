@@ -6,13 +6,13 @@
     StepSecurity confirmed @pkgjs/core 0.2.8 as one of the npm packages affected by the July
     2025 npnjs.com maintainer phishing campaign.
   story: |-
-    @pkgjs/core was another legitimate package caught in the npnjs.com phishing campaign. The attacker used stolen npm publishing access, so the malicious release appeared under the real package coordinate.
+    On July 18, 2025, attackers added `@pkgjs/core` to the list of npm packages compromised through the `npnjs.com` phishing campaign, publishing a malicious version 0.2.8 under JounQin's hijacked publishing token. The package is a small utility library that other JounQin-maintained tools depend on, which extended the blast radius well beyond projects that name it directly.
 
-    Version 0.2.8 was the affected release. The compromise followed the same pattern as the Prettier tooling packages: a registry publish with no ordinary source-review path behind it.
+    StepSecurity and Socket identified the release while working through the same cluster that produced the malicious `eslint-config-prettier`, `eslint-plugin-prettier`, `synckit`, and `napi-postinstall` publishes. The pattern was identical across all of them: a fresh version showed up on npm with no corresponding commit, pull request, or tag in the project's GitHub repository, a sign that the registry credential rather than the source tree had been the entry point.
 
-    The package's role in the ecosystem made install-time execution dangerous even without a large user-facing application. Developer machines and CI runners often install tooling packages in environments with credentials and network reach.
+    The payload matched the Scavenger family seen in the sibling packages, a Windows-only loader that ran `node-gyp.dll` through `rundll32` once the package was unpacked on a developer workstation or CI runner. Install-time execution made the package's lack of a user-facing application largely beside the point: the credentials and network access available to the build environment were the target.
 
-    This record stays concise because the public reporting names the package and version but gives less package-specific payload detail. The campaign record carries the shared phishing infrastructure and payload behavior.
+    JounQin revoked the leaked token, deprecated 0.2.8, and worked with npm support to remove it. Operators who installed during the window were advised to rotate any credential reachable from the affected machine.
   start_date: 2025-07-18
   end_date: 2025-07-19
   target:

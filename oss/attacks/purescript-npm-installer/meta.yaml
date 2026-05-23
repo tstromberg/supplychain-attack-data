@@ -1,0 +1,119 @@
+- id: purescript-npm-installer
+  title: PureScript installer dependencies were sabotaged
+  synopsis: >-
+    Malicious npm releases of load-from-cwd-or-npm and rate-map targeted the
+    PureScript npm installer, making compiler installation hang rather than
+    stealing credentials or installing a backdoor.
+  story: |
+    The PureScript incident was a supply-chain attack with an unusually personal-looking payload. The purescript package was not itself republished with credential theft code. Instead, two dependencies maintained outside the PureScript team were changed so they would break the new PureScript npm installer while trying to avoid obvious failure in other paths.
+
+    The timing mattered. PureScript 0.13.2 shipped on July 5, 2019, after the compiler maintainers had taken over the purescript npm package and replaced the older install-purescript-cli path with their own purescript-installer. About eight hours later, load-from-cwd-or-npm 3.0.2 was published. When pulled through dl-tar during a normal install, it returned a PassThrough stream where the installer expected the request module, so the binary download step silently went nowhere.
+
+    The first sabotage looked enough like a bug that maintainers initially worked around it. Then, on July 9, rate-map 1.0.3 appeared with a sharper version of the same idea. It used similar activation logic, resolved the local dl-tar package through an obfuscated string, removed the callback that let the download stream advance, and then rewrote its own installed file to erase the malicious block after it ran.
+
+    The targeting logic is what made the case stand out. The code tried not to fire when the old install-purescript-cli path was in use, and it checked for nearby Git directories to make local reproduction harder. Jarrod Overson later summarized the oddity well: there was no obvious monetization, no miner, no token theft, and no remote shell. The effect was sabotage of one installer lineage after a messy maintainer handoff.
+
+    Harry Garrood reported rate-map to npm support around 11:30 UTC on July 9 and published purescript-installer 0.2.5 around 14:00 UTC, dropping or vendoring the dependencies maintained by the former installer maintainer. npm later removed load-from-cwd-or-npm 3.0.2 and rate-map 1.0.3 from the registry, and the maintainer told npm the packages were published after an account compromise. The public record still leaves attribution unresolved, so this catalog keeps the actor unknown and focuses on the registry packages that actually carried the sabotage.
+  start_date: '2019-07-05T21:00:00Z'
+  end_date: 2019-07-12
+  target:
+    name: PureScript npm installer
+    kind: application
+    repo: https://github.com/purescript/npm-installer
+  actor:
+    name: Unknown attacker
+    kind: unknown
+  language: Javascript
+  method:
+    cause: malicious_dependency
+    phase: dependency
+    motive: sabotage
+    transitive: true
+  impact:
+    types:
+    - sabotage
+    - denial_of_service
+  artifacts:
+  - id: load-from-cwd-or-npm
+    name: load-from-cwd-or-npm
+    package: load-from-cwd-or-npm
+    ecosystem: npm
+    kind: source_archive
+    start_date: '2019-07-05T21:00:00Z'
+    end_date: 2019-07-12
+    versions:
+    - 3.0.2
+    locations:
+    - uri: https://www.npmjs.com/package/load-from-cwd-or-npm/v/3.0.2
+      role: distribution
+    - uri: https://gist.github.com/hdgarrood/358e98b5956e5f7f59c85c2e56534f2b
+      role: analysis
+    indicators:
+    - kind: package
+      value: load-from-cwd-or-npm
+    - kind: version
+      value: 3.0.2
+    - kind: function
+      value: loadFromCwdOrNpm
+    - kind: function
+      value: PassThrough
+    - kind: file
+      value: index.js
+    - kind: observable
+      value: Returned a PassThrough stream instead of the request module when
+        reached through the PureScript installer path.
+    notes:
+    - Harry Garrood said npm removed load-from-cwd-or-npm 3.0.2 from the registry
+      after the incident was reported.
+  - id: rate-map
+    name: rate-map
+    package: rate-map
+    ecosystem: npm
+    kind: source_archive
+    start_date: '2019-07-09T08:00:00Z'
+    end_date: 2019-07-12
+    versions:
+    - 1.0.3
+    locations:
+    - uri: https://www.npmjs.com/package/rate-map/v/1.0.3
+      role: distribution
+    - uri: https://gist.github.com/hdgarrood/358e98b5956e5f7f59c85c2e56534f2b
+      role: analysis
+    indicators:
+    - kind: package
+      value: rate-map
+    - kind: version
+      value: 1.0.3
+    - kind: package
+      value: dl-tar
+    - kind: file
+      value: index.js
+    - kind: function
+      value: writeFileSync
+    - kind: observable
+      value: Rewrote dl-tar to remove the download callback and rewrote its own
+        installed file to remove the malicious block.
+    notes:
+    - Harry Garrood said npm removed rate-map 1.0.3 from the registry after the
+      incident was reported.
+  references:
+  - url: https://harry.garrood.me/blog/malicious-code-in-purescript-npm-installer/
+    title: Malicious code in the PureScript npm installer
+  - url: https://github.com/purescript/npm-installer/issues/12
+    title: Installation hangs during Check if a prebuilt binary is provided for your platform
+  - url: https://jarrodoverson.com/post/how-two-malicious-npm-packages-targeted-sabotaged-one-other-fed7199099c8/
+    title: How Two Malicious NPM Packages Targeted and Sabotaged One Other
+  - url: 
+      https://www.theregister.com/security/2019/07/15/malicious-code-ousted-from-purescripts-npm-installer-but-who-put-it-there-in-the-first-place/457385
+    title: Malicious code ousted from PureScript's npm installer
+  - url: https://securityaffairs.com/88433/hacking/npm-installer-purescript-compromised.html
+    title: npm installer for PureScript package compromised
+  - url: https://sechub.in/view/1744975
+    title: Malicious code in PureScript npm installer mirror
+  - url: https://5stars217.github.io/2021-08-11-my_favourite_dep_malware/
+    title: My favourite dependency malware
+  - url: 
+      https://www.packtpub.com/en-us/learning/how-to-tutorials/purescript-npm-installers-infected-dependencies-prevented-it-from-running-successfully/
+    title: PureScript npm installer's infected dependencies prevented it from running successfully
+  - url: https://www.threatshub.org/blog/malicious-code-ousted-from-purescripts-npm-installer/
+    title: Malicious code ousted from PureScript's npm installer mirror

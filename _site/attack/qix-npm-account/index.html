@@ -41,13 +41,42 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The Qix compromise began with a convincing npm support phish. The fake `npmjs.help` flow captured maintainer access from Josh Junon, known as Qix, and gave the attacker publishing rights to foundational JavaScript packages.</p>
+      <p>On September 8, 2025, attackers used a phished npm publishing credential
+belonging to Josh Junon, the developer known online as Qix, to push
+malicious releases of `debug`, `chalk`, and roughly two dozen other
+foundational JavaScript utilities. By aggregate weekly downloads, the
+affected packages reached close to two billion installs per week, making
+it one of the largest npm supply-chain incidents on record by exposure
+surface, though as researchers at Wiz, Aikido, and StepSecurity all
+emphasized in their post-incident write-ups, raw download counts measure
+reach, not confirmed victims.</p>
     
-      <p>The first wave landed on September 8, 2025. Packages such as `debug`, `chalk`, `ansi-regex`, `strip-ansi`, `wrap-ansi`, and related terminal and color utilities received malicious versions. Their aggregate weekly download count was enormous, but downloads are exposure, not confirmed victims.</p>
+      <p>`debug` and `chalk` are tiny, ubiquitous Node.js libraries that handle
+logging-level toggles and terminal color codes. Most JavaScript developers
+use them indirectly through the transitive-dependency graph of nearly
+every popular framework on npm. The packages had been maintained for years
+by Junon, whose npm account also covered `ansi-regex`, `strip-ansi`,
+`wrap-ansi`, `ansi-styles`, `backslash`, `error-ex`, and other terminal
+utilities. The phish that took his account, delivered through a
+convincing replica of npm&#39;s support pages hosted at `npmjs.help`,
+impersonated a routine two-factor reset prompt.</p>
     
-      <p>The payload was built for browsers. It hooked wallet and network APIs, watched for Ethereum, Bitcoin, Solana, Tron, Litecoin, and related transaction material, and replaced destination addresses or approvals with attacker-controlled values. Server-side installs were still poisoned artifacts, but the theft path needed bundled client-side execution.</p>
+      <p>The injected payload, analyzed by Qualys and Aikido, was a browser-side
+cryptocurrency drainer. When bundled into a web application and executed
+in a user&#39;s browser, it hooked the standard Web3 wallet interfaces and
+watched for transactions on Ethereum, Bitcoin, Solana, Tron, Litecoin, and
+several other chains, rewriting destination addresses and approval
+payloads to attacker-controlled values before they were signed. Server-
+side Node.js installs received the tainted code as well, but the theft
+path required the package to make it into a deployed browser bundle.</p>
     
-      <p>Cleanup required removing the bad npm versions, purging registry caches, deleting `node_modules`, and rebuilding deployed browser bundles from clean packages. Follow-on compromised packages are grouped in the Qix campaign; this record carries the packages controlled by the Qix npm account.</p>
+      <p>Cleanup was unusually broad. Operators had to remove the bad versions
+from npm caches and lockfiles, scrub `node_modules` directories, and
+rebuild and redeploy any client-side bundle that had pulled in one of
+the affected packages during the publishing window. Follow-on packages
+taken over through credentials harvested in the same campaign are
+grouped under the qix-npm-phishing-2025 campaign; this record covers
+only the packages published directly from the Qix npm account.</p>
     
   </div>
   

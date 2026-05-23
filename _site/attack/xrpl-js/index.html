@@ -36,13 +36,38 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>xrpl.js sits close to money. It is the official JavaScript and TypeScript SDK for building against the XRP Ledger, including wallet handling, key management, payments, escrow, and exchange features. A malicious release in that package does not need broad system access to be dangerous; it needs only to see the secret material developers ask the library to handle.</p>
+      <p>On the evening of April 21, 2025, an attacker using the npm account
+`mukulljangid` published five malicious releases of `xrpl`, the official
+JavaScript SDK for the XRP Ledger, designed to siphon wallet seeds and
+private keys to attacker infrastructure the moment a developer instantiated
+a Wallet object.</p>
     
-      <p>On April 21, 2025, five npm versions were published with private-key stealing code: 4.2.1, 4.2.2, 4.2.3, 4.2.4, and 2.14.2. The official advisory says the 4.x versions were compromised and designed to exfiltrate private keys, while 2.14.2 was also malicious but less likely to exploit because it was not compatible with other 2.x releases.</p>
+      <p>The xrpl package is maintained by the XRP Ledger Foundation and used by
+wallets, exchanges, and applications that move money on the XRP network. At
+the time of the compromise, The Register reported the library was pulling
+more than 186,000 weekly downloads. A malicious release in that position
+does not need broad system access; it only needs to see the secret material
+developers hand the library by design.</p>
     
-      <p>The attacker iterated. Early versions injected malicious code into compiled JavaScript; later ones moved the change into TypeScript source so it would compile naturally into the distributed build. The payload posted wallet seed phrases, mnemonics, and private keys to attacker infrastructure when Wallet objects were created or derived.</p>
+      <p>Researchers at Aikido, who first flagged the activity, traced the
+compromise to a maintainer credential and tracked the attacker&#39;s iteration
+in real time. The first malicious versions, 4.2.1 and 4.2.2, injected the
+payload directly into the compiled JavaScript shipped to npm. By 4.2.3 and
+4.2.4 the attacker had moved the change upstream into the TypeScript
+source so it would compile naturally into the build, a cleaner approach
+that survived rebuilds. A backport, 2.14.2, was published to cover the
+older release line; the project&#39;s advisory later noted that 2.14.2 was
+unlikely to install in practice because it broke compatibility with other
+2.x releases. Across all five versions the payload posted wallet seeds,
+mnemonics, and private keys to `0x9c.xyz/xc`.</p>
     
-      <p>The project patched with 4.2.5 and 2.14.3 and told affected users to treat keys as exposed. For XRP accounts, that means moving funds to secure wallets, rotating keys where possible, and disabling a potentially compromised master key. The Register noted the package had reached more than 186,000 weekly downloads in April, a measure of exposure rather than confirmed theft.</p>
+      <p>The XRP Ledger Foundation pulled the malicious versions and shipped 4.2.5
+and 2.14.3 the following day, telling affected users to treat any keys that
+had passed through an affected build as exposed: move funds, rotate keys
+where possible, and disable any potentially compromised master key. The
+incident was assigned CVE-2025-32965. As with other registry-side
+compromises of crypto-adjacent libraries, the size of the download count
+measures exposure, not confirmed theft.</p>
     
   </div>
   

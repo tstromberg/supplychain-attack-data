@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUR acroread PKGBUILD ran remote shell scripts</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>AUR acroread PKGBUILD ran remote shell scripts</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> Arch User Repository acroread package · <a href="https://aur.archlinux.org" target="_blank">website</a> · <a href="https://aur.archlinux.org/acroread.git" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2018-07-07 to 2018-07-08 (1 day)</div>
+    <div class="meta-item"><strong>Actor:</strong> xeactor (person)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> package_repository</div>
+    <div class="meta-item"><strong>Language:</strong> Bash</div>
+    <div class="meta-item"><strong>Cause:</strong> orphaned_package_takeover</div>
+    <div class="meta-item"><strong>Motive:</strong> data_collection</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> data_exfiltration, persistence, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">In July 2018, an attacker adopted the orphaned acroread package in the Arch User Repository and added a curl-to-shell install path that fetched remote scripts, installed a systemd timer, and collected host data.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The acroread incident was a small compromise, but it is a clean example of how community package metadata becomes a distribution point. Adobe Reader was not backdoored upstream, and Arch&#39;s official binary repositories were not compromised. The poisoned layer was the AUR package recipe that Arch users could pull into a normal local build.</p>
+    
+      <p>The package was attractive because nobody was actively maintaining it. acroread wrapped an old Linux build of Adobe Reader, a native version no longer supported by Adobe. On July 8, 2018, Arch users noticed that an AUR account named xeactor had adopted the orphaned package and pushed a PKGBUILD change with the classic red flag: a remote script fetched from ptpb.pw and piped into bash.</p>
+    
+      <p>That first script was not noisy malware. It staged the rest of the intrusion. The script created xeactor.service and xeactor.timer under systemd paths, set the timer to run every 360 seconds, and downloaded a second script from ptpb.pw. The second script collected system details and posted them to Pastebin through an API key. Public analysis did not find a self-update mechanism or a destructive payload, but the installer path had already crossed the important line: a trusted community build recipe was executing attacker-controlled shell code during installation.</p>
+    
+      <p>The response was fast. The report hit the aur-general list at 05:48 UTC on July 8. Six minutes later, Trusted User Eli Schwartz said the account had been suspended and the commit reverted. He then found and fixed two other packages that had been modified the same way. Arch later named the affected versions as acroread 9.5.5-8, balz 1.20-3, and minergate 8.1-2.</p>
+    
+      <p>The important boundary is scope. AUR is user-produced content and has always carried a review burden for the user. That does not make the incident irrelevant to supply-chain history; it makes the trust lesson more precise. The attacker did not need to compromise Adobe, Arch package signing, or pacman. They needed an abandoned AUR package, a plausible maintainer action, and an install script that too many users would let run without reading.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>acroread</strong>
+            
+            <br><span>aur · package_build_script</span>
+            <br><a href="https://aur.archlinux.org/packages/acroread" target="_blank">https://aur.archlinux.org/packages/acroread</a>
+            <br><a href="https://aur.archlinux.org/acroread.git" target="_blank">https://aur.archlinux.org/acroread.git</a>
+          </td>
+          <td>2018-07-07<br>to 2018-07-08T05:54:58Z</td>
+          <td>
+            
+              <code>9.5.5-8</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>balz</strong>
+            
+            <br><span>aur · package_build_script</span>
+            
+            
+          </td>
+          <td>2018-07-07<br>to 2018-07-08T06:02:08Z</td>
+          <td>
+            
+              <code>1.20-3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>minergate</strong>
+            
+            <br><span>aur · package_build_script</span>
+            
+            
+          </td>
+          <td>2018-07-07<br>to 2018-07-08T06:02:08Z</td>
+          <td>
+            
+              <code>8.1-2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://lists.archlinux.org/pipermail/aur-general/2018-July/034151.html" target="_blank">aur-general: acroread package compromised</a></li>
+    
+      <li><a href="https://lists.archlinux.org/pipermail/aur-general/2018-July/034152.html" target="_blank">aur-general: acroread package compromised response</a></li>
+    
+      <li><a href="https://lists.archlinux.org/pipermail/aur-general/2018-July/034153.html" target="_blank">aur-general: two other packages modified the same way</a></li>
+    
+      <li><a href="https://lists.archlinux.org/pipermail/aur-general/2018-July/034162.html" target="_blank">aur-general: orphaned packages were adopted</a></li>
+    
+      <li><a href="https://lists.archlinux.org/pipermail/aur-general/2018-July/034169.html" target="_blank">aur-general: affected package versions</a></li>
+    
+      <li><a href="https://lwn.net/Articles/759461/" target="_blank">Malware found in the Arch Linux AUR repository</a></li>
+    
+      <li><a href="https://www.bleepingcomputer.com/news/security/malware-found-in-arch-linux-aur-package-repository/" target="_blank">Malware Found in Arch Linux AUR Package Repository</a></li>
+    
+      <li><a href="https://www.theregister.com/security/2018/07/11/arch-linux-pdf-reader-package-poisoned/1265885" target="_blank">Arch Linux PDF reader package poisoned</a></li>
+    
+      <li><a href="https://gist.github.com/campuscodi/74d0d2e35d8fd9499c76333ce027345a" target="_blank">Mirrored first-stage ptpb.pw script</a></li>
+    
+      <li><a href="https://gist.github.com/campuscodi/1b2495399a56efa54d8b5a0f3d4171bb" target="_blank">Mirrored second-stage ptpb.pw script</a></li>
+    
+      <li><a href="https://sensorstechforum.com/arch-linux-aur-repository-found-contain-malware/" target="_blank">Arch Linux AUR Repository Found to Contain Malware</a></li>
+    
+      <li><a href="https://blog.desdelinux.net/en/malware-found-in-arch-aur-repository/" target="_blank">Malware found in Arch AUR repository</a></li>
+    
+      <li><a href="https://linuxiac.com/malware-discovered-in-arch-linux-aur-packages/" target="_blank">Malware discovered in Arch Linux AUR packages</a></li>
+    
+      <li><a href="https://linuxiac.com/arch-aur-under-fire-once-more-as-malware-resurfaces/" target="_blank">Arch AUR under fire once more as malware resurfaces</a></li>
+    
+      <li><a href="https://fossforce.com/2025/08/archs-aur-battles-ddos-attacks-and-persistent-malware-all-summer-so-far/" target="_blank">Arch&#39;s AUR battles DDoS attacks and persistent malware all summer</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

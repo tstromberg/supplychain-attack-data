@@ -5,13 +5,39 @@
     during the broader Checkmarx/TeamPCP supply-chain campaign after attackers abused a GitHub
     Actions path in Bitwarden's CI/CD pipeline.
   story: |-
-    Bitwarden CLI was hit through its npm delivery path. On April 22, 2026, version 2026.4.0 of `@bitwarden/cli` briefly carried malicious JavaScript in the package contents. The record is narrow: the CLI package on npm was affected, not Bitwarden vault data.
+    On April 22, 2026, the official command-line client for the password
+    manager Bitwarden briefly shipped a credential stealer on npm, drawn
+    into the same TeamPCP supply-chain campaign that researchers at
+    Checkmarx had been tracking across the JavaScript ecosystem that
+    week.
 
-    The payload appeared in `bw1.js` and matched the Checkmarx/TeamPCP toolchain. It used the same `audit.checkmarx.cx` telemetry endpoint, the same style of scrambled strings, and the same embedded machinery for token theft, workflow injection, and npm republishing.
+    Bitwarden distributes its CLI as `@bitwarden/cli`, a tool used by
+    developers and CI pipelines to script vault access. Version
+    2026.4.0 of that package, published from Bitwarden's own build
+    pipeline, carried malicious JavaScript inside `bw1.js`. The
+    affected surface is narrow: the npm package, not the Bitwarden
+    desktop or web clients, and not customer vault data. Bitwarden
+    said it found no evidence that end-user vaults were accessed.
 
-    The installer path mattered. The package could run through npm lifecycle behavior, scrape GitHub Actions runner memory and environment data, collect cloud and npm credentials, and use stolen publishing rights to push the campaign into more packages.
+    The payload was a near-direct match for the Checkmarx/TeamPCP
+    toolchain documented elsewhere in the campaign. It used the same
+    `audit.checkmarx.cx` telemetry endpoint, the same string-scrambling
+    style, and the same embedded routines for stealing GitHub Actions
+    tokens, injecting workflows, and republishing npm packages from
+    stolen credentials. Socket described the bw1.js loader as carrying
+    the same npm propagation logic that drove the rest of the wave.
 
-    Bitwarden contained the release, revoked compromised access, and deprecated the affected npm version. The useful boundary is precise: people outside the short npm distribution window were not affected, and Bitwarden reported no evidence that end-user vault data was accessed.
+    Because npm packages can run install-time scripts, the malware did
+    not need a developer to launch the CLI to act. It could read
+    GitHub Actions runner memory, scrape environment variables, lift
+    cloud and npm credentials, and use whatever publishing rights it
+    found to seed the next round of compromised packages.
+
+    Bitwarden pulled the release, rotated the access used to push it,
+    and deprecated 2026.4.0 on npm. The window of exposure was short,
+    but anyone whose CI installed `@bitwarden/cli` during it should
+    treat the host as having had its environment read by an attacker
+    operating against the broader Checkmarx campaign infrastructure.
   start_date: 2026-04-22
   end_date: 2026-04-23
   target:

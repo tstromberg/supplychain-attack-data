@@ -36,13 +36,15 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>Vietnam&#39;s Government Certification Authority distributes software that organizations use for digital signatures. In 2020, attackers compromised the VGCA website and replaced the official x86 and x64 MSI installers for version 8.3.</p>
+      <p>Vietnam&#39;s Government Certification Authority is not just another software vendor. It issues government digital certificates and distributes the GCA toolkit that Vietnamese agencies and private organizations use to sign electronic documents. That made its download site a high-trust target.</p>
     
-      <p>The installers still delivered the expected signing toolkit. They also dropped a modified `eToken.exe` and a backdoor ESET named PhantomNet. That made the compromise hard to spot: the product installed, the workflow continued, and the implant started beside it.</p>
+      <p>In Operation SignSight, attackers compromised `ca.gov.vn` and replaced the x86 and x64 GCA 8.3 MSI installers. ESET confirmed the trojanized files were downloaded over HTTPS from the official VGCA site, which makes a man-in-the-middle explanation unlikely. A user still had to download and run the installer, but the trust decision had already been shaped by the certificate authority&#39;s domain.</p>
     
-      <p>ESET placed the malicious installers on the VGCA site between 2020-07-23 and 2020-08-16. Victim telemetry pointed to government and private-sector organizations in Vietnam, consistent with espionage rather than bulk monetization.</p>
+      <p>The installers still launched the genuine GCA program. They also wrote a malicious `eToken.exe` under `C:&#92;Program Files&#92;VGCA&#92;Authentication&#92;SAC&#92;x32&#92;`, then unpacked a CAB that carried the PhantomNet backdoor, also called SManager. Admin installs registered the backdoor DLL as a Windows service under `C:&#92;Windows&#92;apppatch&#92;netapi32.dll`; non-admin installs used a scheduled task and a `%TEMP%&#92;Wmedia&#92;` path.</p>
     
-      <p>VGCA said it notified affected users and restored clean installers. This record tracks the official website distribution of the MSI packages, not the certificate authority&#39;s cryptographic root trust.</p>
+      <p>PhantomNet was built for espionage rather than monetization. It gathered host and user details, read browser proxy settings so it could reach out from corporate networks, and used HTTPS with certificate pinning to contact `vgca.homeunix.org` and `office365.blogdns.com`. ESET also found a plugin with debug paths suggesting lateral-movement capability, including Mimikatz-related code.</p>
+    
+      <p>ESET placed the malicious installers on the VGCA site between July 23 and August 16, 2020. VGCA said it had already become aware of the incident, notified users who downloaded the trojanized software, and replaced the installers. This record tracks the official website distribution of the MSI packages, not the cryptographic root trust of the certificate authority itself.</p>
     
   </div>
   
@@ -83,7 +85,7 @@
           </td>
           <td>
             
-              N/A
+              <code>sha1:B0E4E9BB6EF8AA7A9FCB9C9E571D8162B1B2443A</code>
             
           </td>
         </tr>
@@ -109,7 +111,7 @@
           </td>
           <td>
             
-              N/A
+              <code>sha1:5C77A18880CF58DF9FBA102DD8267C3F369DF449</code>
             
           </td>
         </tr>
@@ -127,11 +129,29 @@
     
       <li><code>family:PhantomNet</code></li>
     
+      <li><code>family:SManager</code></li>
+    
       <li><code>file:gca01-client-v2-x32-8.3.msi</code></li>
     
       <li><code>file:gca01-client-v2-x64-8.3.msi</code></li>
     
       <li><code>file:eToken.exe</code></li>
+    
+      <li><code>file:C:&#92;Program Files&#92;VGCA&#92;Authentication&#92;SAC&#92;x32&#92;eToken.exe</code></li>
+    
+      <li><code>file:C:&#92;Windows&#92;apppatch&#92;netapi32.dll</code></li>
+    
+      <li><code>file:7z.cab</code></li>
+    
+      <li><code>domain:vgca.homeunix.org</code></li>
+    
+      <li><code>domain:office365.blogdns.com</code></li>
+    
+      <li><code>technique:HTTPS command and control with certificate pinning</code></li>
+    
+      <li><code>technique:Windows service persistence for admin installs</code></li>
+    
+      <li><code>technique:Scheduled task persistence for non-admin installs</code></li>
     
   </ul>
   
@@ -159,9 +179,19 @@
     
       <li><a href="https://www.welivesecurity.com/2020/12/17/operation-signsight-supply-chain-attack-southeast-asia/" target="_blank">Operation SignSight: Supply-chain attack against a certification authority in Southeast Asia</a></li>
     
-      <li><a href="https://www.eset.com/sg/about/newsroom/press-releases1/announcements/eset-discovers-operation-signsight-supply-chain-attack/" target="_blank">ESET discovers Operation SignSight supply-chain attack</a></li>
+      <li><a href="https://www.eset.com/us/about/newsroom/press-releases/eset-discovers-operation-signsight-supply-chain-attack-against-a-certification-authority-in-southea-1/" target="_blank">ESET discovers Operation SignSight supply-chain attack</a></li>
+    
+      <li><a href="https://vincss.net/re018-1-analyzing-new-malware-of-china-panda-hacker-group-used-to-attack-supply-chain-against-vietnam-government-certification-authority-part-1/" target="_blank">[RE018-1] Analyzing new malware used to attack Vietnam Government Certification Authority</a></li>
+    
+      <li><a href="https://infocon.org/mirrors/vx%20underground%20-%202025%20June/Papers/Malware%20Defense/Malware%20Analysis/2020/2020-12-19%20-%20%5BRE018-1%5D%20Analyzing%20new%20malware%20of%20China%20Panda%20hacker%20group%20used%20to%20attack%20supply%20chain%20against%20Vietnam%20Government%20Certification%20Authority%20-%20Part%201.pdf" target="_blank">[RE018-1] Analyzing new malware of China Panda hacker group</a></li>
     
       <li><a href="https://www.zdnet.com/article/vietnam-targeted-in-complex-supply-chain-attack/" target="_blank">Vietnam targeted in complex supply-chain attack</a></li>
+    
+      <li><a href="https://thehackernews.com/2020/12/software-supply-chain-attack-hits.html" target="_blank">Software Supply Chain Attack Hits Vietnam Government Certification Authority</a></li>
+    
+      <li><a href="https://gbhackers.com/supply-chain-attack-certification/" target="_blank">Supply Chain Attack Against Vietnam Government Certification Authority</a></li>
+    
+      <li><a href="https://cisomag.com/after-u-s-vietnam-government-suffers-supply-chain-attack/" target="_blank">Vietnam Government Suffers Supply Chain Attack</a></li>
     
   </ul>
   

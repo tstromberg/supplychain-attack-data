@@ -41,11 +41,37 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The first malicious react-native-international-phone-number release landed at 10:49:29 UTC on March 16, 2026. It added a preinstall hook that ran node install.js, while the prior adjacent 0.11.7 release did not include that hook. Aikido noted that 0.11.8 still depended on the clean react-native-country-select 0.3.9, which means this package was directly backdoored rather than merely poisoned by its dependency.</p>
+      <p>The first malicious release of react-native-international-phone-number,
+version 0.11.8, hit npm at 10:49 UTC on March 16, 2026, five minutes ahead
+of a matching backdoor in the companion package react-native-country-select.
+Both belonged to the same maintainer, AstrOOnauta, whose npm account had
+been taken over. Together the two packages drew roughly 130,000 monthly
+downloads and shipped in a long tail of React Native phone-input screens.</p>
     
-      <p>The loader followed the same staged path as the companion package. It queried Solana RPC for a memo, decoded a link, fetched a second stage, and decrypted a third-stage payload. The third stage used a Google Calendar URL to recover another slug, then requested more content from the same attacker-controlled IP address.</p>
+      <p>Researchers at Aikido, reporting the incident under the campaign name
+Glassworm, said 0.11.8 added a `preinstall` hook that ran a new
+`install.js` loader before npm finished installing. The prior 0.11.7
+release carried no such hook. Aikido also noted that 0.11.8 still depended
+on the clean react-native-country-select 0.3.9, which meant this package
+had been directly backdoored rather than merely poisoned through its
+dependency.</p>
     
-      <p>The recovered payload targeted Windows developer systems. It established persistence through schtasks and the HKCU Run key, wrote an init.json state file, downloaded Node.js runtimes, walked browser and wallet storage, collected npm and GitHub credentials, and posted the archive to attacker infrastructure. After disclosure, the same npm account was used in later releases that moved the delivery into a transitive dependency chain.</p>
+      <p>The loader walked the same staged path as the companion package. It
+queried Solana RPC for a transaction memo, decoded a link out of it,
+fetched a second stage, and decrypted a third stage. The third stage
+pulled a Google Calendar share URL as a further indirection point before
+reaching attacker infrastructure at `45.32.150.251`.</p>
+    
+      <p>The recovered payload targeted Windows developer machines. It established
+persistence through a scheduled task and an HKCU Run key, wrote an
+`init.json` state file, downloaded Node.js runtimes into AppData, walked
+browser profile and crypto-wallet storage, collected npm and GitHub
+credentials, and posted the archive to the same C2. StepSecurity later
+tracked the same attacker republishing through 0.12.1, 0.12.2, and 0.12.3,
+moving delivery into a transitive dependency chain via
+`@agnoliaarisian7180/string-argv` and `@usebioerhold8733/s-format` to keep
+the loader out of the top-level package after the first round of
+deprecations.</p>
     
   </div>
   

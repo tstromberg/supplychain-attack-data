@@ -1,0 +1,99 @@
+- id: bitcoin-gold
+  title: Bitcoin Gold wallet generated weak keys
+  synopsis: >-
+    An attacker replaced Bitcoin Gold's official Windows Core wallet installer
+    on the project's GitHub release page with builds that generated weak private
+    keys for newly created wallets.
+  story: |
+    Bitcoin Gold's compromise started as the sort of thing careful users are supposed to catch: a checksum mismatch. On November 25, 2017, a user opened a GitHub issue after the Windows installer downloaded from the official Bitcoin Gold release did not match the SHA-256 hash published on the project's download page.
+
+    The first warning was necessarily broad. Bitcoin Gold said an unknown party had gained access to the GitHub repository and replaced the compiled Windows wallet installer. The source code was unchanged, the Linux build was not changed, and the project told users to treat any Windows wallet downloaded between November 21, 2017, 09:39 UTC and November 25, 2017, 22:30 UTC as hostile. Two different suspicious installers had been served during that window, and neither matched the public checksum.
+
+    The later analysis made the attack more interesting, and more dangerous, than a generic infected installer. Bitcoin Gold reported that the planted wallet did not appear to contain a conventional virus or upload private keys. Instead, it sabotaged `CKey::MakeNewKey`, the function responsible for generating new private keys. A normal wallet draws 32 bytes of strong entropy. The malicious build replaced that with a value derived from a timestamp, one random byte, and constants, shrinking the key space from 2^256 possibilities to roughly 2^40 before accounting for the known download window.
+
+    That is still too much for a person, but it is not too much for an attacker watching the blockchain. New wallets created by the phony installer could look normal, receive BTG, and later be reconstructed by someone who knew the weakened key-generation scheme. Once Bitcoin Gold understood the trick, the team scanned for vulnerable addresses, swept just under 77.5 BTG into a safe address before the attacker did, and began returning funds to owners who could prove control.
+
+    The lesson is not that checksums are ceremonial. They were the first alarm. The failure was that the release channel itself, trusted by the official download page, could serve a wallet that quietly changed the math behind ownership.
+  start_date: '2017-11-21T09:39:00Z'
+  end_date: '2017-11-25T22:30:00Z'
+  target:
+    name: Bitcoin Gold
+    kind: application
+    website: https://bitcoingold.org
+    repo: https://github.com/BTCGPU/BTCGPU
+  actor:
+    name: Unknown attacker
+    kind: group
+  language: C++
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: cryptocurrency_theft
+    transitive: false
+  impact:
+    types:
+    - cryptocurrency_theft
+    - private_key_theft
+  artifacts:
+  - id: bitcoin-gold-windows-wallet
+    name: Bitcoin Gold Windows Core wallet installer
+    package: Bitcoin Gold Core
+    ecosystem: github
+    kind: binary_installer
+    website: https://bitcoingold.org
+    repo: https://github.com/BTCGPU/BTCGPU
+    start_date: '2017-11-21T09:39:00Z'
+    end_date: '2017-11-25T22:30:00Z'
+    versions:
+    - 0.15.0
+    - 0.15.0.1
+    locations:
+    - uri: https://github.com/BTCGPU/BTCGPU/releases/tag/0.15.0.1
+      role: distribution
+    - uri: https://bitcoingold.org/downloads/
+      role: distribution
+    - uri: https://web.archive.org/web/20201109001210/https://www.bitcoingold.org/critical-warning-nov-26/
+      role: advisory
+    - uri: https://www.bitcoingold.org/vulnerable-core-wallet-update/
+      role: analysis
+    hashes:
+    - sha256:0ccbae26914fc36973c5b74f0c031ba324bcffc7bbb188e752498573345215d5
+    - sha256:8e9d4cb73116beb173d6079792d474ba29488c6de30a05d2d77bff7850c80b0d
+    indicators:
+    - kind: file
+      value: bitcoingold-0.15.0-win64-setup.exe
+    - kind: file_sha256
+      value: bitcoingold-0.15.0-win64-setup.exe 0ccbae26914fc36973c5b74f0c031ba324bcffc7bbb188e752498573345215d5
+    - kind: file_sha256
+      value: bitcoingold-0.15.0-win64-setup.exe 8e9d4cb73116beb173d6079792d474ba29488c6de30a05d2d77bff7850c80b0d
+    - kind: file_sha256
+      value: bitcoingold-0.15.0-win64-setup.exe official 53e01dd7366e87fb920645b29541f8487f6f9eec233cbb43032c60c0398fc9fa
+    - kind: function
+      value: CKey::MakeNewKey
+    - kind: observable
+      value: Newly created wallets used entropy derived from a timestamp, one
+        random byte, and constants instead of 32 bytes of strong random data.
+    notes:
+    - Bitcoin Gold said the Linux release archive and source code were not changed.
+    - Bitcoin Gold later reported about 30 vulnerable wallets and just under 77.5
+      BTG evacuated to a safe address before the attacker could steal the funds.
+  references:
+  - url: https://web.archive.org/web/20201109001210/https://www.bitcoingold.org/critical-warning-nov-26/
+    title: Bitcoin Gold critical warning, November 26, 2017
+  - url: https://btgofficial.org/critical-warning-nov-26/
+    title: Bitcoin Gold critical warning mirror
+  - url: https://www.bitcoingold.org/vulnerable-core-wallet-update/
+    title: Vulnerable Core Wallet Update
+  - url: https://github.com/BTCGPU/BTCGPU/issues/231
+    title: Checksum for Setup not matching
+  - url: 
+      https://www.bleepingcomputer.com/news/security/psa-bitcoin-gold-btg-official-windows-wallet-app-might-have-been-compromised/
+    title: PSA - Bitcoin Gold official Windows wallet app might have been compromised
+  - url: https://wccftech.com/bitcoin-gold-official-wallet-compromised/
+    title: Bitcoin Gold official wallet app compromised
+  - url: https://securityaffairs.com/66161/hacking/bitcoin-gold-security-breach.html
+    title: Bitcoin Gold dev team warns users about a security breach
+  - url: https://malwaretips.com/threads/psa-bitcoin-gold-btg-official-windows-wallet-app-might-have-been-compromised.77668/
+    title: MalwareTips thread on the Bitcoin Gold wallet warning
+  - url: https://bitcointalk.org/index.php?topic=2673681.0
+    title: BitcoinTalk discussion of the vulnerable Bitcoin Gold wallet

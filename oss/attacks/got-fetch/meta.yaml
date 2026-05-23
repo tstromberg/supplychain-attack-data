@@ -6,13 +6,13 @@
     As part of the expanding npm maintainer phishing campaign using the npnjs.com domain,
     attackers published rogue got-fetch 5.1.11 and 5.1.12 releases.
   story: |
-    `got-fetch` was pulled into the npnjs.com phishing wave that hit several npm maintainers in July 2025. The package was not a lookalike; attackers published malicious releases under the real package after maintainer access was compromised.
+    Attackers pulled `got-fetch`, a small adapter that lets the popular `got` HTTP client speak the Fetch API, into the npm phishing wave that swept through several maintainer accounts in mid-July 2025. The poisoned releases, 5.1.11 and 5.1.12, were pushed to npm under the legitimate package name on July 18.
 
-    Socket linked `got-fetch` to the same campaign that shipped malicious Prettier tooling packages, `synckit`, `@pkgr/core`, `napi-postinstall`, and `is`. In several packages, the Windows path carried a `node-gyp.dll` loader for the Scavenger infostealer.
+    StepSecurity and Socket tied the publish to the same `npnjs.com` typosquat that had captured credentials from `eslint-config-prettier` maintainer JounQin earlier the same day, and to a cluster of co-affected packages that included the Prettier tooling, `synckit`, `@pkgr/core`, `napi-postinstall`, and shortly afterward `is`.
 
-    The malicious releases were `5.1.11` and `5.1.12`. They sit in the archive as one package-level event inside the broader npm phishing campaign, because the compromised package scope is small but the attacker infrastructure and method are shared.
+    The `got-fetch` payload tracked the wider Scavenger pattern. On Windows the install path dropped a renamed DLL, in this case shipped as `crashreporter.dll` rather than the `node-gyp.dll` filename used in the Prettier packages, and loaded it through `rundll32`. The result was the same: code execution on the developer workstation or CI runner that resolved the bad version.
 
-    The practical impact was credential theft and remote access risk for systems that installed the poisoned releases. Recovery requires treating exposed developer credentials, browser data, SSH keys, and package-manager tokens as compromised.
+    The malicious releases were deprecated and removed from npm. Operators who installed during the window were advised to treat any credentials reachable from the affected host, including browser data, SSH keys, and package-manager tokens, as exposed.
   start_date: 2025-07-18
   end_date: 2025-07-22
   target:

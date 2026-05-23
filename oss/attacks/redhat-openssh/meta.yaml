@@ -1,0 +1,188 @@
+- id: redhat-openssh
+  title: Red Hat-signed OpenSSH RPMs were tampered
+  synopsis: >-
+    During the August 2008 Fedora and Red Hat infrastructure intrusions, an
+    attacker got tampered OpenSSH packages for RHEL 4 and RHEL 5 signed with a
+    legitimate Red Hat package key, though Red Hat said RHN subscribers did not
+    receive them through official channels.
+  story: |
+    The Fedora and Red Hat intrusion started in public with silence, which is why the incident still reads like a case study in distribution trust. On August 14, Fedora warned users not to download or update packages while it investigated an infrastructure issue. A week later, Fedora confirmed that one compromised machine had been used to sign Fedora packages, but said the signing passphrase had not been used during the intrusion and source/package checks had found no evidence of Fedora package tampering. Fedora rotated signing keys anyway.
+
+    Red Hat's disclosure landed inside RHSA-2008:0855, an OpenSSH security update. The important supply-chain fact was separate from the ordinary OpenSSH X11-cookie fix in the same advisory: an intruder had managed to sign a small number of tampered OpenSSH packages for RHEL 4 on i386 and x86_64, and RHEL 5 on x86_64. That made the trust boundary different from a random mirrored RPM. The packages carried a legitimate Red Hat signature, which is the exact signal RPM tooling and administrators normally use to decide that an update came from the vendor.
+
+    Red Hat said its review found that Red Hat Network and RHN-distributed content were not compromised, so customers updating through RHN were not believed to be at risk. The risk sat with people who might have obtained Red Hat binary packages outside the subscriber channel. To make that concrete, Red Hat published `openssh-blacklist-1.0.sh`, a signed detection script that checked installed packages or candidate RPM files against the SIGMD5 values of the known tampered packages.
+
+    The tampered versions were compact but high-value: `openssh-3.9p1-8.RHEL4.24`, `openssh-3.9p1-9.el4`, `openssh-4.3p2-26`, and `openssh-4.3p2-26.el5`, across the OpenSSH client, server, askpass, debuginfo, and related subpackages. Public CVE records later tracked the trojaned package issue as CVE-2008-3844 with unknown impact. The lasting lesson is that package signing protects the distribution path only while the signing environment remains controlled; once that boundary is crossed, a signature can authenticate the attacker's artifact.
+  start_date: 2008-08-14
+  end_date: 2008-08-22
+  target:
+    name: Red Hat Enterprise Linux OpenSSH packages
+    kind: distribution
+    website: https://access.redhat.com
+    repo: https://src.fedoraproject.org/rpms/openssh
+  actor:
+    name: Unknown
+    kind: unknown
+  language: C
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - unknown_impact
+    users: 0
+  artifacts:
+  - id: rhel4-openssh-3-9p1-8-rhel4-24
+    name: openssh
+    package: openssh
+    ecosystem: rpm
+    kind: package
+    website: https://access.redhat.com
+    start_date: 2008-08-14
+    end_date: 2008-08-22
+    versions:
+    - 3.9p1-8.RHEL4.24
+    fixed_versions:
+    - 3.9p1-11.el4_7
+    locations:
+    - uri: https://security.access.redhat.com/data/openssh-blacklist.html
+      role: advisory
+    - uri: https://security.access.redhat.com/data/openssh-blacklist-1.0.sh
+      role: detection
+    indicators:
+    - kind: cve
+      value: CVE-2008-3844
+    - kind: package
+      value: openssh-3.9p1-8.RHEL4.24
+    - kind: architecture
+      value: i386
+    - kind: architecture
+      value: x86_64
+    - kind: subpackage
+      value: openssh, openssh-askpass, openssh-askpass-gnome, openssh-clients, 
+        openssh-debuginfo, openssh-server
+    - kind: observable
+      value: Red Hat's blacklist script checked RPM SIGMD5 values rather than 
+        package names alone.
+  - id: rhel4-openssh-3-9p1-9-el4
+    name: openssh
+    package: openssh
+    ecosystem: rpm
+    kind: package
+    website: https://access.redhat.com
+    start_date: 2008-08-14
+    end_date: 2008-08-22
+    versions:
+    - 3.9p1-9.el4
+    fixed_versions:
+    - 3.9p1-11.el4_7
+    locations:
+    - uri: https://security.access.redhat.com/data/openssh-blacklist.html
+      role: advisory
+    - uri: https://security.access.redhat.com/data/openssh-blacklist-1.0.sh
+      role: detection
+    indicators:
+    - kind: cve
+      value: CVE-2008-3844
+    - kind: package
+      value: openssh-3.9p1-9.el4
+    - kind: architecture
+      value: i386
+    - kind: architecture
+      value: x86_64
+    - kind: subpackage
+      value: openssh, openssh-askpass, openssh-askpass-gnome, openssh-clients, 
+        openssh-debuginfo, openssh-server
+  - id: rhel5-openssh-4-3p2-26
+    name: openssh
+    package: openssh
+    ecosystem: rpm
+    kind: package
+    website: https://access.redhat.com
+    start_date: 2008-08-14
+    end_date: 2008-08-22
+    versions:
+    - 4.3p2-26
+    fixed_versions:
+    - 4.3p2-26.el5_2.1
+    locations:
+    - uri: https://security.access.redhat.com/data/openssh-blacklist.html
+      role: advisory
+    - uri: https://security.access.redhat.com/data/openssh-blacklist-1.0.sh
+      role: detection
+    indicators:
+    - kind: cve
+      value: CVE-2008-3844
+    - kind: package
+      value: openssh-4.3p2-26
+    - kind: architecture
+      value: x86_64
+    - kind: subpackage
+      value: openssh, openssh-askpass, openssh-clients, openssh-debuginfo, 
+        openssh-server
+  - id: rhel5-openssh-4-3p2-26-el5
+    name: openssh
+    package: openssh
+    ecosystem: rpm
+    kind: package
+    website: https://access.redhat.com
+    start_date: 2008-08-14
+    end_date: 2008-08-22
+    versions:
+    - 4.3p2-26.el5
+    fixed_versions:
+    - 4.3p2-26.el5_2.1
+    locations:
+    - uri: https://security.access.redhat.com/data/openssh-blacklist.html
+      role: advisory
+    - uri: https://security.access.redhat.com/data/openssh-blacklist-1.0.sh
+      role: detection
+    indicators:
+    - kind: cve
+      value: CVE-2008-3844
+    - kind: package
+      value: openssh-4.3p2-26.el5
+    - kind: architecture
+      value: x86_64
+    - kind: subpackage
+      value: openssh, openssh-askpass, openssh-clients, openssh-debuginfo, 
+        openssh-server
+    notes:
+    - Red Hat stated that RHN and RHN-distributed content were not compromised; 
+      this record tracks abuse of the Red Hat signing trust root and the tampered 
+      signed RPMs, not confirmed delivery through RHN.
+    - Fedora's related signing-system compromise is included as context because 
+      Fedora reported no package-integrity discrepancies and no evidence that the 
+      Fedora signing passphrase was used during the intrusion.
+  references:
+  - url: https://lwn.net/Articles/295180/
+    title: 'Red Hat alert RHSA-2008:0855-01 (openssh)'
+  - url: https://access.redhat.com/errata/RHSA-2008:0855.html
+    title: 'RHSA-2008:0855 - Critical: openssh security update'
+  - url: https://security.access.redhat.com/data/openssh-blacklist.html
+    title: Red Hat OpenSSH blacklist script advisory
+  - url: https://security.access.redhat.com/data/openssh-blacklist-1.0.sh
+    title: Red Hat openssh-blacklist-1.0.sh
+  - url: https://lwn.net/Articles/294188/
+    title: Something going on with Fedora
+  - url: https://lwn.net/Articles/294834/
+    title: One week of infrastructure issues
+  - url: https://lwn.net/Articles/295134/
+    title: What happened with Fedora - and Red Hat too
+  - url: https://lwn.net/Articles/295406/
+    title: Fedora, Red Hat, and distributor security
+  - url: https://lwn.net/Articles/295417/
+    title: 'Re: non-disclosure of infrastructure problem a management issue?'
+  - url: https://www.theregister.com/security/2008/08/22/red-hat-hack-prompts-critical-openssh-update/1364264
+    title: Red Hat hack prompts critical OpenSSH update
+  - url: https://www.itpro.com/605688/red-hat-breached-as-hackers-target-linux-servers
+    title: Red Hat breached as hackers target Linux servers
+  - url: https://www.zdnet.com/article/red-hat-belatedly-confirms-security-breach/
+    title: Red Hat belatedly confirms security breach
+  - url: https://support.avaya.com/elmodocs2/security/ASA-2008-399.htm
+    title: 'ASA-2008-399: openssh security update (RHSA-2008-0855)'
+  - url: https://nvd.nist.gov/vuln/detail/CVE-2008-3844
+    title: CVE-2008-3844

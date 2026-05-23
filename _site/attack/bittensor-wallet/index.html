@@ -36,13 +36,37 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>bittensor-wallet 4.0.2 was a direct attack on key custody. The package is the Rust-backed Python wallet library for Bittensor; its job is to decrypt coldkey and hotkey files so users can sign staking and transfer operations.</p>
+      <p>On March 15, 2026, an attacker pushed a malicious release of bittensor-wallet
+to PyPI that planted a backdoor inside the very code path that decrypts a
+Bittensor user&#39;s private keys. The compromised version, 4.0.2, sat on the
+registry for roughly 48 hours before maintainers at OpenTensor yanked it.</p>
     
-      <p>The malicious release lived on PyPI for about forty-eight hours, from March 15 to March 17, 2026. The source archive carried the backdoor inside the Rust wallet code, not as an obvious sidecar script. The release workflow metadata was also weakened by removing build provenance attestation.</p>
+      <p>bittensor-wallet is the Rust-backed Python wallet library for Bittensor, a
+decentralized machine-learning network whose stake and transfer operations
+are signed with coldkey and hotkey files held locally by each user. The
+package&#39;s job is to decrypt those files on demand.</p>
     
-      <p>The payload hooked keyfile decryption paths in `src/keyfile.rs`. When a wallet key was decrypted, the malware tagged the key type, encrypted the private material with an attacker public key, and attempted exfiltration through HTTPS, DNS TXT lookup, generated domains, and DNS query chunks.</p>
+      <p>Socket&#39;s automated scanners first flagged the release, and StepSecurity
+published a detailed teardown. According to StepSecurity, the attacker
+modified `src/keyfile.rs` at three call sites in the Rust wallet code,
+placing the hook directly inside the decryption routine rather than in an
+obvious sidecar script. The release workflow at `.github/workflows/release.yml`
+was also altered to strip build provenance attestation. Whenever a wallet key
+was decrypted, the implant tagged the key type, encrypted the plaintext
+private material with the attacker&#39;s hardcoded NaCl public key, and shipped
+it out through three independent channels: HTTPS POSTs to
+`finney.opentensor-metrics.com`, `finney.metagraph-stats.com`, and
+`finney.subtensor-telemetry.com`; a domain-generation algorithm rotating
+daily under `*.opentensor-cdn.com`; and DNS tunneling that split payloads
+into 60-character hex chunks. A background thread named `cache-gc` retried
+the exfiltration with two-to-ten-minute jitter, and the malware skipped
+machines that had been up for less than 20 minutes or showed signs of
+debugging or security tooling.</p>
     
-      <p>The maintainers yanked 4.0.2 after detection. Any keyfile decrypted while that version was installed must be treated as exposed, because the attack sat exactly where plaintext private keys briefly exist.</p>
+      <p>Opentensor yanked 4.0.2 around 12:06 UTC on March 17 and reverted users to
+4.0.1. StepSecurity warned that any keyfile decrypted while 4.0.2 was
+installed should be treated as exposed, because the backdoor sat at the
+exact moment private keys briefly exist in plaintext.</p>
     
   </div>
   

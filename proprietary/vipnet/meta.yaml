@@ -4,13 +4,15 @@
     Targeted LZH archives imitated ViPNet security-network updates for Russian organizations
     in government, finance, and industry.
   story: |
-    Kaspersky published the Russian disclosure on April 17, 2025 after finding the backdoor during an incident response. The victims were large Russian organizations connected to ViPNet networks. InfoTeCS confirmed targeted attacks against some users in an April 18 update and issued security updates and customer recommendations.
+    Kaspersky published the Russian disclosure on April 17, 2025 after finding the backdoor during an incident response. The victims were large Russian organizations connected to ViPNet networks, including government, finance, and industrial targets.
 
-    The malicious archives used the shape of ViPNet update packages. Each archive contained `action.inf`, a legitimate `lumpdiag.exe`, a small malicious `msinfo32.exe`, and an encrypted payload file whose name varied by archive.
+    This was not described as a public vendor update-server compromise. InfoTeCS confirmed targeted attacks against some users and said the vector required access to a ViPNet node with operating-system administrator rights, deep knowledge of ViPNet network mechanics, and a signing key for a valid certificate in the organization's internal trust space.
 
-    The update service component `itcsrvup64.exe` processed `action.inf` and executed `lumpdiag.exe --msconfig`. The legitimate executable was vulnerable to path substitution, so the attacker-controlled `msinfo32.exe` ran in its context.
+    The attacker then misused the ViPNet `mftp` transport protocol to imitate software-update envelopes. The malicious LZH archives looked like ViPNet update packages: each contained `action.inf`, a legitimate `lumpdiag.exe`, a small malicious `msinfo32.exe`, and an encrypted payload file whose name varied by archive.
 
-    The loader decrypted the payload and mapped the backdoor into memory. The backdoor connected to command-and-control over TCP, could steal files, and could launch additional malicious components.
+    The update service component `itcsrvup64.exe` processed `action.inf` and executed `lumpdiag.exe --msconfig`. The legitimate executable was susceptible to path substitution, so the attacker-controlled `msinfo32.exe` ran in its context, decrypted the payload, and mapped the backdoor into memory.
+
+    The backdoor connected to command-and-control over TCP, could steal files, and could launch additional malicious components. InfoTeCS said the target security functions of ViPNet products were not affected, issued updates for ViPNet Client 4 and ViPNet Coordinator HW4, and published customer checks for `msinfo32.exe`, event ID 4688 process creation, and suspicious ViPNet-node traffic.
   start_date: 2025-04-01
   end_date: 2025-04-22
   target:
@@ -57,6 +59,8 @@
       value: itcsrvup64.exe
     - kind: command
       value: lumpdiag.exe --msconfig
+    - kind: protocol
+      value: ViPNet mftp
     - kind: detection
       value: HEUR:Trojan.Win32.Loader.gen
     - kind: observable
@@ -73,8 +77,12 @@
     - Kaspersky's Russian disclosure was published on 2025-04-17 and updated on 
       2025-04-18 after InfoTeCS confirmed targeted attacks against some users; the 
       English Securelist article followed on 2025-04-22.
-    - Affected ViPNet scope covered client versions susceptible to update package 
-      manipulation.
+    - InfoTeCS stated that certified fourth-generation products operated according
+      to documentation, fifth-generation products, and intermediate 4U products were
+      not susceptible to this attack.
+    - The modeled supply-chain boundary is the forged ViPNet update package accepted
+      inside victim networks, not a confirmed compromise of the public InfoTeCS update
+      service.
   references:
   - url: https://securelist.ru/new-backdoor-mimics-security-software-update/112326/
     title: Russian organizations targeted by backdoor masquerading as ViPNet software 
@@ -82,3 +90,7 @@
   - url: https://securelist.com/new-backdoor-mimics-security-software-update/116246/
     title: Russian organizations targeted by backdoor masquerading as secure networking 
       software updates
+  - url: https://infotecs.ru/press-center/publications/primenimost-virusnogo-po-k-produktam-vipnet/
+    title: Applicability of malware to ViPNet products
+  - url: https://cyberpress.org/new-malware-masquerades-as-networking-software-updates/
+    title: New Malware Masquerades as Networking Software Updates

@@ -36,13 +36,33 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>Telnyx ships a Python SDK for its communications API; the package reaches a large install base through PyPI. On 2026-03-27, releases 4.87.1 and 4.87.2 added malicious import-time logic to `telnyx/_client.py`. The code ran when an application imported the package.</p>
+      <p>On March 27, 2026, three days after the LiteLLM compromise, an attacker
+pushed two malicious releases of telnyx, the Python SDK for the Telnyx
+communications API, to PyPI. StepSecurity, which traced the activity to
+the threat group it tracks as TeamPCP, said versions 4.87.1 and 4.87.2
+drew roughly 742,000 downloads in the 30 days before the compromise; that
+is package reach, not a confirmed victim count.</p>
     
-      <p>On Linux and macOS, the package fetched `ringtone.wav` from a single host, decoded a credential harvester from the audio bytes, ran it in a detached Python subprocess, and posted encrypted results as `tpcp.tar.gz`.</p>
+      <p>The malicious logic lived in `telnyx/_client.py` and fired whenever an
+application imported the package. On Linux and macOS, the SDK fetched
+`ringtone.wav` from `83.142.209.203:8080`, base64-decoded a Python
+credential harvester out of the audio bytes, and ran it in a detached
+subprocess. Results were AES-256-CBC encrypted, RSA-4096 sealed, and
+POSTed back as `tpcp.tar.gz`.</p>
     
-      <p>Windows had its own path, and one operator typo. 4.87.1 invoked the Windows routine as `Setup()`. The function was defined as `setup()`. The release shipped, ran cleanly on Linux and macOS, and silently no-op&#39;d on Windows. 4.87.2 fixed the case. The Windows path then decoded a PE binary from `hangup.wav` and wrote it to the user&#39;s Startup folder.</p>
+      <p>Windows had its own path, and one operator typo. Release 4.87.1 invoked
+the Windows routine as `Setup()`. The function was defined as `setup()`.
+The release shipped, ran cleanly on Linux and macOS, and silently
+no-op&#39;d on Windows under a NameError. 4.87.2 fixed the case, at which
+point the Windows path decoded a PE binary from `hangup.wav` and wrote
+it to the user&#39;s Startup folder disguised as `msbuild.exe`, giving the
+attacker code execution at every login.</p>
     
-      <p>StepSecurity tied the package to TeamPCP through the same RSA-4096 key, encryption scheme, and `tpcp.tar.gz` exfiltration marker seen in the LiteLLM compromise. The 742,000 download figure is pre-compromise package reach, not a confirmed victim count.</p>
+      <p>StepSecurity tied telnyx to the LiteLLM compromise through three shared
+signals: the same RSA-4096 public key, identical AES/RSA encryption
+sequences, and the `tpcp.tar.gz` exfiltration marker. PyPI removed both
+versions, and downstream users were urged to roll back to 4.87.0 and
+rotate any credential the SDK could have touched.</p>
     
   </div>
   

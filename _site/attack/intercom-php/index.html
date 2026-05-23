@@ -36,13 +36,36 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>`intercom/intercom-php@5.0.2` showed Mini Shai-Hulud crossing ecosystem boundaries. Semgrep reported that attackers overwrote an existing legitimate Packagist version rather than publishing a new obvious outlier.</p>
+      <p>On April 30, 2026, the Mini Shai-Hulud campaign crossed out of
+npm and into the PHP ecosystem by way of `intercom/intercom-php`,
+the official Intercom SDK on Packagist. Researchers at Semgrep,
+who reported the compromise, said attackers overwrote an existing
+legitimate version of the package rather than publishing a
+suspicious new outlier, so downstream developers running
+`composer update` had no obvious signal that anything had
+changed.</p>
     
-      <p>The malicious package converted itself into a Composer plugin. That matters because Composer plugins execute during installation, before application code imports the library. The install step became the execution step.</p>
+      <p>The trick was a small edit to `composer.json` that converted the
+package into a Composer plugin. Composer plugins are not ordinary
+libraries: Composer instantiates them during dependency
+resolution and installation, before any application code calls
+`require` on the package. The install step became the execution
+step.</p>
     
-      <p>The plugin downloaded the Bun JavaScript runtime and ran an obfuscated credential stealer aligned with the npm campaign. The payload targeted GitHub tokens, SSH keys, cloud credentials, environment variables, and other developer secrets.</p>
+      <p>From there the plugin downloaded the Bun JavaScript runtime and
+ran an obfuscated payload aligned with the same Mini Shai-Hulud
+stealer that had hit `intercom-client` on npm the same day,
+exfiltrating to `zero.masscan.cloud`. The collector pulled GitHub
+tokens, SSH keys, cloud credentials, environment variables, and
+other developer secrets.</p>
     
-      <p>The record is paired with `intercom-client` because both appeared the same day and shared Mini Shai-Hulud tooling. It remains separate because the compromised artifact, package manager, and execution mechanism were different.</p>
+      <p>The two Intercom incidents are tracked separately because the
+artifact, package manager, and execution mechanism differ, but
+they share an actor and a toolchain. The PHP side is the more
+instructive of the pair: it shows that a campaign built around
+npm install scripts can move into Packagist without a meaningful
+change in technique, simply by riding Composer&#39;s plugin
+contract.</p>
     
   </div>
   

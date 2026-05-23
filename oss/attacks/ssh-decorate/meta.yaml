@@ -1,0 +1,91 @@
+- id: ssh-decorate
+  title: ssh-decorate PyPI releases stole SSH credentials
+  synopsis: >-
+    Malicious ssh-decorate releases on PyPI collected SSH connection credentials and
+    posted them to an attacker-controlled endpoint.
+  story: |
+    `ssh-decorate` was a small Python library for wrapping Paramiko-style SSH connection code. In May 2018, a developer noticed that recent PyPI releases did more than help with SSH. The package collected the credentials it was handed and posted them to `http://ssh-decorate.cf/index.php`.
+
+    The backdoor was not subtle, but it was well placed. A package that decorates SSH calls naturally sees hostnames, usernames, passwords, and key material as part of normal use. That made the malicious code easy to miss in a quick review and dangerous in any automation script that reused real administrative credentials.
+
+    Public reporting identified `0.27` as the last safe release and `0.28` through `0.31` as malicious. After the issue surfaced on Reddit and in security reporting, maintainer Uri Goren said the PyPI package had been hijacked, changed his PyPI password, and briefly republished the library under `ssh-decorator`. The package was then removed from both GitHub and PyPI.
+
+    The incident is a useful early PyPI credential-theft case because it was neither a typosquat nor a large dependency-chain compromise. The attacker, or whoever controlled the upload channel, used the real project name and shipped hostile release artifacts through the normal registry path.
+  start_date: 2018-05-07
+  end_date: 2018-05-09
+  target:
+    name: ssh-decorate PyPI package
+    kind: library
+    repo: https://github.com/ugoren/ssh-decorate
+  actor:
+    name: Unknown
+    kind: unknown
+  language: Python
+  method:
+    cause: package_registry_account_compromise
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+    users: 0
+  artifacts:
+  - id: ssh-decorate
+    name: ssh-decorate
+    package: ssh-decorate
+    ecosystem: pypi
+    kind: source_archive
+    repo: https://github.com/ugoren/ssh-decorate
+    start_date: 2018-05-07
+    end_date: 2018-05-09
+    versions:
+    - 0.28
+    - 0.29
+    - 0.30
+    - 0.31
+    locations:
+    - uri: https://pypi.org/project/ssh-decorate/
+      role: distribution
+    - uri: https://data.safetycli.com/packages/pypi/ssh-decorate/
+      role: mirror
+    indicators:
+    - kind: package
+      value: ssh-decorate
+    - kind: package
+      value: ssh-decorator
+    - kind: version
+      value: 0.28
+    - kind: version
+      value: 0.29
+    - kind: version
+      value: 0.30
+    - kind: version
+      value: 0.31
+    - kind: domain
+      value: ssh-decorate.cf
+    - kind: url
+      value: http://ssh-decorate.cf/index.php
+    - kind: observable
+      value: Malicious releases collected SSH credentials supplied to the library and
+        sent them to a remote HTTP endpoint.
+    - kind: observable
+      value: The maintainer said previous PyPI releases had been hijacked and uploaded
+        unlawfully.
+    notes:
+    - Public reporting named 0.27 as the last safe release and 0.28 through 0.31 as
+      malicious.
+    - The repo and PyPI project were removed after the Reddit discussion and security
+      coverage; archived mirrors preserve the incident details.
+  references:
+  - url: https://www.bleepingcomputer.com/news/security/backdoored-python-library-caught-stealing-ssh-credentials/
+    title: Backdoored Python Library Caught Stealing SSH Credentials
+  - url: https://securityaffairs.com/72298/malware/ssh-decorator-backdoor.html
+    title: Are you using Python module 'SSH Decorator'? Newer versions include a backdoor
+  - url: https://www.reddit.com/r/Python/comments/8hvzja/backdoor_in_sshdecorator_package/
+    title: Backdoor in ssh-decorator package
+  - url: https://www.securitynewspaper.com/2018/05/10/researchers-found-backdoor-python-library-steal-ssh-credentials/
+    title: Researchers Found Backdoor in Python Library That Steal SSH Credentials
+  - url: https://data.safetycli.com/packages/pypi/ssh-decorate/
+    title: ssh-decorate Safety DB

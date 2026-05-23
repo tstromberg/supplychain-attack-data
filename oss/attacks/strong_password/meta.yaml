@@ -4,13 +4,13 @@
     strong_password 0.0.7 was published on RubyGems without maintainer control.
     In Rails production, it fetched Pastebin code and installed a cookie-driven RCE backdoor.
   story: |-
-    strong_password was compromised before the rest-client incident but exposed the same failure mode. Attackers published version 0.0.7 under the legitimate RubyGems name while the GitHub repository still showed no corresponding project change.
+    strong_password was compromised before the rest-client incident but exposed the same failure mode. Attackers published version 0.0.7 under the legitimate RubyGems name while the GitHub repository still showed no corresponding project change. The new RubyGems owner appeared as a sparse account named kickball, not the known maintainer.
 
-    Tute Costa found the mismatch while reviewing dependency updates. The malicious code had been appended to `lib/strong_password/strength_checker.rb`; it started a thread, waited a random interval, fetched Ruby from Pastebin, and evaluated it only when `Rails.env[0] == "p"`.
+    Tute Costa found the mismatch while reviewing dependency updates. The malicious code had been appended to lib/strong_password/strength_checker.rb; it started a thread, waited a random interval, fetched Ruby from Pastebin, and evaluated it only when Rails.env[0] == "p".
 
-    The fetched payload inserted a Rack middleware hook that evaluated Base64 from a crafted `___id` cookie. It also phoned home with host URL data. A password-strength library has no reason to read cookies or fetch executable code, but once loaded into Rails it runs inside the application process.
+    The fetched payload inserted a Rack middleware hook that evaluated Base64 from a crafted ___id cookie. It also phoned home with host URL data. A password-strength library has no reason to read cookies or fetch executable code, but once loaded into Rails it runs inside the application process.
 
-    The maintainer confirmed the bogus 0.0.7 release was created on June 25, 2019 and that he no longer had ownership in RubyGems. RubyGems yanked the release, locked the publishing account used for the attack, and restored the maintainer.
+    The maintainer confirmed the bogus 0.0.7 release was created on June 25, 2019 and that he no longer had ownership in RubyGems. RubyGems yanked the release, locked the publishing account used for the attack, and restored the maintainer. A few days later, the maintainer said the likely path was an old reused RubyGems password exposed in an unrelated breach. After regaining control, he removed kickball as an owner, reset the account with a unique password and MFA, and published 0.0.8 as the clean release users should move to.
   start_date: 2019-06-25
   end_date: 2019-06-29
   target:
@@ -37,6 +37,8 @@
     end_date: 2019-06-29
     versions:
     - 0.0.7
+    fixed_versions:
+    - 0.0.8
     locations:
     - uri: https://rubygems.org/gems/strong_password/versions/0.0.7
       role: distribution
@@ -64,6 +66,8 @@
       value: https://pastebin.com/raw/xa456PFt
     - kind: domain
       value: smiley.zzz.com.ua
+    - kind: account
+      value: kickball
     - kind: observable
       value: Backdoor only ran when Rails.env[0] == "p".
     - kind: observable
@@ -71,11 +75,16 @@
     notes:
     - The malicious 0.0.7 release was created on 2019-06-25 and appeared only on
       RubyGems, not in the GitHub repository.
+    - The legitimate maintainer later said an old reused RubyGems password was
+      the likely source of the account takeover and published 0.0.8 after
+      regaining control.
   references:
   - url: https://www.sonatype.com/blog/cve-2019-13354-strong-password
     title: "CVE-2019-13354: strong_password embedded malicious code"
   - url: https://withatwist.dev/strong-password-rubygem-hijacked.html
     title: strong_password v0.0.7 rubygem hijacked
+  - url: https://news.ycombinator.com/item?id=20382779
+    title: strong_password maintainer comment on the RubyGems account takeover
   - url: 
       https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/
     title: Code execution back door found in Ruby's rest-client library

@@ -41,13 +41,36 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>eslint-config-prettier was one of the first visible packages hit by the July 2025 `npnjs.com` phishing campaign. The attacker did not change the GitHub repository. They used stolen npm publishing credentials.</p>
+      <p>On July 18, 2025, four unauthorized releases of `eslint-config-prettier`,
+a JavaScript tooling package with more than five million weekly downloads,
+appeared on npm without any corresponding commit in the project&#39;s GitHub
+repository. The releases were the first visible damage from a phishing
+campaign that lured npm maintainers to a typosquat domain at `npnjs.com`,
+and they put a Windows-targeted install-time loader in front of a large
+fraction of the JavaScript ecosystem.</p>
     
-      <p>Four malicious versions appeared on npm without matching source commits: 8.10.1, 9.1.1, 10.1.6, and 10.1.7. That gap was the signal. The registry showed fresh releases; the project history did not.</p>
+      <p>`eslint-config-prettier` is a small shared configuration that turns off
+ESLint rules conflicting with the Prettier code formatter, and it ships as
+a transitive dependency of countless front-end projects. Researchers at
+Socket and StepSecurity tied the compromise to credentials harvested
+through `npnjs.com`, a deliberate misreading of `npmjs.com` used in
+phishing emails sent to maintainers of widely used packages.</p>
     
-      <p>The package executed an install script on Windows and attempted to launch `node-gyp.dll` through `rundll32`. That gave the attack code execution during dependency installation, a path commonly reached by CI and developer workstations before anyone reviews runtime behavior.</p>
+      <p>The malicious versions, 8.10.1, 9.1.1, 10.1.6, and 10.1.7, were published
+from the maintainer&#39;s account without a matching source commit. That gap
+between registry and repository, StepSecurity said, was the clearest
+indicator of compromise. The package contained an `install.js` script that
+ran on Windows during dependency installation and used `rundll32` to
+invoke a bundled `node-gyp.dll`, giving the attacker code execution on
+developer workstations and CI runners before any runtime review of the
+package took place.</p>
     
-      <p>The maintainer revoked the compromised token, rotated credentials, deprecated the malicious releases, and coordinated removal with npm. The campaign record covers the broader phishing wave; this record anchors the high-download Prettier tooling package.</p>
+      <p>The maintainer revoked the compromised token, rotated credentials,
+deprecated the four malicious releases, and coordinated removal with npm.
+The incident was assigned CVE-2025-54313. Socket subsequently tracked the
+same phishing campaign hitting the `is` package and other maintainer
+accounts; the cross-package wave is covered separately under
+[[npnjs-scam-npm-2025]].</p>
     
   </div>
   

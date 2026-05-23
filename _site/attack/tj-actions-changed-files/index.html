@@ -41,13 +41,41 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>tj-actions/changed-files was trusted for a mundane CI task: finding which files changed in a workflow. The attacker turned that trust into a broad secret-exposure path by moving mutable action tags to a malicious commit. Workflows using tag references such as version tags could silently execute the attacker&#39;s code.</p>
+      <p>On March 14, 2025, an attacker rewrote every version tag on
+`tj-actions/changed-files`, a GitHub Action used by more than 23,000
+repositories, redirecting them to a single commit that dumped CI secrets
+into public workflow logs. The move turned a routine helper into one of the
+largest CI/CD credential-exposure events on record.</p>
     
-      <p>The payload was direct. It embedded base64 shell, fetched memdump.py from a GitHub Gist, ran it against the GitHub Actions Runner Worker process, searched memory for values marked as secrets, and printed the result to the workflow log as double-encoded base64. There was no separate command-and-control server observed for the broad tj-actions phase; the log became the leak surface.</p>
+      <p>The action does one mundane thing: it tells a workflow which files changed
+in a given commit or pull request. That made it ubiquitous in CI pipelines,
+and most consumers pinned it by tag rather than by an immutable commit SHA.
+When the tag moved, the malicious code shipped on the next run.</p>
     
-      <p>Unit 42 tied the tj-actions compromise to reviewdog/action-setup and a targeted Coinbase phase. A token obtained through the reviewdog path gave write access to tj-actions/changed-files. After Coinbase removed the vulnerable workflow, the attacker replaced all changed-files tags with the malicious commit, widening the impact to any repository that ran the action during the exposure window.</p>
+      <p>The malicious commit, `0e58ed8671d6b60d0890c21b07f8835ace038e67`, embedded a
+base64-encoded shell script that fetched `memdump.py` from a GitHub Gist,
+ran it against the GitHub Actions `Runner.Worker` process, scanned process
+memory for values flagged as secrets, and printed each one to the workflow
+log as double-encoded base64. No external command-and-control server was
+needed for the broad campaign; the log itself was the exfiltration channel,
+and any reader of a public workflow run could harvest the result.</p>
     
-      <p>The practical blast radius depended on repository visibility and workflow privileges. Public repositories could expose secrets directly through public logs; private repositories still had to treat secrets as compromised. Wiz reported exposed AWS keys, GitHub PATs, npm tokens, private RSA keys, and other sensitive material in affected public repositories.</p>
+      <p>Researchers at Wiz, StepSecurity, and Palo Alto Networks&#39; Unit 42 tied the
+incident to the earlier `reviewdog/action-setup` compromise three days
+prior. According to Unit 42, the operation began as a targeted attack on
+Coinbase: a token recovered from a reviewdog-poisoned workflow gave the
+attacker write access to `tj-actions/changed-files`, and once Coinbase
+removed the vulnerable workflow, the attacker repointed all changed-files
+tags to the malicious commit, broadening the impact to every downstream
+consumer.</p>
+    
+      <p>Wiz reported AWS access keys, GitHub Personal Access Tokens, npm tokens,
+private RSA keys, and other credentials exposed in affected public
+repositories. CISA issued an alert on March 18 cataloging the chain as
+CVE-2025-30066 and CVE-2025-30154. The Register, citing StepSecurity, put
+the population of dependent repositories at more than 23,000; how many
+actually executed the malicious commit during the exposure window remains
+unclear.</p>
     
   </div>
   

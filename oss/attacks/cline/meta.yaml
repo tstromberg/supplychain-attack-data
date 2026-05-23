@@ -5,13 +5,36 @@
     was byte-identical to cline@2.2.3 except for a postinstall script that ran npm install
     -g openclaw@latest.
   story: |
-    Cline's February 2026 incident was strange because the payload was not itself malware. An unauthorized publisher released cline@2.3.0 to npm, and the package was otherwise nearly identical to the previous release. The meaningful change was a lifecycle hook that installed OpenClaw globally on the user's machine.
+    On the morning of February 17, 2026, an unknown party used an exposed npm
+    publish token to push cline@2.3.0, a release that was byte-identical to the
+    previous version except for a `postinstall` script that quietly installed a
+    second package called OpenClaw on every machine that ran the upgrade. The
+    package sat on the registry for roughly eight hours before Cline pulled it.
 
-    The access path is the important part. Adnan Khan had reported a prompt-injection weakness in Cline's AI issue triage flow, showing how an issue could influence automation with access to release credentials. The live npm incident was performed by a different actor, but the exposed long-lived npm token traced back to that removed workflow and had not been revoked.
+    Cline is an AI coding assistant distributed as an npm CLI; its January 2026
+    download volume was around 418,000, according to Endor Labs. The malicious
+    2.3.0 release was downloaded about 4,000 times before deprecation, The
+    Register reported.
 
-    The malicious package ran `npm install -g openclaw@latest` during installation. Endor Labs noted that OpenClaw itself was a legitimate open-source package and that the compromised release did not install or start OpenClaw's gateway daemon. The impact was still real: thousands of developers received globally installed software they did not request from an official package release.
+    The access path mattered more than the payload. Researcher Adnan Khan had
+    earlier disclosed a prompt-injection weakness in Cline's AI-driven issue
+    triage workflow, showing how a carefully written GitHub issue could
+    manipulate the automation that held release credentials. Cline removed the
+    workflow, but the long-lived npm token it relied on was never revoked. A
+    different actor later used that token to publish 2.3.0. Endor Labs, which
+    reverse-engineered the tarball (SHA-256
+    `c5b2c21abdf0606a881f293e1cce61d38b90dac0ae647a943d36464530fbf804`), noted
+    that OpenClaw is itself a legitimate open-source project and that the
+    compromised release did not start its gateway daemon. The harm was the
+    silent, unrequested global install of software from a trusted package
+    channel.
 
-    Cline deprecated 2.3.0, published 2.4.0, revoked the compromised token, and moved npm publication to OIDC provenance through GitHub Actions. The deeper lesson is not OpenClaw; it is that AI-maintained project automation can become release infrastructure, and prompt injection against that automation can leave ordinary package-registry credentials behind.
+    In a post-mortem, Cline said it deprecated 2.3.0, shipped 2.4.0, revoked the
+    compromised token, and moved npm publication to OIDC provenance through
+    GitHub Actions. The broader takeaway, StepSecurity and others noted, is
+    that AI-driven project automation has effectively become release
+    infrastructure. When prompt injection can reach that automation, ordinary
+    registry credentials are what get left behind.
   start_date: 2026-02-17
   end_date: 2026-02-17
   target:
