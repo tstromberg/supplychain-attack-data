@@ -36,13 +36,13 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The Telnyx Python SDK compromise put TeamPCP code into a communications library with a large install base. On March 27, 2026, PyPI releases 4.87.1 and 4.87.2 added malicious import-time logic to `telnyx/_client.py`.</p>
+      <p>Telnyx ships a Python SDK for its communications API; the package reaches a large install base through PyPI. On 2026-03-27, releases 4.87.1 and 4.87.2 added malicious import-time logic to `telnyx/_client.py`. The code ran when an application imported the package.</p>
     
-      <p>The code ran when an application imported `telnyx`. On Linux and macOS, `FetchAudio()` spawned a detached Python subprocess, fetched `ringtone.wav` from `83.142.209.203:8080`, decoded a hidden credential harvester from the audio data, and posted encrypted results as `tpcp.tar.gz`.</p>
+      <p>On Linux and macOS, the package fetched `ringtone.wav` from a single host, decoded a credential harvester from the audio bytes, ran it in a detached Python subprocess, and posted encrypted results as `tpcp.tar.gz`.</p>
     
-      <p>Windows had its own path. Version 4.87.1 called `Setup()` with the wrong case, so the Windows function did not run. Version 4.87.2 fixed that to `setup()`, downloaded `hangup.wav`, decoded a PE binary, wrote it as `%APPDATA%&#92;Microsoft&#92;Windows&#92;Start Menu&#92;Programs&#92;Startup&#92;msbuild.exe`, and used a lock file to mark execution.</p>
+      <p>Windows had its own path, and one operator typo. 4.87.1 invoked the Windows routine as `Setup()`. The function was defined as `setup()`. The release shipped, ran cleanly on Linux and macOS, and silently no-op&#39;d on Windows. 4.87.2 fixed the case. The Windows path then decoded a PE binary from `hangup.wav` and wrote it to the user&#39;s Startup folder.</p>
     
-      <p>StepSecurity tied the package to TeamPCP through the same RSA-4096 public key, encryption scheme, and `tpcp.tar.gz` exfiltration marker seen in the LiteLLM compromise. The 742,000 download figure is pre-compromise package reach, not a confirmed victim count.</p>
+      <p>StepSecurity tied the package to TeamPCP through the same RSA-4096 key, encryption scheme, and `tpcp.tar.gz` exfiltration marker seen in the LiteLLM compromise. The 742,000 download figure is pre-compromise package reach, not a confirmed victim count.</p>
     
   </div>
   

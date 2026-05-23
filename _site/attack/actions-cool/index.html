@@ -41,13 +41,55 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>`actions-cool/issues-helper` and `actions-cool/maintain-one-comment` are two widely consumed GitHub Actions for issue and comment triage. Issues-helper alone is referenced by roughly 3,000 public workflow configurations. On 2026-05-18, between 19:10:24 and 19:13:40 UTC, the attacker re-pointed every existing tag on both repositories to a single dangling commit. All 53 issues-helper version tags moved in roughly three minutes. All 15 maintain-one-comment tags moved in 39 seconds. The imposter commit had no branch reachability. It was an orphan, labeled `Build action for vX.Y.Z` to resemble a legitimate release commit. Workflows pinned by tag picked up the malicious code on the next run. Workflows pinned by full commit SHA did not.</p>
+      <p>On the evening of May 18, 2026, an attacker calling itself TeamPCP quietly
+rewrote every version tag on two widely used GitHub Actions, redirecting
+thousands of automated workflows to malicious code designed to steal whatever
+secrets the runner could touch.</p>
     
-      <p>The injected action.yaml step downloaded the Bun JavaScript runtime to `/home/runner/.bun/bin/bun` and then spawned a Python process to read `/proc/&lt;PID&gt;/mem` of the GitHub Actions `Runner.Worker`. Runner.Worker holds workflow secrets in decrypted form once they bind to the running job, each marked `&quot;isSecret&quot;:true`. The script filtered memory for that marker, extracted `GITHUB_TOKEN`, ran `gh auth token` for redundancy, escalated with `sudo python3` where the runner allowed passwordless sudo, and posted the harvested material over HTTPS to `t.m-kosche.com` on port 443. That host is the same OpenTelemetry-trace masquerade used the same day in the @antv npm wave, the durabletask PyPI publish, and the Nx Console extension publish.</p>
+      <p>The targets — `actions-cool/issues-helper` and
+`actions-cool/maintain-one-comment` — handle routine issue and comment
+triage. Issues-helper alone was referenced by roughly 3,000 public workflow
+configurations at the time of the compromise, according to the cloud
+security firm StepSecurity, which published the first detailed account of
+the incident.</p>
     
-      <p>StepSecurity&#39;s Harden-Runner caught the imposter commits and the runner-memory read, added `t.m-kosche.com` to its global block list, and shipped a compromised-actions policy that prevents workflow execution against the affected refs. GitHub later disabled both repositories. The disable removes the malicious tags from new clones. It does not retroactively protect workflows that already cached the imposter SHAs.</p>
+      <p>Between 19:10:24 and 19:13:40 UTC, the attacker re-pointed all 53 version
+tags on issues-helper to a single attacker-controlled commit. All 15 tags on
+maintain-one-comment moved within a 39-second window. The destination commit,
+labeled &quot;Build action for vX.Y.Z&quot; to mimic a normal release marker, was an
+orphan: it sat on no branch and could only be reached through the rewritten
+tags. Workflows that pinned the actions by tag would pick up the malicious
+code on their next run. Workflows that pinned by full commit SHA were
+unaffected.</p>
     
-      <p>The actions-cool tag rewrite is the opening move of TeamPCP&#39;s 2026-05-18/19 cluster. It ran about five hours before the @antv npm wave began at 01:56 UTC. The Actions tokens it harvested are a plausible source of the credentials Wiz later observed feeding the same-day [[nx-console]] and [[durabletask-pypi]] compromises. The cross-ecosystem aggregate sits on [[shai-hulud-here-we-go-again]]. This record holds the GitHub Actions evidence.</p>
+      <p>The malicious `action.yaml` step downloaded the Bun JavaScript runtime to
+`/home/runner/.bun/bin/bun`, then spawned a Python process that read
+`/proc/&lt;PID&gt;/mem` of the GitHub Actions `Runner.Worker` process — the part
+of the runner that holds workflow secrets in decrypted form. StepSecurity
+researchers said the script filtered runner memory for the `&quot;isSecret&quot;:true`
+marker that GitHub uses to flag protected values, extracted the workflow&#39;s
+`GITHUB_TOKEN`, ran `gh auth token` as a backup, and used `sudo python3`
+where passwordless sudo was permitted. Everything went out over HTTPS to
+`t.m-kosche.com`, a domain the same attacker used the same day in the @antv
+npm wave, the durabletask PyPI publish, and the Nx Console extension
+compromise.</p>
+    
+      <p>StepSecurity said its Harden-Runner product caught the imposter commits and
+the runner-memory reads in real time, added the C2 host to a global block
+list, and shipped a policy to keep customers from executing the affected
+refs. GitHub subsequently disabled both repositories outright, an unusual
+step that suggests it treated the entire actions-cool namespace as
+untrusted. That move blocks the malicious tags from new clones, but does not
+retroactively protect workflows that already cached the bad commit SHAs.</p>
+    
+      <p>The actions-cool incident appears to have been the opening move in a
+24-hour spree the security firm Wiz later attributed to TeamPCP. It ran
+about five hours before the @antv npm wave began at 01:56 UTC the following
+morning. The Actions tokens harvested here are a plausible source of the
+credentials that fed the same-day compromises tracked separately as
+[[nx-console]] and [[durabletask-pypi]]. The cross-ecosystem aggregate sits
+on [[shai-hulud-here-we-go-again]]; this record holds the GitHub Actions
+evidence.</p>
     
   </div>
   

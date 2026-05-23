@@ -8,30 +8,39 @@
     the poisoned tree between 2026-05-19 and 2026-05-21, bundling the workflow file into
     every tarball.
   story: |
-    Tiledesk is an open-source LLM agent platform. The server publishes to npm as
-    `@tiledesk/tiledesk-server` and builds Docker images through repository
-    workflows. On 2026-05-18 at 12:50 UTC the first Megalodon commit landed on
-    `Tiledesk/tiledesk-server`, forged as a build-bot author with a routine chore
-    message. The diff replaced one workflow file with one named `Optimize-Build`,
-    gated on `workflow_dispatch`, that decoded and ran the Megalodon credential
-    collector. See [[megalodon-2026]] for the payload.
+    Tiledesk, an open-source LLM agent platform, was the most visible
+    downstream casualty of the Megalodon mass-backdooring campaign that swept
+    across 5,500 GitHub repositories on May 18, 2026. Researchers at SafeDep
+    said the attacker pushed Megalodon's malicious workflow file into nine
+    Tiledesk repositories, and the project's maintainer then unwittingly
+    bundled the poisoned tree into seven new npm releases over the following
+    three days.
 
-    Eight more Tiledesk repositories took the same commit within the hour. Every
-    push went direct to the default branch with no pull request, consistent with
-    a stolen PAT or deploy key. SafeDep attributes the access to the Tiledesk
-    side.
+    Tiledesk's server is published to npm as `@tiledesk/tiledesk-server` and
+    builds Docker images through repository workflows. According to SafeDep,
+    the first Megalodon commit landed on `Tiledesk/tiledesk-server` at 12:50
+    UTC on May 18, forged as a build-bot author with a routine chore message.
+    The diff replaced one workflow file with one named `Optimize-Build`, gated
+    on `workflow_dispatch`, that decoded and ran the Megalodon credential
+    collector. The payload is documented at [[megalodon-2026]].
 
-    The maintainer kept publishing. Between 2026-05-19 and 2026-05-21, seven
-    releases — 2.18.6 through 2.18.12 — shipped from the poisoned tree, each
-    tarball carrying the workflow file. `npm install` does not execute workflow
-    files, so npm consumers were not poisoned at runtime. Anyone cloning,
-    forking, or rebuilding from the tarball was. And the `workflow_dispatch`
-    trigger meant the attacker controlled timing — the file could sit dormant
-    between detection sweeps.
+    Eight more Tiledesk repositories took the same commit within the hour.
+    Every push went directly to the default branch with no pull request,
+    consistent with a stolen personal access token or deploy key. SafeDep said
+    the access appears to have originated on the Tiledesk side.
 
-    SafeDep's Malysis engine flagged the npm package on a routine scan, traced
-    the workflow file back to GitHub, and pivoted from there to the broader
-    Megalodon scope.
+    The maintainer kept shipping. Between May 19 and May 21, seven releases —
+    2.18.6 through 2.18.12 — were published from the poisoned tree, each
+    tarball carrying the malicious workflow file. Because `npm install` does
+    not execute workflow files, npm consumers were not poisoned at runtime.
+    But anyone who cloned, forked, or rebuilt from the tarball was, and the
+    `workflow_dispatch` trigger meant the attacker controlled the timing —
+    the file could sit dormant in a fork between detection sweeps until the
+    operator chose to fire it.
+
+    SafeDep's Malysis engine flagged the npm package during a routine scan,
+    traced the workflow file back to GitHub, and used that finding to pivot
+    to the broader Megalodon scope.
   start_date: 2026-05-18
   end_date: 2026-05-21
   target:

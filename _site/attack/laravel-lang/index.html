@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>laravel-lang Packagist packages re-tagged from a compromised org credential</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>laravel-lang Packagist packages re-tagged from a compromised org credential</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> laravel-lang · <a href="https://github.com/Laravel-Lang" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-05-22 to 2026-05-23 (1 day)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> organization</div>
+    <div class="meta-item"><strong>Language:</strong> PHP</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Between 2026-05-22 22:32 UTC and 2026-05-23 00:00 UTC an attacker with push access to the Laravel-Lang organization rewrote every tag in lang, attributes, actions, and http-statuses to commits that eager-loaded src/helpers.php through composer&#39;s autoload. The dropper fetched a PHP stage 2 from flipboxstudio.info, which executed an ELF binary and exfiltrated runner environment data to the same host.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Late on May 22, 2026, an attacker with push access to the Laravel-Lang
+GitHub organization rewrote every version tag on four widely used Laravel
+translation packages, planting a credential stealer that ran on the next
+`composer update` for downstream applications.</p>
+    
+      <p>Laravel-Lang publishes Laravel translation packages on Packagist, the
+central Composer package index. Four repositories under the organization
+back four Composer packages: `lang`, `attributes`, `actions`, and
+`http-statuses`. Between 22:32 UTC on May 22 and midnight UTC on May 23,
+researchers at StepSecurity said the attacker rewrote every tag across all
+four — 502 on the `lang` repository alone, with smaller numbers in
+proportion to the others. Each malicious commit was authored as
+`Your Name &lt;you@example.com&gt;` and changed two files: `composer.json` and a
+new `src/helpers.php`. Identical diffs and the same fake author string
+across all four repositories pointed StepSecurity to a single compromised
+organization-wide push credential. An earlier Aikido report had described
+the delivery as a fork-tag pattern; StepSecurity&#39;s git evidence ruled that
+out.</p>
+    
+      <p>The `composer.json` change appended `src/helpers.php` to the
+`autoload.files` array. Composer includes every file on that list whenever
+an application loads `vendor/autoload.php`, which is the standard Laravel
+boot path, so no individual call site needed to import the helper. Any
+`composer update`, or any `composer install` without a pre-attack lockfile,
+would resolve each version constraint to the new tag SHA and execute the
+helper on the next request. Pre-attack lockfiles were safe until they were
+refreshed.</p>
+    
+      <p>According to StepSecurity, the dropper fetched a second stage from
+`flipboxstudio.info` — a typosquat of the legitimate `flipboxstudio.com` —
+executed it in a detached process, and then unlinked itself from disk.
+Stage two read the CI runner environment, dropped an ELF binary under
+`/tmp`, executed it, and deleted the on-disk path so the process kept
+running from a deleted inode. Exfiltration POSTed to the same typosquatted
+host.</p>
+    
+      <p>Packagist removed the malicious versions and temporarily delisted the four
+packages. StepSecurity advised downstream operators to halt `composer
+update` until lockfiles were verified against pre-attack SHAs, scan
+affected hosts for `/tmp/.laravel_locale/` artifacts and orphaned PHP or
+ELF processes, and rotate any CI tokens, cloud credentials, GitHub
+personal access tokens, and deploy keys reachable from a runner that
+executed during the window.</p>
+    
+      <p>The tag-rewrite delivery looks superficially similar to the actions-cool
+incident four days earlier (see [[actions-cool]]), but the two are
+distinct. In the actions-cool case, TeamPCP routed tags on official refs
+to commits inside an attacker-owned fork without ever pushing to the
+official repository. The Laravel-Lang attacker, by contrast, held push
+access and rewrote tags directly. The `flipboxstudio.info` infrastructure
+does not appear in the Mini Shai-Hulud campaign.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>laravel-lang/lang</strong>
+            
+            <br><span>packagist · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-22<br>to 2026-05-23</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>laravel-lang/attributes</strong>
+            
+            <br><span>packagist · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-22<br>to 2026-05-23</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>laravel-lang/actions</strong>
+            
+            <br><span>packagist · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-22<br>to 2026-05-23</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>laravel-lang/http-statuses</strong>
+            
+            <br><span>packagist · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-22<br>to 2026-05-23</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>mirror</code>: <code>https://github.com/Laravel-Lang</code></li>
+    
+      <li><code>distribution</code>: <code>https://packagist.org/packages/laravel-lang/lang</code></li>
+    
+      <li><code>distribution</code>: <code>https://packagist.org/packages/laravel-lang/attributes</code></li>
+    
+      <li><code>distribution</code>: <code>https://packagist.org/packages/laravel-lang/actions</code></li>
+    
+      <li><code>distribution</code>: <code>https://packagist.org/packages/laravel-lang/http-statuses</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file:src/helpers.php</code></li>
+    
+      <li><code>file:/tmp/.laravel_locale/&lt;md5&gt;</code></li>
+    
+      <li><code>file:/tmp/.laravel_locale/&lt;12 hex&gt;.php</code></li>
+    
+      <li><code>file:/tmp/.laravel_locale/&lt;8 hex&gt;.vbs</code></li>
+    
+      <li><code>file:/tmp/.&lt;8 hex&gt;</code></li>
+    
+      <li><code>domain:flipboxstudio.info</code></li>
+    
+      <li><code>url:https://flipboxstudio.info/payload</code></li>
+    
+      <li><code>url:https://flipboxstudio.info/exfil</code></li>
+    
+      <li><code>account:Your Name &lt;you@example.com&gt;</code></li>
+    
+      <li><code>technique:composer autoload.files injection</code></li>
+    
+      <li><code>technique:orphaned php and ELF processes with parent PID 1</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.stepsecurity.io/blog/laravel-lang-supply-chain-attack" target="_blank">Laravel-Lang Supply Chain Attack - StepSecurity</a></li>
+    
+      <li><a href="https://github.com/Laravel-Lang/lang/issues/8295" target="_blank">Laravel-Lang/lang issue #8295 - Compromised version tags</a></li>
+    
+      <li><a href="https://www.aikido.dev/blog/supply-chain-attack-targets-laravel-lang-packages-with-credential-stealer" target="_blank">Supply Chain Attack Targets Laravel-Lang Packages With Credential Stealer - Aikido</a></li>
+    
+      <li><a href="https://github.com/Laravel-Lang/common/issues/257" target="_blank">Laravel-Lang/common issue #257 - Compromised version tags</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

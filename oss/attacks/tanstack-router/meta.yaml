@@ -7,13 +7,41 @@
     a pull_request_target "Pwn Request" pattern, GitHub Actions cache poisoning, and runtime
     extraction of a GitHub Actions OIDC trusted-publisher token from runner memory.
   story: |
-    The TanStack wave made provenance uncomfortable. The attacker did not only steal a registry token and push a tarball by hand. According to the public postmortem and follow-on research, the release path was abused through GitHub Actions: a pull_request_target pattern, cache poisoning, and extraction of trusted-publishing material from the runner while the workflow still looked like official automation.
+    The TanStack wave of the May 2026 Mini Shai-Hulud worm was unusual in that
+    the attacker did not merely steal a registry token and push a malicious
+    tarball by hand. According to the project's public postmortem and follow-on
+    analysis from Aikido, StepSecurity, and JFrog, the attacker abused the
+    project's GitHub Actions release pipeline itself — chaining a
+    `pull_request_target` "Pwn Request" pattern, GitHub Actions cache
+    poisoning, and runtime extraction of trusted-publishing material from the
+    runner while the workflow continued to look like official automation.
 
-    The npm packages carried a new root-level payload file, reported by Aikido as router_init.js, and added an optional dependency on @tanstack/setup from a GitHub commit in the TanStack router repository. That dependency had a prepare script that ran tanstack_runner.js with Bun and then exited nonzero. Because it was optional, the visible install failure could be treated as noise after the code had already run.
+    TanStack is a popular family of headless TypeScript libraries that includes
+    React Query, the TanStack Router, and TanStack Start. According to Aikido,
+    the malicious npm packages carried a new root-level payload file named
+    `router_init.js` and added an optional dependency on a `@tanstack/setup`
+    package sourced directly from a GitHub commit in the TanStack router
+    repository. That dependency had a `prepare` script that ran a
+    `tanstack_runner.js` payload with the Bun JavaScript runtime, then exited
+    with a non-zero status. Because the dependency was marked optional, the
+    visible install failure looked like routine noise — but the code had
+    already executed.
 
-    The payload was built for developer workstations and CI/CD runners. It searched for GitHub and npm tokens, GitHub Actions OIDC material, AWS credentials and metadata endpoints, Kubernetes service account files, Vault tokens, environment variables, local filesystem secrets, and SSH material. Exfiltration and staging followed the broader Mini Shai-Hulud pattern, including Session/Oxen infrastructure and GitHub-centered propagation logic.
+    The payload was built for developer workstations and CI/CD runners,
+    Aikido said. It searched for GitHub and npm tokens, GitHub Actions OIDC
+    material, AWS credentials and metadata endpoints, Kubernetes service
+    account files, HashiCorp Vault tokens, environment variables, local
+    filesystem secrets, and SSH material. Exfiltration and staging followed
+    the broader Mini Shai-Hulud pattern, including the use of Session/Oxen
+    infrastructure and GitHub-centered propagation logic.
 
-    TanStack is recorded separately because its package scope and release pipeline evidence are unusually clear. Aikido counted 83 TanStack package-version entries within a broader May 2026 wave of 373 malicious package-version entries across 169 npm package names. This record preserves the TanStack artifacts, while the campaign record carries the shifting cross-ecosystem count.
+    Researchers said TanStack is worth recording separately because its
+    package scope and release-pipeline evidence are unusually well documented.
+    Aikido counted 83 TanStack package-version entries within a broader May
+    2026 wave that hit 373 malicious package-version entries across 169 npm
+    package names. This record preserves the TanStack artifacts, while the
+    campaign record at [[shai-hulud-here-we-go-again]] carries the shifting
+    cross-ecosystem count.
   start_date: 2026-05-11
   end_date: 2026-05-11
   target:

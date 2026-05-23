@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tiledesk GitHub org poisoned by Megalodon, npm followed</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Tiledesk GitHub org poisoned by Megalodon, npm followed</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> Tiledesk · <a href="https://tiledesk.com" target="_blank">website</a> · <a href="https://github.com/Tiledesk" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-05-18 to 2026-05-21 (3 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> organization</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_repository_access</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> source</div>
+    <div class="meta-item"><strong>Campaigns:</strong>
+      
+        <a href="/campaign/megalodon-2026/">Megalodon mass-backdoored GitHub CI workflows</a>
+      
+    </div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">On 2026-05-18 nine Tiledesk repositories received Megalodon&#39;s Optimize-Build workflow commit. The maintainer published @tiledesk/tiledesk-server 2.18.6 through 2.18.12 from the poisoned tree between 2026-05-19 and 2026-05-21, bundling the workflow file into every tarball.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Tiledesk, an open-source LLM agent platform, was the most visible
+downstream casualty of the Megalodon mass-backdooring campaign that swept
+across 5,500 GitHub repositories on May 18, 2026. Researchers at SafeDep
+said the attacker pushed Megalodon&#39;s malicious workflow file into nine
+Tiledesk repositories, and the project&#39;s maintainer then unwittingly
+bundled the poisoned tree into seven new npm releases over the following
+three days.</p>
+    
+      <p>Tiledesk&#39;s server is published to npm as `@tiledesk/tiledesk-server` and
+builds Docker images through repository workflows. According to SafeDep,
+the first Megalodon commit landed on `Tiledesk/tiledesk-server` at 12:50
+UTC on May 18, forged as a build-bot author with a routine chore message.
+The diff replaced one workflow file with one named `Optimize-Build`, gated
+on `workflow_dispatch`, that decoded and ran the Megalodon credential
+collector. The payload is documented at [[megalodon-2026]].</p>
+    
+      <p>Eight more Tiledesk repositories took the same commit within the hour.
+Every push went directly to the default branch with no pull request,
+consistent with a stolen personal access token or deploy key. SafeDep said
+the access appears to have originated on the Tiledesk side.</p>
+    
+      <p>The maintainer kept shipping. Between May 19 and May 21, seven releases —
+2.18.6 through 2.18.12 — were published from the poisoned tree, each
+tarball carrying the malicious workflow file. Because `npm install` does
+not execute workflow files, npm consumers were not poisoned at runtime.
+But anyone who cloned, forked, or rebuilt from the tarball was, and the
+`workflow_dispatch` trigger meant the attacker controlled the timing —
+the file could sit dormant in a fork between detection sweeps until the
+operator chose to fire it.</p>
+    
+      <p>SafeDep&#39;s Malysis engine flagged the npm package during a routine scan,
+traced the workflow file back to GitHub, and used that finding to pivot
+to the broader Megalodon scope.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>@tiledesk/tiledesk-server</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            <br><a href="https://github.com/Tiledesk/tiledesk-server" target="_blank">https://github.com/Tiledesk/tiledesk-server</a>
+          </td>
+          <td>2026-05-19<br>to 2026-05-21</td>
+          <td>
+            
+              <code>2.18.6</code><br><code>2.18.7</code><br><code>2.18.8</code><br><code>2.18.9</code><br><code>2.18.10</code><br><code>2.18.11</code><br><code>2.18.12</code>
+            
+          </td>
+          <td>
+            
+              <code>2.18.5</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>Tiledesk org repositories</strong>
+            <br><code>Tiledesk/*</code>
+            <br><span>github · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-18</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://github.com/Tiledesk/tiledesk-server</code></li>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/package/@tiledesk/tiledesk-server</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file:.github/workflows/docker-community-worker-push-latest.yml</code></li>
+    
+      <li><code>ip:216.126.225.129</code></li>
+    
+      <li><code>url:http://216.126.225.129:8443?h=megalodon&amp;l=gh_dump</code></li>
+    
+      <li><code>technique:workflow_dispatch dormant backdoor in CI workflow file</code></li>
+    
+      <li><code>technique:workflow file bundled into npm tarball via missing .npmignore</code></li>
+    
+      <li><code>account:build-bot &lt;build-system@noreply.dev&gt; (forged commit author)</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+  <h2>Commits</h2>
+  <ul>
+    
+      <li><code>acac5a9854650c4ae2883c4740bf87d34120c038</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://safedep.io/megalodon-mass-github-repo-backdooring-ci-workflows/" target="_blank">Megalodon: Mass GitHub Repository Backdooring via CI Workflows - SafeDep</a></li>
+    
+      <li><a href="https://www.ox.security/blog/megalodon-cicd-malware-github/" target="_blank">Megalodon: A New CI/CD Malware Campaign on GitHub - OX Security</a></li>
+    
+      <li><a href="https://github.com/Tiledesk/tiledesk-server/commit/acac5a9854650c4ae2883c4740bf87d34120c038" target="_blank">Tiledesk/tiledesk-server commit acac5a9 installing Optimize-Build workflow</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

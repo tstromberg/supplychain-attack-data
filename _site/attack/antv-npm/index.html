@@ -41,13 +41,59 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The @antv ecosystem is Alibaba&#39;s data-visualization stack. `@antv/g2`, `@antv/g6`, `@antv/x6`, `@antv/l7`, `@antv/s2`, and a long tail of standalone neighbors including `echarts-for-react`, `timeago.js`, `jest-canvas-mock`, and `size-sensor` share publishing authority through a single npm account. On 2026-05-19 that account belonged to TeamPCP. The maintainer `atool`, at i@hust.cc, published in two automated waves between 01:39 and 02:56 UTC. The result was 639 malicious versions across 323 packages, out of the 547 packages the account could reach. The wider Mini Shai-Hulud day-of total reached 1,055 versions across 502 packages spanning npm, PyPI, and Composer. This single account drove most of it.</p>
+      <p>Hundreds of npm packages from Alibaba&#39;s @antv data-visualization stack —
+plus a long tail of widely used JavaScript utilities that happened to share
+the same maintainer account — were hijacked over a 90-minute stretch on the
+morning of May 19, 2026, and republished as a self-spreading credential
+stealer.</p>
     
-      <p>The payload arrived through two delivery paths. Most packages had `package.json` rewritten with a `preinstall` or `postinstall` of `bun run index.js` and shipped an `index.js` at the root. A second set added an `optionalDependencies` pointer to a poisoned commit in `antvis/G2`, where a `prepare` hook ran the same code under Bun. The body was an obfuscated Bun script of 486 to 498 KB. It scanned more than 130 on-disk credential paths covering GitHub, npm, AWS, Azure, GCP, Kubernetes, HashiCorp Vault, Docker, SSH, and database connection strings. It also read `/proc/*/mem` on the GitHub Actions runner and recovered masked CI/CD secrets from `Runner.Worker` in plaintext.</p>
+      <p>The packages were all owned by an npm account called `atool`, the shared
+publishing handle behind the @antv namespace, several smaller scopes, and a
+grab-bag of standalone libraries including `echarts-for-react`,
+`timeago.js`, and `size-sensor`. Researchers at Socket, who first reported
+the activity, said the attacker pushed 639 malicious versions across 323
+packages in two automated waves between 01:39 and 02:56 UTC. SafeDep and
+StepSecurity confirmed roughly the same scope. Wiz, which named the
+attacker TeamPCP, said the broader &quot;Mini Shai-Hulud&quot; wave that day reached
+1,055 versions across 502 packages spanning npm, PyPI, and Composer — most
+of it driven by this single compromised account.</p>
     
-      <p>Given an npm token, the payload propagated as a worm. It validated the token, enumerated every package the victim could publish to, fetched the latest tarball, injected the same dropper, and republished. Exfiltration ran over HTTPS to `t.m-kosche.com:443/api/public/otel/v1/traces`, an OpenTelemetry-trace masquerade that carried AES-256-GCM ciphertext wrapped with RSA-OAEP. When that channel failed, the payload wrote to GitHub instead. It created public repositories on stolen accounts and committed `results/results-&lt;timestamp&gt;-&lt;counter&gt;.json` files under Dune-themed names such as `sayyadina-stillsuit-852`, with the description `niagA oG eW ereH :duluH-iahS`, the campaign banner reversed. Socket counted 2,200 to 2,500 such repositories by the end of the day. On the host the payload injected hooks into `.claude/settings.json`, `.claude/setup.mjs`, `.vscode/tasks.json`, `.vscode/setup.mjs`, and `.github/workflows/codeql.yml`, attempted sudoers injection on Linux, and on macOS dropped the `kitty/cat.py` backdoor and registered `com.user.kitty-monitor.plist` as a LaunchAgent.</p>
+      <p>According to Socket, the attacker used two delivery paths. Most packages had
+their `package.json` rewritten with a `preinstall` or `postinstall` of
+`bun run index.js`, with the script dropped at the package root. A second
+set instead pointed at a poisoned commit in the `antvis/G2` GitHub
+repository through `optionalDependencies`, where a `prepare` hook ran the
+same code. The payload itself was a half-megabyte, heavily obfuscated Bun
+script that walked the disk for credentials covering every major cloud
+provider, Kubernetes, HashiCorp Vault, SSH, and database connection files,
+then read `/proc/*/mem` on GitHub Actions runners to pull masked CI/CD
+secrets out of the `Runner.Worker` process in plaintext.</p>
     
-      <p>Socket flagged most malicious versions within six to twelve minutes of publish, median 6.7. npm reclassified the affected versions as known malware. Wiz attributed the operation to TeamPCP at moderate confidence on shared infrastructure, the `firedalazer` dead-drop tag, payload kinship, and reuse of the kitty backdoor and Dune-themed exfiltration repos seen elsewhere in the campaign. The same backdoor appeared a few hours later in the [[nx-console]] VS Code extension publish, and Wiz traced credentials harvested here into the [[durabletask-pypi]] compromise that night. The cross-ecosystem aggregate lives on [[shai-hulud-here-we-go-again]]. This record holds the @antv-account evidence.</p>
+      <p>The payload behaved like a worm. Given any usable npm token, it would
+validate the credential, enumerate every package the account could publish,
+fetch each package&#39;s latest tarball, inject the same dropper, and republish.
+Exfiltration ran to `t.m-kosche.com` over HTTPS disguised as OpenTelemetry
+trace traffic, with bodies wrapped in AES-256-GCM and RSA-OAEP. When the
+HTTPS channel failed, the malware fell back to GitHub itself, committing
+harvested data to public repositories on stolen developer accounts. The
+repositories were named under a Dune theme, with the campaign&#39;s banner
+reversed in the description. Socket counted between 2,200 and 2,500 such
+repositories by the end of the day. On infected hosts, the payload also
+rewrote editor and CI configuration files and, on macOS, registered a
+LaunchAgent for a backdoor named `kitty`.</p>
+    
+      <p>Socket said it flagged most malicious versions within six to twelve minutes
+of publish, with a median of 6.7 minutes, and npm reclassified them as known
+malware. In its own writeup, Wiz attributed the operation to TeamPCP at
+moderate confidence based on shared infrastructure, the `firedalazer`
+dead-drop tag, payload kinship with other campaigns, and reuse of the
+`kitty` backdoor and Dune-themed repositories elsewhere in the same wave.
+The same backdoor surfaced a few hours later in the Nx Console VS Code
+extension compromise (see [[nx-console]]), and Wiz said credentials stolen
+in the @antv wave were later used to publish a malicious Microsoft Python
+SDK to PyPI (see [[durabletask-pypi]]). The cross-ecosystem aggregate lives
+on [[shai-hulud-here-we-go-again]]; this record holds the @antv-account
+evidence.</p>
     
   </div>
   

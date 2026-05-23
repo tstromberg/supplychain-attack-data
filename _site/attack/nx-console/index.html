@@ -41,13 +41,58 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>After the August 2025 s1ngularity attack, Nrwl added a manual-approval step to the `nx` npm publish pipeline. Nx Console kept the older setup, in which a single organization member could publish a new VS Code extension version unattended. On 2026-05-18 an attacker used a stolen contributor credential to publish a malicious 18.95.0 build to the Visual Studio Marketplace and to OpenVSX.</p>
+      <p>Nine months after a high-profile worm called s1ngularity tore through the
+Nx ecosystem, a new attacker briefly published a malicious version of the
+popular Nx Console VS Code extension on the Visual Studio Marketplace and
+OpenVSX on May 18, 2026 — and according to StepSecurity, this one came a
+step closer to abusing Sigstore for legitimate-looking provenance
+attestations than any earlier supply-chain compromise.</p>
     
-      <p>The credential came from the TanStack Mini Shai-Hulud compromise a week earlier. That payload had taken GitHub CLI tokens from a Nrwl developer&#39;s machine. The tokens were sufficient to run workflows on the Nx Console repository as a contributor and to reach the extension publish step. The build was on the Visual Studio Marketplace from 12:30 to 12:48 UTC, 18 minutes, and on OpenVSX from 12:33 to 13:09 UTC, 36 minutes.</p>
+      <p>Nx Console is a Visual Studio Code companion extension to the Nx build
+system. After the 2025 s1ngularity incident, Nrwl, the company behind Nx,
+added a manual-approval gate to the `nx` npm publish pipeline. Nx Console
+kept its older setup, in which a single organization member could publish
+a new extension version unattended. On May 18, an attacker used a stolen
+contributor credential to publish a malicious version 18.95.0 to both
+marketplaces.</p>
     
-      <p>The extension fetched and ran an obfuscated multi-channel stealer. The collectors covered Vault tokens, `.npmrc` credentials, AWS metadata endpoints and Secrets Manager, GitHub `ghp_`/`gho_`/`ghs_` tokens and Actions secrets, 1Password CLI sessions, on-disk private keys, database connection strings, GCP service accounts, and Docker credentials. Exfiltration used HTTPS, the GitHub API with the victim&#39;s own tokens, and DNS. On Linux the payload attempted sudoers injection. On macOS it wrote `~/.local/share/kitty/cat.py` and registered `~/Library/LaunchAgents/com.user.kitty-monitor.plist` as a LaunchAgent. StepSecurity also identified Sigstore code in the payload: requests for Fulcio short-lived certificates from `fulcio.sigstore.dev`, log entries to `rekor.sigstore.dev`, and `slsa.dev/provenance/v1` attestations through npm&#39;s OIDC trusted-publisher flow. With the right OIDC material and enough time, the attacker could have published follow-on npm versions that carried valid provenance attestations. The exposure window closed before any such publish landed. The s1ngularity payload from August 2025 had no equivalent capability.</p>
+      <p>According to Nrwl, the credential traced back to the TanStack Mini
+Shai-Hulud compromise a week earlier. That payload had stolen GitHub CLI
+tokens from a Nrwl developer&#39;s machine — enough access to run workflows on
+the Nx Console repository as a contributor and reach the extension publish
+step. The malicious build was live on the Visual Studio Marketplace for
+18 minutes, from 12:30 to 12:48 UTC, and on OpenVSX for 36 minutes, from
+12:33 to 13:09 UTC.</p>
     
-      <p>Microsoft and OpenVSX reported 28 and 41 downloads respectively. Nrwl&#39;s internal analytics counted about 6,000 18.95.0 activations from VS Code in the two days that followed. Nrwl shipped 18.100.0, added a two-admin approval step to Nx Console publishes to match the `nx` npm pipeline, and asked affected users to update, kill any `cat.py` or `__DAEMONIZED` processes, unload the LaunchAgent, delete the persistence files, and rotate every credential reachable from the machine.</p>
+      <p>The extension fetched and ran an obfuscated, multi-channel credential
+stealer. StepSecurity, which published the most detailed dissection of the
+payload, said it harvested Vault tokens, `.npmrc` credentials, AWS metadata
+endpoints and Secrets Manager entries, GitHub `ghp_`, `gho_`, and `ghs_`
+tokens, GitHub Actions secrets, 1Password CLI sessions, on-disk private
+keys, database connection strings, GCP service accounts, and Docker
+credentials. Exfiltration ran over HTTPS, through the GitHub API using the
+victim&#39;s own tokens, and over DNS. On Linux, the payload attempted
+sudoers injection. On macOS, it wrote `~/.local/share/kitty/cat.py` and
+registered `~/Library/LaunchAgents/com.user.kitty-monitor.plist` as a
+LaunchAgent.</p>
+    
+      <p>StepSecurity also identified Sigstore-related code paths in the payload:
+requests for short-lived signing certificates from `fulcio.sigstore.dev`,
+log entries to `rekor.sigstore.dev`, and `slsa.dev/provenance/v1`
+attestations through npm&#39;s OIDC trusted-publisher flow. With the right
+OIDC material and enough time on a runner, the attacker could in principle
+have published follow-on npm versions carrying valid provenance
+attestations — a meaningful escalation over earlier worms, where forged
+provenance was not in reach. The exposure window closed before any such
+publish landed.</p>
+    
+      <p>Microsoft and OpenVSX reported 28 and 41 downloads respectively for
+version 18.95.0. Nrwl&#39;s internal telemetry, however, counted roughly 6,000
+extension activations from VS Code over the next two days. Nrwl shipped
+18.100.0, added a two-admin approval step to Nx Console publishes to mirror
+the `nx` npm pipeline, and instructed affected users to update, kill any
+`cat.py` or `__DAEMONIZED` processes, unload the LaunchAgent, delete the
+persistence files, and rotate every credential reachable from the machine.</p>
     
   </div>
   
