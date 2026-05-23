@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>reviewdog and tj-actions leaked CI secrets</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>reviewdog and tj-actions leaked CI secrets</h1>
+
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Campaign:</strong> reviewdog-tj-actions-2025</div>
+    <div class="meta-item"><strong>Date:</strong> 2025-03-11 to 2025-03-17 (6 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
+    <div class="meta-item"><strong>Impact:</strong> data_exfiltration</div>
+    <div class="meta-item"><strong>User Impact:</strong> 23000</div>
+  </div>
+
+  
+  <h2>Synopsis</h2>
+  <p class="synopsis">The March 2025 GitHub Actions campaign chained a leaked SpotBugs maintainer PAT into reviewdog/action-setup, then into tj-actions/changed-files.</p>
+  
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>This campaign moved through CI trust one mutable tag at a time. Unit 42 traced the earliest known access to a SpotBugs maintainer PAT leaked in December 2024. Months later, that credential was used to move the reviewdog/action-setup v1 tag to malicious code, placing the attacker inside workflows that trusted the official reviewdog action.</p>
+    
+      <p>The reviewdog compromise became the bridge into tj-actions. When tj-actions/changed-files ran a CI workflow that depended on reviewdog/action-setup through tj-actions/eslint-changed-files, the malicious reviewdog code stole a GitHub token with write access to tj-actions/changed-files. The attacker then used that token to point changed-files tags at malicious commits.</p>
+    
+      <p>The first changed-files abuse appears to have targeted Coinbase&#39;s agentkit repository. After that workflow was removed, the attacker widened the blast radius by replacing all tj-actions/changed-files tags with a malicious commit. Public repositories that ran the action could print secrets into public workflow logs, often as double-encoded base64 output.</p>
+    
+      <p>The campaign shows the thin line between dependency metadata and credential disclosure. No package manager was needed; trusted GitHub Action tags were the distribution system. The practical mitigation was to rotate exposed secrets, remove or pin affected actions by full commit SHA, and audit workflow logs from the exposure window.</p>
+    
+  </div>
+  
+
+  
+  <h2>Member Attacks</h2>
+  <div class="record-list">
+    
+      <div class="record-list-item">
+        <div class="timeline-date">2025-03-11</div>
+        <h4><a href="/attack/reviewdog-action-setup/">reviewdog/action-setup leaked GitHub Actions secrets</a></h4>
+        <p class="attack-meta"><strong>Target:</strong> reviewdog/action-setup | <strong>Impact:</strong> data_exfiltration</p>
+      </div>
+    
+      <div class="record-list-item">
+        <div class="timeline-date">2025-03-14</div>
+        <h4><a href="/attack/tj-actions-changed-files/">tj-actions/changed-files leaked CI secrets</a></h4>
+        <p class="attack-meta"><strong>Target:</strong> tj-actions_changed-files | <strong>Impact:</strong> data_exfiltration, credential_theft</p>
+      </div>
+    
+  </div>
+  
+
+  
+  <h2>Notes</h2>
+  <ul>
+    
+      <li>Unit 42 reported a targeted Coinbase phase before the broad tj-actions tag replacement.</li>
+    
+      <li>The Register and StepSecurity reported more than 23,000 repositories used tj-actions/changed-files; this is exposure count, not a confirmed victim count.</li>
+    
+  </ul>
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction" target="_blank">Supply Chain Compromise of tj-actions/changed-files and reviewdog/action-setup</a></li>
+    
+      <li><a href="https://www.wiz.io/blog/new-github-action-supply-chain-attack-reviewdog-action-setup" target="_blank">New GitHub Action supply chain attack reviewdog/action-setup</a></li>
+    
+      <li><a href="https://www.wiz.io/blog/github-action-tj-actions-changed-files-supply-chain-attack-cve-2025-30066" target="_blank">GitHub Action tj-actions/changed-files supply chain attack</a></li>
+    
+      <li><a href="https://www.theregister.com/security/2025/03/17/github-supply-chain-attack-spills-secrets-from-23k-projects/1192629" target="_blank">GitHub supply chain attack spills secrets from 23,000 projects</a></li>
+    
+      <li><a href="https://unit42.paloaltonetworks.com/github-actions-supply-chain-attack/" target="_blank">GitHub Actions Supply Chain Attack</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProFTPD site served backdoored source</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>ProFTPD site served backdoored source</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> proftpd · <a href="https://ftp.proftpd.org" target="_blank">website</a> · <a href="https://github.com/proftpd/proftpd" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2010-11-28 to 2010-12-02 (4 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
+    <div class="meta-item"><strong>Language:</strong> C</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> unauthorized_access_control</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">ProFTPD&#39;s main FTP and rsync distribution server was compromised on November 28, 2010, and the 1.3.3c source archives were replaced with backdoored copies until December 2.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Around 20:00 UTC on November 28, 2010, attackers compromised ProFTPD&#39;s main distribution server, `ftp.proftpd.org`, which also acted as the project&#39;s rsync source for official mirrors. They replaced ProFTPD 1.3.3c source archives with modified copies, so anyone downloading from the official site or mirrors through December 2 could receive poisoned source through the normal project channel.</p>
+    
+      <p>Delivery happened twice: first through the source archive, then through the build. The modified `configure` path compiled `tests/tests.c` and ran it, so a builder could call out before a daemon was installed. The runtime daemon carried a separate patch in `src/help.c`.</p>
+    
+      <p>The backdoor had two faces. At build time, the modified `configure` script compiled and ran `tests/tests.c`, which attempted an HTTP callback to 212.26.42.47 on port 9090. At runtime, a patch in `src/help.c` gave unauthenticated users root shell execution when they issued `HELP ACIDBITCHEZ`. The published diff and hashes turned the incident into a compact lesson in source-release trust: a project server, a mirror network, and a small source patch were enough to turn a widely deployed FTP daemon into a root shell.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>proftpd</strong>
+            
+            <br><span>source_archive</span>
+            <br><a href="https://ftp.proftpd.org" target="_blank">https://ftp.proftpd.org</a>
+            <br><a href="https://github.com/proftpd/proftpd" target="_blank">https://github.com/proftpd/proftpd</a>
+          </td>
+          <td>2010-11-28<br>to 2010-12-02</td>
+          <td>
+            
+              <code>1.3.3c</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>md5:4f2c554d6273b8145095837913ba9e5d</code><br><code>md5:8571bd78874b557e98480ed48e2df1d2</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.theregister.com/2010/12/02/proftpd_backdoor/" target="_blank">Backdoor sneaked into ProFTPD source code</a></li>
+    
+      <li><a href="https://www.zdnet.com/article/open-source-proftpd-hacked-backdoor-planted-in-source-code/" target="_blank">Open source ProFTPD hacked, backdoor planted in source code</a></li>
+    
+      <li><a href="https://www.aldeid.com/wiki/Exploits/proftpd-1.3.3c-backdoor" target="_blank">Exploits/proftpd-1.3.3c-backdoor</a></li>
+    
+      <li><a href="https://lwn.net/Articles/418326/" target="_blank">ProFTPD source archive backdoored</a></li>
+    
+      <li><a href="https://www.linux-magazine.com/Online/News/ProFTPD-Backdoor-Discovered" target="_blank">ProFTPD Backdoor Discovered</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

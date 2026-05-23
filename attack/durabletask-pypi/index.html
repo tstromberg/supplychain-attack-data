@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microsoft durabletask PyPI hit by Mini Shai-Hulud</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Microsoft durabletask PyPI hit by Mini Shai-Hulud</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> durabletask · <a href="https://pypi.org/project/durabletask/" target="_blank">website</a> · <a href="https://github.com/microsoft/durabletask-python" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-05-19</div>
+    <div class="meta-item"><strong>Actor:</strong> TeamPCP (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> Python</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft_data_exfiltration</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration, self_propagation, destruction</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+    <div class="meta-item"><strong>Campaigns:</strong>
+      
+        <a href="/campaign/shai-hulud-here-we-go-again/">Shai-Hulud hits npm and PyPI</a>
+      
+    </div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">TeamPCP published malicious durabletask 1.4.1, 1.4.2, and 1.4.3 to PyPI with a stolen token, bypassing Microsoft&#39;s CI/CD path. The dropper fetched rope.pyz to harvest cloud and password-manager credentials, spread via AWS SSM and kubectl, and conditionally wiped disks.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Microsoft&#39;s official Python SDK for Azure Durable Functions, the PyPI
+package `durabletask`, briefly shipped with a credential stealer on May 19,
+2026, after attackers used a stolen publishing token to push three back-to-
+back malicious releases directly to the package index — bypassing the
+project&#39;s GitHub-based release pipeline entirely.</p>
+    
+      <p>`durabletask` sees roughly 400,000 PyPI downloads per month. Researchers at
+StepSecurity and Wiz, who jointly reconstructed the incident, said versions
+1.4.1, 1.4.2, and 1.4.3 were published inside a 35-minute window before a
+public report and an Amazon Inspector advisory prompted Microsoft to yank
+them. None of the three malicious versions had a matching tag, release, or
+CI/CD run in `microsoft/durabletask-python`. Wiz traced the publishing
+credential to a contributor GitHub account previously implicated in the
+@antv npm wave earlier that morning, and said the attackers copied the
+latest legitimate commit message to disguise the upload while pulling the
+PyPI token from GitHub repository secrets.</p>
+    
+      <p>Each release embedded the dropper a little deeper. Version 1.4.1 patched
+only `__init__.py`. 1.4.2 added a `task.py`. 1.4.3 spread the loader across
+`entities/`, `extensions/`, and `payload/` `__init__.py` files. According
+to StepSecurity, the 14-line dropper ran at import time on Linux and
+fetched a 28 KB second stage called `rope.pyz` from `check.git-service.com`,
+a domain registered through NameSilo three days earlier.</p>
+    
+      <p>`rope.pyz` was an industrial-grade collector. StepSecurity catalogued more
+than 90 on-disk credential paths covering AWS, Azure, GCP, Kubernetes,
+HashiCorp Vault, GitHub, Docker, SSH, infrastructure-as-code state for
+Terraform, Ansible, and Pulumi, shell histories, AI-tooling configurations
+for Claude, Cursor, VS Code MCP, and Codeium, and the 1Password, Bitwarden,
+`pass`, and `gopass` command-line tools. Persistence wrote
+`/tmp/managed.pyz`, installed a systemd unit called `pgsql-monitor.service`
+to mimic a database agent, and marked infected hosts with a
+`~/.cache/.sys-update-check` file.</p>
+    
+      <p>The propagation logic resembled TeamPCP&#39;s other 2026 waves. Where the
+payload found AWS credentials, it issued SSM `SendCommand` calls against
+up to five EC2 instances per profile. Where it found a kubeconfig, it ran
+`kubectl exec` into up to five pods per cluster. Stolen material flowed
+out over three parallel channels: HTTPS POSTs to the C2, GitHub commit
+beacons under the `FIRESCALE` tag using victim tokens, and public
+repositories created on stolen GitHub accounts named for Russian folklore
+figures — BABA-YAGA, KOSCHEI, FIREBIRD, RUSALKA, MOROZKO, and LESHY. The
+malware skipped Russian-locale systems, skipped hosts with two or fewer
+CPU cores, and routed its output to `/dev/null`. A `roulette.py` module
+inspected locale settings for Israeli and Iranian indicators and, when it
+matched, played an audio file and ran `rm -rf /*` with a one-in-six
+probability.</p>
+    
+      <p>Amazon Inspector flagged the packages as MAL-2026-4174. A public report
+landed in `microsoft/durabletask-python` issue #137 at 17:54 UTC. Microsoft
+yanked all three versions ten minutes later. Researchers tied the operation
+to TeamPCP&#39;s broader Mini Shai-Hulud activity through shared
+`t.m-kosche.com` infrastructure and the folklore-naming pattern, even
+though durabletask was a Python package rather than the `@tanstack/setup`
+Node module that drove the May 11 wave. The cross-ecosystem aggregate
+lives on [[shai-hulud-here-we-go-again]]; this record holds the
+durabletask-specific evidence.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>durabletask</strong>
+            
+            <br><span>pypi · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-19</td>
+          <td>
+            
+              <code>1.4.1</code><br><code>1.4.2</code><br><code>1.4.3</code>
+            
+          </td>
+          <td>
+            
+              <code>1.4.0</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://pypi.org/project/durabletask/</code></li>
+    
+      <li><code>mirror</code>: <code>https://github.com/microsoft/durabletask-python/issues/137</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file_sha256:rope.pyz: 069ac1dc7f7649b76bc72a11ac700f373804bfd81dab7e561157b703999f44ce</code></li>
+    
+      <li><code>file:/tmp/managed.pyz</code></li>
+    
+      <li><code>file:/tmp/rope-*.pyz</code></li>
+    
+      <li><code>file:/tmp/.rope_state/ssm_instances.json</code></li>
+    
+      <li><code>file:~/.cache/.sys-update-check</code></li>
+    
+      <li><code>file:~/.cache/.sys-update-check-k8s</code></li>
+    
+      <li><code>file:pgsql-monitor.service</code></li>
+    
+      <li><code>file:roulette.py</code></li>
+    
+      <li><code>domain:check.git-service.com</code></li>
+    
+      <li><code>domain:t.m-kosche.com</code></li>
+    
+      <li><code>ipv4:160.119.64.3</code></li>
+    
+      <li><code>ipv4:83.142.209.194</code></li>
+    
+      <li><code>repository:BABA-YAGA</code></li>
+    
+      <li><code>repository:KOSCHEI</code></li>
+    
+      <li><code>repository:FIREBIRD</code></li>
+    
+      <li><code>repository:RUSALKA</code></li>
+    
+      <li><code>repository:MOROZKO</code></li>
+    
+      <li><code>repository:LESHY</code></li>
+    
+      <li><code>tag:FIRESCALE</code></li>
+    
+      <li><code>advisory:MAL-2026-4174</code></li>
+    
+      <li><code>advisory:SNYK-PYTHON-DURABLETASK-16761538</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Hashes</h2>
+  <ul class="hashes">
+    
+      <li><code>sha256:7d80b3ef74ad7992b93c31966962612e4e2ceb93e7727cdbd1d2a9af47d44ba8</code></li>
+    
+      <li><code>sha256:aeaf583e20347bf850e2fabdcd6f4982996ba023f8c2cd56bbd299cfd56516f5</code></li>
+    
+      <li><code>sha256:877ff2531a63393c4cb9c3c86908b62d9c4fc3db971bc231c48537faae6cb3ec</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.stepsecurity.io/blog/microsofts-durabletask-pypi-package-compromised-in-supply-chain-attack" target="_blank">Microsoft&#39;s durabletask PyPI Package Compromised in Supply Chain Attack - StepSecurity</a></li>
+    
+      <li><a href="https://www.aikido.dev/blog/durabletask-package-compromised-mini-shai-hulud" target="_blank">durabletask Package Compromised - Mini Shai-Hulud</a></li>
+    
+      <li><a href="https://snyk.io/blog/durabletask-pypi-supply-chain-attack/" target="_blank">durabletask PyPI Supply Chain Attack - Snyk</a></li>
+    
+      <li><a href="https://www.wiz.io/blog/durabletask-teampcp-supply-chain-attack" target="_blank">durabletask TeamPCP Supply Chain Attack - Wiz</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

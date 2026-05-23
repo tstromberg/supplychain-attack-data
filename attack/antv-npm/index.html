@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AntV ecosystem npm packages hit by TeamPCP</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>AntV ecosystem npm packages hit by TeamPCP</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> @antv · <a href="https://antv.vision/" target="_blank">website</a> · <a href="https://github.com/antvis" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-05-19</div>
+    <div class="meta-item"><strong>Actor:</strong> TeamPCP (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> organization</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft_data_exfiltration</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration, self_propagation, backdoor</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+    <div class="meta-item"><strong>Campaigns:</strong>
+      
+        <a href="/campaign/shai-hulud-here-we-go-again/">Shai-Hulud hits npm and PyPI</a>
+      
+    </div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">On 2026-05-19, TeamPCP took the shared `atool` npm account and published 639 malicious versions across 323 packages — most of the @antv ecosystem and a long tail of standalone neighbors. The bun-based dropper harvested CI/CD secrets and self-propagated via npm.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Hundreds of npm packages from Alibaba&#39;s @antv data-visualization stack —
+plus a long tail of widely used JavaScript utilities that happened to share
+the same maintainer account — were hijacked over a 90-minute stretch on the
+morning of May 19, 2026, and republished as a self-spreading credential
+stealer.</p>
+    
+      <p>The packages were all owned by an npm account called `atool`, the shared
+publishing handle behind the @antv namespace, several smaller scopes, and a
+grab-bag of standalone libraries including `echarts-for-react`,
+`timeago.js`, and `size-sensor`. Researchers at Socket, who first reported
+the activity, said the attacker pushed 639 malicious versions across 323
+packages in two automated waves between 01:39 and 02:56 UTC. SafeDep and
+StepSecurity confirmed roughly the same scope. Wiz, which named the
+attacker TeamPCP, said the broader &quot;Mini Shai-Hulud&quot; wave that day reached
+1,055 versions across 502 packages spanning npm, PyPI, and Composer — most
+of it driven by this single compromised account.</p>
+    
+      <p>According to Socket, the attacker used two delivery paths. Most packages had
+their `package.json` rewritten with a `preinstall` or `postinstall` of
+`bun run index.js`, with the script dropped at the package root. A second
+set instead pointed at a poisoned commit in the `antvis/G2` GitHub
+repository through `optionalDependencies`, where a `prepare` hook ran the
+same code. The payload itself was a half-megabyte, heavily obfuscated Bun
+script that walked the disk for credentials covering every major cloud
+provider, Kubernetes, HashiCorp Vault, SSH, and database connection files,
+then read `/proc/*/mem` on GitHub Actions runners to pull masked CI/CD
+secrets out of the `Runner.Worker` process in plaintext.</p>
+    
+      <p>The payload behaved like a worm. Given any usable npm token, it would
+validate the credential, enumerate every package the account could publish,
+fetch each package&#39;s latest tarball, inject the same dropper, and republish.
+Exfiltration ran to `t.m-kosche.com` over HTTPS disguised as OpenTelemetry
+trace traffic, with bodies wrapped in AES-256-GCM and RSA-OAEP. When the
+HTTPS channel failed, the malware fell back to GitHub itself, committing
+harvested data to public repositories on stolen developer accounts. The
+repositories were named under a Dune theme, with the campaign&#39;s banner
+reversed in the description. Socket counted between 2,200 and 2,500 such
+repositories by the end of the day. On infected hosts, the payload also
+rewrote editor and CI configuration files and, on macOS, registered a
+LaunchAgent for a backdoor named `kitty`.</p>
+    
+      <p>Socket said it flagged most malicious versions within six to twelve minutes
+of publish, with a median of 6.7 minutes, and npm reclassified them as known
+malware. In its own writeup, Wiz attributed the operation to TeamPCP at
+moderate confidence based on shared infrastructure, the `firedalazer`
+dead-drop tag, payload kinship with other campaigns, and reuse of the
+`kitty` backdoor and Dune-themed repositories elsewhere in the same wave.
+The same backdoor surfaced a few hours later in the Nx Console VS Code
+extension compromise (see [[nx-console]]), and Wiz said credentials stolen
+in the @antv wave were later used to publish a malicious Microsoft Python
+SDK to PyPI (see [[durabletask-pypi]]). The cross-ecosystem aggregate lives
+on [[shai-hulud-here-we-go-again]]; this record holds the @antv-account
+evidence.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>@antv namespace</strong>
+            <br><code>@antv/*</code>
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-19</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>echarts-for-react</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-19</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>timeago.js</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-19</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>size-sensor</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-19</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>jest-canvas-mock</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-19</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>jest-date-mock</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-19</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>canvas-nest.js</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-05-19</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/~atool</code></li>
+    
+      <li><code>mirror</code>: <code>https://github.com/antvis</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file:index.js</code></li>
+    
+      <li><code>command:bun run index.js</code></li>
+    
+      <li><code>file:~/.local/share/kitty/cat.py</code></li>
+    
+      <li><code>file:~/Library/LaunchAgents/com.user.kitty-monitor.plist</code></li>
+    
+      <li><code>file:~/.config/systemd/user/kitty-monitor.service</code></li>
+    
+      <li><code>file:.claude/settings.json</code></li>
+    
+      <li><code>file:.claude/setup.mjs</code></li>
+    
+      <li><code>file:.vscode/tasks.json</code></li>
+    
+      <li><code>file:.vscode/setup.mjs</code></li>
+    
+      <li><code>file:.github/workflows/codeql.yml</code></li>
+    
+      <li><code>domain:t.m-kosche.com</code></li>
+    
+      <li><code>domain:m-kosche.com</code></li>
+    
+      <li><code>ipv4:185.95.159.32</code></li>
+    
+      <li><code>url:https://t.m-kosche.com:443/api/public/otel/v1/traces</code></li>
+    
+      <li><code>tag:firedalazer</code></li>
+    
+      <li><code>tag:niagA oG eW ereH :duluH-iahS</code></li>
+    
+      <li><code>file_sha256:cat.py: fb5c97557230a27460fdab01fafcfabeaa49590bafd5b6ef30501aa9e0a51142</code></li>
+    
+      <li><code>file_sha1:cat.py: 783b4019fc5b942a29846132d28441c8fc31bed8</code></li>
+    
+      <li><code>file_md5:cat.py: b06b126b9e26af03a7ef2f8b8e90d446</code></li>
+    
+      <li><code>account:atool (npm)</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.wiz.io/blog/mini-shai-hulud-teampcp-hits-antv-supply-chain" target="_blank">Mini Shai-Hulud: TeamPCP Hits @antv Supply Chain - Wiz</a></li>
+    
+      <li><a href="https://www.stepsecurity.io/blog/shai-hulud-here-we-go-again-mass-npm-supply-chain-attack-hits-the-antv-ecosystem" target="_blank">Shai-Hulud Here We Go Again - Mass npm Supply Chain Attack Hits the AntV Ecosystem - StepSecurity</a></li>
+    
+      <li><a href="https://socket.dev/blog/antv-packages-compromised" target="_blank">@antv Packages Compromised - Socket</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

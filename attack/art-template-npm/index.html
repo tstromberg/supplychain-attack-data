@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>art-template sold to a shell company, then shipped the Coruna iOS exploit kit</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>art-template sold to a shell company, then shipped the Coruna iOS exploit kit</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> art-template · <a href="https://aui.github.io/art-template/" target="_blank">website</a> · <a href="https://github.com/aui/art-template" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2024-11-17 to 2026-05-20 (549 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> UNC6691 (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> maintainer_ownership_transfer</div>
+    <div class="meta-item"><strong>Motive:</strong> cryptocurrency_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> cryptocurrency_theft, wallet_key_theft, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">The author sold `art-template` on 2024-11-17 to KILLER WHAL AI SDN BHD. The new owners shipped 4.13.3, 4.13.5, and 4.13.6 with a browser-bundle loader that fed the Coruna iOS exploit kit through utaq.cfww.shop to steal cryptocurrency wallets on Safari iOS 13.0-17.2.1.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>`art-template` is a Chinese-origin JavaScript template engine, about 26,000 weekly npm
+downloads. The last clean release was 4.13.2 on 2018-11-13. On 2024-11-17 the original
+maintainer, GitHub user `aui` (糖饼), accepted an acquisition offer from KILLER WHAL AI
+SDN BHD, a Malaysian company at 35A Jalan SG3/1, Taman Sri Gombak, registration
+202001036306. The pitch was cash plus continued maintenance. The author ran due
+diligence — SSM, law firm, contract, payment — and transferred npm and GitHub. `aui`
+was renamed to `goofychris`. The npm publisher list for `art-template`,
+`express-art-template`, `art-template-loader`, and `koa-art-template` moved to
+`daughtrymom`, `npmpacketmaintainmember7` at `npmpacketmaintainmember7@proton.me`,
+and `v4v5qc` at `eb8org@gmail.com`. The receiving bank account was later flagged by
+Chinese law enforcement and bank risk controls; the buyer cooperated for months on
+paperwork until the freezes cleared, which kept the transfer plausible.</p>
+    
+      <p>The first injection followed on 2025-03-12 in 4.13.3, published by `v4v5qc`. Node
+`require(&#39;art-template&#39;)` broke at the same release — the new owners had pulled the
+CommonJS compatibility out. The injection lived only in the browser bundle
+`lib/template-web.js`: a `String.fromCharCode`-obfuscated loader that fetched
+`https://git.youzzjizz.com/git.js`, which loaded Baidu Analytics at
+`hm.baidu.com/hm.js?1351a72534dcecfcf4500eda9c5add00`. The original author posted
+a GitHub Issues warning, &quot;v4.13.3 contains a virus,&quot; and reported the package to npm.
+npm did not act. The next day `goofychris` published 4.13.4 with the injection
+removed and opened issue 661 on goofychris/art-template — &quot;We made some mistakes in
+the update two days ago… we wanted to make simple statistics. If this violates any
+rules, we have cleaned it up.&quot; The new maintainers then deleted both the warning
+thread and their own explanation.</p>
+    
+      <p>The npm reports sat. The second wave shipped on 2026-05-19 (4.13.5) and 2026-05-20
+(4.13.6). The injection lived in `lib/template-web.js` again; the Node entry was
+untouched. 4.13.5 wrapped the loader in `String.fromCharCode`; 4.13.6 inlined the
+call in plaintext. The loader fetched `v3.jiathis.com/code/jia.js` from a compromised
+Chinese social-sharing CDN, pinged Baidu Analytics, and gated on `User-Agent` for
+iPhone. For iPhone it injected a zero-pixel iframe behind a closed Shadow DOM
+pointing at `utaq.cfww.shop/gooll/gooll.html` on 180.178.50.158, AS45753, Hong Kong.
+The iframe served a 50 KB fingerprinting loader that classified the device, beaconed
+every ten seconds to `l1ewsu3yjkqeroy.xyz/api/ip-sync/sync` behind Cloudflare, and
+content-addressed each follow-on module by `SHA256(sessionKey + moduleHash)[:40]`
+against session key `cecd08aa6ff548c2`.</p>
+    
+      <p>The final stage was the Coruna iOS exploit kit. Fourteen remote modules, about 606
+KB. Twenty-three Safari and WebKit vulnerabilities chained together. The kit stopped
+at iOS 17.3, matching the CVE-2024-23222 patch for the `cassowary` JavaScriptCore
+type-confusion bug. It dispatched between ARM64 and ARM64_32 builds and ran a
+WebAssembly proof-of-work to confirm a real JavaScriptCore JIT rather than a sandbox.
+The terminal payload was a 31 KB native ARM64 shellcode dropper for the PLASMAGRID
+cryptocurrency-wallet implant. Anything outside Safari on iOS 13.0 to 17.2.1 got only
+the Baidu tracker. Socket attributed the deployment to UNC6691 on Coruna fingerprints
+documented by Google TAG, the JiaThis hijack, the bulk-registered `.shop` pattern,
+the Baidu integration, and the Hong Kong AS45753 infrastructure. Pin `art-template`
+and siblings to 4.13.2; audit caches and bundles for `v3.jiathis.com`,
+`git.youzzjizz.com`, `utaq.cfww.shop`, and `l1ewsu3yjkqeroy.xyz`. The legal trail —
+shell company, contract, due diligence — is the novel part. Account-takeover
+incidents leave forensic seams. A clean sale does not.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>art-template</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2025-03-12<br>to 2026-05-20</td>
+          <td>
+            
+              <code>4.13.3</code><br><code>4.13.5</code><br><code>4.13.6</code>
+            
+          </td>
+          <td>
+            
+              <code>4.13.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/package/art-template</code></li>
+    
+      <li><code>mirror</code>: <code>https://github.com/aui/art-template</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file:lib/template-web.js</code></li>
+    
+      <li><code>file_sha256:loader 49554fde7424c31c.js: f31bdd069fe7966ae11be1f78ee5dd44445938856dd1df12379e0e84a6851f5c</code></li>
+    
+      <li><code>file_sha1:loader 49554fde7424c31c.js: 8064d4e0322f069b3dba13e7957ff0ca7dab7984</code></li>
+    
+      <li><code>file_md5:loader 49554fde7424c31c.js: 6e79ae622b7ef30f31fdbcc2dc65339e</code></li>
+    
+      <li><code>domain:v3.jiathis.com</code></li>
+    
+      <li><code>domain:git.youzzjizz.com</code></li>
+    
+      <li><code>domain:utaq.cfww.shop</code></li>
+    
+      <li><code>domain:l1ewsu3yjkqeroy.xyz</code></li>
+    
+      <li><code>domain:hm.baidu.com</code></li>
+    
+      <li><code>url:https://utaq.cfww.shop/gooll/gooll.html</code></li>
+    
+      <li><code>url:https://l1ewsu3yjkqeroy.xyz/api/ip-sync/sync</code></li>
+    
+      <li><code>ipv4:180.178.50.158</code></li>
+    
+      <li><code>ipv4:172.67.141.14</code></li>
+    
+      <li><code>ipv4:104.21.40.254</code></li>
+    
+      <li><code>cve:CVE-2024-23222</code></li>
+    
+      <li><code>account:daughtrymom (npm)</code></li>
+    
+      <li><code>account:npmpacketmaintainmember7 (npm)</code></li>
+    
+      <li><code>account:v4v5qc (npm)</code></li>
+    
+      <li><code>account:goofychris (GitHub, renamed from aui)</code></li>
+    
+      <li><code>organization:KILLER WHAL AI SDN BHD (Malaysia, registration 202001036306)</code></li>
+    
+      <li><code>campaign_code:CHMK6IG08F42496C22</code></li>
+    
+      <li><code>session_key:cecd08aa6ff548c2</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://github.com/aui/blog/issues/3" target="_blank">The Takeover and Suspect Supply Chain Attack of art-template: A Detailed Account - aui</a></li>
+    
+      <li><a href="https://socket.dev/blog/coruna-respawned-compromised-art-template-npm-package" target="_blank">Coruna Respawned: Compromised art-template npm Package - Socket</a></li>
+    
+      <li><a href="https://safedep.io/art-template-npm-supply-chain-compromise/" target="_blank">art-template npm Supply Chain Compromise - SafeDep</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

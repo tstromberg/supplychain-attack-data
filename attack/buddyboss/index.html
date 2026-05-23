@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuddyBoss updates backdoored WordPress sites</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>BuddyBoss updates backdoored WordPress sites</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> BuddyBoss · <a href="https://www.buddyboss.com" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-03-17 to 2026-03-24 (7 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown French-speaking attacker (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
+    <div class="meta-item"><strong>Language:</strong> php</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, credential_theft, data_exfiltration, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 309</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Attackers used stolen BuddyBoss infrastructure secrets to publish backdoored Platform and Theme updates through the trusted Caseproof update path. Hundreds of WordPress sites exposed credentials, databases, and payment keys.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>BuddyBoss was compromised at the update pipeline, not at each customer site. The attacker already had access to BuddyBoss GitHub organization resources before the public timeline begins. A malicious GitHub Actions workflow ran under a legitimate developer identity and exfiltrated runner tokens, SSH keys, application secrets, and the Caseproof Mothership API key.</p>
+    
+      <p>Those secrets opened the publishing path. The attacker used SSH access to BuddyBoss infrastructure, reached root on an AWS publishing server, and used the `appcenter_key` to talk to the Caseproof licensing system at `licenses.caseproof.com`. Cloudflare blocked the large multipart upload, so the attacker found the Heroku origin behind Cloudflare and uploaded directly with the correct Host header.</p>
+    
+      <p>The malicious artifacts were normal-looking BuddyBoss updates. BuddyBoss Platform was published as version 2.20.3, with later reporting showing a malicious 2.20.4 as well. BuddyBoss Theme was published as 2.19.2. Each package changed one core PHP file: `bp-loader.php` in the platform plugin and `functions.php` in the theme.</p>
+    
+      <p>The backdoors stole WordPress database credentials, secret keys, environment variables, plugin lists, user counts, and server data. They also exposed command execution, file read, reverse shell, and later standalone webshell paths. Ctrl-Alt-Intel recovered C2 logs from 246 or more victim sites; Cybernews reported 309 compromised sites and live Stripe keys among the stolen data.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>BuddyBoss Platform</strong>
+            
+            <br><span>wordpress · plugin</span>
+            <br><a href="https://www.buddyboss.com/platform/" target="_blank">https://www.buddyboss.com/platform/</a>
+            
+          </td>
+          <td>2026-03-17<br>to 2026-03-24</td>
+          <td>
+            
+              <code>2.20.3</code><br><code>2.20.4</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>BuddyBoss Theme</strong>
+            
+            <br><span>wordpress · theme</span>
+            <br><a href="https://www.buddyboss.com/wordpress-themes/buddyboss-theme/" target="_blank">https://www.buddyboss.com/wordpress-themes/buddyboss-theme/</a>
+            
+          </td>
+          <td>2026-03-17<br>to 2026-03-24</td>
+          <td>
+            
+              <code>2.19.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://cybernews.com/security/buddyboss-hack-compromises-hundreds-of-websites/" target="_blank">BuddyBoss platform compromised, hundreds of websites already hacked</a></li>
+    
+      <li><a href="https://ctrlaltintel.com/research/BuddyBoss-1/" target="_blank">The BuddyBoss Attack: Claude&#39;s Supply-Chain Attack</a></li>
+    
+      <li><a href="https://ctrlaltintel.com/research/BuddyBoss-2/" target="_blank">The BuddyBoss Attack: Full Incident Analysis</a></li>
+    
+      <li><a href="https://securityboulevard.com/2026/03/buddyboss-platform-compromised-as-hundreds-of-websites-are-hacked/" target="_blank">BuddyBoss Platform Compromised as Hundreds of Websites Are Hacked</a></li>
+    
+      <li><a href="https://threats.wiz.io/all-incidents/buddyboss-supply-chain-attack" target="_blank">BuddyBoss supply chain attack</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

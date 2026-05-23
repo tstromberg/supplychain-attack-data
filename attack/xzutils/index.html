@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>xz release tarballs hid liblzma backdoor</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>xz release tarballs hid liblzma backdoor</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> xzutils · <a href="https://tukaani.org/xz/" target="_blank">website</a> · <a href="https://github.com/tukaani-project/xz" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2024-02-24 to 2024-03-29 (34 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Jia Tan persona (persona)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> Shell</div>
+    <div class="meta-item"><strong>Cause:</strong> social_engineering</div>
+    <div class="meta-item"><strong>Motive:</strong> espionage_strategic_advantage</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">An attacker using the Jia Tan persona gained xz utils maintainer access after a long social-engineering campaign, then shipped official 5.6.0 and 5.6.1 release tarballs that hid a liblzma backdoor in test files and m4 build logic.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The xz utils compromise was not a smash-and-grab package takeover. An attacker operating as Jia Tan spent years becoming a trusted contributor, obtained release authority, and then used that position to publish official source tarballs for versions 5.6.0 and 5.6.1. The malicious release path mattered: parts of the backdoor lived in generated tarball content and obfuscated test files, while GitHub&#39;s auto-generated source archives did not contain the same complete payload.</p>
+    
+      <p>The backdoor activated only under narrow build and runtime conditions, including x86-64 Linux, gcc, GNU ld, glibc-like environments, and Debian or RPM package-build signals. When the resulting liblzma was pulled into patched OpenSSH builds through libsystemd, it could intercept sshd&#39;s authentication path and respond to an attacker-controlled key with hidden command execution.</p>
+    
+      <p>Andres Freund caught the attack by following performance anomalies, valgrind complaints, and unexpected liblzma CPU time in sshd on Debian unstable. That chance discovery kept the backdoor mostly inside unstable, testing, and pre-release distribution channels rather than stable Linux fleets. The incident exposed both the reach of small infrastructure libraries and the weakness of maintainer trust as a single control.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>xzutils</strong>
+            
+            <br><span>github · source_archive</span>
+            <br><a href="https://tukaani.org/xz/" target="_blank">https://tukaani.org/xz/</a>
+            <br><a href="https://github.com/tukaani-project/xz" target="_blank">https://github.com/tukaani-project/xz</a>
+          </td>
+          <td>2024-02-24<br>to 2024-03-29</td>
+          <td>
+            
+              <code>5.6.0</code><br><code>5.6.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:64c34a523acb4925cf066c8e9ac66d53b0e7456e14364d12186616abc1e3c7ce</code><br><code>sha256:ae2c4f079373aca8bcaf96225defedc0db2274686bcbec5f9e2d2ba344569345</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2024-3094" target="_blank">NVD: CVE-2024-3094</a></li>
+    
+      <li><a href="https://www.openwall.com/lists/oss-security/2024/03/29/4" target="_blank">backdoor in upstream xz/liblzma leading to ssh server compromise</a></li>
+    
+      <li><a href="https://research.swtch.com/xz-timeline" target="_blank">Timeline of the xz open source attack</a></li>
+    
+      <li><a href="https://research.swtch.com/xz-backdoor" target="_blank">The xz attack shell script</a></li>
+    
+      <li><a href="https://doublepulsar.com/inside-the-failed-attempt-to-backdoor-ssh-globally-that-got-caught-by-chance-bbfe628fafdd" target="_blank">Inside the failed attempt to backdoor SSH globally - that got caught by chance</a></li>
+    
+      <li><a href="https://web.archive.org/web/20240402162054/https://www.cisa.gov/news-events/alerts/2024/03/29/reported-supply-chain-compromise-affecting-xz-utils-data-compression-library" target="_blank">Reported Supply Chain Compromise Affecting XZ Utils Data Compression Library</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

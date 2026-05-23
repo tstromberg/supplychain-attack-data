@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VeloraDEX SDK installed macOS backdoor</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>VeloraDEX SDK installed macOS backdoor</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> velora-dex-sdk · <a href="https://github.com/VeloraDEX/sdk" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-04-07</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> backdoor</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">@velora-dex/sdk 9.4.1 was published directly to npm with no matching source commit. Importing it fetched a macOS backdoor and registered launchctl persistence.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The VeloraDEX compromise was registry-only. The attacker published `@velora-dex/sdk@9.4.1` to npm without changing the GitHub repository, so source review of the default branch would not show the payload.</p>
+    
+      <p>The malicious delta was small. `package.json` carried the version bump, and `dist/index.js` gained three prepended lines. Those lines decoded and ran a shell command when application code imported the package.</p>
+    
+      <p>The command downloaded `install.sh` from `89.36.224.5`. On macOS, the script created `~/Library/Application Support/com.apple.Terminal/`, selected an ARM64 or Intel `profiler` binary, made it executable, and registered it with `launchctl submit -l zsh.profiler`.</p>
+    
+      <p>The attack did not depend on npm lifecycle hooks. `--ignore-scripts` would not stop it; the trigger was `require(&#39;@velora-dex/sdk&#39;)`. StepSecurity recommended pinning to 9.4.0 or earlier, removing the launchctl service and dropped binary, and rotating secrets from affected machines.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>velora-dex-sdk</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            <br><a href="https://github.com/VeloraDEX/sdk" target="_blank">https://github.com/VeloraDEX/sdk</a>
+          </td>
+          <td>2026-04-07</td>
+          <td>
+            
+              <code>9.4.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.stepsecurity.io/blog/velora-dex-sdk-compromised-on-npm-malicious-version-drops-macos-backdoor-via-launchctl-persistence" target="_blank">@velora-dex/sdk Compromised on npm: Malicious Version Drops macOS Backdoor via launchctl Persistence</a></li>
+    
+      <li><a href="https://github.com/VeloraDEX/sdk/issues/233" target="_blank">SDK 9.4.1 compromised on npm</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juniper ScreenOS firmware hid backdoors</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Juniper ScreenOS firmware hid backdoors</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> juniper-screenos · <a href="https://juniper.net" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2012-09-01 to 2015-12-17 (1202 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Nation-state (state)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> firmware</div>
+    <div class="meta-item"><strong>Language:</strong> c</div>
+    <div class="meta-item"><strong>Cause:</strong> source_code_compromise</div>
+    <div class="meta-item"><strong>Motive:</strong> espionage</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_access, vpn_traffic_decryption</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> source</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Juniper disclosed that unauthorized code entered official ScreenOS firmware for NetScreen firewalls. CVE-2015-7755 opened hidden SSH/Telnet admin access; CVE-2015-7756 could let an observer decrypt VPN traffic.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The Juniper ScreenOS incident was not a normal bug disclosure. Juniper said an internal review found unauthorized code in ScreenOS, the operating system for NetScreen firewalls. The affected firmware was official vendor firmware, distributed through the normal ScreenOS channel, and the product sat directly on network boundaries.</p>
+    
+      <p>CVE-2015-7755 was the administrative-access backdoor. Rapid7 and Fox-IT analysis found an authentication path in SSH and Telnet that compared the supplied password against the string `&lt;&lt;&lt; %s(un=&#39;%s&#39;) = %u`. The string looked like a format string, but on vulnerable builds it was a master password: any username could reach an administrative shell with the highest privileges.</p>
+    
+      <p>CVE-2015-7756 was a separate VPN decryption vulnerability. Juniper described it as independent of the authentication bypass. Public cryptographic analysis tied it to ScreenOS random-number generation, Dual_EC_DRBG, and a changed Q parameter. The attacker did not need a large code change; replacing the parameter was enough if the holder of the corresponding secret could see the right output.</p>
+    
+      <p>The deeper lesson was that ScreenOS already carried dangerous cryptographic structure. Dual_EC output was meant to be hidden behind an ANSI X9.17 generator, but researchers found paths where raw output could surface. The unauthorized parameter change then turned weak plumbing into a practical passive decryption path for VPN traffic.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>Juniper ScreenOS SSH and Telnet authentication backdoor</strong>
+            
+            <br><span>firmware</span>
+            <br><a href="https://juniper.net" target="_blank">https://juniper.net</a>
+            
+          </td>
+          <td>2013-12-01<br>to 2015-12-17</td>
+          <td>
+            
+              <code>6.3.0r17 - 6.3.0r20</code>
+            
+          </td>
+          <td>
+            
+              <code>6.3.0r21</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>Juniper ScreenOS VPN decryption weakness</strong>
+            
+            <br><span>firmware</span>
+            <br><a href="https://juniper.net" target="_blank">https://juniper.net</a>
+            
+          </td>
+          <td>2012-09-01<br>to 2015-12-17</td>
+          <td>
+            
+              <code>6.2.0r15 - 6.2.0r18</code><br><code>6.3.0r12 - 6.3.0r20</code>
+            
+          </td>
+          <td>
+            
+              <code>6.2.0r19</code><br><code>6.3.0r21</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://supportportal.juniper.net/s/article/2015-12-Out-of-Cycle-Security-Bulletin-ScreenOS-Multiple-Security-issues-with-ScreenOS-CVE-2015-7755-CVE-2015-7756" target="_blank">2015-12 Out of Cycle Security Bulletin: ScreenOS: Multiple Security issues with ScreenOS</a></li>
+    
+      <li><a href="https://www.rapid7.com/blog/post/2015/12/20/cve-2015-7755-juniper-screenos-authentication-backdoor/" target="_blank">CVE-2015-7755: Juniper ScreenOS Authentication Backdoor</a></li>
+    
+      <li><a href="https://www.juniper.net/us/en/threatlabs/ips-signatures/detail.TROJAN:BACKDOOR:SCREENOS-PWD.html" target="_blank">TROJAN: Juniper ScreenOS Telnet Backdoor Password Attempt</a></li>
+    
+      <li><a href="https://www.wired.com/2015/12/researchers-solve-the-juniper-mystery-and-they-say-its-partially-the-nsas-fault/" target="_blank">Researchers Solve the Juniper Mystery and They Say It&#39;s Partially the NSA&#39;s Fault</a></li>
+    
+      <li><a href="https://blog.fox-it.com/2015/12/20/deepdive-into-cve-2015-7755-juniper-screenos-authentication-backdoor/" target="_blank">Deep dive into CVE-2015-7755 Juniper ScreenOS authentication backdoor</a></li>
+    
+      <li><a href="https://www.kb.cert.org/vuls/id/640184" target="_blank">Juniper ScreenOS contains multiple vulnerabilities</a></li>
+    
+      <li><a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/" target="_blank">On the Juniper backdoor</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

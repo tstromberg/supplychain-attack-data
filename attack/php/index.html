@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PHP source received backdoor commits</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>PHP source received backdoor commits</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> php · <a href="https://github.com/php/php-src" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2021-03-28</div>
+    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> C</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> espionage_strategic_advantage</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> source</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Attackers pushed two malicious php-src commits through git.php.net HTTPS authentication. The backdoor checked for a `User-Agentt: zerodium` header and could execute PHP code.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The PHP project still treated `git.php.net` as canonical. On March 28, 2021, two commits landed in `php-src` under the names of Rasmus Lerdorf and Nikita Popov. The commits looked like ordinary maintenance. They were not.</p>
+    
+      <p>The payload touched the PHP interpreter path and used an HTTP header trigger. If a request supplied the misspelled `User-Agentt` header beginning with `zerodium`, the injected code evaluated attacker-controlled PHP. A production build from that tree would have turned the runtime itself into a remote execution surface.</p>
+    
+      <p>The first response treated the event as likely PHP-hosted Git infrastructure compromise. A later update changed the picture. Access logs showed the malicious commits were pushed over HTTPS using password authentication through `git-http-backend`, outside gitolite&#39;s SSH path. The project no longer believed the `git.php.net` server itself had been compromised, but considered it possible that the old `master.php.net` user database had leaked.</p>
+    
+      <p>The response was architectural. PHP made GitHub the primary repository host, made `git.php.net` and `svn.php.net` read-only, migrated `master.php.net` to `main.php.net`, reset all php.net passwords, moved password storage to bcrypt, and removed the need to keep HTTP Digest-compatible MD5 password material. The backdoor did not become a stable release; its importance is structural. One accepted commit in the language source tree could have put hostile behavior inside every downstream build.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>php</strong>
+            
+            <br><span>revision_control_system</span>
+            <br><a href="https://git.php.net" target="_blank">https://git.php.net</a>
+            <br><a href="https://github.com/php/php-src" target="_blank">https://github.com/php/php-src</a>
+          </td>
+          <td>2021-03-28</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://news-web.php.net/php.internals/113838" target="_blank">Changes to Git commit workflow</a></li>
+    
+      <li><a href="https://news-web.php.net/php.internals/113981" target="_blank">Update on git.php.net incident</a></li>
+    
+      <li><a href="https://flast101.github.io/php-8.1.0-dev-backdoor-rce/" target="_blank">PHP 8.1.0-dev Backdoor Remote Code Execution</a></li>
+    
+      <li><a href="https://www.bleepingcomputer.com/news/security/phps-git-server-hacked-to-add-backdoors-to-php-source-code/" target="_blank">PHP&#39;s Git server hacked to add backdoors to PHP source code</a></li>
+    
+      <li><a href="https://github.com/php/php-src/issues/6900" target="_blank">php-src issue 6900</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

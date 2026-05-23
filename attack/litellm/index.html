@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LiteLLM PyPI release stole credentials</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>LiteLLM PyPI release stole credentials</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> litellm · <a href="https://github.com/BerriAI/litellm" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-03-24</div>
+    <div class="meta-item"><strong>Actor:</strong> Advanced Persistent Threat (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> Python</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft_lateral_movement</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, system_compromise</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">TeamPCP compromised LiteLLM PyPI releases 1.82.7 and 1.82.8 with a credential-stealing payload that evolved from a proxy-module trigger to a wheel-level .pth file executed by Python at interpreter startup.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>LiteLLM was a downstream hit from the Trivy compromise. According to LiteLLM maintainers, a bad Trivy scanner ran in the project&#39;s CI/CD pipeline and exposed the PyPI publishing token. The attacker used that token to publish LiteLLM 1.82.7 and 1.82.8 to PyPI.</p>
+    
+      <p>The delivery path was direct Python package installation. The Register and LiteLLM maintainers identified `litellm_init.pth` in the compromised packages; Python processes `.pth` files at interpreter startup, so version 1.82.8 could execute before an application imported LiteLLM. The official LiteLLM Proxy Docker path was reported not impacted because it pinned dependencies and did not use the compromised PyPI packages.</p>
+    
+      <p>The payload collected environment, SSH, cloud, Kubernetes, package-manager, CI/CD, and wallet secrets. It encrypted the archive using the TeamPCP RSA/AES pattern and wrote the stolen material as `tpcp.tar.gz`. Where Kubernetes permissions allowed, the malware also attempted privileged pod deployment for node access.</p>
+    
+      <p>BerriAI removed the affected PyPI releases, deleted publishing tokens, rotated maintainer accounts, paused new releases, and engaged Mandiant while reviewing repositories and CI/CD. PyPA&#39;s advisory told anyone who installed and ran the affected package to assume credentials available to the LiteLLM environment were exposed and rotate them from clean systems.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>litellm</strong>
+            
+            <br><span>pypi · source_archive</span>
+            
+            <br><a href="https://github.com/BerriAI/litellm" target="_blank">https://github.com/BerriAI/litellm</a>
+          </td>
+          <td>2026-03-24</td>
+          <td>
+            
+              <code>1.82.7</code><br><code>1.82.8</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:71e35aef03099cd1f2d6446734273025a163597de93912df321ef118bf135238</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://blog.dreamfactory.com/five-supply-chain-attacks-in-twelve-days-how-march-2026-broke-open-source-trust-and-what-comes-next" target="_blank">Five Supply Chain Attacks in Twelve Days</a></li>
+    
+      <li><a href="https://docs.litellm.ai/blog/security-update-march-2026" target="_blank">LiteLLM Security Update - March 2026</a></li>
+    
+      <li><a href="https://cycode.com/blog/lite-llm-supply-chain-attack/" target="_blank">LiteLLM Supply Chain Attack</a></li>
+    
+      <li><a href="https://www.stepsecurity.io/blog/litellm-credential-stealer-hidden-in-pypi-wheel" target="_blank">LiteLLM Credential Stealer Hidden in PyPI Wheel</a></li>
+    
+      <li><a href="https://github.com/BerriAI/litellm/issues/24512" target="_blank">Security: Supply Chain Incident</a></li>
+    
+      <li><a href="https://www.theregister.com/security/2026/03/24/litellm-infected-with-credential-stealing-code-via-trivy/5223422" target="_blank">LiteLLM loses game of Trivy pursuit, gets compromised</a></li>
+    
+      <li><a href="https://news.ycombinator.com/item?id=47502858" target="_blank">Hacker News: LiteLLM maintainer update on compromised PyPI packages</a></li>
+    
+      <li><a href="https://github.com/BerriAI/litellm/discussions/24575" target="_blank">Security: Supply Chain Incident - Friday Townhall</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

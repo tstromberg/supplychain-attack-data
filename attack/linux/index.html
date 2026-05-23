@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linux bk2cvs mirror received backdoor</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Linux bk2cvs mirror received backdoor</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> linux · <a href="https://www.kernel.org" target="_blank">website</a> · <a href="https://git.kernel.org" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2003-11-05</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> os</div>
+    <div class="meta-item"><strong>Language:</strong> C</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> unauthorized_access_control</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, privilege_escalation</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> source</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">An attacker attempted to insert a two-line backdoor into the Linux kernel&#39;s bk2cvs mirror by modifying kernel/exit.c outside the authoritative BitKeeper workflow.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>In November 2003, the Linux kernel was maintained in BitKeeper, with a separate CVS mirror available for developers who could not or would not use BitKeeper directly. An attacker modified the CVS-side `kernel/exit.c` history on kernel.bkbits.net instead of landing a real BitKeeper changeset. That distinction mattered: the poisoned revisions appeared in the mirror, but not in the authoritative development tree used for mainline integration.</p>
+    
+      <p>The change was small enough to be read and large enough to matter. It lived in `kernel/exit.c`, in the wait path, and looked like an error check. The planted CVS revisions lacked normal BitKeeper logical-change backlinks, which made the source-control metadata as important as the C code.</p>
+    
+      <p>The inserted code checked for `options == (__WCLONE|__WALL)` and then evaluated `current-&gt;uid = 0`, turning what looked like a comparison into an assignment that would make the caller root. BitMover&#39;s conversion checks caught the fraud quickly because normal CVS mirror entries carried logical-change backlinks to BitKeeper changesets, while the planted revisions did not. The incident became an early, concrete example of why source-control provenance matters as much as code review.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>linux</strong>
+            
+            <br><span>revision_control_system</span>
+            <br><a href="https://bkbits.net" target="_blank">https://bkbits.net</a>
+            
+          </td>
+          <td>2003-11-05</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file:kernel/exit.c</code></li>
+    
+      <li><code>code:current-&gt;uid = 0</code></li>
+    
+      <li><code>code:options == (__WCLONE|__WALL)</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://blog.citp.princeton.edu/2013/10/09/the-linux-backdoor-attempt-of-2003/" target="_blank">The Linux Backdoor Attempt of 2003</a></li>
+    
+      <li><a href="https://lwn.net/Articles/57135/" target="_blank">An attempt to backdoor the kernel</a></li>
+    
+      <li><a href="https://lwn.net/Articles/57137/" target="_blank">BK2CVS problem</a></li>
+    
+      <li><a href="https://lwn.net/Articles/57237/" target="_blank">LWN: Almost right</a></li>
+    
+      <li><a href="http://phrack.org/issues/62/4.html#article" target="_blank">Phrack: Linux on-the-fly kernel patching without LKM</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eScan antivirus updates delivered GuptiMiner</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>eScan antivirus updates delivered GuptiMiner</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> eScan · <a href="https://escanav.com" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-01-20 to 2026-01-21 (1 day)</div>
+    <div class="meta-item"><strong>Actor:</strong> Third Party (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
+    <div class="meta-item"><strong>Language:</strong> C++</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> remote_access_persistence</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> persistence, remote_access, defense_evasion</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Attackers used eScan&#39;s legitimate update infrastructure to ship a trojanized Reload.exe. The payload disabled updates, planted persistence, and contacted C2 infrastructure.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>On January 20, 2026, eScan customers received a malicious antivirus component through the product&#39;s legitimate update path. eScan&#39;s advisory said unauthorized access to one regional update server configuration placed an unauthorized file in the update distribution path for roughly two hours. Morphisec detected and blocked activity the same day, and Kaspersky later confirmed the supply-chain route.</p>
+    
+      <p>The substituted file was `Reload.exe`, normally located at `C:&#92;Program Files (x86)&#92;eScan&#92;reload.exe`. The attacker gave the binary a fake, invalid digital signature and made it run only from the expected Program Files path. Once launched, it initialized the CLR inside the process and loaded a small .NET executable derived from UnmanagedPowerShell.</p>
+    
+      <p>The PowerShell chain first attacked the security product itself. It deleted or backed up selected eScan files, added broad antivirus exclusions, tried to map eScan update hosts to `2.3.4.0` in the hosts file, and changed database registry values. It wrote a debug log to `C:&#92;ProgramData&#92;euapp.log` and replaced `CONSCTLX.exe` with a persistent payload.</p>
+    
+      <p>Persistence had two paths. One payload stored encoded PowerShell in `HKLM&#92;Software&#92;E9F9EEC3-86CA-4EBE-9AA4-1B55EE8D114E` and launched it through the scheduled task `Microsoft&#92;Windows&#92;Defrag&#92;CorelDefrag`. Another ran through the replaced `CONSCTLX.exe`, kept the eScan GUI update date looking fresh, and could fetch RC4-encrypted shellcode from fallback C2 infrastructure. eScan isolated and rebuilt the affected infrastructure, rotated credentials globally, and told affected customers to run remediation tooling.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>eScan Reload.exe update component</strong>
+            <br><code>Reload.exe</code>
+            <br><span>eScan update service · binary_archive</span>
+            <br><a href="https://escanav.com" target="_blank">https://escanav.com</a>
+            
+          </td>
+          <td>2026-01-20<br>to 2026-01-21</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:36ef2ec9ada035c56644f677dab65946798575e1d8b14f1365f22d7c68269860</code><br><code>sha256:674943387cc7e0fd18d0d6278e6e4f7a0f3059ee6ef94e0976fae6954ffd40dd</code><br><code>sha256:386a16926aff225abc31f73e8e040ac0c53fb093e7daf3fbd6903c157d88958c</code><br><code>sha256:bec369597633eac7cc27a698288e4ae8d12bdd9b01946e73a28e1423b17252b1</code><br><code>sha1:1617949c0c9daa2d2a5a80f1028aeb95ce1c0dee</code><br><code>sha1:a928bddfaa536c11c28c8d2c5d16e27cbeaf6357</code><br><code>sha1:ebaf9715d7f34a77a6e1fd455fe0702274958e20</code><br><code>sha1:96cdd8476faa7c6a7d2ad285658d3559855b168d</code><br><code>sha1:2d2d58700a40642e189f3f1ccea41337486947f5</code><br><code>sha1:eec1a5e3bb415d12302e087a24c3f4051fca040e</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://download1.mwti.net/documents/Advisory/eScan_Security_Advisory_2026.pdf" target="_blank">eScan Security Advisory ESCAN-2026-001</a></li>
+    
+      <li><a href="https://www.morphisec.com/blog/critical-escan-threat-bulletin/" target="_blank">Threat Bulletin: Critical eScan Supply Chain Compromise</a></li>
+    
+      <li><a href="https://securelist.com/escan-supply-chain-attack/118688/" target="_blank">Supply chain attack on eScan antivirus: detecting and remediating malicious updates</a></li>
+    
+      <li><a href="https://www.bleepingcomputer.com/news/security/escan-confirms-update-server-breached-to-push-malicious-update/" target="_blank">eScan confirms update server breached to push malicious update</a></li>
+    
+      <li><a href="https://www.techradar.com/pro/security/top-antivirus-hacked-to-push-out-a-malicious-update-find-out-if-youre-affected" target="_blank">Top antivirus hacked to push out a malicious update - find out if you&#39;re affected</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

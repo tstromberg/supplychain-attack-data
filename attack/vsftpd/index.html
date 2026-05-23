@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vsftpd distribution site served backdoor</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>vsftpd distribution site served backdoor</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> vsftpd · <a href="https://security.appspot.com" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2011-06-30 to 2011-07-03 (3 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> daemon</div>
+    <div class="meta-item"><strong>Language:</strong> C</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> unauthorized_access_control</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">The official vsftpd 2.3.4 source archive was replaced with a backdoored tarball around June 30 to July 1, 2011, and removed on July 3.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>In early July 2011, Chris Evans warned that the master vsftpd download for `vsftpd-2.3.4.tar.gz` had been replaced with a backdoored tarball. Rapid7&#39;s Metasploit module later placed the introduction window between June 30 and July 1, with removal on July 3. The bad archive had SHA-256 `2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5`, and its detached GPG signature failed against Evans&#39; signing key.</p>
+    
+      <p>The delivery was the official source archive. The code change did not need a vulnerable parser or malformed FTP command. It changed the daemon being built, and the failed detached signature was the clean technical signal that the archive and release key no longer matched.</p>
+    
+      <p>The payload was blunt and memorable. The diff showed `str.c` checking for the byte sequence `0x3a 0x29`, the ASCII smiley `:)`, and calling `vsf_sysutil_extra()`. The added function in `sysdeputil.c` created a TCP listener on port 6200, accepted a connection, duplicated it onto standard input, output, and error, then executed `/bin/sh`.</p>
+    
+      <p>There was no installation beacon, which meant the attacker likely needed download logs, broad scanning, or prior knowledge of targets to find victims. Evans moved the project download to a more trusted host and published the warning with a diff reference so administrators could verify both source integrity and runtime exposure.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>vsftpd</strong>
+            
+            <br><span>source_archive</span>
+            <br><a href="https://security.appspot.com" target="_blank">https://security.appspot.com</a>
+            
+          </td>
+          <td>2011-06-30<br>to 2011-07-03</td>
+          <td>
+            
+              <code>2.3.4</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>md5:a2bfd376c14ec3a83553c0c1aac0d1ff</code><br><code>sha1:26043b532863a0b354d0b7937ad7fed75c1b0a32</code><br><code>sha256:2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://scarybeastsecurity.blogspot.com/2011/07/alert-vsftpd-download-backdoored.html" target="_blank">Alert: vsftpd download backdoored</a></li>
+    
+      <li><a href="https://web.archive.org/web/20210127090552/https://scarybeastsecurity.blogspot.com/2011/07/alert-vsftpd-download-backdoored.html" target="_blank">Archived: Alert: vsftpd download backdoored</a></li>
+    
+      <li><a href="https://www.rapid7.com/db/modules/exploit/unix/ftp/vsftpd_234_backdoor/" target="_blank">VSFTPD 2.3.4 Backdoor Command Execution</a></li>
+    
+      <li><a href="https://web.archive.org/web/20210228222523/https://pastebin.com/AetT9sS5" target="_blank">Archived vsftpd 2.3.4 backdoor diff</a></li>
+    
+      <li><a href="https://pastebin.com/AetT9sS5" target="_blank">vsftpd 2.3.4 backdoor diff</a></li>
+    
+      <li><a href="https://github.com/DoctorKisow/vsftpd-2.3.4" target="_blank">GitHub: DoctorKisow/vsftpd-2.3.4</a></li>
+    
+      <li><a href="https://github.com/advisories/GHSA-qf3g-hgw2-8r8h" target="_blank">GitHub Advisory Database: CVE-2011-2523</a></li>
+    
+      <li><a href="https://www.computerworld.com/article/2518230/vsftpd-developer-confirms-backdoor-in-version-2-3-4.html" target="_blank">vsftpd developer confirms backdoor in version 2.3.4</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

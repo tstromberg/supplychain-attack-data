@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kong Ingress image shipped cryptominer</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Kong Ingress image shipped cryptominer</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> kong-ingress-controller · <a href="https://github.com/Kong/kubernetes-ingress-controller" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2024-12-23 to 2025-01-03 (11 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
+    <div class="meta-item"><strong>Language:</strong> Binary</div>
+    <div class="meta-item"><strong>Cause:</strong> ci_cd_exploit</div>
+    <div class="meta-item"><strong>Motive:</strong> financial_gain</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> financial_exploitation, cryptojacking</div>
+    <div class="meta-item"><strong>User Impact:</strong> 202</div>
+    <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">An attacker used a pull_request_target workflow weakness on an old Kong Ingress Controller branch to steal CI secrets and publish an unauthorized DockerHub image for version 3.4.0.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Kong had already received a November 2024 report about a Pwn Request path in the KIC repository. The active branches were changed, but old unused branches still had workflows triggered by `pull_request_target`. On December 23, an attacker opened a pull request against one of those branches and used it to reach CI secrets.</p>
+    
+      <p>The attacker obtained a GitHub personal access token used by KIC automation. Kong later said the malicious payload was probably inserted through a transiently compromised GitHub Actions pipeline, not by direct theft of a DockerHub token. The attacker pushed an unauthorized image so the DockerHub `:latest`, `:3.4`, and `:3.4.0` tags pointed to the compromised build.</p>
+    
+      <p>Users reported high CPU usage on December 29. Kong reproduced the behavior on January 2 and found the public 3.4.0 image making DNS requests to subdomains of `supportxmr.com`. Third-party analysis concluded that the only malicious payload was XMRig. ARMO also described runtime behavior consistent with cryptomining, including high CPU use, communication with `pool.supportxmr.com`, and fileless execution through `memfd_create`.</p>
+    
+      <p>Kong deleted the affected 3.4.0 tag, rebuilt from a clean environment, published 3.4.1, and moved clean images back under the 3.4 and latest tags. The advisory told users who pulled 3.4.0 between December 22, 2024 and January 3, 2025 to remove the image from clusters and internal registries and pull the remediated image.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>kong-ingress-controller</strong>
+            <br><code>kong/kubernetes-ingress-controller</code>
+            <br><span>docker · oci_image</span>
+            <br><a href="https://docker.io" target="_blank">https://docker.io</a>
+            <br><a href="https://github.com/Kong/kubernetes-ingress-controller" target="_blank">https://github.com/Kong/kubernetes-ingress-controller</a>
+          </td>
+          <td>2024-12-23<br>to 2025-01-03</td>
+          <td>
+            
+              <code>3.4.0</code>
+            
+          </td>
+          <td>
+            
+              <code>3.4.1</code>
+            
+          </td>
+          <td>
+            
+              <code>sha256:a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43</code><br><code>sha256:4e3bbca1ba0bf9f0d53c8b1cc07bf92d9b1d41b3f066fdf4aec7cdd8c21ca3b7</code><br><code>sha256:e164e6e21c661679c556d16638300c25e16d86bb2d567ad66b4181f1a65f4788</code><br><code>sha256:56ff46874f0536c289ff38af4cb308af8f7e6156e3f9d9227b71004d2042a4e6</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://github.com/Kong/kubernetes-ingress-controller/security/advisories/GHSA-58mg-ww7q-xw3p" target="_blank">Unauthorized image of Kong Ingress Controller v.3.4.0</a></li>
+    
+      <li><a href="https://konghq.com/blog/product-releases/december-2024-unauthorized-kong-ingress-controller-3-4-0-build" target="_blank">December 2024 Unauthorized Kong Ingress Controller 3.4.0 Build</a></li>
+    
+      <li><a href="https://hackread.com/malicious-kong-ingress-controller-image-dockerhub/" target="_blank">Malicious Kong Ingress Controller Image Found on DockerHub</a></li>
+    
+      <li><a href="https://www.armosec.io/blog/kong-ingress-controller-cryptojacking/" target="_blank">Tackling the recent Kong ingress controller security incident with ARMO&#39;s behavioral CADR</a></li>
+    
+      <li><a href="https://github.com/Kong/kubernetes-ingress-controller/issues/6907" target="_blank">Kong-ingress-controller 3.4 has high CPU usage when running 2 pods</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

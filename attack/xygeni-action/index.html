@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xygeni v5 tag pointed at C2 backdoor</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Xygeni v5 tag pointed at C2 backdoor</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> xygeni-action · <a href="https://github.com" target="_blank">website</a> · <a href="https://github.com/xygeni/xygeni-action" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-03-03 to 2026-03-10 (7 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> ci_cd_plugin</div>
+    <div class="meta-item"><strong>Language:</strong> YAML/Shell</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft_remote_access</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> remote_code_execution, credential_theft</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Compromised Xygeni maintainer and GitHub App credentials moved the mutable v5 tag to a backdoored commit. Workflows pinned to xygeni-action@v5 received a C2 reverse shell.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>On 2026-03-03, an attacker used compromised Xygeni maintainer credentials and a GitHub App token to introduce the same malicious payload through three pull requests. The pull requests were closed, but the attacker moved the mutable `v5` tag to the backdoored commit.</p>
+    
+      <p>That tag move was the release. Any workflow using `xygeni/xygeni-action@v5` resolved to commit `4bf1d4e19ad81a3e8d4063755ae0f482dd3baf12`, even though the workflow file did not change and the code was not merged to the main branch.</p>
+    
+      <p>The payload was disguised as scanner telemetry in `action.yml`. It registered the runner with `security-verify.91.214.78.178.nip.io`, sent hostname, username, OS, and scanner version data, then polled for commands and executed them with `eval`, returning compressed base64 output.</p>
+    
+      <p>Xygeni removed the compromised tag on 2026-03-10, rotated contributor tokens, enabled release immutability, added tag protection, and recommended pinning by full commit SHA. The incident is a clean example of why mutable GitHub Action tags are production release surfaces.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>xygeni-action</strong>
+            
+            <br><span>github · github_action</span>
+            <br><a href="https://github.com" target="_blank">https://github.com</a>
+            <br><a href="https://github.com/xygeni/xygeni-action" target="_blank">https://github.com/xygeni/xygeni-action</a>
+          </td>
+          <td>2026-03-03<br>to 2026-03-10</td>
+          <td>
+            
+              <code>v5</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.stepsecurity.io/blog/xygeni-action-compromised-c2-reverse-shell-backdoor-injected-via-tag-poisoning" target="_blank">xygeni-action Compromised: C2 Reverse Shell Backdoor Injected via Tag Poisoning</a></li>
+    
+      <li><a href="https://xygeni.io/blog/security-incident-report-xygeni-action-github-action-compromise/" target="_blank">Security Incident Report: xygeni-action GitHub Action Compromise</a></li>
+    
+      <li><a href="https://github.com/xygeni/xygeni-action/pull/46" target="_blank">Pull request 46 in xygeni/xygeni-action</a></li>
+    
+      <li><a href="https://github.com/xygeni/xygeni-action/pull/47" target="_blank">Pull request 47 in xygeni/xygeni-action</a></li>
+    
+      <li><a href="https://github.com/xygeni/xygeni-action/pull/48" target="_blank">Pull request 48 in xygeni/xygeni-action</a></li>
+    
+      <li><a href="https://github.com/xygeni/xygeni-action/issues/54" target="_blank">Security incident discussion in xygeni/xygeni-action</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

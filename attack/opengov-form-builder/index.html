@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenGov form builder carried CanisterWorm</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>OpenGov form builder carried CanisterWorm</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> opengov-form-builder · <a href="https://www.npmjs.com/package/@opengov/form-builder" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-03-21</div>
+    <div class="meta-item"><strong>Actor:</strong> Advanced Persistent Threat (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft_self_propagation</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, self_propagation</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">@opengov/form-builder 0.12.3 added a postinstall backdoor during TeamPCP&#39;s CanisterWorm campaign. The worm used npm tokens stolen through the second Trivy compromise.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>CanisterWorm reached the `@opengov` namespace after the second Trivy compromise. StepSecurity traced the path: malicious Trivy tooling harvested CI/CD secrets, and the stolen npm tokens were then used to publish new package versions across reachable scopes.</p>
+    
+      <p>`@opengov/form-builder@0.12.3` changed the install surface. Earlier releases had no lifecycle script; the compromised release added `postinstall: node index.js`. That gave the package code execution at install time, before application code ran.</p>
+    
+      <p>The JavaScript loader carried a base64-encoded Python implant. It wrote `~/.local/share/pgmon/service.py`, installed a user-level systemd service, and polled an Internet Computer canister for commands. A propagation component searched npm configuration and environment variables for publish tokens, then republished the payload to other packages the victim could reach.</p>
+    
+      <p>The record is scoped to the `@opengov/form-builder` artifact. The TeamPCP campaign record carries the broader Trivy credential theft, self-propagation, and destructive Kubernetes payload behavior.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>opengov-form-builder</strong>
+            <br><code>@opengov/form-builder</code>
+            <br><span>npm · source_archive</span>
+            
+            <br><a href="https://www.npmjs.com/package/@opengov/form-builder" target="_blank">https://www.npmjs.com/package/@opengov/form-builder</a>
+          </td>
+          <td>2026-03-21</td>
+          <td>
+            
+              <code>0.12.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:6dc5a2428a8b5ce0761da68e9d844924839e8681b388bdd1b8ceea88237e4cfc</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.stepsecurity.io/blog/canisterworm-how-a-self-propagating-npm-worm-is-spreading-backdoors-across-the-ecosystem" target="_blank">CanisterWorm: How a Self-Propagating npm Worm Is Spreading Backdoors Across the Ecosystem</a></li>
+    
+      <li><a href="https://osv.dev/vulnerability/MAL-2026-2210" target="_blank">Malicious code in @opengov/form-builder</a></li>
+    
+      <li><a href="https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release" target="_blank">Trivy Compromised a Second Time</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

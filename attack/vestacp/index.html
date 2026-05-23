@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VestaCP installer leaked admin passwords</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>VestaCP installer leaked admin passwords</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> VestaCP · <a href="https://vestacp.com" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2018-05-31 to 2018-06-13 (13 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Cybercriminal Gang (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> daemon</div>
+    <div class="meta-item"><strong>Language:</strong> Shell</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> botnet_ddos</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration, ddos, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">VestaCP&#39;s official installer leaked admin passwords and server domains to Vesta infrastructure. Attackers later used that access path to install Linux/ChachaDDoS on customer servers.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>VestaCP&#39;s installer carried malicious code in 2018. The change appeared in commit `a3f0fa1` on May 31 and was removed in commit `ee03eff` on June 13. During that window, new installations exposed the base64-encoded admin password and server domain through the normal install path.</p>
+    
+      <p>The leak was quiet because it used Vesta&#39;s own infrastructure. ESET traced the relevant line to `vst-install-ubuntu.sh`, where `$codename` contained the password and host name sent to `http://vestacp.com/notify/`. A VestaCP team member later said their infrastructure server had been hacked, likely through an API bug in release `0.9.8-20`, and that attackers changed installation scripts to log admin passwords and IP addresses.</p>
+    
+      <p>The impact surfaced months later. Forum users reported VestaCP servers being used for abnormal bandwidth and outbound attacks. One September report showed an attacker using the admin password over SSH to run `creator-x86_64-1` from `/var/tmp` and erase auth logs. Vesta told users to change admin passwords and check for `/usr/bin/dhcprenew`.</p>
+    
+      <p>ESET analyzed the malware as Linux/ChachaDDoS. It persisted as `dhcprenew`, hid as `[kworker/1:1]`, downloaded architecture-specific second stages, decrypted them with ChaCha, and ran Lua tasks. Observed tasks performed SYN DDoS attacks. The supply-chain failure was the credential leak; the botnet was the consequence.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>VestaCP installer scripts</strong>
+            <br><code>VestaCP</code>
+            <br><span>shell script · installer_script</span>
+            <br><a href="https://vestacp.com" target="_blank">https://vestacp.com</a>
+            <br><a href="https://github.com/outroll/vesta" target="_blank">https://github.com/outroll/vesta</a>
+          </td>
+          <td>2018-05-31<br>to 2018-06-13</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:b9f1ffcbaf887c8ec4eb260ae1fdc25b07f4849d194388eee0707f9bf23c1bca</code><br><code>md5:35e9334ae8aef10c4a97e7cc90ff964d</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.welivesecurity.com/2018/10/18/new-linux-chachaddos-malware-distributed-servers-vestacp-installed/" target="_blank">VestaCP compromised in a new supply-chain attack</a></li>
+    
+      <li><a href="https://forum.vestacp.com/viewtopic.php?f=10&amp;t=17641&amp;p=73282" target="_blank">All VestaCP installations being attacked - Page 4</a></li>
+    
+      <li><a href="https://forum.vestacp.com/viewtopic.php?f=10&amp;t=17641&amp;start=180#p73907" target="_blank">All VestaCP installations being attacked - Page 19</a></li>
+    
+      <li><a href="https://forum.vestacp.com/viewtopic.php?t=16558" target="_blank">Two servers are hacked today via Vestacp</a></li>
+    
+      <li><a href="https://forum.vestacp.com/viewtopic.php?f=10&amp;t=16556" target="_blank">VestaCP April 2018 attack discussion</a></li>
+    
+      <li><a href="https://github.com/outroll/vesta/commit/a3f0fa1501d424477786e3e7150bb05c0b99518f#diff-df8da0c91e9086454c60cd468849630dR1256" target="_blank">VestaCP commit adding compromised installer behavior</a></li>
+    
+      <li><a href="https://github.com/outroll/vesta/commit/ee03eff016e03cb76fac7ae3a0f9d1ef0f8ee35b#diff-df8da0c91e9086454c60cd468849630dL1270" target="_blank">VestaCP commit removing compromised installer behavior</a></li>
+    
+      <li><a href="https://www.cvedetails.com/cve/CVE-2018-25117/" target="_blank">CVE-2018-25117 VestaCP Debian Installer Malicious Backdoor Supply Chain Compromise</a></li>
+    
+      <li><a href="https://nvd.nist.gov/vuln/detail/CVE-2018-25117" target="_blank">CVE-2018-25117 Detail</a></li>
+    
+      <li><a href="https://www.vulncheck.com/advisories/vestacp-debian-installer-malicious-backdoor-supply-chain-compromise" target="_blank">VestaCP Debian Installer Malicious Backdoor Supply Chain Compromise</a></li>
+    
+      <li><a href="https://hackread.com/vesta-control-panel-servers-ddos-malware-supply-chain-attack/" target="_blank">Vesta control panel servers infected with DDoS malware after supply chain attack</a></li>
+    
+      <li><a href="https://debuglies.com/2018/10/24/vesta-control-panel-servers-infected-with-ddos-malware/" target="_blank">Vesta control panel servers infected with DDoS malware after supply chain attack</a></li>
+    
+      <li><a href="https://github.com/jsmeix/openSUSE-docs-vestacp/commit/21a1431f80e5c791cc3d5bbc8e09fceea0febc9e" target="_blank">openSUSE docs VestaCP reference update</a></li>
+    
+      <li><a href="https://krebsonsecurity.com/2013/06/the-value-of-a-hacked-email-account/" target="_blank">The Value of a Hacked Email Account</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

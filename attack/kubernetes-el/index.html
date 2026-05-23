@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kubernetes-el workflow poisoned its repo</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>kubernetes-el workflow poisoned its repo</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> kubernetes-el · <a href="https://github.com" target="_blank">website</a> · <a href="https://github.com/kubernetes-el/kubernetes-el" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-03-05 to 2026-03-07 (2 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> Emacs Lisp</div>
+    <div class="meta-item"><strong>Cause:</strong> gha_vulnerability</div>
+    <div class="meta-item"><strong>Motive:</strong> sabotage_credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> destructive_code_execution, credential_theft</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> source</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">A Pwn Request flaw let attacker-controlled PR code run with kubernetes-el repository privileges. The stolen token defaced the repo and replaced kubernetes.el with a destructive shell command.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>The attack began with an ordinary-looking pull request. kubernetes-el used `pull_request_target`, then explicitly checked out the pull request head. That combination ran attacker code inside a privileged GitHub Actions context.</p>
+    
+      <p>The payload evolved in the open. The attacker changed the Makefile to run `funny.sh`, tried runner memory dumping, switched tooling, fixed build syntax, and finally extracted GitHub Actions secrets to webhook.site. The important secret was the writable `GITHUB_TOKEN`.</p>
+    
+      <p>With that token, commits appeared as `github-actions[bot]`. The README was defaced, then `kubernetes.el` was replaced with an Emacs expression that invoked `rm -rf /`. For users installing or updating from the repository mirror path, source code became the delivery channel.</p>
+    
+      <p>The compromise was reported by Emacsmirror maintainer Jonas Bernoulli on March 7, 2026. MELPA removed the package and Emacsmirror blocked updates, limiting the damage to a narrow window.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>kubernetes-el</strong>
+            
+            <br><span>github · source_repository</span>
+            <br><a href="https://github.com" target="_blank">https://github.com</a>
+            <br><a href="https://github.com/kubernetes-el/kubernetes-el" target="_blank">https://github.com/kubernetes-el/kubernetes-el</a>
+          </td>
+          <td>2026-03-05<br>to 2026-03-07</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.stepsecurity.io/blog/kubernetes-el-compromised-how-a-pwn-request-exploited-a-popular-emacs-package" target="_blank">kubernetes-el Compromised: How a Pwn Request Exploited a Popular Emacs Package</a></li>
+    
+      <li><a href="https://github.com/kubernetes-el/kubernetes-el/issues/383" target="_blank">Repository compromised via GitHub Actions token</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

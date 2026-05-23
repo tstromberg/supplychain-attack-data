@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>elementary-data PyPI and GHCR releases forged</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>elementary-data PyPI and GHCR releases forged</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> elementary-data · <a href="https://github.com/elementary-data/elementary" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-04-24 to 2026-04-25 (1 day)</div>
+    <div class="meta-item"><strong>Actor:</strong> Third Party (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> Python</div>
+    <div class="meta-item"><strong>Cause:</strong> ci_cd_exploit</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, self_propagation</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">An attacker exploited a GitHub Actions script-injection flaw in elementary-data&#39;s issue-update workflow to forge release state, tag v0.23.3 at an orphan commit, and dispatch the legitimate release pipeline.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>elementary-data was compromised through GitHub Actions, not through a maintainer manually uploading a package. An attacker posted a crafted comment to a pull request, and a workflow interpolated that comment into a shell `run:` block.</p>
+    
+      <p>The injected command used the repository&#39;s `GITHUB_TOKEN` to create an orphan release commit and tag `v0.23.3`. That commit added a large `elementary.pth` file and bumped the package version. Python `.pth` files run during interpreter startup, so the payload did not need an explicit import.</p>
+    
+      <p>The attacker then dispatched the legitimate release workflow. PyPI received `elementary-data==0.23.3`, and GHCR received a multi-architecture `ghcr.io/elementary-data/elementary` image tagged `0.23.3` and `latest`, all from the forged release state.</p>
+    
+      <p>The payload was a credential stealer. It searched SSH keys, cloud credentials, Kubernetes files, package-manager tokens, wallet material, and secrets on disk, then posted an archive to attacker infrastructure. Maintainers removed the release and published clean `0.23.4`.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>elementary-data</strong>
+            
+            <br><span>pypi · source_archive</span>
+            
+            
+          </td>
+          <td>2026-04-24<br>to 2026-04-25</td>
+          <td>
+            
+              <code>0.23.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>ghcr.io/elementary-data/elementary</strong>
+            
+            <br><span>ghcr · oci_image</span>
+            <br><a href="https://ghcr.io" target="_blank">https://ghcr.io</a>
+            
+          </td>
+          <td>2026-04-24<br>to 2026-04-25</td>
+          <td>
+            
+              <code>0.23.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://pypi.org/project/elementary-data/0.23.3/</code></li>
+    
+      <li><code>distribution</code>: <code>https://github.com/elementary-data/elementary/pkgs/container/elementary</code></li>
+    
+      <li><code>distribution</code>: <code>ghcr.io/elementary-data/elementary:0.23.3</code></li>
+    
+      <li><code>distribution</code>: <code>ghcr.io/elementary-data/elementary:latest</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>Commits</h2>
+  <ul>
+    
+      <li><code>b1e4b1f3aad0d489ab0e9208031c67402bbb8480</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.elementary-data.com/post/security-incident-report-malicious-release-of-elementary-oss-python-cli-v0-23-3" target="_blank">Security Incident Report: Malicious release of Elementary OSS Python CLI v0.23.3</a></li>
+    
+      <li><a href="https://www.stepsecurity.io/blog/elementary-data-compromised-on-pypi-and-ghcr-forged-release-pushed-via-github-actions-script-injection" target="_blank">elementary-data Compromised on PyPI and GHCR</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

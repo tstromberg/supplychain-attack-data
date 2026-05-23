@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>strong_password Ruby gem backdoor stole secrets</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>strong_password Ruby gem backdoor stole secrets</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> strong_password</div>
+    <div class="meta-item"><strong>Date:</strong> 2019-06-25 to 2019-06-29 (4 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> Ruby</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> data_exfiltration, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">strong_password 0.0.7 was published on RubyGems without maintainer control. In Rails production, it fetched Pastebin code and installed a cookie-driven RCE backdoor.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>strong_password was compromised before the rest-client incident but exposed the same failure mode. Attackers published version 0.0.7 under the legitimate RubyGems name while the GitHub repository still showed no corresponding project change.</p>
+    
+      <p>Tute Costa found the mismatch while reviewing dependency updates. The malicious code had been appended to `lib/strong_password/strength_checker.rb`; it started a thread, waited a random interval, fetched Ruby from Pastebin, and evaluated it only when `Rails.env[0] == &quot;p&quot;`.</p>
+    
+      <p>The fetched payload inserted a Rack middleware hook that evaluated Base64 from a crafted `___id` cookie. It also phoned home with host URL data. A password-strength library has no reason to read cookies or fetch executable code, but once loaded into Rails it runs inside the application process.</p>
+    
+      <p>The maintainer confirmed the bogus 0.0.7 release was created on June 25, 2019 and that he no longer had ownership in RubyGems. RubyGems yanked the release, locked the publishing account used for the attack, and restored the maintainer.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>strong_password</strong>
+            
+            <br><span>source_archive</span>
+            
+            
+          </td>
+          <td>2019-06-25<br>to 2019-06-29</td>
+          <td>
+            
+              <code>0.0.7</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:c3a46b979b941ecc456639033754f3bad3f5d379df064d4ccd0b54d0fb8e46ea</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.sonatype.com/blog/cve-2019-13354-strong-password" target="_blank">CVE-2019-13354: strong_password embedded malicious code</a></li>
+    
+      <li><a href="https://withatwist.dev/strong-password-rubygem-hijacked.html" target="_blank">strong_password v0.0.7 rubygem hijacked</a></li>
+    
+      <li><a href="https://snyk.io/blog/code-execution-back-door-found-in-rubys-rest-client-library/" target="_blank">Code execution back door found in Ruby&#39;s rest-client library</a></li>
+    
+      <li><a href="https://www.helpnetsecurity.com/2019/08/21/backdoored-ruby-gems/" target="_blank">Backdoored Ruby gems stole credentials, injected cryptomining code</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

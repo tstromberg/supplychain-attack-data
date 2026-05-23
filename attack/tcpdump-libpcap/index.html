@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tcpdump.org source tarballs trojanized</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>tcpdump.org source tarballs trojanized</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> tcpdump/libpcap · <a href="https://tcpdump.org" target="_blank">website</a> · <a href="https://github.com/the-tcpdump-group/tcpdump" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2002-11-11 to 2002-11-13 (2 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
+    <div class="meta-item"><strong>Language:</strong> C</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> unauthorized_access</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">The tcpdump.org distribution site was compromised in November 2002, and source archives for tcpdump and libpcap were replaced with trojanized versions.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>In November 2002, the tcpdump.org HTTP distribution path began serving trojaned source archives for both tcpdump and libpcap. CERT and CIAC identified modified copies of `tcpdump-3.6.2.tar.gz`, `tcpdump-3.7.1.tar.gz`, and `libpcap-0.7.1.tar.gz`; the poisoned downloads appeared around 10:14 GMT on November 11 and were disabled at 15:05:19 GMT on November 13.</p>
+    
+      <p>The delivery split across related tools. tcpdump carried build-time code that fetched and compiled a payload. libpcap, the packet capture library under it, was changed to hide traffic on the port the payload used.</p>
+    
+      <p>This compromise was more elaborate than a single hidden shell. The tcpdump configure script attempted to fetch a shell script named `services` over HTTP, generate `conftes.c`, compile it, and run it. The resulting program connected to a fixed address on TCP/1963 and accepted byte-sized commands to exit, sleep, or spawn an obfuscated shell. Libpcap was changed in `gencode.c` to hide traffic on port 1963, bending the sniffer&#39;s own eyes away from the backdoor.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>tcpdump</strong>
+            
+            <br><span>tcpdump.org source release · source_archive</span>
+            <br><a href="https://tcpdump.org" target="_blank">https://tcpdump.org</a>
+            
+          </td>
+          <td>2002-11-11<br>to 2002-11-13</td>
+          <td>
+            
+              <code>3.6.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>md5:3a1c2dd3471486f9c7df87029bf2f1e9</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>tcpdump</strong>
+            
+            <br><span>tcpdump.org source release · source_archive</span>
+            <br><a href="https://tcpdump.org" target="_blank">https://tcpdump.org</a>
+            
+          </td>
+          <td>2002-11-11<br>to 2002-11-13</td>
+          <td>
+            
+              <code>3.7.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>md5:3c410d8434e63fb3931fe77328e4dd88</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>libpcap</strong>
+            
+            <br><span>tcpdump.org source release · source_archive</span>
+            <br><a href="https://tcpdump.org" target="_blank">https://tcpdump.org</a>
+            
+          </td>
+          <td>2002-11-11<br>to 2002-11-13</td>
+          <td>
+            
+              <code>0.7.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>md5:73ba7af963aff7c9e23fa1308a793dca</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://bbs.archlinux.org/viewtopic.php?id=165" target="_blank">Arch Linux forum thread on trojaned tcpdump/libpcap sources</a></li>
+    
+      <li><a href="https://www.theregister.com/security/2002/11/14/popular-packet-sniffing-packages_contaminated_by_trojan/" target="_blank">Popular packet sniffing packages contaminated by Trojan</a></li>
+    
+      <li><a href="https://linuxsecurity.com/news/hackscracks/libpcap-and-tcpdump-sources-trojaned" target="_blank">libpcap and tcpdump sources trojaned</a></li>
+    
+      <li><a href="https://lwn.net/Articles/15485/" target="_blank">Trojaned tcpdump and libpcap</a></li>
+    
+      <li><a href="https://seclists.org/cert/2002/35" target="_blank">CERT Advisory CA-2002-30: Trojan Horse tcpdump and libpcap Distributions</a></li>
+    
+      <li><a href="https://artofhacking.com/tucops3/hack/linux/live/aoh_n-014.htm" target="_blank">CIAC N-014: Trojan Horse tcpdump and libpcap Distributions</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>
