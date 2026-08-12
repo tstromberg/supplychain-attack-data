@@ -51,6 +51,7 @@ type Entry struct {
 	Artifacts  []Artifact  `yaml:"artifacts"`
 	References []Reference `yaml:"references"`
 	Notes      []string    `yaml:"notes"`
+	PullQuote  *PullQuote  `yaml:"pull_quote"`
 	SourcePath string      `yaml:"-"`
 }
 
@@ -66,7 +67,18 @@ type Campaign struct {
 	Indicators []Indicator `yaml:"indicators"`
 	References []Reference `yaml:"references"`
 	Notes      []string    `yaml:"notes"`
+	PullQuote  *PullQuote  `yaml:"pull_quote"`
 	SourcePath string      `yaml:"-"`
+}
+
+// PullQuote lifts the turn of a story out of the prose: the mechanism that
+// broke an assumption, the step earlier attacks had not reached. It is
+// optional, and most records are better without one. After is the story
+// paragraph it follows, counting from 1.
+type PullQuote struct {
+	Text    string `yaml:"text"`
+	Caption string `yaml:"caption"`
+	After   int    `yaml:"after"`
 }
 
 type Party struct {
@@ -132,17 +144,56 @@ type Evidence struct {
 	Role string `yaml:"role"`
 }
 
-type HashList []string
+/*
+ * Hash is a digest and, optionally, what the digest covers.
+ *
+ * A bare digest does not say whether it is the distributed archive, a file
+ * inside it, or a second stage the archive dropped. Without that, a hash cannot
+ * be checked against a stored sample: two records here carry the same SHA-256
+ * for different packages, which is only coherent if it names a shared payload
+ * rather than either archive, and nothing in the data said so. Role separates a
+ * digest that identifies the attack from a known-good baseline recorded for
+ * comparison, which several records previously had to bury in prose.
+ *
+ * Three forms are accepted, the first two of which predate these fields:
+ *
+ *   hashes:
+ *     - sha256:5f2b...
+ *     - sha256: 5f2b...
+ *     - sha256: 5f2b...
+ *       of: file
+ *       path: dist/index.js
+ *       role: malicious
+ */
+type Hash struct {
+	Digest string
+	Of     string
+	Path   string
+	Role   string
+	Note   string
+}
+
+type HashList []Hash
+
+// Digests returns the canonical algorithm:digest strings, which is what the CSV
+// columns and the digest-shape checks work in.
+func (hashes HashList) Digests() []string {
+	out := make([]string, 0, len(hashes))
+	for _, hash := range hashes {
+		out = append(out, hash.Digest)
+	}
+	return out
+}
 
 func (hashes *HashList) UnmarshalYAML(value *yaml.Node) error {
 	if value.Kind == yaml.SequenceNode {
-		result := make([]string, 0, len(value.Content))
+		result := make(HashList, 0, len(value.Content))
 		for _, item := range value.Content {
 			decoded, err := decodeHashEntry(item)
 			if err != nil {
 				return err
 			}
-			if decoded != "" {
+			if decoded.Digest != "" {
 				result = append(result, decoded)
 			}
 		}
@@ -154,35 +205,60 @@ func (hashes *HashList) UnmarshalYAML(value *yaml.Node) error {
 	if err != nil {
 		return err
 	}
-	if decoded == "" {
+	if decoded.Digest == "" {
 		*hashes = nil
 	} else {
-		*hashes = []string{decoded}
+		*hashes = HashList{decoded}
 	}
 	return nil
 }
 
-func decodeHashEntry(value *yaml.Node) (string, error) {
+var hashAlgorithms = map[string]bool{"md5": true, "sha1": true, "sha256": true, "sha384": true, "sha512": true}
+
+func decodeHashEntry(value *yaml.Node) (Hash, error) {
 	switch value.Kind {
 	case yaml.ScalarNode:
-		return strings.TrimSpace(value.Value), nil
+		return Hash{Digest: strings.TrimSpace(value.Value)}, nil
 	case yaml.MappingNode:
-		if len(value.Content) != 2 {
-			return "", fmt.Errorf("hash entry must be a string or one-key map")
+		if len(value.Content) < 2 || len(value.Content)%2 != 0 {
+			return Hash{}, fmt.Errorf("hash entry must be a string or a map")
 		}
-		algorithm := strings.TrimSpace(value.Content[0].Value)
-		digest := strings.TrimSpace(value.Content[1].Value)
-		if algorithm == "" || digest == "" {
-			return "", fmt.Errorf("hash entry map must set algorithm and digest")
+		var hash Hash
+		for i := 0; i < len(value.Content); i += 2 {
+			key := strings.ToLower(strings.TrimSpace(value.Content[i].Value))
+			field := strings.TrimSpace(value.Content[i+1].Value)
+			switch {
+			case hashAlgorithms[key]:
+				if hash.Digest != "" {
+					return Hash{}, fmt.Errorf("hash entry sets more than one digest")
+				}
+				if field == "" {
+					return Hash{}, fmt.Errorf("hash entry map must set algorithm and digest")
+				}
+				hash.Digest = key + ":" + field
+			case key == "of":
+				hash.Of = strings.ToLower(field)
+			case key == "path":
+				hash.Path = field
+			case key == "role":
+				hash.Role = strings.ToLower(field)
+			case key == "note":
+				hash.Note = field
+			default:
+				return Hash{}, fmt.Errorf("unknown hash field %q", key)
+			}
 		}
-		return algorithm + ":" + digest, nil
+		if hash.Digest == "" {
+			return Hash{}, fmt.Errorf("hash entry map must set algorithm and digest")
+		}
+		return hash, nil
 	case yaml.AliasNode:
 		if value.Alias == nil {
-			return "", nil
+			return Hash{}, nil
 		}
 		return decodeHashEntry(value.Alias)
 	default:
-		return "", fmt.Errorf("hash entry must be a string or one-key map")
+		return Hash{}, fmt.Errorf("hash entry must be a string or a map")
 	}
 }
 
@@ -206,11 +282,14 @@ var (
 	partialDate     = regexp.MustCompile(`^\d{4}(-\d{2})?$`)
 	versionPattern  = regexp.MustCompile(`^v?[0-9][0-9A-Za-z._+-]*$`)
 	versionRange    = regexp.MustCompile(`^v?[0-9][0-9A-Za-z._+-]* - v?[0-9][0-9A-Za-z._+-]*$`)
-	compactRange    = regexp.MustCompile(`^v?[0-9][0-9A-Za-z._+]*-v?[0-9][0-9A-Za-z._+]*\.[0-9]`)
-	versionLabel    = regexp.MustCompile(`(?i)^(bad|good|clean|safe|malicious|neutralized|affected|vulnerable|fixed):\s*`)
-	fileHashKind    = regexp.MustCompile(`^file_(md5|sha1|sha256|sha384|sha512)$`)
-	slugPattern     = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
-	locationRoles   = map[string]bool{"distribution": true, "mirror": true}
+	// A compact range names two version numbers, so the upper bound is digits and
+	// separators only. Letters after the hyphen mean a prerelease tag such as
+	// 0.1.2-2773.beta.0, which is a single version rather than a range.
+	compactRange  = regexp.MustCompile(`^v?[0-9][0-9A-Za-z._+]*-v?[0-9][0-9._+]*\.[0-9]`)
+	versionLabel  = regexp.MustCompile(`(?i)^(bad|good|clean|safe|malicious|neutralized|affected|vulnerable|fixed):\s*`)
+	fileHashKind  = regexp.MustCompile(`^file_(md5|sha1|sha256|sha384|sha512)$`)
+	slugPattern   = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
+	locationRoles = map[string]bool{"distribution": true, "mirror": true}
 )
 
 func main() {
@@ -391,12 +470,13 @@ func validateEntry(entry Entry, campaignIDs map[string]bool) []issue {
 	issues = append(issues, validateTitle(entry.SourcePath, entry.ID, "title", entry.Title)...)
 	issues = append(issues, validateSynopsis(entry.SourcePath, entry.ID, "synopsis", entry.Synopsis)...)
 	issues = append(issues, validateStory(entry.SourcePath, entry.ID, "story", entry.Story)...)
+	issues = append(issues, validatePullQuote(entry.SourcePath, entry.ID, "pull_quote", entry.PullQuote, entry.Story)...)
 	issues = append(issues, validateDate(entry.SourcePath, entry.ID, "start_date", entry.StartDate)...)
 	issues = append(issues, validateDate(entry.SourcePath, entry.ID, "end_date", entry.EndDate)...)
 	issues = append(issues, validateURL(entry.SourcePath, entry.ID, "target.website", entry.Target.Website)...)
 	issues = append(issues, validateURL(entry.SourcePath, entry.ID, "target.repo", entry.Target.Repo)...)
 	issues = append(issues, validateImpact(entry.SourcePath, entry.ID, "impact", entry.Impact)...)
-	issues = append(issues, validateHashes(entry.SourcePath, entry.ID, "hashes", []string(entry.Hashes))...)
+	issues = append(issues, validateHashes(entry.SourcePath, entry.ID, "hashes", entry.Hashes)...)
 	issues = append(issues, validateVersions(entry.SourcePath, entry.ID, "versions", nil)...)
 	if len(entry.Campaigns) > 1 {
 		issues = append(issues, issue{"error", "campaigns", strings.Join(entry.Campaigns, ","), entry.SourcePath, entry.ID, "attack records must be associated with at most one campaign"})
@@ -446,7 +526,7 @@ func validateArtifact(entry Entry, artifact Artifact, field string) []issue {
 	issues = append(issues, validateURL(entry.SourcePath, entry.ID, field+".repo", artifact.Repo)...)
 	issues = append(issues, validateVersions(entry.SourcePath, entry.ID, field+".versions", artifact.Versions)...)
 	issues = append(issues, validateVersions(entry.SourcePath, entry.ID, field+".fixed_versions", artifact.FixedVersions)...)
-	issues = append(issues, validateHashes(entry.SourcePath, entry.ID, field+".hashes", []string(artifact.Hashes))...)
+	issues = append(issues, validateHashes(entry.SourcePath, entry.ID, field+".hashes", artifact.Hashes)...)
 	issues = append(issues, validateLocations(entry.SourcePath, entry.ID, field+".locations", artifact.Locations)...)
 	issues = append(issues, validateIndicators(entry.SourcePath, entry.ID, field+".indicators", artifact.Indicators)...)
 	issues = append(issues, validateEvidence(entry.SourcePath, entry.ID, field+".evidence", artifact.Evidence)...)
@@ -476,6 +556,7 @@ func validateCampaign(campaign Campaign) []issue {
 	issues = append(issues, validateTitle(campaign.SourcePath, campaign.ID, "title", campaign.Title)...)
 	issues = append(issues, validateSynopsis(campaign.SourcePath, campaign.ID, "synopsis", campaign.Synopsis)...)
 	issues = append(issues, validateStory(campaign.SourcePath, campaign.ID, "story", campaign.Story)...)
+	issues = append(issues, validatePullQuote(campaign.SourcePath, campaign.ID, "pull_quote", campaign.PullQuote, campaign.Story)...)
 	issues = append(issues, validateDate(campaign.SourcePath, campaign.ID, "start_date", campaign.StartDate)...)
 	issues = append(issues, validateDate(campaign.SourcePath, campaign.ID, "end_date", campaign.EndDate)...)
 	issues = append(issues, validateImpact(campaign.SourcePath, campaign.ID, "impact", campaign.Impact)...)
@@ -508,6 +589,61 @@ func validateSynopsis(path, id, field, value string) []issue {
 		issues = append(issues, issue{"error", field, strconv.Itoa(sentences), path, id, "synopsis must be 1 or 2 sentences"})
 	}
 	return issues
+}
+
+// A pull quote has to land in one look. Past these sizes it is a paragraph
+// wearing a rule on its left, and the reader skips it.
+const (
+	pullQuoteMaxWords        = 40
+	pullQuoteMaxSentences    = 2
+	pullQuoteMaxCaptionWords = 8
+)
+
+func validatePullQuote(path, id, field string, quote *PullQuote, story string) []issue {
+	if quote == nil {
+		return nil
+	}
+
+	var issues []issue
+	text := strings.TrimSpace(quote.Text)
+	if text == "" {
+		issues = append(issues, issue{"error", field, "", path, id, "pull_quote.text must not be empty"})
+		return issues
+	}
+
+	if words := len(strings.Fields(text)); words > pullQuoteMaxWords {
+		issues = append(issues, issue{"error", field + ".text", strconv.Itoa(words), path, id,
+			fmt.Sprintf("pull_quote must be no more than %d words", pullQuoteMaxWords)})
+	}
+	if sentences := countSentences(text); sentences > pullQuoteMaxSentences {
+		issues = append(issues, issue{"error", field + ".text", strconv.Itoa(sentences), path, id,
+			fmt.Sprintf("pull_quote must be no more than %d sentences", pullQuoteMaxSentences)})
+	}
+	if words := len(strings.Fields(quote.Caption)); words > pullQuoteMaxCaptionWords {
+		issues = append(issues, issue{"error", field + ".caption", strconv.Itoa(words), path, id,
+			fmt.Sprintf("pull_quote caption must be no more than %d words", pullQuoteMaxCaptionWords)})
+	}
+
+	// After points at a story paragraph, so it cannot run past the story.
+	if paragraphs := countParagraphs(story); quote.After > paragraphs {
+		issues = append(issues, issue{"error", field + ".after", strconv.Itoa(quote.After), path, id,
+			fmt.Sprintf("pull_quote.after is past the end of a %d paragraph story", paragraphs)})
+	}
+	if quote.After < 0 {
+		issues = append(issues, issue{"error", field + ".after", strconv.Itoa(quote.After), path, id,
+			"pull_quote.after must not be negative"})
+	}
+	return issues
+}
+
+func countParagraphs(story string) int {
+	count := 0
+	for _, paragraph := range strings.Split(story, "\n\n") {
+		if strings.TrimSpace(paragraph) != "" {
+			count++
+		}
+	}
+	return count
 }
 
 func countSentences(value string) int {
@@ -607,18 +743,41 @@ func validateImpact(path, id, field string, impact Impact) []issue {
 	return issues
 }
 
-func validateHashes(path, id, field string, hashes []string) []issue {
+// What a digest may cover. "archive" is the artifact as distributed, "file" is
+// something inside it, and "payload" is a stage the artifact fetched or dropped
+// and so has no path within it.
+var hashSubjects = map[string]bool{"archive": true, "file": true, "payload": true}
+
+// Whether a digest identifies the attack or a known-good build kept for
+// comparison. A baseline recorded without this reads as an indicator.
+var hashRoles = map[string]bool{"malicious": true, "clean": true}
+
+func validateHashes(path, id, field string, hashes HashList) []issue {
 	expected := map[string]int{"md5": 32, "sha1": 40, "sha256": 64, "sha384": 96, "sha512": 128}
 	var issues []issue
 	for _, hash := range hashes {
-		match := hashPattern.FindStringSubmatch(strings.TrimSpace(hash))
+		match := hashPattern.FindStringSubmatch(strings.TrimSpace(hash.Digest))
 		if len(match) != 3 {
-			issues = append(issues, issue{"error", field, hash, path, id, "hash must use md5:, sha1:, sha256:, sha384:, or sha512: followed by hexadecimal digest"})
+			issues = append(issues, issue{"error", field, hash.Digest, path, id, "hash must use md5:, sha1:, sha256:, sha384:, or sha512: followed by hexadecimal digest"})
 			continue
 		}
 		algorithm := strings.ToLower(match[1])
 		if len(match[2]) != expected[algorithm] {
-			issues = append(issues, issue{"error", field, hash, path, id, fmt.Sprintf("%s digest must be %d hexadecimal characters", algorithm, expected[algorithm])})
+			issues = append(issues, issue{"error", field, hash.Digest, path, id, fmt.Sprintf("%s digest must be %d hexadecimal characters", algorithm, expected[algorithm])})
+		}
+		if hash.Of != "" && !hashSubjects[hash.Of] {
+			issues = append(issues, issue{"error", field + ".of", hash.Of, path, id, "hash of must be archive, file, or payload"})
+		}
+		if hash.Role != "" && !hashRoles[hash.Role] {
+			issues = append(issues, issue{"error", field + ".role", hash.Role, path, id, "hash role must be malicious or clean"})
+		}
+		// A digest of a file inside an artifact is unusable without knowing
+		// which file, which is the whole reason the field exists.
+		if hash.Of == "file" && hash.Path == "" {
+			issues = append(issues, issue{"error", field + ".path", hash.Digest, path, id, "hash of: file must name the path it covers"})
+		}
+		if hash.Path != "" && hash.Of != "file" {
+			issues = append(issues, issue{"warning", field + ".path", hash.Path, path, id, "hash path is only meaningful with of: file"})
 		}
 	}
 	return issues
@@ -805,7 +964,7 @@ func artifactRows(entry Entry) [][]string {
 			strings.Join(artifact.Versions, ", "),
 			strings.Join(artifact.FixedVersions, ", "),
 			strings.Join(append(entry.Commits, artifact.Commits...), ", "),
-			strings.Join(append([]string(entry.Hashes), []string(artifact.Hashes)...), ", "),
+			strings.Join(append(entry.Hashes.Digests(), artifact.Hashes.Digests()...), ", "),
 			joinLocations(append(entry.Locations, artifact.Locations...)),
 			joinIndicators(append(entry.Indicators, artifact.Indicators...)),
 			joinEvidence(artifact.Evidence),

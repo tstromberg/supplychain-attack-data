@@ -7,63 +7,13 @@
     bypassing Microsoft's CI/CD path. The dropper fetched rope.pyz to harvest cloud and
     password-manager credentials, spread via AWS SSM and kubectl, and conditionally wiped disks.
   story: |
-    Microsoft's official Python SDK for Azure Durable Functions, the PyPI
-    package `durabletask`, briefly shipped with a credential stealer on May 19,
-    2026, after attackers used a stolen publishing token to push three back-to-
-    back malicious releases directly to the package index — bypassing the
-    project's GitHub-based release pipeline entirely.
+    Microsoft's official Python SDK for Azure Durable Functions, the PyPI package `durabletask`, briefly shipped with a credential stealer on May 19, 2026, after attackers used a stolen publishing token to push three back-to-back malicious releases directly to the package index, bypassing the project's GitHub-based release pipeline entirely.
 
-    `durabletask` sees roughly 400,000 PyPI downloads per month. Researchers at
-    StepSecurity and Wiz, who jointly reconstructed the incident, said versions
-    1.4.1, 1.4.2, and 1.4.3 were published inside a 35-minute window before a
-    public report and an Amazon Inspector advisory prompted Microsoft to yank
-    them. None of the three malicious versions had a matching tag, release, or
-    CI/CD run in `microsoft/durabletask-python`. Wiz traced the publishing
-    credential to a contributor GitHub account previously implicated in the
-    @antv npm wave earlier that morning, and said the attackers copied the
-    latest legitimate commit message to disguise the upload while pulling the
-    PyPI token from GitHub repository secrets.
+    `durabletask` sees roughly 400,000 PyPI downloads per month. Researchers at StepSecurity and Wiz, who jointly reconstructed the incident, said versions 1.4.1, 1.4.2, and 1.4.3 were published inside a 35-minute window before a public report and an Amazon Inspector advisory prompted Microsoft to yank them. None of the three had a matching tag, release, or CI/CD run in `microsoft/durabletask-python`. Wiz traced the publishing credential to a contributor GitHub account previously implicated in the @antv npm wave earlier that morning, and said the attackers copied the latest legitimate commit message to disguise the upload while pulling the PyPI token from GitHub repository secrets. Each release embedded the dropper a little deeper: 1.4.1 patched only `__init__.py`, 1.4.2 added a `task.py`, and 1.4.3 spread the loader across `entities/`, `extensions/`, and `payload/`. The 14-line dropper ran at import time on Linux and fetched a 28 KB second stage called `rope.pyz` from `check.git-service.com`, a domain registered through NameSilo three days earlier.
 
-    Each release embedded the dropper a little deeper. Version 1.4.1 patched
-    only `__init__.py`. 1.4.2 added a `task.py`. 1.4.3 spread the loader across
-    `entities/`, `extensions/`, and `payload/` `__init__.py` files. According
-    to StepSecurity, the 14-line dropper ran at import time on Linux and
-    fetched a 28 KB second stage called `rope.pyz` from `check.git-service.com`,
-    a domain registered through NameSilo three days earlier.
+    `rope.pyz` was an industrial-grade collector. StepSecurity catalogued more than 90 on-disk credential paths covering AWS, Azure, GCP, Kubernetes, HashiCorp Vault, GitHub, Docker, SSH, infrastructure-as-code state for Terraform, Ansible, and Pulumi, shell histories, AI-tooling configurations for Claude, Cursor, VS Code MCP, and Codeium, and the 1Password, Bitwarden, `pass`, and `gopass` command-line tools. Persistence wrote `/tmp/managed.pyz`, installed a systemd unit called `pgsql-monitor.service` to mimic a database agent, and marked infected hosts with a `~/.cache/.sys-update-check` file. The propagation logic resembled TeamPCP's other 2026 waves: where the payload found AWS credentials it issued SSM `SendCommand` calls against up to five EC2 instances per profile, and where it found a kubeconfig it ran `kubectl exec` into up to five pods per cluster. Stolen material flowed out over three parallel channels, HTTPS POSTs to the C2, GitHub commit beacons under the `FIRESCALE` tag using victim tokens, and public repositories created on stolen GitHub accounts named for Russian folklore figures. The malware skipped Russian-locale systems and hosts with two or fewer CPU cores, and a `roulette.py` module inspected locale settings for Israeli and Iranian indicators and, on a one-in-six roll, played an audio file and ran `rm -rf /*`.
 
-    `rope.pyz` was an industrial-grade collector. StepSecurity catalogued more
-    than 90 on-disk credential paths covering AWS, Azure, GCP, Kubernetes,
-    HashiCorp Vault, GitHub, Docker, SSH, infrastructure-as-code state for
-    Terraform, Ansible, and Pulumi, shell histories, AI-tooling configurations
-    for Claude, Cursor, VS Code MCP, and Codeium, and the 1Password, Bitwarden,
-    `pass`, and `gopass` command-line tools. Persistence wrote
-    `/tmp/managed.pyz`, installed a systemd unit called `pgsql-monitor.service`
-    to mimic a database agent, and marked infected hosts with a
-    `~/.cache/.sys-update-check` file.
-
-    The propagation logic resembled TeamPCP's other 2026 waves. Where the
-    payload found AWS credentials, it issued SSM `SendCommand` calls against
-    up to five EC2 instances per profile. Where it found a kubeconfig, it ran
-    `kubectl exec` into up to five pods per cluster. Stolen material flowed
-    out over three parallel channels: HTTPS POSTs to the C2, GitHub commit
-    beacons under the `FIRESCALE` tag using victim tokens, and public
-    repositories created on stolen GitHub accounts named for Russian folklore
-    figures — BABA-YAGA, KOSCHEI, FIREBIRD, RUSALKA, MOROZKO, and LESHY. The
-    malware skipped Russian-locale systems, skipped hosts with two or fewer
-    CPU cores, and routed its output to `/dev/null`. A `roulette.py` module
-    inspected locale settings for Israeli and Iranian indicators and, when it
-    matched, played an audio file and ran `rm -rf /*` with a one-in-six
-    probability.
-
-    Amazon Inspector flagged the packages as MAL-2026-4174. A public report
-    landed in `microsoft/durabletask-python` issue #137 at 17:54 UTC. Microsoft
-    yanked all three versions ten minutes later. Researchers tied the operation
-    to TeamPCP's broader Mini Shai-Hulud activity through shared
-    `t.m-kosche.com` infrastructure and the folklore-naming pattern, even
-    though durabletask was a Python package rather than the `@tanstack/setup`
-    Node module that drove the May 11 wave. The cross-ecosystem aggregate
-    lives on [[shai-hulud-here-we-go-again]]; this record holds the
-    durabletask-specific evidence.
+    Amazon Inspector flagged the packages as MAL-2026-4174. A public report landed in `microsoft/durabletask-python` issue #137 at 17:54 UTC, and Microsoft yanked all three versions ten minutes later. Researchers tied the operation to TeamPCP's broader Mini Shai-Hulud activity through shared `t.m-kosche.com` infrastructure and the folklore-naming pattern, even though durabletask was a Python package rather than the `@tanstack/setup` Node module that drove the May 11 wave. The cross-ecosystem aggregate lives on [[shai-hulud-here-we-go-again]]; this record holds the durabletask-specific evidence.
   start_date: 2026-05-19
   end_date: 2026-05-19
   target:
@@ -161,6 +111,10 @@
     - 1.4.1
     - 1.4.2
     - 1.4.3
+    hashes:
+    - sha256:3de04fe2a76262743ed089efa7115f4508619838e77d60b9a1aab8b20d2cc8bf
+    - sha256:85f54c089d78ebfb101454ec934c767065a342a43c9ee1beac8430cdd3b2086f
+    - sha256:c0b094e46842260936d4b97ce63e4539b99a3eae48b736798c700217c52569dc
     fixed_versions:
     - 1.4.0
     locations:
@@ -174,6 +128,9 @@
     - PyPI yanked all three versions on 2026-05-19; 1.4.0 is the last clean release.
       1.4.1 patched __init__.py only; 1.4.2 added task.py; 1.4.3 spread the dropper
       across entities/, extensions/, and payload/ __init__.py files.
+    - The SHA-256 values identify the source distributions for 1.4.1, 1.4.2, and
+      1.4.3 in version order. PyPI's retained 1.4.2 file details corroborate the
+      middle value; OSV and Corgea preserve the removed-release checksums.
   references:
   - url:
       https://www.stepsecurity.io/blog/microsofts-durabletask-pypi-package-compromised-in-supply-chain-attack
@@ -185,3 +142,7 @@
     title: durabletask PyPI Supply Chain Attack - Snyk
   - url: https://www.wiz.io/blog/durabletask-teampcp-supply-chain-attack
     title: durabletask TeamPCP Supply Chain Attack - Wiz
+  - url: https://osv.dev/vulnerability/MAL-2026-4174
+    title: MAL-2026-4174 - OSV
+  - url: https://corgea.com/research/durabletask-pypi-credential-stealer-teampcp-may-2026
+    title: durabletask PyPI releases backdoored with multi-cloud credential stealer - Corgea

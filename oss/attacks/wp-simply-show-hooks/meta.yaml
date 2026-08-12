@@ -3,22 +3,20 @@
   campaigns:
   - wordpress-plugin-backdoor-2024
   synopsis: >-
-    Malicious code was found in Simply Show Hooks 1.2.1 during the June 2024 WordPress.org
-    plugin-repository compromise.
+    Malicious code was found in Simply Show Hooks 1.2.1 and 1.2.2 during the June 2024
+    WordPress.org plugin-repository compromise.
   story: |
     Simply Show Hooks was not the plugin that first raised the alarm. The public WordPress.org Plugin Review Team notice was about Social Warfare; Wordfence used that Social Warfare sample to search for the same pattern and found four more affected plugins, including Simply Show Hooks.
 
-    Wordfence listed Simply Show Hooks 1.2.1 as infected and reported no patched version at publication time. That keeps the incident in scope even though the plugin appears to have had no active installations reported publicly; the compromised artifact still sat in the WordPress.org plugin supply chain.
+    Wordfence listed Simply Show Hooks 1.2.1 as infected and reported no patched version at publication time. The official CVE record includes 1.2.1 through 1.2.2, which agrees with the immutable repository history: the injected file first appeared while declaring 1.2.1 and remained in later revisions that declared 1.2.2. That keeps the incident in scope even though the plugin appears to have had no active installations reported publicly; the compromised artifact still sat in the WordPress.org plugin supply chain.
 
     The injected PHP attempted to create administrator accounts named `Options` or `PluginAuth`, exfiltrated those details to `94.156.79.8`, and added SEO-spam JavaScript in the site footer.
 
-    The risk model is the same as the larger campaign but the exposure is narrower. A site owner did not have to fetch a lookalike ZIP from a random domain; if they installed or updated the affected plugin through the repository while the malicious copy was available, the trusted update path could deliver the backdoor.
-
-    This page keeps Simply Show Hooks separate because it had a single infected version and an unusual exposure profile. The campaign record carries the shared WordPress.org source-compromise pattern; this record is the inventory handle for the Simply Show Hooks artifact.
+    The risk model is the same as the larger campaign but the exposure is narrower. A site owner did not have to fetch a lookalike ZIP from a random domain; if they installed or updated the affected plugin through the repository while the malicious copy was available, the trusted update path could deliver the backdoor. This page keeps Simply Show Hooks separate because it had an unusual exposure profile. The campaign record carries the shared WordPress.org source-compromise pattern; this record is the inventory handle for the Simply Show Hooks artifact.
   start_date: 2024-06-21
   end_date: 2024-06-24
   target:
-    name: wp-simply-show-hooks
+    name: Simply Show Hooks
     kind: plugin
     repo: https://wordpress.org/plugins/simply-show-hooks/
   actor:
@@ -35,9 +33,15 @@
     - account_takeover
     - defacement
     users: 0
+  indicators:
+  - kind: file_sha256
+    value: simply-show-hooks-r3105889-index.php a356d8d8d745ed6d2e8c38f4adcf9840ad327c02a5d98716f8d703acd41a788f
+  - kind: file_sha256
+    value: simply-show-hooks-r3105890-index.php 512fe66cf86c27c87fdc65aaca8ee5558f9ba5f948d92dcaa06f71aa9dae69d9
   artifacts:
   - id: wp-simply-show-hooks
-    name: wp-simply-show-hooks
+    name: simply-show-hooks
+    package: simply-show-hooks
     ecosystem: wordpress
     kind: extension
     repo: https://wordpress.org/plugins/simply-show-hooks/
@@ -45,9 +49,16 @@
     end_date: 2024-06-24
     versions:
     - 1.2.1
+    - 1.2.2
     locations:
     - uri: https://wordpress.org/plugins/simply-show-hooks/
       role: distribution
+    - uri: https://plugins.svn.wordpress.org/!svn/rvr/3105888/simply-show-hooks/trunk/
+      role: mirror
+    - uri: https://plugins.svn.wordpress.org/!svn/rvr/3105889/simply-show-hooks/trunk/
+      role: mirror
+    - uri: https://plugins.svn.wordpress.org/!svn/rvr/3106767/simply-show-hooks/trunk/
+      role: mirror
     indicators:
     - kind: ip
       value: 94.156.79.8
@@ -56,6 +67,14 @@
     - kind: user
       value: PluginAuth
     notes:
+    - The CVE record identifies versions 1.2.1 through 1.2.2 as affected; the previous
+      dataset revision omitted 1.2.2.
+    - Immutable SVN snapshot 3105888 has the longstanding clean 1.2.1 index.php;
+      revision 3105889 is the first snapshot whose index.php contains the 94.156.79.8
+      backdoor. Revisions 3105890 and 3105891 retain the payload while changing the
+      embedded plugin header to 1.2.2.
+    - Revision 3106767, committed by the Plugin Review Team on 2024-06-24, restores the
+      clean index.php. It is remediation evidence, not the injection changeset.
     - The WordPress.org support thread was the Plugin Review Team's Social Warfare notice,
       not a separate attack; Wordfence used it as the starting point for the broader
       five-plugin investigation.
@@ -69,7 +88,9 @@
   - url: https://wordpress.org/support/topic/a-security-message-from-the-plugin-review-team/
     title: A Security Message from the Plugin Review Team
   - url: https://plugins.trac.wordpress.org/changeset/3106767
-    title: Changeset 3106767
+    title: Plugin Review Team cleanup changeset 3106767
+  - url: https://cveawg.mitre.org/api/cve/CVE-2024-6297
+    title: CVE-2024-6297 record
   - url: https://wpscan.com/vulnerability/2c9eb68a-bf19-42df-9c71-f85c440225bc/
     title: Various Plugins - Injected Backdoor
   - url:

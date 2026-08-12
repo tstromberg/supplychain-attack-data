@@ -1,23 +1,28 @@
 - id: wuftpd
   title: wu-ftpd tarball shipped backdoor
   synopsis: >-
-    The source code distribution for the popular wu-ftpd FTP server was modified by an attacker
-    to include a backdoor. This trojaned version was then uploaded to the primary distribution
-    site.
+    Some copies of the wu-ftpd 2.1f and 2.2 source distributions at FTP sites were modified
+    to include a password backdoor that could grant remote root access.
   story: |
-    In March 1994, copies of the wuarchive ftpd source distribution were found to have been modified at trusted FTP distribution points. The compromised source affected at least wu-ftpd 2.2, and CERT later warned that version 2.1f and possibly earlier versions may also have been exposed. The practical risk was severe for the era: administrators could compile what looked like normal upstream FTP daemon source and unknowingly install a root-level backdoor.
+    In April 1994, copies of the wuarchive ftpd source distribution were found to have been modified at trusted FTP distribution points. CERT's original advisory named versions 2.2 and 2.1f in its description, and warned that previous versions of the source may have been modified in a similar manner. The practical risk was severe for the era: administrators could compile what looked like normal upstream FTP daemon source and unknowingly install a root-level backdoor.
 
-    The delivery was the normal source-fetch and compile path for an FTP daemon. The attacker did not need to exploit a running wu-ftpd instance first. The archive itself was the exploit vehicle, and the installed daemon carried the result.
+    The delivery was the normal source-fetch and compile path for an FTP daemon. The attacker did not need to exploit a running wu-ftpd instance first, and did not need an account on the target: the back-door password was checked in the daemon's login path, before any authentication succeeded. The archive itself was the exploit vehicle, and the installed daemon carried the result.
 
-    CERT's advisory told sites running wuarchive ftpd to install version 2.3 or disable the FTP daemon, and it published checksums so administrators could distinguish known-good and trojaned archives. A contemporary comp.unix.admin thread captured how quickly the incident became a reference point for open-source distribution trust: operators discussed the backdoored FTP daemon, compared it with earlier trusting-trust ideas, and treated the official source channel itself as the compromised boundary.
+    CERT's advisory told sites running wuarchive ftpd to install version 2.3 or disable the FTP daemon. The original advisory published a checksum for 2.3, and its April 7 update published the exact authentication diff that identifies the known backdoor. A contemporary comp.unix.admin thread captured how quickly the incident became a reference point for open-source distribution trust: operators discussed the backdoored FTP daemon, compared it with earlier trusting-trust ideas, and treated trusted FTP distribution channels as the compromised boundary.
 
     The risk was amplified by where wu-ftpd ran. FTP servers were public-facing infrastructure, often built locally by administrators and run with privileges that made a source-level backdoor immediately valuable. Once the archive was trusted, the attacker did not need a second delivery mechanism.
-  start_date: 1994-03-28
-  end_date: 1994-03-28
+  pull_quote:
+    text: >-
+      The magic password `NULL` was checked inside ftpd's `if (!anonymous)`
+      branch, so it logged you in as any account but `anonymous`. CERT warned
+      that disabling anonymous FTP was not enough; the daemon had to go.
+    caption: why disabling anonymous FTP didn't help
+    after: 3
+  start_date: 1994-04-01
+  end_date: 1994-04-06
   target:
     name: wuftpd
     kind: daemon
-    website: https://ftp.wustl.edu
   actor:
     name: Individual Hacker
     kind: person
@@ -35,33 +40,55 @@
   - id: wuftpd
     name: wuftpd
     kind: source_archive
-    website: https://ftp.wustl.edu
-    start_date: 1994-03-28
-    end_date: 1994-03-28
+    start_date: 1994-04-01
+    end_date: 1994-04-06
     versions:
+    - 2.1f
     - 2.2
     locations:
-    - uri: https://www.cert.org/historical/advisories/CA-1994-07.cfm
+    - uri: https://www.sei.cmu.edu/documents/517/1994_019_001_496252.pdf
       role: mirror
-    - uri: 
-        https://web.archive.org/web/20030804000609/http://www.team.net/mjb/hawp/hacks/wuftpd.html
+    - uri: https://seclists.org/nanog/1994/Apr/3
       role: mirror
-    hashes:
-    - md5:3e12b0efb95bcb97e5b58fb916323618
+    - uri: https://ftp.gwdg.de/pub/misc/wu-ftpd/ftp.wu-ftpd.org/wu-ftpd-attic/
+      role: mirror
     indicators:
     - kind: observable
-      value: ftp://ftp.wustl.edu/packages/wuarchive-ftpd/wu-ftpd-2.2.tar.Z
-    - kind: observable
-      value: ftp://ftp.cs.umn.edu/pub/wuftpd/wu-ftpd-2.2.tar.Z
+      value: ftp://wuarchive.wustl.edu/packages/wuarchive-ftpd/wu-ftpd-2.2.tar.Z
     evidence:
     - kind: advisory
       path: cert0079.txt
       role: advisory_text
+    notes:
+    - >-
+      No hash of the trojaned distribution is recorded because none was ever published. The
+      WU-FTPD project never recovered the poisoned archive: its attic lists the 2.2 Trojan Horse
+      on the WISHLIST, dated to a probable release of 1 April 1994, and the file served as
+      wu-ftpd-2.2-trojan.tar.Z is only a 1,951-byte copy of that wish list. A previously recorded
+      md5:3e12b0efb95bcb97e5b58fb916323618 matched no known file and was removed rather than
+      replaced with a clean release's digest.
+    - >-
+      Clean-baseline reference digests, measured from the project attic, are recorded here rather
+      than under hashes so they are never read as attack indicators: wu-ftpd-2.1f.tar.Z is
+      md5:59232fc100eb9cf5d82d54e469790e50, wu-ftpd-2.2.tar.Z is
+      md5:8d34c7a4dfb163180a6b82fd164373b7, and wu-ftpd-2.3.tar.Z is
+      md5:e58adc5ce0b6eae34f3f2389e9dc9197. The 2.3 value is identical to the MD5 CERT published
+      in its original April 6 advisory, which is what establishes that the mirror is authentic.
+      CERT's later advisory text gives wu-ftpd-2.4.tar.Z as md5:cdcb237b71082fa23706429134d8c32e.
+    - >-
+      CERT wrote only that the trojaned versions "were found in a number of locations" and named
+      no distribution site, so the recorded wuarchive.wustl.edu path is the canonical upstream
+      coordinate for the source rather than a confirmed poisoned mirror. A previously recorded
+      ftp.cs.umn.edu path appears in no source and was removed. wuarchive.wustl.edu no longer
+      resolves and has no http(s) equivalent, so the artifact and target carry no website.
   references:
-  - url: https://www.cert.org/historical/advisories/CA-1994-07.cfm
+  - url: https://www.sei.cmu.edu/documents/517/1994_019_001_496252.pdf
     title: 'CERT Advisory CA-1994-07: wuarchive ftpd Trojan Horse'
-  - url: 
-      https://web.archive.org/web/20030804000609/http://www.team.net/mjb/hawp/hacks/wuftpd.html
-    title: wuftpd backdoor notes
+  - url: https://seclists.org/nanog/1994/Apr/3
+    title: Original April 6 CERT advisory with wu-ftpd 2.3 checksum
+  - url: https://ftp.gwdg.de/pub/misc/wu-ftpd/ftp.wu-ftpd.org/wu-ftpd-attic/
+    title: WU-FTPD project attic mirror
+  - url: https://seclists.org/bugtraq/1994/Apr/13
+    title: Contemporary Bugtraq authentication-block report
   - url: https://groups.google.com/g/comp.unix.admin/c/5gZt3uQbJ9E
     title: 'comp.unix.admin: wuarchive ftpd Trojan'

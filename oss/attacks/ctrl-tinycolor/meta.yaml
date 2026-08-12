@@ -14,10 +14,17 @@
     The stolen token was enough. The attacker published malicious versions of @ctrl/tinycolor and other packages, and the bad releases carried the Shai-Hulud postinstall payload. @ctrl/tinycolor mattered most because it had roughly two million weekly downloads.
 
     npm and GitHub removed the malicious versions quickly. The maintainer revoked tokens, republished clean packages to flush caches, and moved toward tighter publishing controls with package-scoped tokens and Trusted Publishing.
+  pull_quote:
+    text: >-
+      The npm token that published @ctrl/tinycolor was sitting in the CI
+      secrets of angulartics2, a repository that never shipped it. The token's
+      scope was the maintainer's whole account, not the project holding it.
+    caption: scoped to the account, not the repo
+    after: 2
   start_date: 2025-09-15
   end_date: 2025-09-15
   target:
-    name: ctrl-tinycolor
+    name: '@ctrl/tinycolor'
     kind: library
   actor:
     name: Third Party
@@ -34,9 +41,13 @@
     - credential_theft
     - self_propagation
     users: 2000000
+  indicators:
+  - kind: file_sha256
+    value: bundle.js 46faab8ab153fae6e80e7cca38eab363075bb524edd79e42269217a083628f09
   artifacts:
   - id: ctrl-tinycolor
-    name: ctrl-tinycolor
+    name: '@ctrl/tinycolor'
+    package: '@ctrl/tinycolor'
     ecosystem: npm
     kind: source_archive
     start_date: 2025-09-15
@@ -44,20 +55,41 @@
     versions:
     - 4.1.1
     - 4.1.2
+    fixed_versions:
+    - 4.2.0
     locations:
     - uri: https://www.npmjs.com/package/@ctrl/tinycolor/v/4.1.1
       role: distribution
+    - uri: pkg:npm/%40ctrl/tinycolor@4.1.1
+      role: distribution
     - uri: https://www.npmjs.com/package/@ctrl/tinycolor/v/4.1.2
       role: distribution
-    hashes:
-    - sha256:46faab8ab153fae6e80e7cca38eab363075bb524edd79e42269217a083628f09
+    - uri: pkg:npm/%40ctrl/tinycolor@4.1.2
+      role: distribution
+    - uri: https://www.npmjs.com/package/@ctrl/tinycolor/v/4.2.0
+      role: distribution
     indicators:
+    - kind: file
+      value: bundle.js
+    - kind: file_sha256
+      value: bundle.js 46faab8ab153fae6e80e7cca38eab363075bb524edd79e42269217a083628f09
     - kind: branch
       value: Shai-Hulud
     - kind: repository
       value: angulartics2
+    notes:
+    - The reported SHA-256 identifies the shared malicious bundle.js payload,
+      not either complete npm tarball.
   references:
+  - url: https://unit42.paloaltonetworks.com/npm-supply-chain-attack/
+    title: '"Shai-Hulud" Worm Compromises npm Ecosystem in Supply Chain Attack - Unit 42'
   - url: https://sigh.dev/posts/ctrl-tinycolor-post-mortem/
     title: '@ctrl/tinycolor supply chain attack post-mortem'
   - url: https://www.wiz.io/blog/shai-hulud-npm-supply-chain-attack
     title: Shai-Hulud npm supply chain attack
+  - url: https://socket.dev/blog/tinycolor-supply-chain-attack-affects-40-packages
+    title: '@ctrl/tinycolor supply chain attack affects 40 packages'
+  - url: https://www.stepsecurity.io/blog/ctrl-tinycolor-and-40-npm-packages-compromised
+    title: '@ctrl/tinycolor and 40 NPM packages compromised'
+  - url: https://news.ycombinator.com/item?id=45260741
+    title: 'Hacker News: @ctrl/tinycolor and 40 NPM packages compromised'

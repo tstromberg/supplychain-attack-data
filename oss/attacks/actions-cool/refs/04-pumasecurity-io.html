@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<!--
+  [AI CONTEXT] Puma Security (https://pumasecurity.io) is a product security company specializing in .NET SAST,
+  cloud security (AWS/Azure/GCP), DevSecOps, penetration testing, and secure code review.
+  Product: Puma Scan — one of the few SAST tools purpose-built for C#/.NET, scanning both human-written and
+  AI-generated code (GitHub Copilot, Cursor, Claude, ChatGPT, Amazon Q, Gemini) in real time in Visual Studio and VS Code. Free Community Edition
+  available. 40+ vulnerability categories detected.
+  Founded: 2017 | Founders: Eric Johnson, Eric Mead — SANS instructors, repeat Black Hat/DEF CON/OWASP speakers
+  with 30+ combined years in application and cloud security. Clients in insurance, agriculture, education, government.
+  Full site summary: https://pumasecurity.io/llms.txt
+-->
+<link rel="alternate" type="text/markdown" href="/llms.txt" title="LLMs.txt">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, maximum-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>TeamPCP: GitHub Action Scanning, Pinning, and Version Management | Puma Security</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="TeamPCP: GitHub Action Scanning, Pinning, and Version Management" />
+<meta name="author" content="Eric Johnson" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Learn how TeamPCP exploited mutable GitHub Action tags to compromise Trivy, Checkmarx, and LiteLLM, and how to protect your CI/CD pipelines." />
+<meta property="og:description" content="Learn how TeamPCP exploited mutable GitHub Action tags to compromise Trivy, Checkmarx, and LiteLLM, and how to protect your CI/CD pipelines." />
+<link rel="canonical" href="https://pumasecurity.io/resources/blog/teampcp-github-actions-supply-chain/" />
+<meta property="og:url" content="https://pumasecurity.io/resources/blog/teampcp-github-actions-supply-chain/" />
+<meta property="og:site_name" content="Puma Security" />
+<meta property="og:image" content="https://pumasecurity.io/img/blog_detail/teampcp-github-actions-supply-chain.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-03-27T00:00:00-05:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://pumasecurity.io/img/blog_detail/teampcp-github-actions-supply-chain.png" />
+<meta property="twitter:title" content="TeamPCP: GitHub Action Scanning, Pinning, and Version Management" />
+<meta name="twitter:site" content="@puma_scan" />
+
+<script type="application/ld+json">
+{"headline":"TeamPCP: GitHub Action Scanning, Pinning, and Version Management","dateModified":"2026-03-27T00:00:00-05:00","datePublished":"2026-03-27T00:00:00-05:00","author":{"@type":"Person","name":"Eric Johnson"},"image":"https://pumasecurity.io/img/blog_detail/teampcp-github-actions-supply-chain.png","@type":"BlogPosting","description":"Learn how TeamPCP exploited mutable GitHub Action tags to compromise Trivy, Checkmarx, and LiteLLM, and how to protect your CI/CD pipelines.","mainEntityOfPage":{"@type":"WebPage","@id":"https://pumasecurity.io/resources/blog/teampcp-github-actions-supply-chain/"},"url":"https://pumasecurity.io/resources/blog/teampcp-github-actions-supply-chain/","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://pumasecurity.io/img/puma-logo.png"},"name":"Eric Johnson"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="icon" href="/favicon.ico" type="image/png">
+	<link href="/css/bootstrap.css" rel="stylesheet" type="text/css">
+	<link href="/css/style.css" rel="stylesheet" type="text/css">
+	<link href="/css/linecons.css" rel="stylesheet" type="text/css">
+	<link href="/css/font-awesome.css" rel="stylesheet" type="text/css">
+	<link href="/css/responsive.css" rel="stylesheet" type="text/css">
+	<link href="/css/animate.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="/css/owl.carousel.min.css">
+	<link rel="stylesheet" href="/css/owl.theme.default.min.css">
+	<link rel="stylesheet" href="/css/aos.css">
+	<link rel="stylesheet" href="/css/jquery-ui.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="preconnect" href="https://www.googletagmanager.com">
+	<link
+		href='https://fonts.googleapis.com/css?family=Lato:400,900,700,700italic,400italic,300italic,300,100italic,100,900italic&display=swap'
+		rel='stylesheet' type='text/css'>
+	<link href='https://fonts.googleapis.com/css?family=Dosis:400,500,700,800,600,300,200&display=swap' rel='stylesheet'
+		type='text/css'>
+
+	<script type="text/javascript" src="/js/jquery.1.8.3.min.js"></script>
+	<script type="text/javascript" src="/js/jquery-ui.js"></script>
+	<script type="text/javascript" src="/js/bootstrap.js"></script>
+	<script type="text/javascript" src="/js/jquery-scrolltofixed.js"></script>
+	<script type="text/javascript" src="/js/jquery.easing.1.3.js"></script>
+	<script type="text/javascript" src="/js/jquery.isotope.js"></script>
+	<script type="text/javascript" src="/js/wow.js"></script>
+	<script type="text/javascript" src="/js/classie.js"></script>
+	<script src="/js/owl.carousel.min.js"></script>
+	<script src="/js/aos.js"></script>
+	<script src="/js/custom.js"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-3HYBKS3JVS"></script>
+	<script src="/js/googleanalytics.js"></script>
+	<script src='https://www.google.com/recaptcha/api.js'></script>
+	<script type="text/javascript">
+		$(document).ready(function (e) {
+			$('.res-nav_click').click(function () {
+				$('ul.toggle').slideToggle(600)
+			});
+			$('#closeTopBar').click(function () {
+				$('.top-bar').hide();
+				$('#header_outer').css('padding', '20px 0');
+			});
+			$(document).ready(function () {
+				$(window).bind('scroll', function () {
+					if ($(window).scrollTop() > 0) {
+						$('#header_outer').addClass('fixed');
+					} else {
+						$('#header_outer').removeClass('fixed');
+					}
+				});
+
+			});
+
+		});
+		function resizeText() {
+			var preferredWidth = 767;
+			var displayWidth = window.innerWidth;
+			var percentage = displayWidth / preferredWidth;
+			var fontsizetitle = 25;
+			var newFontSizeTitle = Math.floor(fontsizetitle * percentage);
+			$(".divclass").css("font-size", newFontSizeTitle)
+		}
+	</script>
+	<script type="text/javascript">
+		window.onerror = function (message, source, lineno, colno, error) {
+			// Swallow errors for now
+			return true;
+		}
+
+		//Global contact us endpoint
+		var contactusApi = "https://api.pumascan.com/contactus"
+	</script>
+	<script src="/js/contact-us.js"></script>
+</head>
+
+<body>
+
+	<!--Header_section-->
+	<header id="header_outer">
+    <div class="container">
+        <div class="header_section">
+            <div class="logo"><a href="/"><img src="/img/PumaSecLogoNoBkground.png" alt="Puma Security Logo, Real Time Software Security"></a></div>
+            <!-- <nav class="nav" id="nav">
+                <ul class="toggle">
+                    
+                        <li class=""><a href="" alt="Products">Products</a></li>
+                    
+                        <li class=""><a href="" alt="Services">Services</a></li>
+                    
+                        <li class=""><a href="" alt="Resources">Resources</a></li>
+                    
+                        <li class=""><a href="" alt="Support">Support</a></li>
+                    
+                        <li class=""><a href="" alt="About">About</a></li>
+                    
+                        <li class="border-button"><a href="https://portal.pumascan.com/Account/Login" alt="Sign In">Sign In</a></li>
+                    
+                        <li class="orange-button last-button"><a href="https://portal.pumascan.com" alt="Try It For Free">Try It For Free</a></li>
+                    
+                </ul>
+                <ul class="">
+                    
+                        <li class=""><a href="" alt="Products">Products</a></li>
+                    
+                        <li class=""><a href="" alt="Services">Services</a></li>
+                    
+                        <li class=""><a href="" alt="Resources">Resources</a></li>
+                    
+                        <li class=""><a href="" alt="Support">Support</a></li>
+                    
+                        <li class=""><a href="" alt="About">About</a></li>
+                    
+                        <li class="border-button"><a href="https://portal.pumascan.com/Account/Login" alt="Sign In">Sign In</a></li>
+                    
+                        <li class="orange-button last-button"><a href="https://portal.pumascan.com" alt="Try It For Free">Try It For Free</a></li>
+                    
+                </ul>
+            </nav> -->
+            <nav class="nav" id="nav">
+                <ul class="toggle nav navbar-nav">
+                    
+                        <li class=" dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="" alt="Products">
+                                Products <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/pricing/">Puma Scan Pricing</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/cloud-ci">Puma Scan Cloud CI</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/azuredevops">Puma Scan Azure DevOps</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/server-edition">Puma Scan Build Server</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/product#top-slide-2">Puma Scan End User</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/net-security-workshop">ASP.NET Security Workshop</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/capture-the-flag">Capture the Flag</a></li>
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class=" dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="" alt="Services">
+                                Services <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/cloud-security">Cloud Security</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/secure-devops">Secure DevOps</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/security-advisement">Security Advisement</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/penetration-tests">Penetration Tests</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/vulnerability-assessments">Vulnerability Assessments</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/remediation">Remediation</a></li>
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class=" dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="" alt="Resources">
+                                Resources <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/resources/category/blog/">Blogs</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id=videography class=portfolio-menu href="/resources/category/video-demos/">Videos</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id=design class=portfolio-menu href="https://pumascan.com/faq-general/">FAQs</a></li>
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class=" dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="" alt="Support">
+                                Support <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/installation/">Installation Guide</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/faq-general/">Installation FAQ</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/configuration/">User Guide</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/rules/">Rule Documentation</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/resources/category/release-notes/">Release Notes</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/resources/category/product-resources/">Product Resources</a></li>
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class=" dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="" alt="About">
+                                About <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/about#top-story">Team</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/#testimonials">Customer Testimonials</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/career">Careers</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/about#top-news">In the News</a></li>
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class="border-button dropdown">
+                            <a class="dropdown-toggle" data-toggle="" href="https://portal.pumascan.com/Account/Login" alt="Sign In">
+                                Sign In 
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class="orange-button last-button dropdown">
+                            <a class="dropdown-toggle" data-toggle="" href="https://portal.pumascan.com" alt="Try It For Free">
+                                Try It For Free 
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                            </ul>
+                        </li>
+                    
+                </ul>
+                <ul class="nav navbar-nav">
+                    
+                        <li class=" dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="" alt="Products">
+                                Products <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/pricing/">Puma Scan Pricing</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/cloud-ci">Puma Scan Cloud CI</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/azuredevops">Puma Scan Azure DevOps</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/server-edition">Puma Scan Build Server</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/product#top-slide-2">Puma Scan End User</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/net-security-workshop">ASP.NET Security Workshop</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/capture-the-flag">Capture the Flag</a></li>
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class=" dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="" alt="Services">
+                                Services <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/cloud-security">Cloud Security</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/secure-devops">Secure DevOps</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/security-advisement">Security Advisement</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/penetration-tests">Penetration Tests</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/vulnerability-assessments">Vulnerability Assessments</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/remediation">Remediation</a></li>
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class=" dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="" alt="Resources">
+                                Resources <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/resources/category/blog/">Blogs</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id=videography class=portfolio-menu href="/resources/category/video-demos/">Videos</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id=design class=portfolio-menu href="https://pumascan.com/faq-general/">FAQs</a></li>
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class=" dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="" alt="Support">
+                                Support <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/installation/">Installation Guide</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/faq-general/">Installation FAQ</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/configuration/">User Guide</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/rules/">Rule Documentation</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/resources/category/release-notes/">Release Notes</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="https://pumascan.com/resources/category/product-resources/">Product Resources</a></li>
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class=" dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="" alt="About">
+                                About <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/about#top-story">Team</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/#testimonials">Customer Testimonials</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/career">Careers</a></li>
+                                
+                                    <li class="main-menu-sublink"><a id= class= href="/about#top-news">In the News</a></li>
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class="border-button dropdown">
+                            <a class="dropdown-toggle" data-toggle="" href="https://portal.pumascan.com/Account/Login" alt="Sign In">
+                                Sign In 
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                            </ul>
+                        </li>
+                    
+                        <li class="orange-button last-button dropdown">
+                            <a class="dropdown-toggle" data-toggle="" href="https://portal.pumascan.com" alt="Try It For Free">
+                                Try It For Free 
+                            </a>
+                            <ul class="dropdown-menu">
+                                
+                            </ul>
+                        </li>
+                    
+                </ul>
+            </nav>
+            <a class="res-nav_click animated wobble wow" href="javascript:void(0)"><i class="fa-bars"></i></a>
+        </div>
+    </div>
+</header>
+	<!--Header_section-->
+
+	
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "TeamPCP: GitHub Action Scanning, Pinning, and Version Management",
+  "description": "Learn how TeamPCP exploited mutable GitHub Action tags to compromise Trivy, Checkmarx, and LiteLLM, and how to protect your CI/CD pipelines.",
+  "author": {
+    "@type": "Person",
+    "name": "Eric Johnson"
+  },
+  "datePublished": "2026-03-27T00:00:00-05:00",
+  "image": "https://pumasecurity.io/img/blog_detail/teampcp-github-actions-supply-chain.png",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Puma Security",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://pumasecurity.io/img/puma-logo.png"
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://pumasecurity.io/resources/blog/teampcp-github-actions-supply-chain/"
+  }
+}
+</script>
+<div class="wrapper">
+  <section class="blog-intro">
+    <div class="container-fluid">
+      <a href="/resources" class="backTo-btn">Back to Resources</a>
+      <div class="row">
+        <div class="col-xs-12 col-md-10 col-md-offset-1">
+
+          <div class="post-header">
+            <div class="post-category" style="background-color: #FBB146">
+              <p>blog</p>
+            </div>
+            <h1 class="post-title">TeamPCP: GitHub Action Scanning, Pinning, and Version Management</h1>
+            
+            <div class="post-date mb-50">27 Mar 2026</div>
+            
+            
+              <p class="post-description">Learn how TeamPCP exploited mutable GitHub Action tags to compromise Trivy, Checkmarx, and LiteLLM, and how to protect your CI/CD pipelines.</p>
+            
+            
+            <div class="blog-img-wrapper">
+              
+              <img src="/img/blog_detail/teampcp-github-actions-supply-chain.png" class="img-responsive post-image mb-50" alt="TeamPCP: GitHub Action Scanning, Pinning, and Version Management" loading="lazy">
+              
+            </div>
+          </div>
+        
+          <div class="post-excerpt">
+            <p><p>In March 2026, a threat actor known as TeamPCP launched one of the most damaging software supply chain attacks to date. What started as a compromise of Aqua Security’s Trivy vulnerability scanner cascaded into a multi-platform exploit that affected GitHub Actions,  VS Code extensions, npm packages, and LiteLLM on PyPI. The root cause? Mutable version tags in GitHub Actions and organizations pulling updates without a cooldown period.</p>
+
+<p><br /></p>
+
+<p>The attack timeline tells the story. On March 19, TeamPCP pushed a malicious <code class="highlighter-rouge">v0.69.4</code> tag to the Trivy repository, force-pushing 75 out of 76 <code class="highlighter-rouge">trivy-action</code> tags and 7 <code class="highlighter-rouge">setup-trivy</code> tags to compromised versions. The injected payload scraped hosted GitHub runner process memory for secrets marked <code class="highlighter-rouge">isSecret: true</code>, swept filesystems for SSH keys and cloud credentials, encrypted everything with AES-256-CBC and RSA-4096, and exfiltrated data to a typosquatted domain. By March 23, Checkmarx KICS GitHub Actions were compromised with all 91 tags hijacked. On March 24, malicious LiteLLM packages appeared on PyPI.</p>
+
+<p><br /></p>
+
+<h2 id="how-github-action-references-work">How GitHub Action References Work</h2>
+
+<p>Understanding how GitHub Actions are referenced is essential to grasping why this attack was so effective. When you reference an action in a workflow, you have three options.</p>
+
+<p><br /></p>
+
+<p><strong>Branch references</strong> pull the latest commit from a branch:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">aquasecurity/trivy-action@main</span>
+</code></pre></div></div>
+
+<p><strong>Tag references</strong> point to a named release:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">aquasecurity/trivy-action@v0.69.4</span>
+</code></pre></div></div>
+
+<p><strong>SHA references</strong> pin to a specific, immutable commit:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">aquasecurity/trivy-action@a7b7e234bc249cc10a3d1e87b7c691fb64bc1e16</span> <span class="c1"># v0.69.3</span>
+</code></pre></div></div>
+
+<p><br /></p>
+
+<p>Branch and tag references are mutable. A repository maintainer, or an attacker with write access, can move a tag to point at a completely different commit. When TeamPCP compromised the Trivy repository, they force-pushed tags to malicious commits. Every CI/CD pipeline referencing those tags by name immediately pulled the compromised code on the next run.</p>
+
+<p><br /></p>
+
+<p>SHA references are the only truly immutable option. A commit SHA is a cryptographic hash of the repository state at that point in time. It cannot be moved or reassigned. Pinning actions to full commit SHAs is the single most important defense against this class of attack.</p>
+
+<p><br /></p>
+
+<h2 id="github-action-scanning-with-zizmor">GitHub Action Scanning with Zizmor</h2>
+
+<p><a href="https://docs.zizmor.sh/">Zizmor</a> is a security linter for GitHub Actions workflows. It catches the exact patterns that TeamPCP exploited. Install and run it against your workflows:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>zizmor .github/workflows/
+</code></pre></div></div>
+
+<p><br /></p>
+
+<p>Zizmor flags two findings that are directly relevant to this attack.</p>
+
+<p><br /></p>
+
+<p><strong>Unpinned action references</strong> flag any action that uses a branch name or tag instead of a full SHA hash:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>error[unpinned-uses]: unpinned action reference
+  --&gt; .github/workflows/scan.yml:26:15
+   |
+26 |       - uses: aquasecurity/trivy-action@v0.69.3
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ action is not pinned to a hash ref
+   |
+   = note: audit confidence → High
+</code></pre></div></div>
+
+<p><strong>Imposter commits</strong> flag references to SHAs that exist in a fork rather than the upstream repository, which could be attacker-controlled:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>error[impostor-commit]: action ref is an impostor commit
+  --&gt; .github/workflows/build.yml:22:15
+   |
+22 |       - uses: example/action@abc123def456
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^ this commit does not belong to the action's repository
+   |
+   = note: audit confidence → High
+</code></pre></div></div>
+
+<p><br /></p>
+
+<p>Running zizmor as part of your CI pipeline ensures new workflows and changes to existing ones are validated before they reach production.</p>
+
+<p><br /></p>
+
+<h2 id="automating-fixes-with-claude-code-and-a-cooldown-period">Automating Fixes with Claude Code and a Cooldown Period</h2>
+
+<p>Trail of Bits published a <a href="https://github.com/trailofbits/claude-code-config">Claude Code configuration repository</a> that demonstrates how to help maintain GitHub Actions security standards through AI-assisted development. The key insight is embedding security rules directly into the <code class="highlighter-rouge">CLAUDE.md</code> file that guides Claude Code’s behavior:</p>
+
+<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gh"># GitHub Actions</span>
+
+Pin actions to SHA hashes with version comments: actions/checkout@<span class="nt">&lt;full-sha&gt;</span>  # vX.Y.Z
+
+Scan workflows with zizmor before committing.
+
+Configure Dependabot with 7-day cooldowns and grouped updates.
+</code></pre></div></div>
+
+<p><br /></p>
+
+<p>With these instructions in place, Claude Code automatically pins new action references to SHA hashes, adds version comments for human readability, and flags any mutable tag references it encounters during code review.</p>
+
+<p><br /></p>
+
+<p>The dependency cooldown period is a critical defense. The TeamPCP attack relied on organizations pulling updates immediately after they were published. A 7-day cooldown ensures that compromised releases have time to be detected and reverted before your pipelines consume them. Configure this in your Dependabot settings:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># .github/dependabot.yml</span>
+<span class="na">version</span><span class="pi">:</span> <span class="m">2</span>
+<span class="na">updates</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">package-ecosystem</span><span class="pi">:</span> <span class="s2">"</span><span class="s">github-actions"</span>
+    <span class="na">directory</span><span class="pi">:</span> <span class="s2">"</span><span class="s">/"</span>
+    <span class="na">schedule</span><span class="pi">:</span>
+      <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">weekly"</span>
+    <span class="na">groups</span><span class="pi">:</span>
+      <span class="na">actions</span><span class="pi">:</span>
+        <span class="na">patterns</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="s2">"</span><span class="s">*"</span>
+</code></pre></div></div>
+
+<p><br /></p>
+
+<p>If you use Renovate instead of Dependabot, apply the same 7-day cooldown with <code class="highlighter-rouge">minimumReleaseAge</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://docs.renovatebot.com/renovate-schema.json"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"minimumReleaseAge"</span><span class="p">:</span><span class="w"> </span><span class="s2">"7 days"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"packageRules"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"matchManagers"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"github-actions"</span><span class="p">],</span><span class="w">
+      </span><span class="nl">"groupName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"github-actions"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><br /></p>
+
+<p>Combining zizmor scanning, SHA pinning, and cooldown periods creates a layered defense. Zizmor catches misconfigurations before they ship. SHA pinning ensures you run exactly what you reviewed. Cooldown periods give the community time to identify compromised releases before your pipelines adopt them.</p>
+
+<p><br /></p>
+
+<h2 id="whats-next-github-actions-security-roadmap">What’s Next: GitHub Actions Security Roadmap</h2>
+
+<p>GitHub has responded to the TeamPCP campaign and other supply chain attacks with an <a href="https://github.blog/news-insights/product-news/whats-coming-to-our-github-actions-2026-security-roadmap/">ambitious 2026 security roadmap</a> that addresses these problems at the platform level.</p>
+
+<p><br /></p>
+
+<p><strong>Deterministic Dependency Locking</strong> introduces a new <code class="highlighter-rouge">dependencies:</code> section in workflow YAML that locks all direct and transitive action dependencies using commit SHAs, similar to Go modules. Every workflow will execute exactly what was reviewed, and dependency updates will appear as reviewable diffs in pull requests. This feature is expected in public preview within 3 to 6 months, with general availability at 6 months.</p>
+
+<p><br /></p>
+
+<p><strong>Policy-Driven Execution Controls</strong> use GitHub’s ruleset framework to centralize control over who can trigger workflows and which events are permitted. Actor rules and event rules address over-permissioned workflows and the unclear trust boundaries that enable attacks like the <code class="highlighter-rouge">pull_request_target</code> exploit, which was responsible for the <a href="https://www.stepsecurity.io/blog/hackerbot-claw-github-actions-exploitation">initial trivy compromise</a>. Public preview is expected within 3 to 6 months.</p>
+
+<p><br /></p>
+
+<p><strong>Native Egress Firewall</strong> restricts outbound connections from runners. This directly counters the TeamPCP exfiltration technique, where stolen secrets were sent to typosquatted domains. Had an egress firewall been in place, the C2 callbacks to <code class="highlighter-rouge">scan.aquasecurtiy.org</code> would have been blocked. Public preview is expected within 6 to 9 months.</p>
+
+<p><br /></p>
+
+<p>These platform-level changes will make secure-by-default the norm rather than the exception. Until they ship, the combination of SHA pinning, zizmor scanning, cooldown periods, and <a href="https://pumasecurity.io/services/">AI-assisted maintenance</a> provides the best defense against GitHub Actions supply chain attacks.</p>
+
+<h3 id="about-the-author">About The Author</h3>
+
+<p>Would you like to learn more about GitHub and GitHub Actions security? Contact us today: sales [at] pumasecurity [dot] io.</p>
+
+<p><br /></p>
+
+<p><a href="https://www.linkedin.com/in/eric-m-johnson/">Eric Johnson’s</a> experience includes performing cloud security architecture and design, cloud native and Kubernetes assessments, infrastructure as code automation, application security automation, web and mobile application penetration testing, secure development lifecycle consulting, and secure code review assessments.</p>
+</p>
+          </div>
+          
+          <div class="share-bar">
+            <div class="share-header">
+    <h3 class="share-header">Share this post:</h3>
+  </div>
+  <div class="share-buttons">
+    <a  href="#"
+       onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fpumasecurity.io%2Fresources%2Fblog%2Fteampcp-github-actions-supply-chain%2F', 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+       title="Share on Facebook" >
+      <i class="fa fa-facebook-square fa-3x share-button"></i>
+    </a>
+
+    <a  href="#"
+       onclick="window.open('https://x.com/intent/post?url=https%3A%2F%2Fpumasecurity.io%2Fresources%2Fblog%2Fteampcp-github-actions-supply-chain%2F&text=TeamPCP%3A+GitHub+Action+Scanning%2C+Pinning%2C+and+Version+Management', 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+       title="Share on X" >
+      <i class="fa fa-twitter-square fa-3x share-button"></i>
+    </a>
+
+    <a  href="#"
+       onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fpumasecurity.io%2Fresources%2Fblog%2Fteampcp-github-actions-supply-chain%2F', 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+       title="Share on LinkedIn" >
+      <i class="fa fa-linkedin-square fa-3x share-button"></i>
+    </a>
+  </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="read-more">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <h2 class="title-2 articles-header">Related Posts</h2>
+        </div>
+      </div>
+      <div class="row">          
+        
+        
+          
+          
+          
+
+          
+            
+            
+
+            
+              
+                
+                  
+                  <!--  
+                    -->
+                
+              
+            
+              
+                
+                  
+                  <!--  
+                    -->
+                
+              
+            
+
+            
+            <div class="col-xs-12 col-sm-6 col-md-4" data-aos="fade-up">
+              <a href="/resources/blog/foreup-api-payment-credential-exposure-bola/" class="post-clickable">
+                <div class="post-item">
+
+                  <div class="post-category" style="background-color: #FBB146">
+                    <p>blog</p>
+                  </div>
+
+                  <div>
+                    <h2 class="post-item-header">I Checked My Golf Club's App Before Saving My Credit Card</h2>
+                  </div>
+
+                  <div class="post-item-entry">
+                    <p>Last summer I joined a golf club. The club runs its tee sheet, its dining...</p><br/>
+                  </div>
+
+                  <div class="post-item-author">
+                    <p>Eric Mead <span>/ 01 Aug 2026</span></p>
+                  </div>
+                  
+                </div>
+              </a>
+            </div>
+            
+              
+            
+          
+            
+            
+
+            
+              
+                
+                  
+                  <!--  
+                    -->
+                
+              
+            
+              
+                
+                  
+                  <!--  
+                    -->
+                
+              
+            
+
+            
+            <div class="col-xs-12 col-sm-6 col-md-4" data-aos="fade-up">
+              <a href="/resources/blog/puma-scan-claude-skill/" class="post-clickable">
+                <div class="post-item">
+
+                  <div class="post-category" style="background-color: #FBB146">
+                    <p>blog</p>
+                  </div>
+
+                  <div>
+                    <h2 class="post-item-header">Puma Scan Claude Skill: AI-Powered .NET Security Scanning</h2>
+                  </div>
+
+                  <div class="post-item-entry">
+                    <p>
+
+</p><br/>
+                  </div>
+
+                  <div class="post-item-author">
+                    <p>Eric Johnson <span>/ 21 Apr 2026</span></p>
+                  </div>
+                  
+                </div>
+              </a>
+            </div>
+            
+              
+            
+          
+            
+            
+
+            
+              
+            
+              
+            
+
+            
+          
+            
+            
+
+            
+              
+                
+                  
+                  <!--  
+                    -->
+                
+              
+            
+              
+                
+                  
+                  <!--  
+                    -->
+                
+              
+            
+
+            
+            <div class="col-xs-12 col-sm-6 col-md-4" data-aos="fade-up">
+              <a href="/resources/blog/puma-scan-vs-sonarqube-dotnet-sast/" class="post-clickable">
+                <div class="post-item">
+
+                  <div class="post-category" style="background-color: #FBB146">
+                    <p>blog</p>
+                  </div>
+
+                  <div>
+                    <h2 class="post-item-header">Puma Scan vs SonarQube: Choosing a .NET SAST Tool</h2>
+                  </div>
+
+                  <div class="post-item-entry">
+                    <p>Choosing the right static application security testing (SAST) tool for .NET projects is a decision...</p><br/>
+                  </div>
+
+                  <div class="post-item-author">
+                    <p>Eric Mead <span>/ 25 Mar 2026</span></p>
+                  </div>
+                  
+                </div>
+              </a>
+            </div>
+            
+              
+                
+
+        
+      </div>
+    </div>
+  </section>
+</div>
+
+	<!--twitter-feed-end-->
+	<footer class="footer_section" id="contact">
+		<div class="container">
+			<section class="main-section contact" id="contact">
+				<div class="contact_section">
+					<h2>Contact Us</h2>
+					<div class="row">
+						<div class="col-lg-4">
+							<div class="contact_block">
+								<div class="contact_block_icon rollIn animated wow"><span><i class="fa-home"></i></span>
+								</div>
+								<span> 6750 Westown Pkwy <br>
+									<span> Suite 200-152 <br> West Des Moines, IA 50266
+									</span>
+							</div>
+						</div>
+						<div class="col-lg-4">
+							<div class="contact_block">
+								<div class="contact_block_icon icon2 rollIn animated wow"><span><i class="fa-pencil"></i></span></div>
+								<span> Technical or Installation Questions <br>
+									<span> support [at] pumascan [dot] com </span>
+							</div>
+						</div>
+						<div class="col-lg-4">
+							<div class="contact_block">
+								<div class="contact_block_icon icon3 rollIn animated wow"><span><i class="fa-pencil"></i></span></div>
+								<span> More information or to get a quote <br>
+									<span> sales [at] pumascan [dot] com </span>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-6 wow fadeInLeft">
+						<div class="contact-info-box address clearfix">
+							
+
+						</div>
+						<ul class="social-link">
+							<li class="twitter animated bounceIn wow delay-02s"><a href="https://x.com/puma_scan"
+									target="_blank" rel="noopener noreferrer"><i class="fa-twitter"></i></a></li>
+							<li class="twitter animated bounceIn wow delay-02s"><a
+									href="https://www.linkedin.com/company/puma-security-llc/" target="_blank" rel="noopener noreferrer"><i
+										class="fa-linkedin"></i></a></li>
+						</ul>
+					</div>
+					<div class="col-lg-6 wow fadeInUp delay-06s">
+						<div class="form">
+							<div id="sendmessage">Your message has been sent. Our team will contact you shortly.</div>
+							<div id="errormessage">There was an error sending your message. Please contact support [at]
+								pumascan [dot] com for assistance.</div>
+							<form id="contactUsForm" class="contactForm">
+								<div class="form-group">
+									<input id="contactName" name="name" type="text" class="form-control input-text"
+										placeholder="Your Name"></input>
+									<div id="validationName" class="validation">Please enter your name.</div>
+								</div>
+								<div class="form-group">
+									<input id="contactEmail" name="email" type="email" class="form-control input-text"
+										placeholder="Your Email"></input>
+									<div id="validationEmail" class="validation">Please enter your email address.</div>
+								</div>
+								<div class="form-group">
+									<input id="contactSubject" name="subject" type="text" class="form-control input-text"
+										placeholder="Subject"></input>
+									<div id="validationSubject" class="validation">Please enter a subject.</div>
+								</div>
+								<div class="form-group">
+									<textarea id="contactMessage" name="message" class="form-control" rows="5"
+										placeholder="Message"></textarea>
+									<div id="validationMessage" class="validation">Please enter a message.</div>
+									<input id="contactToken" name="contactToken" type="text" />
+								</div>
+								<div class="form-group g-recaptcha" data-sitekey="6LfEbc8UAAAAAANVRDUFs-FbWWhEG1fWxd9LYN15"></div>
+								<button id="contactSubmit" type="button" class="btn input-btn">SEND MESSAGE</button>
+								<div id="contactSpinner">
+									<div class="fa fa-spinner fa-spin fa-3x contactSpinner"></div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+		<div class="container">
+			<div class="footer_bottom">
+				<div class="row">
+					<div class="col-xs-4">
+						<span>© 2016 -
+							<script>document.write(new Date().getFullYear())</script> - Puma Security, LLC
+						</span>
+					</div>
+					<div class="col-xs-8">
+						<a class="link" href="/privacy" target="_blank">Privacy Policy</a> <a class="link"
+							href="https://pumascan.com/eula/" target="_blank">EULA</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+	<script type="text/javascript">
+		$(document).ready(function (e) {
+			$('#header_outer').scrollToFixed();
+			$('.res-nav_click').click(function () {
+				$('.main-nav').slideToggle();
+				return false
+
+			});
+
+		});
+	</script>
+	<script>
+		wow = new WOW({
+			animateClass: 'animated',
+			offset: 100
+		});
+		wow.init();
+		// document.getElementById('').onclick = function() {
+		// 	var section = document.createElement('section');
+		// 	section.className = 'wow fadeInDown';
+		// 	section.className = 'wow shake';
+		// 	section.className = 'wow zoomIn';
+		// 	section.className = 'wow lightSpeedIn';
+		// 	this.parentNode.insertBefore(section, this);
+		// };
+	</script>
+	<script type="text/javascript">
+		$(window).load(function () {
+
+			$('a').on('click', function (event) {
+				var $anchor = $(this);
+				if ($($anchor.attr('href')).length > 0) {
+					$('html, body').stop().animate({
+						scrollTop: $($anchor.attr('href')).offset().top - 91
+					}, 1500, 'easeInOutExpo');
+					event.preventDefault();
+				}
+				/*
+				if you don't want to use the easing effects:
+				$('html, body').stop().animate({
+					scrollTop: $($anchor.attr('href')).offset().top
+				}, 1000);
+				*/
+			});
+		})
+	</script>
+
+	<script type="text/javascript">
+		jQuery(document).ready(function ($) {
+			// Portfolio Isotope
+			var container = $('#portfolio-wrap');
+
+
+			container.isotope({
+				animationEngine: 'best-available',
+				animationOptions: {
+					duration: 200,
+					queue: false
+				},
+				layoutMode: 'fitRows'
+			});
+
+			$('#filters a').click(function () {
+				$('#filters a').removeClass('active');
+				$(this).addClass('active');
+				var selector = $(this).attr('data-filter');
+				container.isotope({
+					filter: selector
+				});
+				setProjects();
+				return false;
+			});
+
+			$('.portfolio-menu').click(function (event) {
+				filterParam = '.' + event.target.id;
+				$('#filters a').removeClass('active');
+				$(filterParam).addClass('active');
+				container.isotope({
+					filter: filterParam
+				});
+			});
+
+			function splitColumns() {
+				var winWidth = $(window).width(),
+					columnNumb = 1;
+
+
+				if (winWidth > 1024) {
+					columnNumb = 4;
+				} else if (winWidth > 900) {
+					columnNumb = 2;
+				} else if (winWidth > 479) {
+					columnNumb = 2;
+				} else if (winWidth < 479) {
+					columnNumb = 1;
+				}
+
+				return columnNumb;
+			}
+
+			function setColumns() {
+				var winWidth = $(window).width(),
+					columnNumb = splitColumns(),
+					postWidth = Math.floor(winWidth / columnNumb);
+
+				container.find('.portfolio-item').each(function () {
+					$(this).css({
+						width: postWidth + 'px'
+					});
+				});
+			}
+
+			function setProjects() {
+				setColumns();
+				container.isotope('reLayout');
+			}
+
+			container.imagesLoaded(function () {
+				setColumns();
+			});
+
+
+			$(window).bind('resize', function () {
+				setProjects();
+			});
+
+		});
+		$(window).load(function () {
+			jQuery('#first').click();
+			return false;
+		});
+	</script>
+
+</body>
+
+</html>

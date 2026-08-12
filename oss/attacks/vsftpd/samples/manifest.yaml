@@ -1,0 +1,82 @@
+schema_version: 1
+interpretation:
+  - >-
+    The exact poisoned distribution tarball remains unavailable. The recovered infection.diff
+    preserves the two malicious source modifications from a research repository's immutable first
+    commit, so it is classified as payload-only evidence rather than as the original archive.
+  - >-
+    Slackware's preserved 2.3.4 source tarball is the clean original release. Its measured SHA-256,
+    SHA-1, MD5, and size all match the Slackware mirror index, and the SHA-256 is independently
+    reported in contemporary discussion as the signed, non-backdoored archive.
+samples:
+  - artifact_id: vsftpd
+    phase: before
+    classification: clean
+    version: 2.3.4
+    filename: vsftpd-2.3.4.tar.gz
+    path: vsftpd/before/vsftpd-2.3.4.tar.gz
+    sha256: b466edf96437afa2b2bea6981d4ab8b0204b83ca0a2ac94bef6b62b42cc71a5a
+    size: 187043
+    source:
+      url: >-
+        https://mirror.slackbuilds.org/slackware/slackware64-13.37/source/n/vsftpd/vsftpd-2.3.4.tar.gz
+      retrieved_at: '2026-08-10T02:05:52Z'
+      kind: distribution_mirror
+    verification:
+      status: exact
+      basis:
+        - slackware_mirror_sha256_b466edf96437afa2b2bea6981d4ab8b0204b83ca0a2ac94bef6b62b42cc71a5a
+        - slackware_mirror_sha1_b774cc6b4c50e20f4fe9ca7f6aa74169ce7fe5ea
+        - slackware_mirror_md5_2ea5d19978710527bb7444d93b67767a
+        - slackware_mirror_size_187043
+        - measured_hashes_and_size
+    notes:
+      - This is the clean archive released before the official download was replaced in place.
+  - artifact_id: vsftpd
+    phase: during
+    classification: malicious
+    version: 2.3.4
+    filename: infection.diff
+    path: vsftpd/during/infection.diff
+    sha256: 785dd7a463377c3ae70a3490d5e2c392adbbe06cd3ab4a025bc731621a98d1b1
+    size: 2904
+    source:
+      url: >-
+        https://raw.githubusercontent.com/DoctorKisow/vsftpd-2.3.4/240f33c36ed8d9e7d3e59280fb0cd7dfbf6fee29/infection.diff
+      retrieved_at: '2026-08-10T02:05:53Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - immutable_research_repository_first_commit
+        - git_blob_sha1_976e49e3400192232b35cbb595c81d9722cef0e6
+        - matches_published_str_c_and_sysdeputil_c_backdoor
+        - measured_sha256
+    notes:
+      - >-
+        The diff direction removes the malicious code from the compromised tree; its deleted lines
+        therefore preserve the smiley trigger and port-6200 shell listener.
+unresolved:
+  - artifact_id: vsftpd
+    phase: during
+    coordinate: sha256:2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-08-08T20:33:10.002-04:00 level=ERROR msg="command failed"
+        error="SHA-256 2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.5:8081/api/file/2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5;
+        malwarebazaar: MalwareBazaar has no sample for
+        2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5: hash_not_found; triage:
+        Triage has no file analysis for SHA-256
+        2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5"
+      - >-
+        Forager PURL/SHA-256: time=2026-08-10T13:57:06.617-04:00 level=ERROR msg="command failed"
+        error="hash 2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5 unavailable
+        from configured sources: malwarebazaar: MalwareBazaar has no sample for
+        2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5: hash_not_found; triage:
+        Triage has no file analysis for SHA256
+        2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-08-10T17:57:07.975Z'

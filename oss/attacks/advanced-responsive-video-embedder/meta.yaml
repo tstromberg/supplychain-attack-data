@@ -1,0 +1,126 @@
+- id: advanced-responsive-video-embedder
+  title: ARVE WordPress plugin shipped a hardcoded admin backdoor
+  campaigns:
+  - wordpress-admin-persistence-2026
+  synopsis: >-
+    Version 10.8.7 of Advanced Responsive Video Embedder carried a concealed authentication
+    bypass that logged any unauthenticated request bearing a hardcoded token in as an
+    administrator. Wordfence PRISM found it 111 minutes after the commit.
+  story: |
+    An attacker with commit access to Advanced Responsive Video Embedder, a
+    WordPress plugin with roughly 20,000 active installations, planted a
+    hardcoded authentication bypass in version 10.8.7 on the morning of July 28,
+    2026. Wordfence's autonomous vulnerability-analysis agent, PRISM, flagged it
+    111 minutes later.
+
+    The plugin embeds video players for Rumble, Odysee, YouTube, Vimeo, and Kick.
+    The backdoor arrived in a file called `php/fn-update-check.php`, a name chosen
+    to read as routine plugin housekeeping, loaded unconditionally from line 76 of
+    the plugin bootstrap. Inside was `_arve_uc_init()`, registered on WordPress's
+    `init` hook at priority 1 so it ran on every request, frontend or admin, before
+    any authentication logic. The leading underscore made it look like a private
+    WordPress internal.
+
+    The function read a token from `$_REQUEST` under either `_wplogin` or `_wpm`,
+    accepted it from a query string, POST body, or cookie, and required only that
+    it be at least 32 characters. It first tried to derive a site-specific value
+    from the installation's `AUTH_KEY` and `SECURE_AUTH_KEY`, which gave the code
+    the shape of a legitimate keyed scheme. Then it fell through to compare the
+    token against a SHA-256 hash baked into the source:
+    `35fe7057ffed92ff7bc5a0b90f302a77fb5843ad6c972294d68da0b0553b3900`. Since the
+    plugin source was public on WordPress.org, that hash was a universal master
+    credential. On a match the code enumerated administrator accounts, picked one
+    at random, called `wp_set_auth_cookie()` with a long-lived session, and
+    redirected the caller into `/wp-admin/`. One HTTP GET, no credentials, full
+    control. It was assigned CVE-2026-18072 at CVSS 9.8.
+
+    Two details marked it as deliberate rather than accidental. Before choosing an
+    administrator to impersonate, the code filtered out usernames beginning with
+    `wpsvc_`, `developer_`, `dev_`, or `wp_update_`, which suggests the operators
+    had already seeded their own accounts on target sites and did not want to
+    collide with them. And a companion function, `_arve_uc_cb()`, reported the site
+    URL and chosen username to `fontswp.com` through three fallback HTTP methods
+    with certificate verification disabled. Wordfence notified the WordPress.org
+    plugin team rather than the developer, on the reasoning that the developer's
+    account was the likely point of compromise. The plugin was closed for downloads
+    at 11:09 EST, and WordPress.org confirmed the malicious release had not yet been
+    distributed to sites.
+  start_date: 2026-07-28
+  end_date: 2026-07-28
+  target:
+    name: Advanced Responsive Video Embedder
+    kind: plugin
+    website: https://wordpress.org/plugins/advanced-responsive-video-embedder/
+  actor:
+    name: Unknown
+    kind: group
+  language: PHP
+  method:
+    cause: compromised_account_credentials
+    phase: source
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - account_takeover
+    users: 20000
+  locations:
+  - uri: https://wordpress.org/plugins/advanced-responsive-video-embedder/
+    role: distribution
+  indicators:
+  - kind: advisory
+    value: CVE-2026-18072
+  - kind: file
+    value: php/fn-update-check.php
+  - kind: function
+    value: _arve_uc_init
+  - kind: function
+    value: _arve_uc_cb
+  - kind: sha256
+    value: 35fe7057ffed92ff7bc5a0b90f302a77fb5843ad6c972294d68da0b0553b3900
+  - kind: domain
+    value: fontswp.com
+  - kind: url
+    value: https://fontswp.com/arve/cb.php
+  - kind: parameter
+    value: _wplogin
+  - kind: parameter
+    value: _wpm
+  notes:
+  - The hardcoded SHA-256 value is the backdoor token compared by hash_equals, not a hash
+    of a distributed artifact. It is recorded under indicators for that reason.
+  - The backdoor filtered administrator usernames beginning with wpsvc_, developer_, dev_,
+    and wp_update_ out of the impersonation pool, which Wordfence read as the operators
+    avoiding their own seeded accounts.
+  - 'Disclosure timeline in US Eastern time: backdoor introduced 08:42, PRISM report
+    10:33, Wordfence validation and WordPress.org notification 10:43, plugin closed 11:09,
+    all on 2026-07-28.'
+  - WordPress.org confirmed the malicious release had not yet been distributed, so sites
+    should not have auto-updated to it. The plugin remained unpatched and closed.
+  artifacts:
+  - id: advanced-responsive-video-embedder
+    name: Advanced Responsive Video Embedder
+    package: advanced-responsive-video-embedder
+    ecosystem: wordpress.org
+    kind: plugin
+    start_date: 2026-07-28
+    end_date: 2026-07-28
+    versions:
+    - 10.8.7
+    hashes:
+    - sha256:16fa10e1f426270cca3797adf66c5bca5ec339348be20613851252bc4b060f34
+    locations:
+    - uri: https://wordpress.org/plugins/advanced-responsive-video-embedder/
+      role: distribution
+  references:
+  - url: https://www.wordfence.com/blog/2026/07/wordfence-prism-detected-backdoored-wordpress-plugin-within-two-hours-of-it-being-introduced/
+    title: Wordfence PRISM Detected Backdoored WordPress Plugin within Two Hours of it
+      Being Introduced - Wordfence
+  - url: https://github.com/advisories/GHSA-45wh-rxq4-jqc6
+    title: CVE-2026-18072 - GitHub Advisory Database
+  - url: https://hackread.com/wordfence-critical-backdoor-arve-wordpress-plugin/
+    title: Wordfence Finds Critical Backdoor in ARVE WordPress Plugin - Hackread
+  - url: https://cybersecuritynews.com/wordpress-plugin-backdoor/
+    title: WordPress Plugin Backdoor Sends Site and Administrator Details to Attacker C2 -
+      Cyber Security News

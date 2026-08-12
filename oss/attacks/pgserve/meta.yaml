@@ -1,47 +1,17 @@
 - id: pgserve
   title: pgserve npm CanisterSprawl credential stealer
   synopsis: >-
-    On April 21, 2026, malicious pgserve npm versions 1.1.11, 1.1.12, and 1.1.13 added a postinstall
+    On April 21-22, 2026, malicious pgserve npm versions 1.1.11 through 1.1.14 added a postinstall
     loader that harvested developer and CI secrets, encrypted them with RSA-4096 and AES-256,
     and exfiltrated to an Internet Computer Protocol canister.
   story: |
-    On the evening of April 21, 2026, three back-to-back versions of the npm
-    package `pgserve` were published with a postinstall hook that quietly
-    harvested developer secrets and shipped them to a canister running on the
-    Internet Computer blockchain.
+    On the evening of April 21, 2026, four back-to-back versions of the npm package `pgserve` were published with a postinstall hook that quietly harvested developer secrets and shipped them to a canister running on the Internet Computer blockchain.
 
-    Pgserve is a small development dependency that embeds a PostgreSQL server
-    inside Node.js projects, the kind of utility a developer adds without much
-    thought. Researchers at StepSecurity, who tracked the incident under the
-    name CanisterSprawl, said versions 1.1.11, 1.1.12, and 1.1.13 went out
-    between 22:14 and 22:26 UTC with no corresponding tag on the upstream Git
-    repository. The previous release, 1.1.10 from April 17, was the last
-    legitimate one.
+    Pgserve is a small development dependency that embeds a PostgreSQL server inside Node.js projects, the kind of utility a developer adds without much thought. Researchers at StepSecurity, who tracked the incident under the name CanisterSprawl, documented versions 1.1.11 through 1.1.13, and Ossprey subsequently identified 1.1.14, bringing the publication window to roughly five hours. None had a corresponding tag on the upstream Git repository, and the previous release, 1.1.10 from April 17, was the last legitimate one. The diff against it was blunt: the malicious tarballs added `scripts/check-env.js` and `scripts/public.pem`, then wired `package.json` to invoke the script during postinstall. The command was suffixed with `|| true`, so any error inside the malware would swallow itself rather than surface a failed install to the developer.
 
-    The diff against 1.1.10 was blunt. The malicious tarballs added
-    `scripts/check-env.js` and `scripts/public.pem`, then wired `package.json`
-    to invoke the script during postinstall. The command was suffixed with
-    `|| true`, so any error inside the malware would swallow itself rather
-    than surface a failed install to the developer.
+    Once it ran, the script swept the host for environment variables, package-manager tokens, SSH keys, cloud credentials, Kubernetes and database material, cryptocurrency wallets, and browser password stores. It wrapped the collection in a hybrid RSA-4096 and AES-256-CBC scheme using the bundled public key, then sent it to the Internet Computer canister `cjn37-uyaaa-aaaac-qgnva-cai`, with a secondary webhook at `telemetry.api-monitor.com` available when an environment key was present. Routing exfiltration through an ICP canister is unusual: the hostnames look like ordinary cloud endpoints and the traffic is hard to distinguish from legitimate Web3 activity.
 
-    Once it ran, the script swept the host for environment variables,
-    package-manager tokens, SSH keys, cloud credentials, Kubernetes and
-    database material, cryptocurrency wallets, and browser password stores.
-    It wrapped the collection in a hybrid RSA-4096 and AES-256-CBC scheme
-    using the bundled public key, then sent it to the Internet Computer
-    canister `cjn37-uyaaa-aaaac-qgnva-cai`, with a secondary webhook at
-    `telemetry.api-monitor.com` available when an environment key was
-    present. Routing exfiltration through an ICP canister is unusual; the
-    hostnames look like ordinary cloud endpoints and the traffic is hard to
-    distinguish from legitimate Web3 activity.
-
-    The loader also tried to spread. Given an npm publish token, it
-    enumerated the packages the victim could publish, copied
-    `check-env.js` and `public.pem` into each one, bumped the patch
-    version, and republished. A PyPI token triggered a parallel attempt
-    using `.pth` file injection, a Python startup trick that runs code
-    whenever the interpreter loads, carrying the campaign across an
-    ecosystem boundary.
+    The loader also tried to spread. Given an npm publish token, it enumerated the packages the victim could publish, copied `check-env.js` and `public.pem` into each one, bumped the patch version, and republished. A PyPI token triggered a parallel attempt using `.pth` file injection, a Python startup trick that runs code whenever the interpreter loads, carrying the campaign across an ecosystem boundary.
   start_date: 2026-04-21T22:14:00Z
   end_date: 2026-04-22
   target:
@@ -75,14 +45,22 @@
     - 1.1.11
     - 1.1.12
     - 1.1.13
+    - 1.1.14
     fixed_versions:
     - 1.1.10
+    hashes:
+    - sha1:6e0f54590ce393d0284971866ba40440c499d883
+    - sha1:b044f7238edf37ebd34130ef972d46c5f593b348
+    - sha1:8e2e55b1ea1959b300cf3b436495adea803b5a93
+    - sha1:e71cff6a0c30ad5f33e3e5994cc1156dc8d4081b
     locations:
     - uri: https://www.npmjs.com/package/pgserve/v/1.1.11
       role: distribution
     - uri: https://www.npmjs.com/package/pgserve/v/1.1.12
       role: distribution
     - uri: https://www.npmjs.com/package/pgserve/v/1.1.13
+      role: distribution
+    - uri: https://www.npmjs.com/package/pgserve/v/1.1.14
       role: distribution
     indicators:
     - kind: file
@@ -115,11 +93,21 @@
       v1.1.10, as the last legitimate release before the compromised versions.
     - StepSecurity reported pgserve@1.1.11 at 2026-04-21 22:14 UTC and pgserve@1.1.12 at
       2026-04-21 22:26 UTC; pgserve@1.1.13 was also published on April 21, 2026.
-    - StepSecurity said the three compromised versions had no corresponding upstream git
-      tag.
+    - Ossprey subsequently identified 1.1.14 at 2026-04-22 03:35 UTC and published the
+      npm SHA-1 integrity values for all four complete tarballs. Hash order follows
+      versions 1.1.11, 1.1.12, 1.1.13, and 1.1.14.
+    - The four compromised versions had no corresponding upstream git tag.
   references:
   - url: 
       https://www.stepsecurity.io/blog/pgserve-compromised-on-npm-malicious-versions-harvest-credentials
     title: 'CanisterSprawl: pgserve Compromised on npm'
   - url: https://github.com/iarna/pgserve/issues/25
     title: Disclosure issue for malicious pgserve npm releases
+  - url: https://www.bleepingcomputer.com/news/security/new-npm-supply-chain-attack-self-spreads-to-steal-auth-tokens/
+    title: New npm supply-chain attack self-spreads to steal auth tokens -
+      BleepingComputer
+  - url: https://blog.gitguardian.com/three-supply-chain-campaigns-hit-npm-pypi-and-docker-hub-in-48-hours/
+    title: 'No Off Season: Three Supply Chain Campaigns Hit npm, PyPI, and Docker Hub
+      in 48 Hours - GitGuardian'
+  - url: https://www.ossprey.com/blog/pgserve-npm-worm-blockchain-c2
+    title: 'pgserve: Self-Propagating npm Worm with Blockchain C2 - Ossprey'

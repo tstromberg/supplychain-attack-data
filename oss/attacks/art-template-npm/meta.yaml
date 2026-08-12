@@ -6,74 +6,13 @@
     iOS exploit kit through utaq.cfww.shop to steal cryptocurrency wallets on Safari iOS
     13.0-17.2.1.
   story: |
-    On May 19, 2026, Socket published an account of an unusual npm supply-chain
-    attack: the malicious code in three releases of the JavaScript template
-    engine `art-template` had been shipped not by an account takeover but by
-    the package's lawful new owner, eighteen months after a quiet sale to a
-    Malaysian shell company. The kit at the end of the chain was Coruna, a
-    well-documented iOS exploit framework, and the buyer's paperwork had been
-    convincing enough to survive months of due diligence by the original
-    maintainer.
+    On May 19, 2026, Socket published an account of an unusual npm supply-chain attack: the malicious code in three releases of the JavaScript template engine `art-template` had been shipped not by an account takeover but by the package's lawful new owner, eighteen months after a quiet sale to a Malaysian shell company. The kit at the end of the chain was Coruna, a well-documented iOS exploit framework, and the buyer's paperwork had been convincing enough to survive months of due diligence by the original maintainer.
 
-    `art-template` is a Chinese-origin JavaScript template engine, about 26,000
-    weekly npm downloads. The last clean release was 4.13.2 on 2018-11-13. On
-    2024-11-17 the original maintainer, GitHub user `aui` (糖饼), accepted an
-    acquisition offer from KILLER WHAL AI SDN BHD, a Malaysian company at 35A
-    Jalan SG3/1, Taman Sri Gombak, registration 202001036306. The pitch was
-    cash plus continued maintenance. The author ran due diligence — SSM, law
-    firm, contract, payment — and transferred npm and GitHub. `aui` was renamed
-    to `goofychris`. The npm publisher list for `art-template`,
-    `express-art-template`, `art-template-loader`, and `koa-art-template` moved
-    to `daughtrymom`, `npmpacketmaintainmember7` at
-    `npmpacketmaintainmember7@proton.me`, and `v4v5qc` at `eb8org@gmail.com`.
-    The receiving bank account was later flagged by Chinese law enforcement
-    and bank risk controls; the buyer cooperated for months on paperwork until
-    the freezes cleared, which kept the transfer plausible.
+    `art-template` is a Chinese-origin JavaScript template engine with about 26,000 weekly npm downloads. The last clean release was 4.13.2 on 2018-11-13. On 2024-11-17 the original maintainer, GitHub user `aui`, accepted an acquisition offer from KILLER WHAL AI SDN BHD, a Malaysian company at 35A Jalan SG3/1, Taman Sri Gombak, registration 202001036306. The pitch was cash plus continued maintenance. He ran the checks a careful maintainer would: the SSM company register, the acquiring law firm, a contract, payment. Then he transferred npm and GitHub, and `aui` was renamed to `goofychris`. Publishing rights for `art-template`, `express-art-template`, `art-template-loader`, and `koa-art-template` moved to `daughtrymom`, `npmpacketmaintainmember7`, and `v4v5qc`. The receiving bank account was later flagged by Chinese law enforcement and bank risk controls, and the buyer cooperated for months on paperwork until the freezes cleared, which is exactly what kept the transfer looking legitimate.
 
-    The first injection followed on 2025-03-12 in 4.13.3, published by `v4v5qc`. Node
-    `require('art-template')` broke at the same release — the new owners had pulled the
-    CommonJS compatibility out. The injection lived only in the browser bundle
-    `lib/template-web.js`: a `String.fromCharCode`-obfuscated loader that fetched
-    `https://git.youzzjizz.com/git.js`, which loaded Baidu Analytics at
-    `hm.baidu.com/hm.js?1351a72534dcecfcf4500eda9c5add00`. The original author posted
-    a GitHub Issues warning, "v4.13.3 contains a virus," and reported the package to npm.
-    npm did not act. The next day `goofychris` published 4.13.4 with the injection
-    removed and opened issue 661 on goofychris/art-template — "We made some mistakes in
-    the update two days ago… we wanted to make simple statistics. If this violates any
-    rules, we have cleaned it up." The new maintainers then deleted both the warning
-    thread and their own explanation.
+    The first injection followed on 2025-03-12 in 4.13.3, published by `v4v5qc`, and it lived only in the browser bundle `lib/template-web.js`: a `String.fromCharCode`-obfuscated loader that fetched `https://git.youzzjizz.com/git.js`, which in turn loaded Baidu Analytics. The original author posted a GitHub warning that "v4.13.3 contains a virus" and reported the package to npm. npm did not act. The next day `goofychris` published 4.13.4 with the injection removed, explaining in an issue that "we wanted to make simple statistics," then deleted both the warning thread and the explanation. The second wave shipped on 2026-05-19 as 4.13.5 and 2026-05-20 as 4.13.6, again in `lib/template-web.js` and again leaving the Node entry point untouched. This loader pulled `v3.jiathis.com/code/jia.js` from a compromised Chinese social-sharing CDN, pinged Baidu Analytics, and gated on `User-Agent` for iPhone. Matching devices got a zero-pixel iframe hidden behind a closed Shadow DOM pointing at `utaq.cfww.shop/gooll/gooll.html`, which served a 50 KB fingerprinting loader that beaconed every ten seconds and content-addressed each follow-on module against a session key.
 
-    The npm reports sat. The second wave shipped on 2026-05-19 (4.13.5) and 2026-05-20
-    (4.13.6). The injection lived in `lib/template-web.js` again; the Node entry was
-    untouched. 4.13.5 wrapped the loader in `String.fromCharCode`; 4.13.6 inlined the
-    call in plaintext. The loader fetched `v3.jiathis.com/code/jia.js` from a compromised
-    Chinese social-sharing CDN, pinged Baidu Analytics, and gated on `User-Agent` for
-    iPhone. For iPhone it injected a zero-pixel iframe behind a closed Shadow DOM
-    pointing at `utaq.cfww.shop/gooll/gooll.html` on 180.178.50.158, AS45753, Hong Kong.
-    The iframe served a 50 KB fingerprinting loader that classified the device, beaconed
-    every ten seconds to `l1ewsu3yjkqeroy.xyz/api/ip-sync/sync` behind Cloudflare, and
-    content-addressed each follow-on module by `SHA256(sessionKey + moduleHash)[:40]`
-    against session key `cecd08aa6ff548c2`.
-
-    The final stage was the Coruna iOS exploit kit. Fourteen remote modules, about 606
-    KB. Twenty-three Safari and WebKit vulnerabilities chained together. The kit stopped
-    at iOS 17.3, matching the CVE-2024-23222 patch for the `cassowary` JavaScriptCore
-    type-confusion bug. It dispatched between ARM64 and ARM64_32 builds and ran a
-    WebAssembly proof-of-work to confirm a real JavaScriptCore JIT rather than a sandbox.
-    The terminal payload was a 31 KB native ARM64 shellcode dropper for the PLASMAGRID
-    cryptocurrency-wallet implant. Anything outside Safari on iOS 13.0 to 17.2.1 got only
-    the Baidu tracker. Socket attributed the deployment to UNC6691 based on Coruna
-    fingerprints previously documented by Google TAG, the JiaThis hijack, the
-    bulk-registered `.shop` pattern, the Baidu integration, and the Hong Kong AS45753
-    infrastructure; SafeDep reached the same attribution independently.
-
-    Socket and SafeDep both advised downstream operators to pin `art-template` and its
-    siblings to 4.13.2 and to audit caches and bundles for `v3.jiathis.com`,
-    `git.youzzjizz.com`, `utaq.cfww.shop`, and `l1ewsu3yjkqeroy.xyz`. The harder problem
-    sits upstream of the package manager. A clean legal acquisition leaves none of the
-    forensic seams that an account takeover does, and there is no registry-side signal
-    that distinguishes a maintainer who sold the project from one whose credentials were
-    stolen.
+    The final stage was Coruna itself: fourteen remote modules, about 606 KB, chaining twenty-three Safari and WebKit vulnerabilities. The kit stopped at iOS 17.3, matching the CVE-2024-23222 patch for a JavaScriptCore type-confusion bug, dispatched between ARM64 and ARM64_32 builds, and ran a WebAssembly proof-of-work to confirm it was talking to a real JIT rather than a sandbox. The terminal payload was a 31 KB native shellcode dropper for the PLASMAGRID cryptocurrency-wallet implant; anything outside Safari on iOS 13.0 through 17.2.1 got only the Baidu tracker. Socket attributed the deployment to UNC6691 on Coruna fingerprints previously documented by Google TAG, and SafeDep reached the same attribution independently. Both advised pinning `art-template` and its siblings to 4.13.2 and auditing caches and bundles for the four attacker domains. The harder problem sits upstream of the package manager: a clean legal acquisition leaves none of the forensic seams an account takeover does. The original author has filed npm tickets 3286247 and 4401568, and says the accounts remain active and the malicious versions still cannot be unpublished.
   start_date: 2024-11-17
   end_date: 2026-05-20
   target:
@@ -184,6 +123,9 @@
     - 4.13.3
     - 4.13.5
     - 4.13.6
+    hashes:
+    - sha256:273206e2973df6ba7474aa66693797c98dcf26b794da4c3e863ab8d8c694868d
+    - sha256:101afde88ff8b5c02fd341eda55022a39203088c2ff11dcb73214911cf5afb77
     fixed_versions:
     - 4.13.2
     locations:
@@ -196,6 +138,11 @@
     notes:
     - 4.13.4 was published from the same compromised account on 2025-03-14 but
       contains no injection.
+    - SHA-256 273206e2973df6ba7474aa66693797c98dcf26b794da4c3e863ab8d8c694868d
+      is the measured 4.13.3 npm archive; SHA-256
+      101afde88ff8b5c02fd341eda55022a39203088c2ff11dcb73214911cf5afb77 is
+      the measured 4.13.6 archive recovered through an original Wayback replay.
+      Version 4.13.5 remains without a recovered whole-archive checksum.
   references:
   - url: https://github.com/aui/blog/issues/3
     title: 'The Takeover and Suspect Supply Chain Attack of art-template: A Detailed

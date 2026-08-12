@@ -1,0 +1,737 @@
+- id: ironworm-npm
+  title: IronWorm backdoored Arweave ecosystem npm packages
+  synopsis: >-
+    JFrog found a Rust-built npm worm in 36 packages published from the compromised
+    asteroiddao account, carrying an eBPF kernel rootkit and a Tor C2. It backdated commits
+    across nine GitHub organizations and republished via npm trusted publishing.
+  story: |
+    JFrog Security Research disclosed in early June 2026 that a self-propagating
+    worm it named IronWorm had backdoored 36 npm packages, most of them in the
+    Arweave and WeaveDB ecosystem, after compromising the `asteroiddao` publishing
+    account. Unlike the JavaScript droppers that dominated npm attacks that year,
+    IronWorm was a native Rust implant with a kernel-level rootkit.
+
+    The delivery was conventional enough. A `preinstall` hook executed a 976 KB
+    Linux ELF binary before dependency resolution finished. Everything after that
+    was not. The binary was packed with a modified UPX stub carrying altered magic
+    values, which defeats signature-based unpackers, and every internal string was
+    encrypted with a key unique to its call site, so recovering one string does not
+    help with the next. Bundled with it was an eBPF program that hid the malware's
+    processes and network connections from the kernel's own accounting, and a Tor
+    client that wrapped plain HTTP command-and-control traffic in an onion circuit.
+
+    The collector targeted 86 environment variables and more than 20 credential
+    file paths across AWS, GCP, Azure, Kubernetes, Docker, npm, and GitHub,
+    together with a sweep for 2026-era AI provider keys covering Anthropic, OpenAI,
+    Google Gemini, Cohere, Mistral, Groq, and xAI. Separate modules went after
+    cryptocurrency wallets. JFrog noted that the operator had hardcoded his own
+    wallet recovery phrase into the malware's skip list so that it would not rob
+    him, which is how researchers came to have it.
+
+    Propagation ran two ways. The worm committed binaries into victims' GitHub
+    repositories as build hooks, attributing the commits to "claude" so they read
+    as AI tooling output, and it replaced GitHub Actions workflows with versions
+    that exfiltrated `${{ toJSON(secrets) }}`, attributing those to bot identities
+    such as `dependabot`. It then abused npm's trusted publishing through OIDC to
+    release poisoned versions under the compromised developers' names. JFrog
+    counted 57 backdated commits across nine compromised GitHub organizations and
+    said it could not match the implant, the rootkit, or the C2 tooling to any
+    known family, indicating a custom-built operation.
+  start_date: 2026-06-03
+  end_date: 2026-06-05
+  target:
+    name: asteroiddao
+    kind: maintainer
+    website: https://www.npmjs.com/~asteroiddao
+  actor:
+    name: Unknown
+    kind: group
+  language: Rust
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - self_propagation
+    - data_exfiltration
+    - cryptocurrency_theft
+  locations:
+  - uri: https://www.npmjs.com/~asteroiddao
+    role: distribution
+  indicators:
+  - kind: malware_family
+    value: IronWorm
+  - kind: technique
+    value: eBPF kernel rootkit hiding processes and network connections
+  - kind: technique
+    value: Tor-tunnelled plain HTTP C2
+  - kind: technique
+    value: modified UPX stub with altered magic values
+  - kind: technique
+    value: 'GitHub Actions workflow replacement exfiltrating ${{ toJSON(secrets) }}'
+  - kind: commit_author
+    value: claude
+  - kind: commit_author
+    value: dependabot
+  notes:
+  - JFrog enumerated 37 packages with one malicious version each, published from the
+    compromised asteroiddao account and from other maintainer accounts reached through
+    stolen credentials. Those coordinates are recorded on the artifacts here. The record
+    previously carried a single artifact with a placeholder version and an all-zero
+    SHA-256 standing in for unknown bytes; both are replaced.
+  - Reported package counts vary between 36 and 37 depending on source and collection
+    date. JFrog reported 57 backdated commits across nine compromised GitHub organizations,
+    concentrated in the Arweave and WeaveDB ecosystem.
+  - The implant is a 976 KB Rust ELF executed from a preinstall hook. Per-call-site string
+    encryption means each string must be recovered individually, which slowed analysis.
+  - JFrog found no match to any known infostealer, eBPF rootkit framework, or C2 toolkit,
+    and assessed the operation as custom-built with dedicated infrastructure.
+  - The operator's own cryptocurrency wallet recovery phrase was hardcoded into the
+    malware's skip list so the wallet stealer would not target it.
+  - >-
+    OSSF malicious-package records preserve complete npm archive checksums for 31 of the
+    releases. Together with four archives already recovered from npm, 35 of the 37 artifact
+    records now have whole-file hashes; wdb-core 0.1.2 and hbsig 0.3.2 remain unavailable.
+  artifacts:
+  - id: weavedb-lite
+    name: weavedb-lite
+    package: weavedb-lite
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.1.1
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-lite
+      role: distribution
+    hashes:
+    - sha1:e9eb42231aa70d0f57491ce091c3fb7af96d8217
+    - sha512:006c707483fafdc7fd5fe05add0f8171c0f8efa6029c17cb64aa09f3efc0ac963770e0083927abc665e6695d1fa2d78fbaf397e835db7caf92eb7c0efbbc6a0e
+    notes:
+    - OSSF MAL-2026-4720 maps these checksums to the complete weavedb-lite-0.1.1.tgz npm archive.
+  - id: weavedb-sdk-base
+    name: weavedb-sdk-base
+    package: weavedb-sdk-base
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.21.1
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-sdk-base
+      role: distribution
+    hashes:
+    - sha1:766facdb5f40c65471274232b9d756049f025ba9
+    - sha512:ecea22f52bd98c48c9bb517ee6f7c6bde2da70c2c7b80cd982373f437b795531e46d2bfe3462931a2343d2c9825dbc9bc479c6fd29d52fcadba41ded22b07d84
+    notes:
+    - OSSF MAL-2026-4724 maps these checksums to the complete weavedb-sdk-base-0.21.1.tgz npm archive.
+  - id: test-weavedb-sdk
+    name: test-weavedb-sdk
+    package: test-weavedb-sdk
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 1.1.1
+    locations:
+    - uri: https://www.npmjs.com/package/test-weavedb-sdk
+      role: distribution
+    hashes:
+    - sha1:f6990792451a6153e343161b96aeb190433535c9
+    - sha512:c5e3fb6229256d01c5c8ec840b51aba0537350e45b1e1257b91a6b63230162808e6d2655c289d1092ae52d3a3b9ca5286a003de15b1467435a01307d19ad9ed2
+    notes:
+    - OSSF MAL-2026-4690 maps these checksums to the complete test-weavedb-sdk-1.1.1.tgz npm archive.
+  - id: weavedb-warp-contracts-plugin-deploy
+    name: weavedb-warp-contracts-plugin-deploy
+    package: weavedb-warp-contracts-plugin-deploy
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 1.0.11
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-warp-contracts-plugin-deploy
+      role: distribution
+    hashes:
+    - sha1:d15388b7d98a6f0200ecb17a2298dcd873bc2a2c
+    - sha512:f00efe9d048c0f0e9e156fe23a02a7e4418827b512fe8f849bd004a10a463811e1e34648bd3f9072e9a6ba8f9ee5746b95cf7281eb314a01254e8e8bcb4799d0
+    notes:
+    - OSSF MAL-2026-4727 maps these checksums to the complete weavedb-warp-contracts-plugin-deploy-1.0.11.tgz npm archive.
+  - id: arnext-arkb
+    name: arnext-arkb
+    package: arnext-arkb
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.0.2
+    locations:
+    - uri: https://www.npmjs.com/package/arnext-arkb
+      role: distribution
+    hashes:
+    - sha1:27b563ca40225feb4666da2e73d3055c9ade39da
+    - sha512:4900851d9ba7746011303ebbc233654803a1f11af57cce5eba1d1f0c31783624ab135eb0ffe93a2933917fd100642b5b60479a6f17fef76be3106e477f198c5e
+    notes:
+    - OSSF MAL-2026-4483 maps these checksums to the complete arnext-arkb-0.0.2.tgz npm archive.
+  - id: weavedb-console
+    name: weavedb-console
+    package: weavedb-console
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-console
+      role: distribution
+    hashes:
+    - sha1:d7208c2353e066d1d2dbd77b375fabfcc463c213
+    - sha512:f8ca8ea22acc92e63926bdfbfc4a0ec63c8bb91534869c3d8b39ad94db239e452ded7c6d5587ae58d8e48cf7ee2ad8f46c8f87b502e3a2f3f5b127821f5e5599
+    notes:
+    - OSSF MAL-2026-4717 maps these checksums to the complete weavedb-console-0.2.1.tgz npm archive.
+  - id: arnext
+    name: arnext
+    package: arnext
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.1.5
+    locations:
+    - uri: https://www.npmjs.com/package/arnext
+      role: distribution
+    hashes:
+    - sha1:78cb8b76d6121346c161667b673a33fa6a63225b
+    - sha512:c5e393a958ebd3ca5f4aacac02761e1166f9e15dbfc2e938615299f905470a9e4c0399f5d0221f57fa54a564f955f57f9bb4bf57771351e349fcbaf3e7c6cd59
+    notes:
+    - OSSF MAL-2026-4482 maps these checksums to the complete arnext-0.1.5.tgz npm archive.
+  - id: roidjs
+    name: roidjs
+    package: roidjs
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.1.7
+    locations:
+    - uri: https://www.npmjs.com/package/roidjs
+      role: distribution
+    hashes:
+    - sha1:c8a1a35d0ba8916b045b311e5f7672bcd2c678b0
+    - sha512:34c91c962dd8db7e218124b9ee97b6bb19834da3f1cba5e03c514465ed8148e266d87d76b5d1d55341e17cb1175e53f2974876ccb16ea16422ff4ebc44f87bc1
+    notes:
+    - OSSF MAL-2026-4663 maps these checksums to the complete roidjs-0.1.7.tgz npm archive.
+  - id: weavedb-exm-sdk
+    name: weavedb-exm-sdk
+    package: weavedb-exm-sdk
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.7.4
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-exm-sdk
+      role: distribution
+    hashes:
+    - sha1:aae92666ae06382901607ae2fd8bbe60917131ee
+    - sha512:994314701f7baa63825c1c156405f700562cf0bf93e9a008529354f710e203c17389b9cfc5cd3a9c69961271fb2dd663af82760820e90f12e56ec94f2247cc26
+    notes:
+    - OSSF MAL-2026-4718 maps these checksums to the complete weavedb-exm-sdk-0.7.4.tgz npm archive.
+  - id: create-arnext-app
+    name: create-arnext-app
+    package: create-arnext-app
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.0.10
+    locations:
+    - uri: https://www.npmjs.com/package/create-arnext-app
+      role: distribution
+    hashes:
+    - sha1:c9df3b26b0e9e32780c61e586d26bd012ecee272
+    - sha512:a4d94f043395567b3e01553de2ce8aee5d486dc239633be306f3025576cf7c64544ebde219134c8030f7a432a61621e08192618de593cf115c5113c2e48c4dfe
+    notes:
+    - OSSF MAL-2026-4538 maps these checksums to the complete create-arnext-app-0.0.10.tgz npm archive.
+  - id: weavedb-tools
+    name: weavedb-tools
+    package: weavedb-tools
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.45.3
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-tools
+      role: distribution
+    hashes:
+    - sha1:7cce4b6e70f03a6ff203b01c4c01b5e50e79aff3
+    - sha512:91f839b5f6888c25e5b0d7be30625f14501752b634abbae856e5c9a3f80408cb1f0c3e8c567b3199afa138dfcd8de75e328d17cf0dffa0478a8d4569761524ff
+    notes:
+    - OSSF MAL-2026-4726 maps these checksums to the complete weavedb-tools-0.45.3.tgz npm archive.
+  - id: wdb-core
+    name: wdb-core
+    package: wdb-core
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.1.2
+    locations:
+    - uri: https://www.npmjs.com/package/wdb-core
+      role: distribution
+  - id: cwao-tools
+    name: cwao-tools
+    package: cwao-tools
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/cwao-tools
+      role: distribution
+    hashes:
+    - sha1:266e73bc3a9903dbd58b0eb92aeb5c1fc4b2c1f8
+    - sha512:72c70769336f770f02299f86da21235a98f65a73a274f0a798b2ae1c9cd5c1e40f59d4da41df22d36a22e290c3ae9f2308898b51023e8473ca5e7333c4e515f1
+    notes:
+    - OSSF MAL-2026-4545 maps these checksums to the complete cwao-tools-0.3.1.tgz npm archive.
+  - id: test-ajs
+    name: test-ajs
+    package: test-ajs
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.1.19
+    locations:
+    - uri: https://www.npmjs.com/package/test-ajs
+      role: distribution
+    hashes:
+    - sha1:bb66f6af4d55eaffec7b88baa8a9335dfe234290
+    - sha512:6c7acaee141f8293db1ea04e33914aa445948b076e5eec7d643f33a21381d7a97bf4fd65b1a79dbecada9aceb34efd05b459626fc173e234b7aa455f389e2d92
+    notes:
+    - OSSF MAL-2026-4689 maps these checksums to the complete test-ajs-0.1.19.tgz npm archive.
+  - id: monade
+    name: monade
+    package: monade
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.0.7
+    locations:
+    - uri: https://www.npmjs.com/package/monade
+      role: distribution
+    hashes:
+    - sha1:24a75c4f932a8f5770058a450c7ef5d3c4bc2107
+    - sha512:f8ab6e2ce6c65c57bde47a7e357e32134ed923b5fdb59529de480f633ecc67a709fc9811754f3310efc0413ea2cb42b3061015a09a2df1a3ae8f535410f225e0
+    notes:
+    - OSSF MAL-2026-4613 maps these checksums to the complete monade-0.0.7.tgz npm archive.
+  - id: weavedb-exm-sdk-web
+    name: weavedb-exm-sdk-web
+    package: weavedb-exm-sdk-web
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.7.4
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-exm-sdk-web
+      role: distribution
+    hashes:
+    - sha1:dfd03cd94d25b2d1dda6cdae469445fb432a91b2
+    - sha512:a6bac08a231f0f08d68161e306f143921765815ff0832fa0e7b35e87ce0bfb0a2d0b28e2846e727394c791d5ed24f2dea8d0045ef078b72d24eb4b6e75aadcd4
+    notes:
+    - OSSF MAL-2026-4719 maps these checksums to the complete weavedb-exm-sdk-web-0.7.4.tgz npm archive.
+  - id: testnpmnmp
+    name: testnpmnmp
+    package: testnpmnmp
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 1.0.21
+    locations:
+    - uri: https://www.npmjs.com/package/testnpmnmp
+      role: distribution
+    hashes:
+    - sha1:e5fa91f4b94513e1bda934d32567270e8d27d97e
+    - sha512:6db91529e6ab69ab0d0814aa0fe3a3331d893680b384d58645fae5acd961682cb5debe1208d407318575ce4a2fc957871261339572a92d4bea3ae4eb5e9bd660
+    notes:
+    - OSSF MAL-2026-4691 maps these checksums to the complete testnpmnmp-1.0.21.tgz npm archive.
+  - id: warp-contracts-plugin-deploy-test
+    name: warp-contracts-plugin-deploy-test
+    package: warp-contracts-plugin-deploy-test
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 3.0.1
+    locations:
+    - uri: https://www.npmjs.com/package/warp-contracts-plugin-deploy-test
+      role: distribution
+    hashes:
+    - sha1:363f840495eb1045c5068359f30f2664828e4a32
+    - sha512:f8530e4b0e35bbcec64b1abb28ccaf06853b7ea0011343cab0dd86279b3c9a78edd43216881d87d897c8e4eed727657e3dc802bf8721177e7be57a9a99d5cc7b
+    notes:
+    - OSSF MAL-2026-4712 maps these checksums to the complete warp-contracts-plugin-deploy-test-3.0.1.tgz npm archive.
+  - id: wdb-cli
+    name: wdb-cli
+    package: wdb-cli
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.1.1
+    locations:
+    - uri: https://www.npmjs.com/package/wdb-cli
+      role: distribution
+    hashes:
+    - sha1:d9df2cbb8a203d7f35e4985098b7ed096652c26a
+    - sha512:ff1ed89cd460f68247adec82d3e468a4b0bd7749898294d687e01e139d468bb2ea18effb69e4251699e849236c77f246515aa4d2d03a6d85510da7f2f3afcb85
+    notes:
+    - OSSF MAL-2026-4713 maps these checksums to the complete wdb-cli-0.1.1.tgz npm archive.
+  - id: ai3
+    name: ai3
+    package: ai3
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.3.5
+    locations:
+    - uri: https://www.npmjs.com/package/ai3
+      role: distribution
+    hashes:
+    - sha1:eb3825b7624233514ef934dcf5bf1e59ddd94e60
+    - sha512:d3ab329ae51b64e5554b9aec1e238a2cfbcaee583cbac2fe62de8cef684eff45a757a507eee4c374f8adbfb7bfc43251d1704748713f69f72199242a1fcd4baf
+    notes:
+    - OSSF MAL-2026-4476 maps these checksums to the complete ai3-0.3.5.tgz npm archive.
+  - id: cwao-units
+    name: cwao-units
+    package: cwao-units
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.8.3
+    locations:
+    - uri: https://www.npmjs.com/package/cwao-units
+      role: distribution
+    hashes:
+    - sha1:535e79c05de7e50c70adba627bc649e8380ad243
+    - sha512:1aca7cf35f898b9259021e9009f61e42f524bf281c18699b3f1fc6a068bbfa88ac5f9527a6e67cdf4a4fbd78d2c6e3279ef828a663686ebeb227543c5cd31d33
+    notes:
+    - OSSF MAL-2026-4546 maps these checksums to the complete cwao-units-0.8.3.tgz npm archive.
+  - id: atomic-notes
+    name: atomic-notes
+    package: atomic-notes
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.5.3
+    locations:
+    - uri: https://www.npmjs.com/package/atomic-notes
+      role: distribution
+    hashes:
+    - sha1:39fe3c6cab7278043eff4cce01c75ba0deb48d0f
+    - sha512:5da954d8eb478805edae5bfbe0b6380a176eb6e589decd80bef2a6820661b34d3de7eefc93fc99c1a7d29a9fea03a5e1764ab0569784b206b22576fa10e10071
+    notes:
+    - OSSF MAL-2026-4486 maps these checksums to the complete atomic-notes-0.5.3.tgz npm archive.
+  - id: cwao
+    name: cwao
+    package: cwao
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.5.6
+    hashes:
+    - sha256:a49a3c1b7ec66a7f5ae1931e889425359cd9ee6b4f5c562a02ba359bc1b0e1f2
+    locations:
+    - uri: https://www.npmjs.com/package/cwao
+      role: distribution
+    - uri: https://registry.npmjs.org/cwao/-/cwao-0.5.6.tgz
+      role: distribution
+    notes:
+    - The SHA-256 identifies the complete 0.5.6 tarball retained by the official npm
+      registry; its bytes also match npm's signed SHA-512 integrity record.
+  - id: weavedb-client
+    name: weavedb-client
+    package: weavedb-client
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.45.3
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-client
+      role: distribution
+    hashes:
+    - sha1:e975e948e7d99f8399a762b0565af33b28e61a47
+    - sha512:092ac7c479661b6422751aea586c66be21bf773e118266cb2a37fdb16fced6f6b73468b73e1702231c40d059b2c661cce025b54d474f455c190da3b47699eee8
+    notes:
+    - OSSF MAL-2026-4716 maps these checksums to the complete weavedb-client-0.45.3.tgz npm archive.
+  - id: wdb-sdk
+    name: wdb-sdk
+    package: wdb-sdk
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.1.2
+    locations:
+    - uri: https://www.npmjs.com/package/wdb-sdk
+      role: distribution
+    hashes:
+    - sha1:6b42774d5bec9cc585516763c424ebe5fe2ff39b
+    - sha512:499fcf113056df9df3f4c1ae77039776584099803d8894628c383995a75030d1e9d1d97c2143c2ed4d7e8c96a9236cfe295b1ff7a36ebfa117f4d36706f2281d
+    notes:
+    - OSSF MAL-2026-4714 maps these checksums to the complete wdb-sdk-0.1.2.tgz npm archive.
+  - id: weavedb-offchain
+    name: weavedb-offchain
+    package: weavedb-offchain
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.45.4
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-offchain
+      role: distribution
+    hashes:
+    - sha1:66563c31de0ffbe7ca3673cb0e42aa65fa054d67
+    - sha512:6d726fc3392da9b04a3bc42f75df89f344b9c1d2dafb9e458499de146ceac96a7dd202050776a009270ce8b183fe606f22f5825d5c12a7026f93f3aa8d58ee5c
+    notes:
+    - OSSF MAL-2026-4722 maps these checksums to the complete weavedb-offchain-0.45.4.tgz npm archive.
+  - id: fpjson-lang
+    name: fpjson-lang
+    package: fpjson-lang
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.1.7
+    locations:
+    - uri: https://www.npmjs.com/package/fpjson-lang
+      role: distribution
+    hashes:
+    - sha1:a3ccfcb005e6f2c8bb2dfe1863097026501727ce
+    - sha512:9a629b49631712427f66137139a345f8fb31c9dee2cc6534b3217dd2a4f2c927a5495a0eeb58473025e03a78368878170eb6cf1a87fa05dfff06359ca2d1dbff
+    notes:
+    - OSSF MAL-2026-4566 maps these checksums to the complete fpjson-lang-0.1.7.tgz npm archive.
+  - id: weavedb-contracts
+    name: weavedb-contracts
+    package: weavedb-contracts
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.45.2
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-contracts
+      role: distribution
+    hashes:
+    - sha1:e1d4498e9ba6bb81e5005193276b692eb3f8453c
+    - sha512:e0f0b1e417030bbf2e183b1f3166b6d0190daa95ec4a36d0e97017e29f2e17a61991e62d64c0c30604eb427471779f51d5ce2909e531a3c90493eafcbf7a2ca4
+    notes:
+    - OSSF MAL-2026-5192 maps these checksums to the complete weavedb-contracts-0.45.2.tgz npm archive.
+  - id: weavedb-node-client
+    name: weavedb-node-client
+    package: weavedb-node-client
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.45.3
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-node-client
+      role: distribution
+    hashes:
+    - sha1:3165e4fc8e975f929832e00c38bf327794a7d3ea
+    - sha512:2f172ee3fb65f7bf3ffa988d534a1c528d008771d734fb7fc50a6cd6d8700d7fc60bac6f873a2059dcfa9cababeb844431e249843163f46e0f6af90ec706a855
+    notes:
+    - OSSF MAL-2026-4721 maps these checksums to the complete weavedb-node-client-0.45.3.tgz npm archive.
+  - id: arjson
+    name: arjson
+    package: arjson
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.1.4
+    hashes:
+    - sha256:7afae58a05e930bbeaefda90a11b93e553af398b529c886c102a353f41865930
+    locations:
+    - uri: https://www.npmjs.com/package/arjson
+      role: distribution
+    - uri: https://registry.npmjs.org/arjson/-/arjson-0.1.4.tgz
+      role: distribution
+    notes:
+    - The SHA-256 identifies the complete 0.1.4 tarball retained by the official npm
+      registry; its bytes also match npm's signed SHA-512 integrity record.
+  - id: hbsig
+    name: hbsig
+    package: hbsig
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.3.2
+    locations:
+    - uri: https://www.npmjs.com/package/hbsig
+      role: distribution
+  - id: zkjson
+    name: zkjson
+    package: zkjson
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.8.5
+    hashes:
+    - sha256:3dcae29780a4658bacb3e220abb7c95d877d627471d8d6799951716d2036c6ab
+    locations:
+    - uri: https://www.npmjs.com/package/zkjson
+      role: distribution
+    - uri: https://registry.npmjs.org/zkjson/-/zkjson-0.8.5.tgz
+      role: distribution
+    notes:
+    - The SHA-256 identifies the complete 0.8.5 tarball retained by the official npm
+      registry; its bytes also match npm's signed SHA-512 integrity record.
+  - id: aonote
+    name: aonote
+    package: aonote
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.11.1
+    locations:
+    - uri: https://www.npmjs.com/package/aonote
+      role: distribution
+    hashes:
+    - sha1:2ac42d68784d5ffe8978d3ad89677fb23b9ba0e5
+    - sha512:0ae4b3a89562772ccb8dddcea58c15a0d8961e6309cbc53115df0f3b6f5fa9a54fcaf858659b7086863f18fe4d198170f6a39173d7f39d660220ff65a7e57e0f
+    notes:
+    - OSSF MAL-2026-4480 maps these checksums to the complete aonote-0.11.1.tgz npm archive.
+  - id: weavedb-base
+    name: weavedb-base
+    package: weavedb-base
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.45.3
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-base
+      role: distribution
+    hashes:
+    - sha1:6abbf29e0c887bb73f549a017ac697c7fc9c6d17
+    - sha512:0d8b1810522444c95484b3115be1ccd5ad9472bf0a12a6099d0d5769466d7659a584b5bf6b199a45075b8f9df435b198e708e53e8781aaa998b6885e39e910b1
+    notes:
+    - OSSF MAL-2026-4715 maps these checksums to the complete weavedb-base-0.45.3.tgz npm archive.
+  - id: weavedb-sdk-node
+    name: weavedb-sdk-node
+    package: weavedb-sdk-node
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.45.3
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-sdk-node
+      role: distribution
+    hashes:
+    - sha1:22bda32e43978bd4b4a3700530f3d9f331a1ff29
+    - sha512:654a111fe3c7a730e6c0bcfd4e97fce17301ddb1b9b23f2a5377f7d8e4dd1c4bef1fa932355ef66d3fdcfc8eb746b6f66b5c8d09f9f132313b1b05264850b410
+    notes:
+    - OSSF MAL-2026-4725 maps these checksums to the complete weavedb-sdk-node-0.45.3.tgz npm archive.
+  - id: wao
+    name: wao
+    package: wao
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.41.2
+    locations:
+    - uri: https://www.npmjs.com/package/wao
+      role: distribution
+    hashes:
+    - sha1:ef2660abf9dccd9e5baad939c6cebf2e0b1a31b5
+    - sha512:147ce45acaca02e3301fedcf443a9cf56af691af459b7cc86bdcf47bdeb53a223b60448a6749386c25a77b95cbe06a637303eb69a675c46b298899606c23ca36
+    notes:
+    - OSSF MAL-2026-4711 maps these checksums to the complete wao-0.41.2.tgz npm archive.
+  - id: weavedb-sdk
+    name: weavedb-sdk
+    package: weavedb-sdk
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-05
+    versions:
+    - 0.45.3
+    hashes:
+    - sha256:0c16ee8a8c1f5b51b01bce924e173030f032912d5b66f1a564fd636a67ddbf5f
+    locations:
+    - uri: https://www.npmjs.com/package/weavedb-sdk
+      role: distribution
+    - uri: https://registry.npmjs.org/weavedb-sdk/-/weavedb-sdk-0.45.3.tgz
+      role: distribution
+    notes:
+    - The SHA-256 identifies the complete 0.45.3 tarball retained by the official npm
+      registry; its bytes also match npm's signed SHA-512 integrity record.
+  references:
+  - url: https://research.jfrog.com/post/iron-worm-shai-hulud-rustier-cousin/
+    title: 'IronWorm: Shai-Hulud''s rustier cousin - JFrog Security Research'
+  - url: https://thehackernews.com/2026/06/ironworm-and-new-miasma-worm-variant.html
+    title: IronWorm and New Miasma Worm Variant Hit npm in Supply Chain Attacks - The Hacker
+      News
+  - url: https://www.darkreading.com/cyberattacks-data-breaches/rust-written-ironworm-npm-supply-chain
+    title: Rust-Written IronWorm Hits NPM Supply Chain - Dark Reading
+  - url: https://safedep.io/ti/campaigns/ironworm/
+    title: IronWorm campaign - SafeDep Threat Intelligence
+  - url: https://github.com/ossf/malicious-packages
+    title: OSSF malicious-packages database

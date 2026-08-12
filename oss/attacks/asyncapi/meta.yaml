@@ -1,0 +1,172 @@
+- id: asyncapi
+  title: AsyncAPI npm releases carried a Miasma botnet loader
+  campaigns:
+  - miasma-2026
+  synopsis: >-
+    An attacker exploited a pull_request_target workflow in the AsyncAPI generator repository
+    to steal an npm publish token, then shipped four @asyncapi packages that fetched an
+    encrypted Miasma second stage from IPFS on module import.
+  story: |
+    Four npm packages in the `@asyncapi` namespace shipped a multi-stage botnet
+    loader on July 14, 2026, after an attacker stole the project's publishing
+    token by way of a misconfigured GitHub Actions workflow. Together the affected
+    packages account for roughly 2.9 million downloads a week.
+
+    AsyncAPI is an open specification and toolchain for describing event-driven
+    APIs, and its generator turns those specifications into code and
+    documentation. Socket, which analyzed the releases, said the malicious
+    versions were `@asyncapi/generator-helpers@1.1.1`,
+    `@asyncapi/generator-components@0.7.1`, `@asyncapi/generator@3.3.1`, and
+    `@asyncapi/specs` at 6.11.2 and 6.11.2-alpha.1, all published within minutes
+    of each other.
+
+    The entry point was a `pull_request_target` workflow in the generator
+    repository. That trigger runs with the base repository's secrets available,
+    including automation tokens, while checking out code a contributor controls.
+    Aikido described the result as npm packages backdoored through the project's
+    own release automation, which is why the poisoned versions arrived looking
+    like ordinary releases.
+
+    The loader did not use an install hook. Socket said the injected code ran when
+    Node.js imported the module, then spawned a detached `node -e` process that
+    pulled an 8.25 MB encrypted payload from IPFS and stored it in directories
+    named to resemble Node.js runtime paths. Decrypted, that payload was Miasma: a
+    modular cross-platform tasking framework with REST-based command and control,
+    file listing and transfer, shell execution, payload update, and persistence
+    through systemd user services. Because execution happened on import rather
+    than on install, `npm install --ignore-scripts` offered no protection.
+    Investigators were told to treat any machine that imported the packages as
+    compromised and to watch for detached Node processes and IPFS gateway traffic.
+  start_date: 2026-07-14
+  end_date: 2026-07-14
+  target:
+    name: AsyncAPI
+    kind: library
+    repo: https://github.com/asyncapi/generator
+    website: https://www.asyncapi.com/
+  actor:
+    name: Unknown
+    kind: group
+  language: JavaScript
+  method:
+    cause: ci_cd_exploit
+    phase: ci_cd
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - remote_code_execution
+    - backdoor
+    - data_exfiltration
+    users: 2900000
+  locations:
+  - uri: https://www.npmjs.com/org/asyncapi
+    role: distribution
+  indicators:
+  - kind: malware_family
+    value: Miasma
+  - kind: ipv4
+    value: 85.137.53.71
+  - kind: port
+    value: '8080'
+  - kind: port
+    value: '8081'
+  - kind: port
+    value: '8091'
+  - kind: file
+    value: .miasma lock directory
+  - kind: technique
+    value: systemd user service persistence
+  notes:
+  - Initial access was a pull_request_target GitHub Actions workflow in the AsyncAPI
+    generator repository, which exposes base-repository secrets to a workflow that checks
+    out contributor-controlled code. The stolen npm automation token was then used to
+    publish directly.
+  - Execution occurs on module import rather than through an install hook, so
+    `npm install --ignore-scripts` does not prevent it. The first stage launches a
+    detached `node -e` process that retrieves the encrypted second stage from IPFS.
+  - Socket reported the second stage as an 8.25 MB encrypted payload. Combined weekly
+    downloads across the four affected packages were reported at approximately 2.9
+    million.
+  - Unit 42 described the command-and-control design as decentralized fallback
+    infrastructure spanning IPFS, Ethereum, and Nostr relays, so blocking any single
+    retrieval channel does not sever the second-stage fetch.
+  artifacts:
+  - id: asyncapi-generator-helpers
+    name: '@asyncapi/generator-helpers'
+    package: '@asyncapi/generator-helpers'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-07-14
+    end_date: 2026-07-14
+    versions:
+    - 1.1.1
+    hashes:
+    - sha256:34014776d3d3ff11bc4439b02fd7ac0f02a887eb3a052eeafff236e2f6db8ad1
+    locations:
+    - uri: https://www.npmjs.com/package/@asyncapi/generator-helpers
+      role: distribution
+  - id: asyncapi-generator-components
+    name: '@asyncapi/generator-components'
+    package: '@asyncapi/generator-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-07-14
+    end_date: 2026-07-14
+    versions:
+    - 0.7.1
+    hashes:
+    - sha256:082d733db0687dcd768104972b065d4b58cb1e6043688c6c20fa3702337f36ab
+    locations:
+    - uri: https://www.npmjs.com/package/@asyncapi/generator-components
+      role: distribution
+  - id: asyncapi-generator
+    name: '@asyncapi/generator'
+    package: '@asyncapi/generator'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-07-14
+    end_date: 2026-07-14
+    versions:
+    - 3.3.1
+    hashes:
+    - sha256:bfaeb987faa6de2b5a5eb63b1233d055215b09b0349a9394f2175fd7cdf385e4
+    locations:
+    - uri: https://www.npmjs.com/package/@asyncapi/generator
+      role: distribution
+  - id: asyncapi-specs
+    name: '@asyncapi/specs'
+    package: '@asyncapi/specs'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-07-14
+    end_date: 2026-07-14
+    versions:
+    - 6.11.2
+    - 6.11.2-alpha.1
+    hashes:
+    - sha256:9b2e65db653ca8575c9b10eefb9a80c6006404812c2ec212bf5675e3c690233b
+    - sha256:d425e4583cc6185d41e95c45eda00550045a5d1919b9a012236a4520d009dbd7
+    locations:
+    - uri: https://www.npmjs.com/package/@asyncapi/specs
+      role: distribution
+    notes:
+    - The two SHA-256 values are Socket's whole-tarball checksums for 6.11.2 and
+      6.11.2-alpha.1, respectively. The generator-family artifacts likewise use
+      Socket's published whole-tarball SHA-256 values.
+  references:
+  - url: https://socket.dev/blog/asyncapi-supply-chain-attack
+    title: Compromised npm Packages in the AsyncAPI Namespace Deliver Miasma Botnet Loader
+      - Socket
+  - url: https://www.aikido.dev/blog/asyncapi-npm-packages-backdoored-via-github-actions
+    title: AsyncAPI npm packages backdoored via GitHub Actions - Aikido
+  - url: https://thehackernews.com/2026/07/compromised-asyncapi-npm-packages.html
+    title: Compromised AsyncAPI npm Packages Deliver Multi-Stage Botnet Malware - The Hacker
+      News
+  - url: https://www.developer-tech.com/news/four-asyncapi-npm-packages-miasma-botnet-loader/
+    title: Four AsyncAPI npm packages carry Miasma botnet loader - Developer Tech
+  - url: https://research.jfrog.com/post/miasma-worm-returns-to-npm/
+    title: Miasma Worm Returns to npm - JFrog Security Research
+  - url: https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/
+    title: 'The npm Threat Landscape: Attack Surface and Mitigations - Unit 42'

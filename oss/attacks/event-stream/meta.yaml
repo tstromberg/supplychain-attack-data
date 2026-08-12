@@ -11,6 +11,14 @@
     The targeting was careful. Most event-stream consumers inherited a suspicious dependency but were not the intended cash-out path. BitPay's Copay wallet builds gave the payload the context it needed, which turned a general-purpose stream library into a route toward cryptocurrency theft.
 
     FallingSnow opened the public GitHub issue on November 20, 2018. Analysis in the thread identified Copay-related libraries as the target and recommended checking for `flatmap-stream@0.1.1`. npm removed the malicious packages, took control of `event-stream`, and advised users to move back to event-stream 3.3.4 or use remediated downstream builds.
+  pull_quote:
+    text: >-
+      flatmap-stream's payload was AES-encrypted with the description field of
+      whatever package was being built, so only Copay's `A Secure Bitcoin
+      Wallet` unlocked it. In every other project the decryption failed
+      silently.
+    caption: the target's own package.json was the key
+    after: 2
   start_date: 2018-09-09
   end_date: 2018-11-26
   target:
@@ -41,6 +49,8 @@
     end_date: 2018-11-26
     versions:
     - 3.3.6
+    hashes:
+    - sha256:13ccd9e2e05a37caad59b492c6d73de0591af49afd7e6a3c5bb0874c23f364b7
     locations:
     - uri: https://registry.npmjs.org/event-stream/-/event-stream-3.3.6.tgz
       role: distribution
@@ -70,9 +80,13 @@
     end_date: 2018-11-26
     versions:
     - 0.1.1
+    fixed_versions:
+    - 0.1.2
     locations:
     - uri: https://registry.npmjs.org/flatmap-stream/-/flatmap-stream-0.1.1.tgz
       role: distribution
+    - uri: https://github.com/hugeglass/flatmap-stream/commit/a0d127c1782991a423d106f50038a26d127bbecf
+      role: mirror
     - uri: https://www.npmjs.com/advisories/737
       role: mirror
     - uri: https://github.com/advisories/GHSA-9x64-5r7x-2q53
@@ -102,6 +116,8 @@
     - The payload targeted Copay-related builds rather than every event-stream consumer.
     - ZDNet reported that event-stream had more than two million weekly downloads at the
       time.
+    - The clean 0.1.0 GitHub source snapshot is retained, but the removed official npm
+      0.1.0 tarball was not recovered; 0.1.2 is the documented post-remediation release.
   references:
   - url: https://github.com/dominictarr/event-stream/issues/116
     title: I don't know what to say

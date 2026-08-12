@@ -1,0 +1,115 @@
+        <!DOCTYPE HTML>
+        <html>
+            <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+                <link rel="stylesheet" type="text/css" href="/style.css"/>
+                <title>npm Blog Archive: Details about the event-stream incident</title>
+                <meta name="description" content="npm Blog (Archive); updates from the npm team are now published on the GitHub Blog and the GitHub Changelog"/>
+                <meta name="og:title" content="npm Blog Archive: Details about the event-stream incident"/>
+                <meta name="og:description" content="npm Blog (Archive); updates from the npm team are now published on the GitHub Blog and the GitHub Changelog"/>
+                <meta name="og:image" content="https://user-images.githubusercontent.com/29712634/81721690-e2fb5d80-9445-11ea-8602-4b2294c964f3.png"/>
+                <link rel="icon" href="/favicon-32x32.png" type="image/png"/>
+                <link rel="apple-touch-icon" sizes="48x48" href="/icons/icon-48x48.png"/>
+                <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png"/>
+                <link rel="apple-touch-icon" sizes="96x96" href="/icons/icon-96x96.png"/>
+                <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png"/>
+                <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png"/>
+                <link rel="apple-touch-icon" sizes="256x256" href="/icons/icon-256x256.png"/>
+                <link rel="apple-touch-icon" sizes="384x384" href="/icons/icon-384x384.png"/>
+                <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png"/>
+            </head>
+            <body>
+                <div id="rainbar"></div>
+                <header>
+                    <div id="logo_and_title">
+                        <a href="/" class="logo"><svg height="32" width="32" viewBox="0 0 700 700" fill="currentColor"><polygon fill="#cb0000" points="0,700 700,700 700,0 0,0"></polygon><polygon fill="#ffffff" points="150,550 350,550 350,250 450,250 450,550 550,550 550,150 150,150 "></polygon></svg></a>
+                        <a href="/" class="title">npm Blog (Archive)</a>
+                    </div>
+                    <div id="links">
+                        <a href="https://npmjs.com/">npmjs.com</a>
+                        <a href="https://status.npmjs.com/">Status</a>
+                        <a href="https://npmjs.com/support/">Support</a>
+                    </div>
+                </header>
+
+                <main>
+                    <div id="retired">
+                        <p>
+                            The npm blog has been discontinued.
+                        </p>
+
+                        <p>
+                            Updates from the npm team are now published on the
+                            <a href="https://github.blog/">GitHub Blog</a> and
+                            the <a href="https://github.blog/changelog/">GitHub
+                            Changelog</a>.
+                        </p>
+                    </div>
+                
+                
+                                    <h1>Details about the event-stream incident</h1>
+                    <p>This is an analysis of the <a href="https://www.theregister.co.uk/2018/11/26/npm_repo_bitcoin_stealer/">event-stream incident</a> of which many of you became aware earlier this week. npm acts immediately to address operational concerns and issues that affect the safety of our community, but we typically perform more thorough analysis before discussing incidents—we know you’ve been waiting.</p>
+
+<p>On the morning of November 26th, npm’s security team was notified of a malicious package that had made its way into <code>event-stream</code>, a popular npm package. After triaging the malware, npm Security responded by removing <code>flatmap-stream</code> and <code>event-stream@3.3.6</code> from the Registry and taking ownership of the <code>event-stream</code> package to prevent further abuse.</p>
+
+<p>The malicious package was version 0.1.1 of <code>flatmap-stream</code>. This package was added as a direct dependency of the <code>event-stream</code> package by a new maintainer on September 9, 2018, in version 3.3.6. The <code>event-stream</code> package is widely used, but the malicious code targeted developers at a company that had a very specific development environment setup: running the payload in any other environment has no effect. This specific targeting means that, ultimately, most developers would not be affected even if they had mistakenly installed the malicious module.</p>
+
+<p>The injected code targets the Copay application. When a developer at Copay runs one of their release build scripts, the resulting code is modified before being bundled into the application. The code was designed to harvest account details and private keys from accounts having a balance of more than 100 Bitcoin or 1000 Bitcoin Cash.</p>
+
+<p>Copay’s initial response was that that no builds containing this malicious code were released to the public, but we now have confirmation from Copay that “the malicious code was deployed on versions 5.0.2 through 5.1.0.”</p>
+
+<h2>The attack</h2>
+
+<p>This attack started out as a social engineering attack. The attacker, posing as a maintainer, took over maintainership of the <code>event-stream</code> module.</p>
+
+<h2>The technical details</h2>
+
+<p>Here are some technical details that we know about, for those of you interested in this.</p>
+
+<p>The injected code:</p>
+
+<ul><li>Read in AES encrypted data from a file disguised as a test fixture</li>
+<li>Grabbed the npm package description of the module that imported it, using an automatically set environment variable</li>
+<li>Used the package description as a key to decrypt a chunk of data pulled in from the disguised file</li>
+</ul><p>The decrypted data was part of a module, which was then compiled in memory and executed.</p>
+
+<p>This module performed the following actions:</p>
+
+<ul><li>Decrypted another chunk of data from the disguised file</li>
+<li>Concatenated a small, commented prefix from the first decrypted chunk to the end of the second decrypted chunk</li>
+<li>Performed minor decoding tasks to transform the concatenated block of code from invalid JS to valid JS (we believe this was done to evade detection by dynamic analysis tools)</li>
+<li>Wrote this processed block of JS out to a file stored in a dependency that would be packaged by the build scripts:</li>
+</ul><p>The chunk of code that was written out was the actual malicious code, intended to be run on devices owned by the end users of Copay.</p>
+
+<p>This code would do the following:</p>
+
+<ul><li>Detect the current environment: Mobile/Cordova/Electron</li>
+<li>Check the Bitcoin and Bitcoin Cash balances on the victim&rsquo;s copay account</li>
+<li>If the current balance was greater than 100 Bitcoin, or 1000 Bitcoin Cash:
+
+<ul><li>Harvest the victim&rsquo;s account data in full</li>
+<li>Harvest the victim&rsquo;s copay private keys</li>
+<li>Send the victim&rsquo;s account data/private keys off to a collection service running on 111.90.151.134.</li>
+</ul></li>
+</ul><p>For users of the Copay app, <a href="https://github.com/bitpay/copay/issues/9346#issuecomment-441827353">bitpay recommends</a>, “If you are using any version from 5.0.2 to 5.1.0, you should not run or open the Copay app.”</p>
+
+<p>For npm users, you can check if your project contains the vulnerable dependency by running <code>npm audit</code>. If you have installed the impacted version of this <code>event-stream</code>, we recommend that you update to a later version as soon as possible.</p>
+                
+                
+                
+                
+                
+                
+                                <div id="footer">
+                <span id="timestamp"> November 27th, 2018 2:42pm </span>
+                <span id="author">@adam-npm</span>
+                                                          <span class="tag"><a href="/tagged/malware">malware</a></span>
+                                          <span class="tag"><a href="/tagged/security">security</a></span>
+                                          <span class="tag"><a href="/tagged/Incident-report">Incident report</a></span>
+                                                    </div>
+                </main>
+            </body>
+        </html>
+
+        

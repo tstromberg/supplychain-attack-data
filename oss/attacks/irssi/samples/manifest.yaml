@@ -1,0 +1,76 @@
+schema_version: 1
+interpretation:
+  - >-
+    Debian Archive's preserved orig tarball is byte-identical to Irssi's clean original
+    0.8.4 release: its MD5 and exact size match Debian's signed 2002 advisory. Irssi later
+    reissued these same bytes under the 0.8.4a filename to distinguish them from the
+    poisoned mutable download.
+samples:
+  - artifact_id: irssi
+    phase: before
+    classification: clean
+    version: 0.8.4
+    filename: irssi-0.8.4.tar.gz
+    path: irssi/before/irssi-0.8.4.tar.gz
+    sha256: b655033556b154ae1d3b60d087a903e922c9b35438b472edcafad876b6b0ee8c
+    size: 952304
+    source:
+      url: https://archive.debian.org/debian-security/pool/updates/main/i/irssi-text/irssi-text_0.8.4.orig.tar.gz
+      retrieved_at: '2026-08-09T23:48:45Z'
+      kind: distribution_mirror
+    verification:
+      status: exact
+      basis:
+        - debian_signed_advisory_md5_57bf9d89638be3d377be211f0b0d7049
+        - debian_signed_advisory_size_952304
+        - irssi_0_8_4a_same_bytes_as_original_0_8_4
+        - measured_sha256
+    notes:
+      - Renamed from Debian's irssi-text_0.8.4.orig.tar.gz to the original upstream filename.
+      - These clean bytes also represent Irssi's post-incident 0.8.4a reissue.
+  - artifact_id: irssi
+    phase: during
+    classification: malicious
+    version: 0.8.4
+    filename: irssi-backdoor-advisory.html
+    path: irssi/during/irssi-backdoor-advisory.html
+    sha256: 35290b4703e6fe92027a8b18efe2281cf6e313e2917db1943932bbaa2aaadfa9
+    size: 2604
+    source:
+      url: https://artofhacking.com/tucops3/hack/unix/live/aoh_unix5372.htm
+      retrieved_at: '2026-08-09T12:45:04Z'
+      kind: contemporary_advisory_archive
+    verification:
+      status: payload_only
+      basis:
+        - cited_incident_advisory
+        - configure_backdoor_fragment_preserved
+        - measured_sha256
+    notes:
+      - This is an advisory capture containing the modified configure code fragment, not the original tarball.
+  - artifact_id: irssi
+    phase: during
+    classification: malicious
+    version: 0.8.4
+    filename: configure-backdoor.c.fragment
+    path: irssi/during/configure-backdoor.c.fragment
+    sha256: 0a435695c4e39f425d5fe794b42ce4087b227176e90fc483fbc54ab0463e8820
+    size: 617
+    source:
+      url: https://artofhacking.com/tucops3/hack/unix/live/aoh_unix5372.htm
+      retrieved_at: '2026-08-09T12:45:04Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - published_configure_code_fragment
+        - html_entities_decoded
+        - source_line_endings_preserved
+        - measured_sha256
+    notes:
+      - The fragment was extracted as published; escaped quote characters and CRLF line endings were preserved.
+unresolved:
+  - artifact_id: irssi
+    phase: during
+    version: 0.8.4
+    status: original_distribution_unavailable_fragment_recovered

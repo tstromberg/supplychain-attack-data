@@ -1,0 +1,1250 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.19.2 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<script>
+  // Apply saved theme immediately to prevent flash
+  (function() {
+    var theme = localStorage.getItem('cai-theme') || 'midnight';
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+
+<!-- begin _includes/seo.html --><title>The BuddyBoss Attack: Full Incident Analysis - Ctrl-Alt-Intel</title>
+<meta name="description" content="Reconstructing the complete kill-chain of the BuddyBoss Attack ">
+
+
+  <meta name="author" content="Ctrl-Alt-Intel">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Ctrl-Alt-Intel">
+<meta property="og:title" content="The BuddyBoss Attack: Full Incident Analysis">
+<meta property="og:url" content="http://ctrlaltintel.com/research/BuddyBoss-2/">
+
+
+  <meta property="og:description" content="Reconstructing the complete kill-chain of the BuddyBoss Attack ">
+
+
+
+  <meta property="og:image" content="http://ctrlaltintel.com/assets/images/buddyboss/logo2.png">
+
+
+
+
+
+  <meta property="article:published_time" content="2026-04-03T00:00:00+00:00">
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="https://ctrlaltintel.com/research/BuddyBoss-2/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Ctrl-Alt-Intel",
+      "url": "http://ctrlaltintel.com/"
+    
+  }
+</script>
+
+
+  <meta name="google-site-verification" content="J3MnMF94zaZhTUoNtUiRt9cKsr7hiMyTxEdAvQ3GfmY" />
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Ctrl-Alt-Intel Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+<!-- favicon -->
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/images/site_data/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/images/site_data/favicon-16x16.png">
+<meta name="theme-color" content="#ffffff">
+
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+
+  </head>
+
+  <body class="layout--single wide">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    <div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        <a class="site-title" href="/">
+          <img src="/assets/images/site_data/img.png" alt="Ctrl-Alt-Intel" class="site-logo-nav">
+          <span class="site-title-text">Ctrl-Alt-Intel</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/categories/#research">Research</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/">About</a>
+            </li></ul>
+        <div class="masthead__right">
+          <a href="https://hunt.io/" class="sponsor-link" target="_blank" rel="noopener noreferrer" title="Hunt.io">
+            <img src="/assets/images/Huntio.png" alt="Hunt.io" class="sponsor-logo-img">
+          </a>
+          <div class="theme-switcher">
+  <button class="theme-switcher__toggle" type="button" aria-label="Change theme" title="Change theme">
+    <svg class="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </button>
+  <div class="theme-switcher__dropdown" hidden>
+    <button class="theme-option" data-theme="dark">
+      <span class="theme-swatch theme-swatch--dark"></span>
+      Dark
+    </button>
+    <button class="theme-option" data-theme="light">
+      <span class="theme-swatch theme-swatch--light"></span>
+      Light
+    </button>
+    <button class="theme-option" data-theme="midnight">
+      <span class="theme-swatch theme-swatch--midnight"></span>
+      Midnight
+    </button>
+    <button class="theme-option" data-theme="emerald">
+      <span class="theme-swatch theme-swatch--emerald"></span>
+      Emerald
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {
+  var saved = localStorage.getItem('cai-theme') || 'midnight';
+  document.documentElement.setAttribute('data-theme', saved);
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var toggle = document.querySelector('.theme-switcher__toggle');
+    var dropdown = document.querySelector('.theme-switcher__dropdown');
+    if (!toggle || !dropdown) return;
+
+    toggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var isHidden = dropdown.hasAttribute('hidden');
+      if (isHidden) {
+        dropdown.removeAttribute('hidden');
+      } else {
+        dropdown.setAttribute('hidden', '');
+      }
+    });
+
+    dropdown.querySelectorAll('.theme-option').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var theme = this.getAttribute('data-theme');
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('cai-theme', theme);
+        dropdown.setAttribute('hidden', '');
+        // Update active state
+        dropdown.querySelectorAll('.theme-option').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+      });
+    });
+
+    // Mark current theme active
+    var current = document.documentElement.getAttribute('data-theme') || 'dark';
+    var activeBtn = dropdown.querySelector('[data-theme="' + current + '"]');
+    if (activeBtn) activeBtn.classList.add('active');
+
+    // Close dropdown on outside click
+    document.addEventListener('click', function() {
+      dropdown.setAttribute('hidden', '');
+    });
+  });
+})();
+</script>
+
+          
+          <button class="search__toggle" type="button">
+            <span class="visually-hidden">Toggle search</span>
+            <svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15.99 16">
+              <path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
+          </svg>
+          </button>
+          
+        </div>
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+<div id="main" role="main">
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="The BuddyBoss Attack: Full Incident Analysis">
+    <meta itemprop="description" content="Overview">
+    <meta itemprop="datePublished" content="2026-04-03T00:00:00+00:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header class="page__header-wide">
+          
+            <span class="page__category-label">Threat Research</span>
+          
+          <h1 id="page-title" class="page__title" itemprop="headline">The BuddyBoss Attack: Full Incident Analysis
+</h1>
+          <div class="page__header-meta">
+            
+              <time datetime="2026-04-03T00:00:00+00:00">April 3, 2026</time>
+            
+            
+              <span class="meta-dot">&middot;</span>
+              <span><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  19 minute read
+
+</span>
+            
+          </div>
+        </header>
+      
+
+      <div class="page__reading-layout has-toc">
+        <section class="page__content" itemprop="text">
+          <h1 id="overview">Overview</h1>
+
+<p>In <a href="https://ctrlaltintel.com/research/BuddyBoss-1">Part 1</a> of this research, we analysed a recovered Claude Code session log that captured a French-speaking threat actor directing Claude through the final stage of a supply chain attack: bypassing Cloudflare, uploading backdoored BuddyBoss plugins to the production licensing server, and exploiting victim WordPress sites in real time.</p>
+
+<p>That blog focused on <strong>how Claude made the supply chain injection possible</strong>. This blog focuses on <strong>everything else</strong>: how the threat actor (assisted by Claude) obtained initial access, weaponised GitHub Actions to steal CI/CD secrets, laterally moved through BuddyBoss’s infrastructure, escalated to root on an AWS server, and ultimately pushed backdoored updates to hundreds of customer sites.</p>
+
+<p>All findings in this analysis are derived from the threat actor’s own C2 server, which was left as an open directory. We recovered exfiltration logs, decoded payloads, the Claude Code session transcript, PHP backdoor templates, C2 server components, and the full loot directory containing data from 246+ victim WordPress sites.</p>
+
+<blockquote>
+  <p>There are gaps in our visibility. The C2 logs capture everything <strong>after</strong> the threat actor had already credential access to the BuddyBoss GitHub organisation. How that initial access was obtained is not completely visible to us. Although we have suspicions that we will highlight later.</p>
+</blockquote>
+
+<p><strong>Kill Chain Summary - 17th March</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>Timeframe (UTC)</th>
+      <th>Activity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Initial Access</strong></td>
+      <td>Unknown (pre-16:20)</td>
+      <td>GitHub organisation access obtained via unknown method. Malicious workflow committed to <code class="language-plaintext highlighter-rouge">master</code> under the identity of a legitimate BuddyBoss developer</td>
+    </tr>
+    <tr>
+      <td><strong>CI/CD Exfiltration</strong></td>
+      <td>16:24 - 16:28</td>
+      <td>GitHub Actions workflows fire, exfiltrating SSH keys, database credentials, and the Caseproof Mothership API key to the C2 server</td>
+    </tr>
+    <tr>
+      <td><strong>Lateral Movement (Hetzner)</strong></td>
+      <td>16:36 - 17:01</td>
+      <td>Stolen SSH key used to access BuddyBoss’s Hetzner deployment server within 10 minutes</td>
+    </tr>
+    <tr>
+      <td><strong>Lateral Movement (AWS)</strong></td>
+      <td>17:26 - 17:38</td>
+      <td>SSH credentials stolen from CI/CD used to access AWS server.</td>
+    </tr>
+    <tr>
+      <td><strong>Additional Credential Theft</strong></td>
+      <td>17:46 - 18:21</td>
+      <td>Production <code class="language-plaintext highlighter-rouge">.env</code> files exfiltrated. GitHub org-level PAT, FTP credentials, and automation tokens stolen</td>
+    </tr>
+    <tr>
+      <td><strong>Supply Chain Injection</strong></td>
+      <td>18:54 - 19:16</td>
+      <td>Using the stolen <code class="language-plaintext highlighter-rouge">appcenter_key</code>, backdoored BuddyBoss Platform v2.20.3 and Theme v2.19.2 deployed to the production Mothership CDN via Cloudflare bypass</td>
+    </tr>
+    <tr>
+      <td><strong>Victim Exploitation</strong></td>
+      <td>19:18 onwards</td>
+      <td>246+ WordPress sites call back. Automated scanning, credential harvesting, and Stripe API key theft</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Total time from first CI/CD exfiltration to first victim callback: 2 hours 54 minutes.</strong></p>
+
+<p>Although the Claude Code session transcript was not complete, and we only observed the latter end of the attack (from <strong>Supply Chain Injection</strong>), based on speed, standardised scripts &amp; C2 telemetry, we likely believe Claude Code was also responsible for the the CI/CD exfiltration, lateral movement and credential theft.</p>
+
+<blockquote>
+  <p>The threat actor had a server-side C2 listener that captured all victim telemetry, allowing us to ascertain the near complete kill-chain</p>
+</blockquote>
+
+<p><a href="/assets/images/buddyboss/10.png"><img src="/assets/images/buddyboss/10.png" alt="1" class="align-center img-border" /></a></p>
+<p class="figure-caption">CI/CD secret exfiltration</p>
+
+<h1 id="cicd-pipeline-compromise">CI/CD Pipeline Compromise</h1>
+
+<h2 id="the-malicious-workflow">The Malicious Workflow</h2>
+
+<p>The threat actor pushed a malicious GitHub Actions workflow file (<code class="language-plaintext highlighter-rouge">platform-compat.yml</code>) to the <code class="language-plaintext highlighter-rouge">master</code> branch of at least two private BuddyBoss repositories: <code class="language-plaintext highlighter-rouge">buddyboss/buddyboss-platform-pro</code> and <code class="language-plaintext highlighter-rouge">buddyboss/csr-tool</code>. A third repository, <code class="language-plaintext highlighter-rouge">buddyboss/api-build</code>, is also implicated based on endpoint naming.</p>
+
+<p>We know this because the C2 server logged the inbound exfiltration callbacks. Each callback contained GitHub Actions runner environment variables that can only exist inside a running workflow. The <code class="language-plaintext highlighter-rouge">ghs_</code> prefixed tokens (GitHub Actions installation tokens) are generated exclusively by GitHub’s runner infrastructure and cannot be manually created.</p>
+
+<p>The workflow was named <strong>“Platform Compatibility Check”</strong>, a deliberately innocuous name designed to blend in with legitimate CI/CD activity.</p>
+
+<p><a href="/assets/images/buddyboss/8.png"><img src="/assets/images/buddyboss/8.png" alt="1" class="align-center img-border" /></a></p>
+<p class="figure-caption">CI/CD secret exfiltration</p>
+
+<p><strong>What Was Exfiltrated</strong></p>
+
+<p>Three repositories called back to distinct C2 endpoints within 3 minutes of each other:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Time (UTC)</th>
+      <th>Source IP</th>
+      <th>C2 Endpoint</th>
+      <th>Repository</th>
+      <th>Key Data Stolen</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>16:24:35</td>
+      <td>20.168.118.82</td>
+      <td><code class="language-plaintext highlighter-rouge">/gh_secrets</code></td>
+      <td><code class="language-plaintext highlighter-rouge">buddyboss-platform-pro</code></td>
+      <td>GitHub token, Claude Code OAuth token, full runner environment</td>
+    </tr>
+    <tr>
+      <td>16:26:46</td>
+      <td>145.132.102.248</td>
+      <td><code class="language-plaintext highlighter-rouge">/csr_secrets</code></td>
+      <td><code class="language-plaintext highlighter-rouge">buddyboss/csr-tool</code></td>
+      <td>Ed25519 SSH private key, SSH credentials for Hetzner server, GitHub token</td>
+    </tr>
+    <tr>
+      <td>16:27:02</td>
+      <td>13.83.166.228</td>
+      <td><code class="language-plaintext highlighter-rouge">/api_secrets</code></td>
+      <td>Unknown</td>
+      <td><code class="language-plaintext highlighter-rouge">appcenter_key</code>, database credentials, Redis credentials, SSH key</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Each repository had a <strong>different C2 endpoint</strong> and exfiltrated <strong>different secrets</strong>.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">User-Agent: curl/8.5.0</code> header on all three callbacks is consistent with Ubuntu 24 (the default GitHub-hosted runner image), confirming these ran on GitHub’s own infrastructure rather than self-hosted runners.</p>
+
+<h2 id="the-push-identity">The Push Identity</h2>
+
+<p>The exfiltrated environment variables from the <code class="language-plaintext highlighter-rouge">buddyboss-platform-pro</code> callback reveal who triggered the workflow:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Variable</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">GITHUB_EVENT_NAME</code></td>
+      <td><code class="language-plaintext highlighter-rouge">push</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">GITHUB_RUN_NUMBER</code></td>
+      <td><code class="language-plaintext highlighter-rouge">1</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">GITHUB_TRIGGERING_ACTOR</code></td>
+      <td><code class="language-plaintext highlighter-rouge">KartikSuthar</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">GITHUB_REF</code></td>
+      <td><code class="language-plaintext highlighter-rouge">refs/heads/master</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">GITHUB_REF_PROTECTED</code></td>
+      <td><code class="language-plaintext highlighter-rouge">true</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">GITHUB_SHA</code></td>
+      <td><code class="language-plaintext highlighter-rouge">45efbfa2f4f0b196b19bcfc7c46ad5f5a330010b</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>A few things stand out. <code class="language-plaintext highlighter-rouge">GITHUB_RUN_NUMBER=1</code> means this was the <strong>first time this workflow ever ran</strong>. It was newly created, not a modification of an existing workflow. The push went directly to <code class="language-plaintext highlighter-rouge">master</code>, a protected branch, and was attributed to <strong>KartikSuthar</strong>, a real BuddyBoss developer who had published release v2.14.0 in October 2025, implementing the exact Caseproof licensing system that the threat actor would later exploit…</p>
+
+<p>We do not believe KartikSuthar was the threat actor. The attacker spoke French. However, the push was attributed to KartikSuthar’s identity. How that identity was compromised is discussed in the <a href="#unanswered-questions">Unanswered Questions</a> section below.</p>
+
+<h2 id="why-this-was-hard-to-detect">Why This Was Hard to Detect</h2>
+
+<p>The malicious workflow was designed to avoid raising alarms:</p>
+
+<ul>
+  <li><strong>Innocuous naming</strong>: “Platform Compatibility Check” blends with legitimate CI/CD workflows</li>
+  <li><strong>GitHub masks secrets</strong>: Any value stored as a GitHub secret is automatically masked with <code class="language-plaintext highlighter-rouge">***</code> in workflow run logs. Even if someone reviewed the logs, the <code class="language-plaintext highlighter-rouge">curl</code> commands would show redacted values</li>
+  <li><strong>Direct push to master</strong>: The <code class="language-plaintext highlighter-rouge">GITHUB_EVENT_NAME=push</code> confirms this was not a pull request -&gt; maybe no code review</li>
+  <li><strong>Immediate execution</strong>: The workflow ran on the push event itself, exfiltrating secrets before anyone could review the commit</li>
+</ul>
+
+<h1 id="lateral-movement">Lateral Movement</h1>
+
+<h2 id="hetzner-server-95217100226">Hetzner Server (95.217.100.226)</h2>
+
+<p>Within <strong>10 minutes</strong> of stealing the SSH key from CI/CD, the threat actor (likely performed by Claude) was logged into BuddyBoss’s Hetzner deployment server.</p>
+
+<p>At 16:36:01 UTC, six IP addresses simultaneously posted environment dumps to the C2’s <code class="language-plaintext highlighter-rouge">/build_env</code> endpoint. All decoded bodies contained identical SSH session metadata:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SSH_CONNECTION=195.178.110.242 42900 95.217.100.226 2525
+USER=bbapp-cert-services-bb
+HOME=/home/bbapp-cert-services-bb
+</code></pre></div></div>
+
+<p>This proves the C2 server at <code class="language-plaintext highlighter-rouge">195.178.110.242</code> established an SSH connection to the Hetzner server at <code class="language-plaintext highlighter-rouge">95.217.100.226</code> on port <code class="language-plaintext highlighter-rouge">2525</code>, authenticating as <code class="language-plaintext highlighter-rouge">bbapp-cert-services-bb</code> using the Ed25519 private key stolen from the <code class="language-plaintext highlighter-rouge">csr-tool</code> repository secrets just minutes earlier.</p>
+
+<p>The Hetzner server resolves to several BuddyBoss-related domains:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">appcenter.hz5.developbb.dev</code></li>
+  <li><code class="language-plaintext highlighter-rouge">bbapp-cert-services.hz5.developbb.dev</code></li>
+  <li><code class="language-plaintext highlighter-rouge">api-build.buddyboss.com</code></li>
+  <li><code class="language-plaintext highlighter-rouge">crm.hz5.developbb.dev</code></li>
+</ul>
+
+<p>The threat actor ran reconnaissance commands (<code class="language-plaintext highlighter-rouge">whoami</code>, <code class="language-plaintext highlighter-rouge">id</code>, <code class="language-plaintext highlighter-rouge">env</code>).</p>
+
+<p>Between 17:18 and 17:20 UTC, we observed two waves of <code class="language-plaintext highlighter-rouge">wpconfig_*</code> probes: six sequential POST requests with descriptive endpoint names (<code class="language-plaintext highlighter-rouge">wpconfig_via_ssh</code>, <code class="language-plaintext highlighter-rouge">wpconfig_from_cat</code>, <code class="language-plaintext highlighter-rouge">wpconfig_base64</code>, <code class="language-plaintext highlighter-rouge">wpconfig_result</code>, <code class="language-plaintext highlighter-rouge">wpconfig_dump</code>, <code class="language-plaintext highlighter-rouge">wpconfig_raw</code>), all returning empty bodies. The threat actor’s workflow was attempting to extract <code class="language-plaintext highlighter-rouge">wp-config.php</code> files from the Hetzner server using multiple methods. All failed. The <code class="language-plaintext highlighter-rouge">bbapp-cert-services-bb</code> user did not have read permissions to the WordPress configuration files.</p>
+
+<p><strong>RunCloud Server</strong></p>
+
+<p>While the <code class="language-plaintext highlighter-rouge">wp-config.php</code> extraction attempts on Hetzner failed, a separate callback from <code class="language-plaintext highlighter-rouge">64.236.200.112</code> at 17:20:25 UTC was more successful.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">/apiuser_env</code> endpoint received the <strong>full production <code class="language-plaintext highlighter-rouge">.env</code> file</strong> from <code class="language-plaintext highlighter-rouge">api-build.buddyboss.com</code>. This contained database credentials, Redis credentials, a GitLab personal access token, a Slack webhook URL, and an <code class="language-plaintext highlighter-rouge">APPCENTER_AUTOMATION_API_KEY</code>, the same Mothership API key the threat actor would later use for the supply chain injection.</p>
+
+<p>An earlier request from this IP to <code class="language-plaintext highlighter-rouge">/wpconfig_apiuser</code> had returned <code class="language-plaintext highlighter-rouge">uid=1004(api-build)</code> followed by “Permission denied” when trying to read wp-config. The RunCloud server’s user isolation was working, but the application’s <code class="language-plaintext highlighter-rouge">.env</code> file was readable.</p>
+
+<p><strong>AWS Server</strong></p>
+
+<p>At 17:26:00 UTC, a GitHub Actions runner exfiltrated SSH credentials for an AWS server: a password, a push token, the hostname <code class="language-plaintext highlighter-rouge">44.241.213.212</code>, and the username <code class="language-plaintext highlighter-rouge">deployment</code>.</p>
+
+<p>Five seconds later, a 1,780-byte reconnaissance dump arrived containing a full Laravel <code class="language-plaintext highlighter-rouge">.env</code> file with database credentials, Apple App Store Connect configuration (issuer ID, key ID, team ID), and a directory listing showing <code class="language-plaintext highlighter-rouge">monitor.api-publish.buddyboss.com</code>.</p>
+
+<p>The server resolves to:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">api-publish.buddyboss.com</code></li>
+  <li><code class="language-plaintext highlighter-rouge">monitor.api-publish.buddyboss.com</code></li>
+  <li><code class="language-plaintext highlighter-rouge">download.api-publish.buddyboss.com</code></li>
+</ul>
+
+<h3 id="root-access">Root Access</h3>
+
+<p>At 17:38:02 UTC, <strong>the AWS server itself</strong> called back to the C2 with a 13,214-byte reconnaissance dump. The first line confirmed what the threat actor was after:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>uid=0(root) gid=0(root) groups=0(root)
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">deployment</code> user had <code class="language-plaintext highlighter-rouge">sudo</code> privileges. The threat actor had root, ran comprehensive enumeration, and planted their own SSH key (<code class="language-plaintext highlighter-rouge">ctf-pivot</code>, Ed25519) in <code class="language-plaintext highlighter-rouge">/root/.ssh/authorized_keys</code> alongside four legitimate BuddyBoss keys (<code class="language-plaintext highlighter-rouge">app-demo</code>, <code class="language-plaintext highlighter-rouge">Aman Sangra</code>, <code class="language-plaintext highlighter-rouge">buddyboss-new-key-2022</code>, <code class="language-plaintext highlighter-rouge">Wes</code>).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">ctf-pivot</code> key is distinct from the <code class="language-plaintext highlighter-rouge">github-actions-deployment</code> key stolen from CI/CD. The threat actor brought their own key for persistence. This is consistent with the SSH pivot chain we observed in <code class="language-plaintext highlighter-rouge">oldconv.txt</code>, where Claude later used <code class="language-plaintext highlighter-rouge">44.241.213.212</code> to bypass Cloudflare protections on compromised victim sites.</p>
+
+<h2 id="additional-credential-theft">Additional Credential Theft</h2>
+
+<p>At 18:21:23 UTC, the final CI/CD-related callback arrived at <code class="language-plaintext highlighter-rouge">/bbapp_secrets</code>. This exfiltrated a BuddyBoss GitHub organisation-level PAT (<code class="language-plaintext highlighter-rouge">ghp_*</code> prefix), an FTP password, and an automation deployment token.</p>
+
+<p>By this point, the threat actor had:</p>
+
+<ul>
+  <li>SSH access to BuddyBoss’s Hetzner deployment server</li>
+  <li>Root access (with persistent backdoor) on BuddyBoss’s AWS publishing server</li>
+  <li>Production <code class="language-plaintext highlighter-rouge">.env</code> files containing database credentials, API keys, and third-party service tokens</li>
+  <li>The <code class="language-plaintext highlighter-rouge">appcenter_key</code> for the Caseproof Mothership licensing API</li>
+  <li>A GitHub organisation-level PAT for continued access</li>
+  <li>Apple App Store Connect credentials</li>
+  <li>A GitLab personal access token</li>
+</ul>
+
+<p>The entire credential theft for BuddyBoss, from first CI/CD exfiltration to the last callback, took approximately <strong>2 hours</strong>.</p>
+
+<h1 id="supply-chain-injection">Supply Chain Injection</h1>
+
+<p>With the <code class="language-plaintext highlighter-rouge">appcenter_key</code> in hand, this is where our visibility into the Claude Code began at approximately 18:54 UTC. The full analysis of this session is covered in <a href="link-to-part-1">Part 1</a> of this research. Below is a summary.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">appcenter_key</code> authenticated to the Caseproof Mothership at <code class="language-plaintext highlighter-rouge">licenses.caseproof.com</code>, a Laravel application hosted on Heroku and fronted by Cloudflare. This is the licensing and software distribution platform that serves plugin and theme updates to all BuddyBoss customers.</p>
+
+<p>The threat actor’s backdoored ZIP files were prepared from clean BuddyBoss Platform v2.13.1 packages. Exactly <strong>one file per package</strong> was modified:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Package</th>
+      <th>Modified File</th>
+      <th>SHA256</th>
+      <th>Backdoored Size</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Platform Plugin</td>
+      <td><code class="language-plaintext highlighter-rouge">bp-loader.php</code></td>
+      <td><code class="language-plaintext highlighter-rouge">ddda12b545a7b817883641421cf6a213f4c5100effa40cdb55018efce11bbe42</code></td>
+      <td>19,144 bytes</td>
+    </tr>
+    <tr>
+      <td>Theme</td>
+      <td><code class="language-plaintext highlighter-rouge">functions.php</code></td>
+      <td><code class="language-plaintext highlighter-rouge">5027a0e77eca13a5cc120d3e37262c4073452569ad341cd1558051b5a91ce144</code></td>
+      <td>8,375 bytes</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Cloudflare blocked the multipart file upload. Claude independently discovered the Heroku origin IP (<code class="language-plaintext highlighter-rouge">18.208.60[.]216</code>) by probing known Heroku IP ranges with the correct <code class="language-plaintext highlighter-rouge">Host</code> header, bypassing Cloudflare entirely. The 22MB backdoored Platform ZIP was uploaded directly to the origin server and deployed as version 2.20.3. The Theme was deployed as version 2.19.2.</p>
+
+<p>Both backdoored packages were verified as live on the official Caseproof CDN. Claude then triggered update notifications to <code class="language-plaintext highlighter-rouge">buddyboss.com</code> to accelerate victim discovery.</p>
+
+<h1 id="the-backdoors">The Backdoors</h1>
+
+<p>Each backdoored file contained two components prepended to the legitimate code.</p>
+
+<h2 id="automatic-credential-exfiltration">Automatic Credential Exfiltration</h2>
+
+<p>Hooks into the WordPress <code class="language-plaintext highlighter-rouge">after_setup_theme</code> action at priority 1. On first execution (throttled by a WordPress transient with a 1-year TTL), the backdoor collects and exfiltrates:</p>
+
+<ul>
+  <li>Site URL</li>
+  <li>Database credentials: <code class="language-plaintext highlighter-rouge">DB_HOST</code>, <code class="language-plaintext highlighter-rouge">DB_NAME</code>, <code class="language-plaintext highlighter-rouge">DB_USER</code>, <code class="language-plaintext highlighter-rouge">DB_PASSWORD</code></li>
+  <li>WordPress secret keys: <code class="language-plaintext highlighter-rouge">AUTH_KEY</code>, <code class="language-plaintext highlighter-rouge">SECURE_AUTH_KEY</code>, <code class="language-plaintext highlighter-rouge">NONCE_KEY</code></li>
+  <li>Server information: IP, software, document root, hostname</li>
+  <li>All environment variables via <code class="language-plaintext highlighter-rouge">getenv()</code></li>
+  <li>PHP version, active plugins list, user counts</li>
+</ul>
+
+<p>This data is base64-encoded as JSON and POSTed to the C2 at <code class="language-plaintext highlighter-rouge">195.178.110[.]242:8443</code>. The request uses <code class="language-plaintext highlighter-rouge">blocking =&gt; false</code> to avoid impacting page load times on the victim site. <code class="language-plaintext highlighter-rouge">195.178.110[.]242:8443</code> is the same endpoint that was listening for the CI/CD and other credential theft data.</p>
+
+<h2 id="interactive-backdoor">Interactive Backdoor</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>Trigger (Platform)</th>
+      <th>Capability</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Reverse Shell</td>
+      <td><code class="language-plaintext highlighter-rouge">?bp_compat_check=[auth]&amp;mode=diag</code></td>
+      <td>TCP socket to C2 on port 4444, spawns <code class="language-plaintext highlighter-rouge">/bin/bash</code> via <code class="language-plaintext highlighter-rouge">proc_open</code></td>
+    </tr>
+    <tr>
+      <td>Command Exec</td>
+      <td><code class="language-plaintext highlighter-rouge">?bp_compat_check=[auth]&amp;mode=exec&amp;c=&lt;base64&gt;</code></td>
+      <td>Arbitrary command via <code class="language-plaintext highlighter-rouge">shell_exec()</code></td>
+    </tr>
+    <tr>
+      <td>File Read</td>
+      <td><code class="language-plaintext highlighter-rouge">?bp_compat_check=[auth]&amp;mode=read&amp;f=&lt;base64&gt;</code></td>
+      <td>Reads arbitrary file via <code class="language-plaintext highlighter-rouge">file_get_contents()</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The parameter names were chosen to blend with legitimate BuddyBoss internals (<code class="language-plaintext highlighter-rouge">bp_compat_check</code>, <code class="language-plaintext highlighter-rouge">bb_theme_compat</code>), and the code was disguised with phpDoc: <em>“Platform telemetry for usage analytics.”</em></p>
+
+<p>The threat actor later deployed version 2.20.4, adding six shell execution methods for resilience (<code class="language-plaintext highlighter-rouge">shell_exec</code>, <code class="language-plaintext highlighter-rouge">exec</code>, <code class="language-plaintext highlighter-rouge">system</code>, <code class="language-plaintext highlighter-rouge">passthru</code>, <code class="language-plaintext highlighter-rouge">popen</code>, <code class="language-plaintext highlighter-rouge">proc_open</code>), a standalone webshell at <code class="language-plaintext highlighter-rouge">bp-compatibility.php</code> for direct access bypassing WAF parameter filtering, and an <code class="language-plaintext highlighter-rouge">eval</code> mode for environments where all shell functions are disabled.</p>
+
+<h1 id="victim-impact">Victim Impact</h1>
+
+<h2 id="first-callbacks">First Callbacks</h2>
+
+<p>The first real victim callback arrived at <strong>19:18:06 UTC</strong>, approximately 2 minutes after the backdoored packages went live. WordPress sites checking for updates via <code class="language-plaintext highlighter-rouge">wp-cron</code> (or when an admin visited the dashboard) saw the new versions and installed them automatically.</p>
+
+<p><strong>Active Exploitation</strong></p>
+
+<p>The threat actor did not wait passively. Once callbacks began arriving, they shifted to targeted exploitation via the exec endpoint:</p>
+
+<ul>
+  <li>Database credentials were extracted from every calling-back site</li>
+  <li>At least one site had live Stripe payment processing keys exfiltrated</li>
+  <li>Automated scanning (<code class="language-plaintext highlighter-rouge">AUTO_SCAN_RESULTS.log</code>) ran against approximately 30 high-value targets</li>
+  <li>Two full <code class="language-plaintext highlighter-rouge">wp-config.php</code> files were extracted from victim sites</li>
+</ul>
+
+<h1 id="the-c2-infrastructure">The C2 Infrastructure</h1>
+
+<p><strong>How We Found This</strong></p>
+
+<p>The entire evidence base comes from the threat actor’s own C2 server. The receiver at <code class="language-plaintext highlighter-rouge">195.178.110[.]242:8443</code> was running a purpose-built Python HTTP server (<code class="language-plaintext highlighter-rouge">receiver.py</code>) that logged <strong>every inbound HTTP request</strong> with full metadata: server-side timestamps, sequential request IDs, HTTP method and path, full headers, raw and decoded request bodies, and source IP/port.</p>
+
+<p>This server was left as an open directory. The structured logging, combined with the open directory, gave us near-complete visibility into the campaign from the moment the C2 came online.</p>
+
+<p>Data was stored in a structured directory hierarchy:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>loot/
+├── by_ip/
+│   ├── 20.168.118.82/          &lt;- GitHub Actions runner
+│   ├── 145.132.102.248/        &lt;- GitHub Actions runner
+│   ├── 44.241.213.212/         &lt;- AWS server (root_recon)
+│   └── ... (300+ IP directories) &lt;- Wordpress victims
+│
+├── master.log                   &lt;- Global chronological log
+├── FLAG_CANDIDATES.txt          &lt;- Auto-detected secrets/flags
+└── AUTO_SCAN_RESULTS.log        &lt;- Post-exploitation scan results
+</code></pre></div></div>
+
+<h1 id="timeline">Timeline</h1>
+
+<p>All times are <strong>March 17, 2026 UTC</strong>. Times are derived from server-side timestamps on the C2’s HTTP request logs.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>Event</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><em>Unknown</em></td>
+      <td>GitHub identity compromised. Malicious workflow committed to <code class="language-plaintext highlighter-rouge">master</code> in 2+ repos. C2 server provisioned</td>
+    </tr>
+    <tr>
+      <td>16:24:35</td>
+      <td><strong>First exfiltration.</strong> <code class="language-plaintext highlighter-rouge">/gh_secrets</code> from <code class="language-plaintext highlighter-rouge">buddyboss-platform-pro</code></td>
+    </tr>
+    <tr>
+      <td>16:26:46</td>
+      <td><code class="language-plaintext highlighter-rouge">/csr_secrets</code>: SSH key + Hetzner credentials from <code class="language-plaintext highlighter-rouge">csr-tool</code></td>
+    </tr>
+    <tr>
+      <td>16:27:02</td>
+      <td><code class="language-plaintext highlighter-rouge">/api_secrets</code>: <code class="language-plaintext highlighter-rouge">appcenter_key</code> + database credentials</td>
+    </tr>
+    <tr>
+      <td>16:36:01</td>
+      <td><strong>Hetzner accessed.</strong> C2 SSHes to <code class="language-plaintext highlighter-rouge">95.217.100[.]226:2525</code> (10 min after key theft)</td>
+    </tr>
+    <tr>
+      <td>17:18 - 17:20</td>
+      <td><code class="language-plaintext highlighter-rouge">wpconfig_*</code> probes fail on Hetzner (permissions denied)</td>
+    </tr>
+    <tr>
+      <td>17:20:25</td>
+      <td><strong>Production <code class="language-plaintext highlighter-rouge">.env</code> stolen</strong> from <code class="language-plaintext highlighter-rouge">api-build.buddyboss.com</code></td>
+    </tr>
+    <tr>
+      <td>17:26:00</td>
+      <td>AWS SSH credentials exfiltrated</td>
+    </tr>
+    <tr>
+      <td>17:38:02</td>
+      <td><strong>Root access on AWS.</strong> <code class="language-plaintext highlighter-rouge">ctf-pivot</code> key planted for persistence</td>
+    </tr>
+    <tr>
+      <td>18:21:23</td>
+      <td>GitHub org-level PAT, FTP password, automation token stolen</td>
+    </tr>
+    <tr>
+      <td>~18:54</td>
+      <td>Mothership API queried with <code class="language-plaintext highlighter-rouge">appcenter_key</code></td>
+    </tr>
+    <tr>
+      <td>~19:03</td>
+      <td>Cloudflare bypassed. Backdoored Platform v2.20.3 uploaded to Heroku origin</td>
+    </tr>
+    <tr>
+      <td>~19:15</td>
+      <td>Backdoored Theme v2.19.2 uploaded</td>
+    </tr>
+    <tr>
+      <td>~19:16</td>
+      <td>Update notifications sent to <code class="language-plaintext highlighter-rouge">buddyboss.com</code></td>
+    </tr>
+    <tr>
+      <td>19:18:06</td>
+      <td><strong>First victim callback</strong></td>
+    </tr>
+    <tr>
+      <td>19:20+</td>
+      <td>Active exploitation begins. Stripe keys stolen.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>From first exfiltration to first victim: 2 hours 54 minutes.</strong></p>
+
+<h1 id="unanswered-questions">Unanswered Questions</h1>
+
+<p><strong>How Was Initial GitHub Access Obtained?</strong></p>
+
+<p>This is the biggest gap in our visibility. The loot data begins at the point where the malicious workflow has already been committed and is executing. We do not have the session where initial access was obtained.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">GITHUB_ACTOR=KartikSuthar</code> field tells us the push was attributed to a legitimate BuddyBoss developer. But the threat actor is French-speaking and showed no definite indicators of being KartikSuthar. However, we did note something interesting.</p>
+
+<ul>
+  <li>
+    <p>Within the open-directory, the French threat actor had named the packages <code class="language-plaintext highlighter-rouge">buddyboss-platform-2.13.1-backdoored.zip</code> and <code class="language-plaintext highlighter-rouge">buddyboss-theme-2.13.1-backdoored.zip</code>. They had backdoored Buddyboss Platform/Theme version <code class="language-plaintext highlighter-rouge">2.13.1</code> and renamed/ uploaded these to production as “newer” versions.</p>
+  </li>
+  <li>
+    <p>KartikSuthar’s first release in Github was <code class="language-plaintext highlighter-rouge">2.14.0</code>, and this “Implemented a new licensing system for BuddyBoss plugins and theme”.</p>
+  </li>
+</ul>
+
+<p><a href="/assets/images/buddyboss/6.png"><img src="/assets/images/buddyboss/6.png" alt="1" class="align-center img-border" /></a></p>
+<p class="figure-caption">Claude's insight</p>
+
+<p>We considered several possibilities:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Scenario</th>
+      <th>Supporting Evidence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>APK secret extraction</strong></td>
+      <td>The threat actor’s workstation contains a <code class="language-plaintext highlighter-rouge">Scan_APK/GITHUB/</code> directory with cloned BuddyBoss repositories. BuddyBoss has a mobile application that may embed API tokens</td>
+    </tr>
+    <tr>
+      <td><strong>Stolen credentials</strong></td>
+      <td>No supporting evidence, no evidence of public breach associated with the victim</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote>
+  <p>Ctrl-Alt-Intel <strong>did identify</strong> exposed secrets in BuddyBoss APKs that were found online - however these would not have given direct access to Github like we observed.</p>
+</blockquote>
+
+<p><strong>An Odd Visitor</strong></p>
+
+<p>On March 18 at 11:24 UTC, someone from an Indian IP address (Reliance Jio, Mac/Chrome) manually browsed <code class="language-plaintext highlighter-rouge">http://195.178.110[.]242:8443/bbapp_secrets</code>, then tried <code class="language-plaintext highlighter-rouge">?ftp_password</code> and <code class="language-plaintext highlighter-rouge">?ftp_password=true</code>.</p>
+
+<p>This is notable. The IP is Indian (consistent with BuddyBoss’s development team), the browser is personal (Mac Chrome, not a CI/CD runner), and the specific endpoint tested (<code class="language-plaintext highlighter-rouge">/bbapp_secrets</code>) directly targets the stolen credentials. This looks like someone who knew what was stolen - likely a BuddyBoss developer discovering the C2 during incident response.</p>
+
+<h2 id="was-the-github-repository-source-code-backdoored">Was the GitHub Repository Source Code Backdoored?</h2>
+
+<p>In the Claude Code session, Claude stated: <em>“The backdoored code is already on GitHub master.”</em> However, our analysis of the publicly available BuddyBoss repository (cloned and checked via <code class="language-plaintext highlighter-rouge">git log -S</code> for all backdoor strings across all branches) found <strong>no evidence of the backdoor ever being committed</strong>. Version 2.14.0 of <code class="language-plaintext highlighter-rouge">bp-loader.php</code> is clean and shows a natural 2-byte increment over the clean 2.13.1 version.</p>
+
+<p>This means either: the GitHub master was never actually compromised and Claude’s statement was inaccurate, or the backdoor was committed and then cleaned up before we cloned the repository. Without access to the private <code class="language-plaintext highlighter-rouge">buddyboss-platform-pro</code> repository’s full commit history, we cannot determine which scenario occurred.</p>
+
+<p><strong>How Many Repositories Were Compromised?</strong></p>
+
+<p>We can confirm two: <code class="language-plaintext highlighter-rouge">buddyboss/buddyboss-platform-pro</code> and <code class="language-plaintext highlighter-rouge">buddyboss/csr-tool</code>. These are the only callbacks that contained explicit <code class="language-plaintext highlighter-rouge">repo=</code> fields.</p>
+
+<p>Additional C2 endpoints (<code class="language-plaintext highlighter-rouge">/api_secrets</code>, <code class="language-plaintext highlighter-rouge">/ssh_deploy</code>, <code class="language-plaintext highlighter-rouge">/real_deploy</code>, <code class="language-plaintext highlighter-rouge">/bbapp_secrets</code>, <code class="language-plaintext highlighter-rouge">/appstore_ssh</code>) exfiltrated CI/CD secrets but did not include repository identifiers, just widened the scope of the intrusion.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>This campaign is notable for several reasons. The entire attack, from CI/CD exfiltration to supply chain injection to victim exploitation, was completed in under 3 hours - likely all done by Claude. The threat actor moved methodically through BuddyBoss’s infrastructure: stealing CI/CD secrets, laterally moving to deployment servers, gaining root access on AWS, and ultimately pushing backdoored plugin updates to hundreds of WordPress sites via the legitimate distribution CDN.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">appcenter_key</code>, a single API key stored as a CI/CD secret, was the bridge between the GitHub compromise and the supply chain injection. Its theft at 16:27 UTC enabled everything that followed after 18:54 UTC.</p>
+
+<p>The use of Claude as an interactive attack assistant, documented in Part 1 of this research, lowered the technical barrier for the supply chain injection phase significantly.</p>
+
+<p>For defenders, the key takeaway is the speed. Ten minutes from SSH key theft to lateral movement. Twelve minutes from AWS access to root. Three hours from first exfiltration to first victim. CI/CD secrets, particularly those that grant access to software distribution infrastructure, represent a direct path from code repository compromise to supply chain attack.</p>
+
+<p>The speed here, we believe, is due to Claude performing the malice quickly and efficiently. We also used Claude to assist our analysis and whilst writing this blog. This is what Claude thinks of the Supply-Chain attack it caused:</p>
+
+<p><a href="/assets/images/buddyboss/5.png"><img src="/assets/images/buddyboss/5.png" alt="1" class="align-center img-border" /></a></p>
+<p class="figure-caption">Claude's insight</p>
+
+<p>If you’d like to read more about how Claude was leveraged, please read <a href="https://ctrlaltintel.com/research/BuddyBoss-1">Claude’s Supply-Chain Attack</a></p>
+
+<h1 id="iocs">IOCs</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Value</th>
+      <th>Context</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>IPv4</td>
+      <td><code class="language-plaintext highlighter-rouge">195.178.110[.]242</code></td>
+      <td>Primary C2 server (exfiltration receiver + reverse shell listener)</td>
+    </tr>
+    <tr>
+      <td>File</td>
+      <td><code class="language-plaintext highlighter-rouge">bp-loader.php</code></td>
+      <td>Platform plugin backdoor</td>
+    </tr>
+    <tr>
+      <td>SHA256</td>
+      <td><code class="language-plaintext highlighter-rouge">ddda12b545a7b817883641421cf6a213f4c5100effa40cdb55018efce11bbe42</code></td>
+      <td><code class="language-plaintext highlighter-rouge">bp-loader.php</code></td>
+    </tr>
+    <tr>
+      <td>File</td>
+      <td><code class="language-plaintext highlighter-rouge">functions.php</code></td>
+      <td>Theme backdoor</td>
+    </tr>
+    <tr>
+      <td>SHA256</td>
+      <td><code class="language-plaintext highlighter-rouge">5027a0e77eca13a5cc120d3e37262c4073452569ad341cd1558051b5a91ce144</code></td>
+      <td><code class="language-plaintext highlighter-rouge">functions.php</code></td>
+    </tr>
+    <tr>
+      <td>File</td>
+      <td><code class="language-plaintext highlighter-rouge">buddyboss-platform-pro.php</code></td>
+      <td>Standalone backdoor with upload capability</td>
+    </tr>
+    <tr>
+      <td>GET Parameter</td>
+      <td><code class="language-plaintext highlighter-rouge">bb_platform_debug</code></td>
+      <td>Platform backdoor trigger</td>
+    </tr>
+    <tr>
+      <td>GET Parameter</td>
+      <td><code class="language-plaintext highlighter-rouge">bb_theme_compat</code></td>
+      <td>Theme backdoor trigger</td>
+    </tr>
+    <tr>
+      <td>Auth Token</td>
+      <td><code class="language-plaintext highlighter-rouge">a9f2c8e1</code></td>
+      <td>Shared authentication key across all backdoor variants</td>
+    </tr>
+    <tr>
+      <td>File</td>
+      <td><code class="language-plaintext highlighter-rouge">bp-compatibility.php</code></td>
+      <td>Standalone webshell (v2.20.4)</td>
+    </tr>
+    <tr>
+      <td>Workflow Name</td>
+      <td><code class="language-plaintext highlighter-rouge">Platform Compatibility Check</code></td>
+      <td>Name of the malicious GitHub Actions workflow</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The malicious PHP modules have been added to our <a href="https://github.com/ctrlaltint3l/intelligence/tree/main/BuddyBoss/Backdoor">Github</a>.</p>
+
+<h1 id="mitre-attck">MITRE ATT&amp;CK</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tactic</th>
+      <th>ID</th>
+      <th>Technique</th>
+      <th>Observed Activity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Initial Access</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1195/002/">T1195.002</a></td>
+      <td>Supply Chain Compromise: Compromise Software Supply Chain</td>
+      <td>Malicious workflow injected into BuddyBoss CI/CD; backdoored plugins deployed via Mothership CDN</td>
+    </tr>
+    <tr>
+      <td><strong>Initial Access</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1078/004/">T1078.004</a></td>
+      <td>Valid Accounts: Cloud Accounts</td>
+      <td>KartikSuthar’s GitHub identity used to push to protected <code class="language-plaintext highlighter-rouge">master</code> branch</td>
+    </tr>
+    <tr>
+      <td><strong>Execution</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1059/004/">T1059.004</a></td>
+      <td>Command and Scripting Interpreter: Unix Shell</td>
+      <td>Reverse shell via <code class="language-plaintext highlighter-rouge">proc_open('/bin/bash')</code>, command exec via <code class="language-plaintext highlighter-rouge">shell_exec()</code></td>
+    </tr>
+    <tr>
+      <td><strong>Persistence</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1098/004/">T1098.004</a></td>
+      <td>Account Manipulation: SSH Authorized Keys</td>
+      <td><code class="language-plaintext highlighter-rouge">ctf-pivot</code> Ed25519 key planted in <code class="language-plaintext highlighter-rouge">/root/.ssh/authorized_keys</code> on AWS server</td>
+    </tr>
+    <tr>
+      <td><strong>Persistence</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1505/003/">T1505.003</a></td>
+      <td>Server Software Component: Web Shell</td>
+      <td>PHP backdoor with exec, eval, file read/write capabilities embedded in WordPress plugin/theme</td>
+    </tr>
+    <tr>
+      <td><strong>Privilege Escalation</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1548/003/">T1548.003</a></td>
+      <td>Abuse Elevation Control Mechanism: Sudo</td>
+      <td>Escalated from <code class="language-plaintext highlighter-rouge">deployment</code> to <code class="language-plaintext highlighter-rouge">root</code> on AWS via <code class="language-plaintext highlighter-rouge">sudo</code></td>
+    </tr>
+    <tr>
+      <td><strong>Defense Evasion</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1036/005/">T1036.005</a></td>
+      <td>Masquerading: Match Legitimate Name</td>
+      <td>Workflow named “Platform Compatibility Check”; backdoor disguised as “telemetry for usage analytics”</td>
+    </tr>
+    <tr>
+      <td><strong>Defense Evasion</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1027/">T1027</a></td>
+      <td>Obfuscated Files or Information</td>
+      <td>Base64 encoding of exfiltrated data and command parameters</td>
+    </tr>
+    <tr>
+      <td><strong>Credential Access</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1552/001/">T1552.001</a></td>
+      <td>Unsecured Credentials: Credentials in Files</td>
+      <td>CI/CD secrets, <code class="language-plaintext highlighter-rouge">.env</code> files, <code class="language-plaintext highlighter-rouge">wp-config.php</code> extraction</td>
+    </tr>
+    <tr>
+      <td><strong>Credential Access</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1552/004/">T1552.004</a></td>
+      <td>Unsecured Credentials: Private Keys</td>
+      <td>Ed25519 SSH key stolen from <code class="language-plaintext highlighter-rouge">csr-tool</code> CI/CD secrets</td>
+    </tr>
+    <tr>
+      <td><strong>Credential Access</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1528/">T1528</a></td>
+      <td>Steal Application Access Token</td>
+      <td>GitHub PAT, GitLab PAT, Caseproof <code class="language-plaintext highlighter-rouge">appcenter_key</code>, Apple App Store Connect credentials</td>
+    </tr>
+    <tr>
+      <td><strong>Discovery</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1018/">T1018</a></td>
+      <td>Remote System Discovery</td>
+      <td><code class="language-plaintext highlighter-rouge">/deep_recon</code> file enumeration on Hetzner; <code class="language-plaintext highlighter-rouge">/root_recon</code> on AWS</td>
+    </tr>
+    <tr>
+      <td><strong>Discovery</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1087/001/">T1087.001</a></td>
+      <td>Account Discovery: Local Account</td>
+      <td><code class="language-plaintext highlighter-rouge">id</code>, <code class="language-plaintext highlighter-rouge">whoami</code>, SSH key enumeration on all compromised hosts</td>
+    </tr>
+    <tr>
+      <td><strong>Lateral Movement</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1021/004/">T1021.004</a></td>
+      <td>Remote Services: SSH</td>
+      <td>C2 to Hetzner (stolen key); C2 to AWS (stolen password); SSH keys from victim sites</td>
+    </tr>
+    <tr>
+      <td><strong>Collection</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1005/">T1005</a></td>
+      <td>Data from Local System</td>
+      <td>Database credentials, WordPress keys, environment variables, Laravel <code class="language-plaintext highlighter-rouge">.env</code> files</td>
+    </tr>
+    <tr>
+      <td><strong>Exfiltration</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1041/">T1041</a></td>
+      <td>Exfiltration Over C2 Channel</td>
+      <td>All data exfiltrated via HTTP POST to C2 at <code class="language-plaintext highlighter-rouge">195.178.110[.]242:8443</code></td>
+    </tr>
+    <tr>
+      <td><strong>Exfiltration</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1020/">T1020</a></td>
+      <td>Automated Exfiltration</td>
+      <td>Non-blocking auto-exfil on first WordPress page load after plugin activation, during Github Actions</td>
+    </tr>
+    <tr>
+      <td><strong>Command and Control</strong></td>
+      <td><a href="https://attack.mitre.org/techniques/T1071/001/">T1071.001</a></td>
+      <td>Application Layer Protocol: Web Protocols</td>
+      <td>HTTP-based C2 for exfiltration and command execution</td>
+    </tr>
+  </tbody>
+</table>
+
+          
+        </section>
+
+        
+          <aside class="page__post-toc" aria-label="On this page">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#cicd-pipeline-compromise">CI/CD Pipeline Compromise</a>
+    <ul>
+      <li><a href="#the-malicious-workflow">The Malicious Workflow</a></li>
+      <li><a href="#the-push-identity">The Push Identity</a></li>
+      <li><a href="#why-this-was-hard-to-detect">Why This Was Hard to Detect</a></li>
+    </ul>
+  </li>
+  <li><a href="#lateral-movement">Lateral Movement</a>
+    <ul>
+      <li><a href="#hetzner-server-95217100226">Hetzner Server (95.217.100.226)</a>
+        <ul>
+          <li><a href="#root-access">Root Access</a></li>
+        </ul>
+      </li>
+      <li><a href="#additional-credential-theft">Additional Credential Theft</a></li>
+    </ul>
+  </li>
+  <li><a href="#supply-chain-injection">Supply Chain Injection</a></li>
+  <li><a href="#the-backdoors">The Backdoors</a>
+    <ul>
+      <li><a href="#automatic-credential-exfiltration">Automatic Credential Exfiltration</a></li>
+      <li><a href="#interactive-backdoor">Interactive Backdoor</a></li>
+    </ul>
+  </li>
+  <li><a href="#victim-impact">Victim Impact</a>
+    <ul>
+      <li><a href="#first-callbacks">First Callbacks</a></li>
+    </ul>
+  </li>
+  <li><a href="#the-c2-infrastructure">The C2 Infrastructure</a></li>
+  <li><a href="#timeline">Timeline</a></li>
+  <li><a href="#unanswered-questions">Unanswered Questions</a>
+    <ul>
+      <li><a href="#was-the-github-repository-source-code-backdoored">Was the GitHub Repository Source Code Backdoored?</a></li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#iocs">IOCs</a></li>
+  <li><a href="#mitre-attck">MITRE ATT&amp;CK</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+      </div>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+  
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      
+      
+      <a href="/tags/#threat-research" class="page__taxonomy-item" rel="tag">Threat Research</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+  
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      
+      
+      <a href="/categories/#threat-research" class="page__taxonomy-item" rel="tag">Threat Research</a>
+    
+    </span>
+  </p>
+
+
+        
+          <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2026-04-03T00:00:00+00:00">April 3, 2026</time></p>
+        
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/research/BuddyBoss-1/" class="pagination--pager" title="The BuddyBoss Attack: Claude’s Supply-Chain Attack
+">Previous</a>
+    
+    
+      <a href="/research/ProxyPCP/" class="pagination--pager" title="Supply-Chain Attacks, TP-Link devices &amp; a pair of socks
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  <div class="page__back-link">
+    <a href="/categories/#research">&larr; View all research</a>
+  </div>
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap"><form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term..." />
+  </form>
+  <div id="results" class="results"></div></div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-inner">
+  <div class="footer__brand">
+    <span class="footer__title">Ctrl-Alt-Intel</span>
+    <span class="footer__sep">&mdash;</span>
+    <span class="footer__tagline">Threat Research</span>
+  </div>
+  <div class="footer__links">
+    
+      
+        
+          <a href="https://github.com/ctrlaltint3l" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a>
+        
+      
+    
+  </div>
+  <div class="footer__copyright">
+    &copy; 2026 Ctrl-Alt-Intel
+  </div>
+</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+  <script src="https://kit.fontawesome.com/4eee35f757.js"></script>
+
+
+
+  <script src="/assets/js/post-code.js"></script>
+
+
+
+
+<script src="/assets/js/lunr/lunr.min.js"></script>
+<script src="/assets/js/lunr/lunr-store.js"></script>
+<script src="/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-S4H3NGY8ZW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-S4H3NGY8ZW', { 'anonymize_ip': false});
+</script>
+
+
+
+
+
+
+
+
+
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"77117b15403e44e4b4422b85071c0138","r":1}' crossorigin="anonymous"></script>
+</body>
+</html>

@@ -7,59 +7,13 @@
     versions across 323 packages — most of the @antv ecosystem and a long tail of standalone
     neighbors. The bun-based dropper harvested CI/CD secrets and self-propagated via npm.
   story: |
-    Hundreds of npm packages from Alibaba's @antv data-visualization stack —
-    plus a long tail of widely used JavaScript utilities that happened to share
-    the same maintainer account — were hijacked over a 90-minute stretch on the
-    morning of May 19, 2026, and republished as a self-spreading credential
-    stealer.
+    Hundreds of npm packages from Alibaba's @antv data-visualization stack, plus a long tail of widely used JavaScript utilities that happened to share the same maintainer account, were hijacked over a 90-minute stretch on the morning of May 19, 2026, and republished as a self-spreading credential stealer.
 
-    The packages were all owned by an npm account called `atool`, the shared
-    publishing handle behind the @antv namespace, several smaller scopes, and a
-    grab-bag of standalone libraries including `echarts-for-react`,
-    `timeago.js`, and `size-sensor`. Researchers at Socket, who first reported
-    the activity, said the attacker pushed 639 malicious versions across 323
-    packages in two automated waves between 01:39 and 02:56 UTC. SafeDep and
-    StepSecurity confirmed roughly the same scope. Wiz, which named the
-    attacker TeamPCP, said the broader "Mini Shai-Hulud" wave that day reached
-    1,055 versions across 502 packages spanning npm, PyPI, and Composer — most
-    of it driven by this single compromised account.
+    The packages were all owned by an npm account called `atool`, the shared publishing handle behind the @antv namespace, several smaller scopes, and a grab-bag of standalone libraries including `echarts-for-react`, `timeago.js`, and `size-sensor`. Researchers at Socket, who first reported the activity, said the attacker pushed 639 malicious versions across 323 packages in two automated waves between 01:39 and 02:56 UTC; npm's own publication records still account for 566 of those versions across 283 packages, in two bursts at 01:56 and 02:05. SafeDep and StepSecurity confirmed roughly the same scope. Wiz, which named the attacker TeamPCP, said the broader "Mini Shai-Hulud" wave that day reached 1,055 versions across 502 packages spanning npm, PyPI, and Composer, most of it driven by this single compromised account.
 
-    According to Socket, the attacker used two delivery paths. Most packages had
-    their `package.json` rewritten with a `preinstall` or `postinstall` of
-    `bun run index.js`, with the script dropped at the package root. A second
-    set instead pointed at a poisoned commit in the `antvis/G2` GitHub
-    repository through `optionalDependencies`, where a `prepare` hook ran the
-    same code. The payload itself was a half-megabyte, heavily obfuscated Bun
-    script that walked the disk for credentials covering every major cloud
-    provider, Kubernetes, HashiCorp Vault, SSH, and database connection files,
-    then read `/proc/*/mem` on GitHub Actions runners to pull masked CI/CD
-    secrets out of the `Runner.Worker` process in plaintext.
+    According to Socket, the attacker used two delivery paths. Most packages had their `package.json` rewritten with a `preinstall` or `postinstall` of `bun run index.js`, with the script dropped at the package root. A second set instead pointed at a poisoned commit in the `antvis/G2` GitHub repository through `optionalDependencies`, where a `prepare` hook ran the same code. The payload was a half-megabyte, heavily obfuscated Bun script that walked the disk for credentials covering every major cloud provider, Kubernetes, HashiCorp Vault, SSH, and database connection files, then read `/proc/*/mem` on GitHub Actions runners to pull masked CI/CD secrets out of the `Runner.Worker` process in plaintext. It behaved like a worm: given any usable npm token, it would validate the credential, enumerate every package the account could publish, fetch each package's latest tarball, inject the same dropper, and republish. Exfiltration ran to `t.m-kosche.com` over HTTPS disguised as OpenTelemetry trace traffic, with bodies wrapped in AES-256-GCM and RSA-OAEP, falling back to GitHub itself when that channel failed and committing harvested data to public repositories on stolen developer accounts. Socket counted between 2,200 and 2,500 such repositories by the end of the day. On infected hosts the payload also rewrote editor and CI configuration files and, on macOS, registered a LaunchAgent for a backdoor named `kitty`.
 
-    The payload behaved like a worm. Given any usable npm token, it would
-    validate the credential, enumerate every package the account could publish,
-    fetch each package's latest tarball, inject the same dropper, and republish.
-    Exfiltration ran to `t.m-kosche.com` over HTTPS disguised as OpenTelemetry
-    trace traffic, with bodies wrapped in AES-256-GCM and RSA-OAEP. When the
-    HTTPS channel failed, the malware fell back to GitHub itself, committing
-    harvested data to public repositories on stolen developer accounts. The
-    repositories were named under a Dune theme, with the campaign's banner
-    reversed in the description. Socket counted between 2,200 and 2,500 such
-    repositories by the end of the day. On infected hosts, the payload also
-    rewrote editor and CI configuration files and, on macOS, registered a
-    LaunchAgent for a backdoor named `kitty`.
-
-    Socket said it flagged most malicious versions within six to twelve minutes
-    of publish, with a median of 6.7 minutes, and npm reclassified them as known
-    malware. In its own writeup, Wiz attributed the operation to TeamPCP at
-    moderate confidence based on shared infrastructure, the `firedalazer`
-    dead-drop tag, payload kinship with other campaigns, and reuse of the
-    `kitty` backdoor and Dune-themed repositories elsewhere in the same wave.
-    The same backdoor surfaced a few hours later in the Nx Console VS Code
-    extension compromise (see [[nx-console]]), and Wiz said credentials stolen
-    in the @antv wave were later used to publish a malicious Microsoft Python
-    SDK to PyPI (see [[durabletask-pypi]]). The cross-ecosystem aggregate lives
-    on [[shai-hulud-here-we-go-again]]; this record holds the @antv-account
-    evidence.
+    Socket said it flagged most malicious versions within six to twelve minutes of publish, with a median of 6.7 minutes, and npm reclassified them as known malware. Wiz attributed the operation to TeamPCP at moderate confidence based on shared infrastructure, the `firedalazer` dead-drop tag, payload kinship with other campaigns, and reuse of the `kitty` backdoor and Dune-themed repositories elsewhere in the same wave. The same backdoor surfaced a few hours later in the Nx Console VS Code extension compromise (see [[nx-console]]), and Wiz said credentials stolen in the @antv wave were later used to publish a malicious Microsoft Python SDK to PyPI (see [[durabletask-pypi]]). The cross-ecosystem aggregate lives on [[shai-hulud-here-we-go-again]]; this record holds the @antv-account evidence.
   start_date: 2026-05-19
   end_date: 2026-05-19
   target:
@@ -132,6 +86,18 @@
   - Compromised maintainer was the shared npm account `atool` per Socket. Wiz tracked
     the same account's GitHub credentials being reused to enter the
     microsoft/durabletask-python repository later the same day.
+  - The per-package version lists here were derived from npm's own publication times
+    rather than from a published table. Publication stamps for the affected scopes fall
+    into two tight bursts, 283 releases at 01:56 UTC and 283 more at 02:05 to 02:06 UTC,
+    one per package in each. Those 566 versions across 283 packages are recorded as
+    affected, against Socket's count of 639 across 323. The shortfall is packages whose
+    npm records are gone entirely, leaving no publication time to read. Spot checks
+    against StepSecurity's published examples agree exactly.
+  - Three releases on the same day fall outside the bursts, at 01:44, 01:47, and 01:49
+    UTC, and are still served by npm. Their archives were downloaded and contain none of
+    the campaign's files and no reference to its collection host, so they are recorded as
+    clean pre-attack baselines rather than affected versions. A window drawn from the
+    01:39 start time some reports give would have swept them in.
   - Socket's count of 639 weaponized versions across 323 unique packages is the most
     inclusive published number. Lower counts elsewhere (SafeDep 637/314, StepSecurity
     500+, Wiz 400+ @antv) reflect earlier or scope-limited tallies. The atool account
@@ -150,17 +116,3620 @@
     and actions-cool/maintain-one-comment using shared infrastructure, plus the
     nrwl.angular-console VS Code extension v18.95.0 (tracked separately as nx-console).
   artifacts:
-  - id: antv-namespace
-    name: '@antv namespace'
-    package: '@antv/*'
+  - id: antv-a8
+    name: '@antv/a8'
+    package: '@antv/a8'
     ecosystem: npm
     kind: source_archive
     start_date: 2026-05-19
     end_date: 2026-05-19
-    notes:
-    - Includes @antv/g2, @antv/g6, @antv/x6, @antv/l7, @antv/s2, @antv/f2, @antv/g,
-      @antv/g2plot, @antv/graphin, @antv/data-set, and roughly 150 additional supporting
-      libraries; per-version coverage is enumerated in the Socket and StepSecurity posts.
+    versions:
+    - 0.1.1
+    - 0.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/a8
+      role: distribution
+  - id: antv-adjust
+    name: '@antv/adjust'
+    package: '@antv/adjust'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.5
+    - 0.4.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/adjust
+      role: distribution
+  - id: antv-algorithm
+    name: '@antv/algorithm'
+    package: '@antv/algorithm'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.26
+    - 0.3.26
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/algorithm
+      role: distribution
+  - id: antv-async-hook
+    name: '@antv/async-hook'
+    package: '@antv/async-hook'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.3.9
+    - 2.4.9
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/async-hook
+      role: distribution
+  - id: antv-attr
+    name: '@antv/attr'
+    package: '@antv/attr'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.4.5
+    - 0.5.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/attr
+      role: distribution
+  - id: antv-ava
+    name: '@antv/ava'
+    package: '@antv/ava'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.5.1
+    - 3.6.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/ava
+      role: distribution
+  - id: antv-ava-react
+    name: '@antv/ava-react'
+    package: '@antv/ava-react'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.4.2
+    - 3.5.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/ava-react
+      role: distribution
+  - id: antv-awards
+    name: '@antv/awards'
+    package: '@antv/awards'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.9
+    - 0.2.9
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/awards
+      role: distribution
+  - id: antv-calendar-heatmap
+    name: '@antv/calendar-heatmap'
+    package: '@antv/calendar-heatmap'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.2
+    - 1.3.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/calendar-heatmap
+      role: distribution
+  - id: antv-chart-linter
+    name: '@antv/chart-linter'
+    package: '@antv/chart-linter'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.6
+    - 1.3.6
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/chart-linter
+      role: distribution
+  - id: antv-chart-node-g6
+    name: '@antv/chart-node-g6'
+    package: '@antv/chart-node-g6'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.4
+    - 0.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/chart-node-g6
+      role: distribution
+  - id: antv-chart-visualization-skills
+    name: '@antv/chart-visualization-skills'
+    package: '@antv/chart-visualization-skills'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.3
+    - 0.3.3
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/chart-visualization-skills
+      role: distribution
+  - id: antv-ckb
+    name: '@antv/ckb'
+    package: '@antv/ckb'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.4
+    - 2.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/ckb
+      role: distribution
+  - id: antv-color-schema
+    name: '@antv/color-schema'
+    package: '@antv/color-schema'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.3
+    - 0.4.3
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/color-schema
+      role: distribution
+  - id: antv-color-util
+    name: '@antv/color-util'
+    package: '@antv/color-util'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.6
+    - 2.2.6
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/color-util
+      role: distribution
+  - id: antv-component
+    name: '@antv/component'
+    package: '@antv/component'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.11
+    - 2.3.11
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/component
+      role: distribution
+  - id: antv-coord
+    name: '@antv/coord'
+    package: '@antv/coord'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.5.7
+    - 0.6.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/coord
+      role: distribution
+  - id: antv-d3-color
+    name: '@antv/d3-color'
+    package: '@antv/d3-color'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.0
+    - 1.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/d3-color
+      role: distribution
+  - id: antv-d3-interpolate
+    name: '@antv/d3-interpolate'
+    package: '@antv/d3-interpolate'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.3
+    - 1.2.3
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/d3-interpolate
+      role: distribution
+  - id: antv-data-samples
+    name: '@antv/data-samples'
+    package: '@antv/data-samples'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.1
+    - 1.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/data-samples
+      role: distribution
+  - id: antv-data-set
+    name: '@antv/data-set'
+    package: '@antv/data-set'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.12.8
+    - 0.13.8
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/data-set
+      role: distribution
+  - id: antv-data-wizard
+    name: '@antv/data-wizard'
+    package: '@antv/data-wizard'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.4
+    - 2.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/data-wizard
+      role: distribution
+  - id: antv-dipper-component
+    name: '@antv/dipper-component'
+    package: '@antv/dipper-component'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.4
+    - 0.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/dipper-component
+      role: distribution
+  - id: antv-dipper-hooks
+    name: '@antv/dipper-hooks'
+    package: '@antv/dipper-hooks'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.1
+    - 0.4.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/dipper-hooks
+      role: distribution
+  - id: antv-dipper-map
+    name: '@antv/dipper-map'
+    package: '@antv/dipper-map'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.10
+    - 1.2.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/dipper-map
+      role: distribution
+  - id: antv-dom-util
+    name: '@antv/dom-util'
+    package: '@antv/dom-util'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.4
+    - 2.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/dom-util
+      role: distribution
+  - id: antv-dumi-theme-antv
+    name: '@antv/dumi-theme-antv'
+    package: '@antv/dumi-theme-antv'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.9.4
+    - 0.10.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/dumi-theme-antv
+      role: distribution
+  - id: antv-dw-analyzer
+    name: '@antv/dw-analyzer'
+    package: '@antv/dw-analyzer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.5
+    - 1.3.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/dw-analyzer
+      role: distribution
+  - id: antv-dw-random
+    name: '@antv/dw-random'
+    package: '@antv/dw-random'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.7
+    - 1.3.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/dw-random
+      role: distribution
+  - id: antv-dw-transform
+    name: '@antv/dw-transform'
+    package: '@antv/dw-transform'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.7
+    - 1.3.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/dw-transform
+      role: distribution
+  - id: antv-dw-util
+    name: '@antv/dw-util'
+    package: '@antv/dw-util'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.4
+    - 1.3.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/dw-util
+      role: distribution
+  - id: antv-event-emitter
+    name: '@antv/event-emitter'
+    package: '@antv/event-emitter'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.3
+    - 0.3.3
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/event-emitter
+      role: distribution
+  - id: antv-expr
+    name: '@antv/expr'
+    package: '@antv/expr'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.2
+    - 1.2.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/expr
+      role: distribution
+  - id: antv-f-charts
+    name: '@antv/f-charts'
+    package: '@antv/f-charts'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.0
+    - 0.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f-charts
+      role: distribution
+  - id: antv-f-engine
+    name: '@antv/f-engine'
+    package: '@antv/f-engine'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.11.0
+    - 1.12.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f-engine
+      role: distribution
+  - id: antv-f-lottie
+    name: '@antv/f-lottie'
+    package: '@antv/f-lottie'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.11.0
+    - 1.12.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f-lottie
+      role: distribution
+  - id: antv-f-my
+    name: '@antv/f-my'
+    package: '@antv/f-my'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.11.0
+    - 1.12.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f-my
+      role: distribution
+  - id: antv-f-react
+    name: '@antv/f-react'
+    package: '@antv/f-react'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.11.0
+    - 1.12.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f-react
+      role: distribution
+  - id: antv-f-test-utils
+    name: '@antv/f-test-utils'
+    package: '@antv/f-test-utils'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.9
+    - 1.2.9
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f-test-utils
+      role: distribution
+  - id: antv-f-vue
+    name: '@antv/f-vue'
+    package: '@antv/f-vue'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.11.0
+    - 1.12.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f-vue
+      role: distribution
+  - id: antv-f-wx
+    name: '@antv/f-wx'
+    package: '@antv/f-wx'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.11.0
+    - 1.12.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f-wx
+      role: distribution
+  - id: antv-f2
+    name: '@antv/f2'
+    package: '@antv/f2'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 5.15.0
+    - 5.16.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f2
+      role: distribution
+  - id: antv-f2-algorithm
+    name: '@antv/f2-algorithm'
+    package: '@antv/f2-algorithm'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 5.8.0
+    - 5.9.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f2-algorithm
+      role: distribution
+  - id: antv-f2-canvas
+    name: '@antv/f2-canvas'
+    package: '@antv/f2-canvas'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.5
+    - 1.2.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f2-canvas
+      role: distribution
+  - id: antv-f2-context
+    name: '@antv/f2-context'
+    package: '@antv/f2-context'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.1
+    - 0.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f2-context
+      role: distribution
+  - id: antv-f2-graphic
+    name: '@antv/f2-graphic'
+    package: '@antv/f2-graphic'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.16
+    - 0.2.16
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f2-graphic
+      role: distribution
+  - id: antv-f2-my
+    name: '@antv/f2-my'
+    package: '@antv/f2-my'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 4.1.52
+    - 4.2.52
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f2-my
+      role: distribution
+  - id: antv-f2-react
+    name: '@antv/f2-react'
+    package: '@antv/f2-react'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 5.15.0
+    - 5.16.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f2-react
+      role: distribution
+  - id: antv-f2-site
+    name: '@antv/f2-site'
+    package: '@antv/f2-site'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 4.1.42
+    - 4.2.42
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f2-site
+      role: distribution
+  - id: antv-f2-vue
+    name: '@antv/f2-vue'
+    package: '@antv/f2-vue'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 4.1.33
+    - 4.2.33
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f2-vue
+      role: distribution
+  - id: antv-f2-wordcloud
+    name: '@antv/f2-wordcloud'
+    package: '@antv/f2-wordcloud'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 5.15.0
+    - 5.16.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f2-wordcloud
+      role: distribution
+  - id: antv-f2-wx
+    name: '@antv/f2-wx'
+    package: '@antv/f2-wx'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 4.1.51
+    - 4.2.51
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f2-wx
+      role: distribution
+  - id: antv-f6
+    name: '@antv/f6'
+    package: '@antv/f6'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.19
+    - 0.2.19
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f6
+      role: distribution
+  - id: antv-f6-alipay
+    name: '@antv/f6-alipay'
+    package: '@antv/f6-alipay'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.7
+    - 0.2.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f6-alipay
+      role: distribution
+  - id: antv-f6-core
+    name: '@antv/f6-core'
+    package: '@antv/f6-core'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.2
+    - 0.2.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f6-core
+      role: distribution
+  - id: antv-f6-element
+    name: '@antv/f6-element'
+    package: '@antv/f6-element'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.1
+    - 0.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f6-element
+      role: distribution
+  - id: antv-f6-hammerjs
+    name: '@antv/f6-hammerjs'
+    package: '@antv/f6-hammerjs'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.2
+    - 0.2.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f6-hammerjs
+      role: distribution
+  - id: antv-f6-plugin
+    name: '@antv/f6-plugin'
+    package: '@antv/f6-plugin'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.6
+    - 1.2.6
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f6-plugin
+      role: distribution
+  - id: antv-f6-ui
+    name: '@antv/f6-ui'
+    package: '@antv/f6-ui'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.3
+    - 1.2.3
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f6-ui
+      role: distribution
+  - id: antv-f6-wx
+    name: '@antv/f6-wx'
+    package: '@antv/f6-wx'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.7
+    - 0.2.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/f6-wx
+      role: distribution
+  - id: antv-g
+    name: '@antv/g'
+    package: '@antv/g'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 6.4.1
+    - 6.5.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g
+      role: distribution
+  - id: antv-g-base
+    name: '@antv/g-base'
+    package: '@antv/g-base'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.6.16
+    - 0.7.16
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-base
+      role: distribution
+  - id: antv-g-camera-api
+    name: '@antv/g-camera-api'
+    package: '@antv/g-camera-api'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.45
+    - 2.2.45
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-camera-api
+      role: distribution
+  - id: antv-g-canvas
+    name: '@antv/g-canvas'
+    package: '@antv/g-canvas'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.3.0
+    - 2.4.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-canvas
+      role: distribution
+  - id: antv-g-canvaskit
+    name: '@antv/g-canvaskit'
+    package: '@antv/g-canvaskit'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.1
+    - 1.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-canvaskit
+      role: distribution
+  - id: antv-g-compat
+    name: '@antv/g-compat'
+    package: '@antv/g-compat'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.11
+    - 1.2.11
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-compat
+      role: distribution
+  - id: antv-g-components
+    name: '@antv/g-components'
+    package: '@antv/g-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.42
+    - 2.2.42
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-components
+      role: distribution
+  - id: antv-g-css-layout-api
+    name: '@antv/g-css-layout-api'
+    package: '@antv/g-css-layout-api'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.38
+    - 1.2.38
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-css-layout-api
+      role: distribution
+  - id: antv-g-css-typed-om-api
+    name: '@antv/g-css-typed-om-api'
+    package: '@antv/g-css-typed-om-api'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.38
+    - 1.2.38
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-css-typed-om-api
+      role: distribution
+  - id: antv-g-device-api
+    name: '@antv/g-device-api'
+    package: '@antv/g-device-api'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.7.13
+    - 1.8.13
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-device-api
+      role: distribution
+  - id: antv-g-dom-mutation-observer-api
+    name: '@antv/g-dom-mutation-observer-api'
+    package: '@antv/g-dom-mutation-observer-api'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.42
+    - 2.2.42
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-dom-mutation-observer-api
+      role: distribution
+  - id: antv-g-gesture
+    name: '@antv/g-gesture'
+    package: '@antv/g-gesture'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.1.42
+    - 3.2.42
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-gesture
+      role: distribution
+  - id: antv-g-image-exporter
+    name: '@antv/g-image-exporter'
+    package: '@antv/g-image-exporter'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.42
+    - 1.2.42
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-image-exporter
+      role: distribution
+  - id: antv-g-layout-blocklike
+    name: '@antv/g-layout-blocklike'
+    package: '@antv/g-layout-blocklike'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.8.49
+    - 1.9.49
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-layout-blocklike
+      role: distribution
+  - id: antv-g-lite
+    name: '@antv/g-lite'
+    package: '@antv/g-lite'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.8.0
+    - 2.9.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-lite
+      role: distribution
+  - id: antv-g-lottie-player
+    name: '@antv/g-lottie-player'
+    package: '@antv/g-lottie-player'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.1
+    - 1.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-lottie-player
+      role: distribution
+  - id: antv-g-math
+    name: '@antv/g-math'
+    package: '@antv/g-math'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.2.0
+    - 3.3.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-math
+      role: distribution
+  - id: antv-g-mobile
+    name: '@antv/g-mobile'
+    package: '@antv/g-mobile'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.5
+    - 1.3.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-mobile
+      role: distribution
+  - id: antv-g-mobile-canvas
+    name: '@antv/g-mobile-canvas'
+    package: '@antv/g-mobile-canvas'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.1
+    - 1.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-mobile-canvas
+      role: distribution
+  - id: antv-g-mobile-canvas-element
+    name: '@antv/g-mobile-canvas-element'
+    package: '@antv/g-mobile-canvas-element'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.42
+    - 1.2.42
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-mobile-canvas-element
+      role: distribution
+  - id: antv-g-mobile-svg
+    name: '@antv/g-mobile-svg'
+    package: '@antv/g-mobile-svg'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.1
+    - 1.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-mobile-svg
+      role: distribution
+  - id: antv-g-mobile-webgl
+    name: '@antv/g-mobile-webgl'
+    package: '@antv/g-mobile-webgl'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.1
+    - 1.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-mobile-webgl
+      role: distribution
+  - id: antv-g-pattern
+    name: '@antv/g-pattern'
+    package: '@antv/g-pattern'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.42
+    - 2.2.42
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-pattern
+      role: distribution
+  - id: antv-g-perf
+    name: '@antv/g-perf'
+    package: '@antv/g-perf'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.0
+    - 1.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-perf
+      role: distribution
+  - id: antv-g-plugin-3d
+    name: '@antv/g-plugin-3d'
+    package: '@antv/g-plugin-3d'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-3d
+      role: distribution
+  - id: antv-g-plugin-a11y
+    name: '@antv/g-plugin-a11y'
+    package: '@antv/g-plugin-a11y'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.5.1
+    - 1.6.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-a11y
+      role: distribution
+  - id: antv-g-plugin-annotation
+    name: '@antv/g-plugin-annotation'
+    package: '@antv/g-plugin-annotation'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.3.0
+    - 1.4.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-annotation
+      role: distribution
+  - id: antv-g-plugin-box2d
+    name: '@antv/g-plugin-box2d'
+    package: '@antv/g-plugin-box2d'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-box2d
+      role: distribution
+  - id: antv-g-plugin-canvas-path-generator
+    name: '@antv/g-plugin-canvas-path-generator'
+    package: '@antv/g-plugin-canvas-path-generator'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.26
+    - 2.3.26
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-canvas-path-generator
+      role: distribution
+  - id: antv-g-plugin-canvas-picker
+    name: '@antv/g-plugin-canvas-picker'
+    package: '@antv/g-plugin-canvas-picker'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.4.1
+    - 2.5.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-canvas-picker
+      role: distribution
+  - id: antv-g-plugin-canvas-renderer
+    name: '@antv/g-plugin-canvas-renderer'
+    package: '@antv/g-plugin-canvas-renderer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.6.1
+    - 2.7.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-canvas-renderer
+      role: distribution
+  - id: antv-g-plugin-canvaskit-renderer
+    name: '@antv/g-plugin-canvaskit-renderer'
+    package: '@antv/g-plugin-canvaskit-renderer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.4.1
+    - 2.5.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-canvaskit-renderer
+      role: distribution
+  - id: antv-g-plugin-control
+    name: '@antv/g-plugin-control'
+    package: '@antv/g-plugin-control'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-control
+      role: distribution
+  - id: antv-g-plugin-css-select
+    name: '@antv/g-plugin-css-select'
+    package: '@antv/g-plugin-css-select'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-css-select
+      role: distribution
+  - id: antv-g-plugin-device-renderer
+    name: '@antv/g-plugin-device-renderer'
+    package: '@antv/g-plugin-device-renderer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.7.1
+    - 2.8.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-device-renderer
+      role: distribution
+  - id: antv-g-plugin-dom-interaction
+    name: '@antv/g-plugin-dom-interaction'
+    package: '@antv/g-plugin-dom-interaction'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.31
+    - 2.3.31
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-dom-interaction
+      role: distribution
+  - id: antv-g-plugin-dragndrop
+    name: '@antv/g-plugin-dragndrop'
+    package: '@antv/g-plugin-dragndrop'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-dragndrop
+      role: distribution
+  - id: antv-g-plugin-gesture
+    name: '@antv/g-plugin-gesture'
+    package: '@antv/g-plugin-gesture'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-gesture
+      role: distribution
+  - id: antv-g-plugin-gpgpu
+    name: '@antv/g-plugin-gpgpu'
+    package: '@antv/g-plugin-gpgpu'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.10.20
+    - 1.11.20
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-gpgpu
+      role: distribution
+  - id: antv-g-plugin-html-renderer
+    name: '@antv/g-plugin-html-renderer'
+    package: '@antv/g-plugin-html-renderer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.4.1
+    - 2.5.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-html-renderer
+      role: distribution
+  - id: antv-g-plugin-image-loader
+    name: '@antv/g-plugin-image-loader'
+    package: '@antv/g-plugin-image-loader'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.4.1
+    - 2.5.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-image-loader
+      role: distribution
+  - id: antv-g-plugin-matterjs
+    name: '@antv/g-plugin-matterjs'
+    package: '@antv/g-plugin-matterjs'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-matterjs
+      role: distribution
+  - id: antv-g-plugin-mobile-interaction
+    name: '@antv/g-plugin-mobile-interaction'
+    package: '@antv/g-plugin-mobile-interaction'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.42
+    - 1.2.42
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-mobile-interaction
+      role: distribution
+  - id: antv-g-plugin-physx
+    name: '@antv/g-plugin-physx'
+    package: '@antv/g-plugin-physx'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-physx
+      role: distribution
+  - id: antv-g-plugin-rough-canvas-renderer
+    name: '@antv/g-plugin-rough-canvas-renderer'
+    package: '@antv/g-plugin-rough-canvas-renderer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-rough-canvas-renderer
+      role: distribution
+  - id: antv-g-plugin-rough-svg-renderer
+    name: '@antv/g-plugin-rough-svg-renderer'
+    package: '@antv/g-plugin-rough-svg-renderer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-rough-svg-renderer
+      role: distribution
+  - id: antv-g-plugin-svg-picker
+    name: '@antv/g-plugin-svg-picker'
+    package: '@antv/g-plugin-svg-picker'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.46
+    - 2.2.46
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-svg-picker
+      role: distribution
+  - id: antv-g-plugin-svg-renderer
+    name: '@antv/g-plugin-svg-renderer'
+    package: '@antv/g-plugin-svg-renderer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.5.1
+    - 2.6.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-svg-renderer
+      role: distribution
+  - id: antv-g-plugin-webgl-device
+    name: '@antv/g-plugin-webgl-device'
+    package: '@antv/g-plugin-webgl-device'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.10.17
+    - 1.11.17
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-webgl-device
+      role: distribution
+  - id: antv-g-plugin-webgl-renderer
+    name: '@antv/g-plugin-webgl-renderer'
+    package: '@antv/g-plugin-webgl-renderer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.26
+    - 1.2.26
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-webgl-renderer
+      role: distribution
+  - id: antv-g-plugin-webgpu-device
+    name: '@antv/g-plugin-webgpu-device'
+    package: '@antv/g-plugin-webgpu-device'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.10.17
+    - 1.11.17
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-webgpu-device
+      role: distribution
+  - id: antv-g-plugin-yoga
+    name: '@antv/g-plugin-yoga'
+    package: '@antv/g-plugin-yoga'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.4.1
+    - 2.5.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-yoga
+      role: distribution
+  - id: antv-g-plugin-zdog-canvas-renderer
+    name: '@antv/g-plugin-zdog-canvas-renderer'
+    package: '@antv/g-plugin-zdog-canvas-renderer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-zdog-canvas-renderer
+      role: distribution
+  - id: antv-g-plugin-zdog-svg-renderer
+    name: '@antv/g-plugin-zdog-svg-renderer'
+    package: '@antv/g-plugin-zdog-svg-renderer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-plugin-zdog-svg-renderer
+      role: distribution
+  - id: antv-g-shader-components
+    name: '@antv/g-shader-components'
+    package: '@antv/g-shader-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.0
+    - 2.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-shader-components
+      role: distribution
+  - id: antv-g-svg
+    name: '@antv/g-svg'
+    package: '@antv/g-svg'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-svg
+      role: distribution
+  - id: antv-g-web-animations-api
+    name: '@antv/g-web-animations-api'
+    package: '@antv/g-web-animations-api'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.32
+    - 2.3.32
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-web-animations-api
+      role: distribution
+  - id: antv-g-web-components
+    name: '@antv/g-web-components'
+    package: '@antv/g-web-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-web-components
+      role: distribution
+  - id: antv-g-webgl
+    name: '@antv/g-webgl'
+    package: '@antv/g-webgl'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-webgl
+      role: distribution
+  - id: antv-g-webgl-compute
+    name: '@antv/g-webgl-compute'
+    package: '@antv/g-webgl-compute'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.1
+    - 0.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-webgl-compute
+      role: distribution
+  - id: antv-g-webgpu
+    name: '@antv/g-webgpu'
+    package: '@antv/g-webgpu'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-webgpu
+      role: distribution
+  - id: antv-g-webgpu-compiler
+    name: '@antv/g-webgpu-compiler'
+    package: '@antv/g-webgpu-compiler'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.8.2
+    - 0.9.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-webgpu-compiler
+      role: distribution
+  - id: antv-g-webgpu-core
+    name: '@antv/g-webgpu-core'
+    package: '@antv/g-webgpu-core'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.8.2
+    - 0.9.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-webgpu-core
+      role: distribution
+  - id: antv-g-webgpu-engine
+    name: '@antv/g-webgpu-engine'
+    package: '@antv/g-webgpu-engine'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.8.2
+    - 0.9.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-webgpu-engine
+      role: distribution
+  - id: antv-g-webgpu-raytracer
+    name: '@antv/g-webgpu-raytracer'
+    package: '@antv/g-webgpu-raytracer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.6.1
+    - 0.7.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-webgpu-raytracer
+      role: distribution
+  - id: antv-g-webgpu-unitchart
+    name: '@antv/g-webgpu-unitchart'
+    package: '@antv/g-webgpu-unitchart'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.6.1
+    - 0.7.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g-webgpu-unitchart
+      role: distribution
+  - id: antv-g2
+    name: '@antv/g2'
+    package: '@antv/g2'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 5.5.8
+    - 5.6.8
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g2
+      role: distribution
+  - id: antv-g2-brush
+    name: '@antv/g2-brush'
+    package: '@antv/g2-brush'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.2
+    - 0.2.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g2-brush
+      role: distribution
+  - id: antv-g2-extension-3d
+    name: '@antv/g2-extension-3d'
+    package: '@antv/g2-extension-3d'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.0
+    - 0.4.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g2-extension-3d
+      role: distribution
+  - id: antv-g2-extension-ava
+    name: '@antv/g2-extension-ava'
+    package: '@antv/g2-extension-ava'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.0
+    - 0.4.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g2-extension-ava
+      role: distribution
+  - id: antv-g2-extension-plot
+    name: '@antv/g2-extension-plot'
+    package: '@antv/g2-extension-plot'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.2
+    - 0.4.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g2-extension-plot
+      role: distribution
+  - id: antv-g2-plugin-slider
+    name: '@antv/g2-plugin-slider'
+    package: '@antv/g2-plugin-slider'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g2-plugin-slider
+      role: distribution
+  - id: antv-g2-ssr
+    name: '@antv/g2-ssr'
+    package: '@antv/g2-ssr'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.0
+    - 0.4.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g2-ssr
+      role: distribution
+  - id: antv-g2plot
+    name: '@antv/g2plot'
+    package: '@antv/g2plot'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.5.35
+    - 2.6.35
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g2plot
+      role: distribution
+  - id: antv-g2plot-schemas
+    name: '@antv/g2plot-schemas'
+    package: '@antv/g2plot-schemas'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.3.2
+    - 1.4.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g2plot-schemas
+      role: distribution
+  - id: antv-g6
+    name: '@antv/g6'
+    package: '@antv/g6'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 5.2.1
+    - 5.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6
+      role: distribution
+  - id: antv-g6-alipay
+    name: '@antv/g6-alipay'
+    package: '@antv/g6-alipay'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.1
+    - 0.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-alipay
+      role: distribution
+  - id: antv-g6-cli
+    name: '@antv/g6-cli'
+    package: '@antv/g6-cli'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.4
+    - 0.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-cli
+      role: distribution
+  - id: antv-g6-core
+    name: '@antv/g6-core'
+    package: '@antv/g6-core'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.9.24
+    - 0.10.24
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-core
+      role: distribution
+  - id: antv-g6-editor
+    name: '@antv/g6-editor'
+    package: '@antv/g6-editor'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.3.0
+    - 1.4.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-editor
+      role: distribution
+  - id: antv-g6-element
+    name: '@antv/g6-element'
+    package: '@antv/g6-element'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.9.25
+    - 0.10.25
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-element
+      role: distribution
+  - id: antv-g6-extension-3d
+    name: '@antv/g6-extension-3d'
+    package: '@antv/g6-extension-3d'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.23
+    - 0.3.23
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-extension-3d
+      role: distribution
+  - id: antv-g6-extension-react
+    name: '@antv/g6-extension-react'
+    package: '@antv/g6-extension-react'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.7
+    - 0.4.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-extension-react
+      role: distribution
+  - id: antv-g6-mobile
+    name: '@antv/g6-mobile'
+    package: '@antv/g6-mobile'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.2
+    - 0.3.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-mobile
+      role: distribution
+  - id: antv-g6-pc
+    name: '@antv/g6-pc'
+    package: '@antv/g6-pc'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.9.25
+    - 0.10.25
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-pc
+      role: distribution
+  - id: antv-g6-plugin
+    name: '@antv/g6-plugin'
+    package: '@antv/g6-plugin'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.9.25
+    - 0.10.25
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-plugin
+      role: distribution
+  - id: antv-g6-plugin-map-view
+    name: '@antv/g6-plugin-map-view'
+    package: '@antv/g6-plugin-map-view'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.4
+    - 0.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-plugin-map-view
+      role: distribution
+  - id: antv-g6-plugins
+    name: '@antv/g6-plugins'
+    package: '@antv/g6-plugins'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.9
+    - 1.2.9
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-plugins
+      role: distribution
+  - id: antv-g6-react-node
+    name: '@antv/g6-react-node'
+    package: '@antv/g6-react-node'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.5.8
+    - 1.6.8
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-react-node
+      role: distribution
+  - id: antv-g6-ssr
+    name: '@antv/g6-ssr'
+    package: '@antv/g6-ssr'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.1
+    - 0.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-ssr
+      role: distribution
+  - id: antv-g6-wx
+    name: '@antv/g6-wx'
+    package: '@antv/g6-wx'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.1
+    - 0.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/g6-wx
+      role: distribution
+  - id: antv-gatsby-theme
+    name: '@antv/gatsby-theme'
+    package: '@antv/gatsby-theme'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.0
+    - 0.3.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gatsby-theme
+      role: distribution
+  - id: antv-geo-coord
+    name: '@antv/geo-coord'
+    package: '@antv/geo-coord'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.8
+    - 1.2.8
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/geo-coord
+      role: distribution
+  - id: antv-gi-assets-advance
+    name: '@antv/gi-assets-advance'
+    package: '@antv/gi-assets-advance'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.6.22
+    - 2.7.22
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-advance
+      role: distribution
+  - id: antv-gi-assets-algorithm
+    name: '@antv/gi-assets-algorithm'
+    package: '@antv/gi-assets-algorithm'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.4.19
+    - 2.5.19
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-algorithm
+      role: distribution
+  - id: antv-gi-assets-basic
+    name: '@antv/gi-assets-basic'
+    package: '@antv/gi-assets-basic'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.5.40
+    - 2.6.40
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-basic
+      role: distribution
+  - id: antv-gi-assets-galaxybase
+    name: '@antv/gi-assets-galaxybase'
+    package: '@antv/gi-assets-galaxybase'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.3.15
+    - 1.4.15
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-galaxybase
+      role: distribution
+  - id: antv-gi-assets-graphscope
+    name: '@antv/gi-assets-graphscope'
+    package: '@antv/gi-assets-graphscope'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.15
+    - 2.3.15
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-graphscope
+      role: distribution
+  - id: antv-gi-assets-hugegraph
+    name: '@antv/gi-assets-hugegraph'
+    package: '@antv/gi-assets-hugegraph'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.15
+    - 1.3.15
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-hugegraph
+      role: distribution
+  - id: antv-gi-assets-janusgraph
+    name: '@antv/gi-assets-janusgraph'
+    package: '@antv/gi-assets-janusgraph'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.15
+    - 1.3.15
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-janusgraph
+      role: distribution
+  - id: antv-gi-assets-neo4j
+    name: '@antv/gi-assets-neo4j'
+    package: '@antv/gi-assets-neo4j'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.15
+    - 2.3.15
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-neo4j
+      role: distribution
+  - id: antv-gi-assets-scene
+    name: '@antv/gi-assets-scene'
+    package: '@antv/gi-assets-scene'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.3.21
+    - 2.4.21
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-scene
+      role: distribution
+  - id: antv-gi-assets-tugraph
+    name: '@antv/gi-assets-tugraph'
+    package: '@antv/gi-assets-tugraph'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.15
+    - 2.3.15
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-tugraph
+      role: distribution
+  - id: antv-gi-assets-tugraph-analytics
+    name: '@antv/gi-assets-tugraph-analytics'
+    package: '@antv/gi-assets-tugraph-analytics'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.15
+    - 0.4.15
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-tugraph-analytics
+      role: distribution
+  - id: antv-gi-assets-xlab
+    name: '@antv/gi-assets-xlab'
+    package: '@antv/gi-assets-xlab'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.30
+    - 0.3.30
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-assets-xlab
+      role: distribution
+  - id: antv-gi-cli
+    name: '@antv/gi-cli'
+    package: '@antv/gi-cli'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.3.11
+    - 1.4.11
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-cli
+      role: distribution
+  - id: antv-gi-common-components
+    name: '@antv/gi-common-components'
+    package: '@antv/gi-common-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.4.16
+    - 1.5.16
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-common-components
+      role: distribution
+  - id: antv-gi-mock-data
+    name: '@antv/gi-mock-data'
+    package: '@antv/gi-mock-data'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.5
+    - 1.2.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-mock-data
+      role: distribution
+  - id: antv-gi-public-data
+    name: '@antv/gi-public-data'
+    package: '@antv/gi-public-data'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.1
+    - 1.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-public-data
+      role: distribution
+  - id: antv-gi-sdk
+    name: '@antv/gi-sdk'
+    package: '@antv/gi-sdk'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.1.0
+    - 3.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-sdk
+      role: distribution
+  - id: antv-gi-sdk-app
+    name: '@antv/gi-sdk-app'
+    package: '@antv/gi-sdk-app'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.3.10
+    - 1.4.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-sdk-app
+      role: distribution
+  - id: antv-gi-theme-antd
+    name: '@antv/gi-theme-antd'
+    package: '@antv/gi-theme-antd'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.7.11
+    - 0.8.11
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gi-theme-antd
+      role: distribution
+  - id: antv-github-config-cli
+    name: '@antv/github-config-cli'
+    package: '@antv/github-config-cli'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.0
+    - 0.3.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/github-config-cli
+      role: distribution
+  - id: antv-gl-matrix
+    name: '@antv/gl-matrix'
+    package: '@antv/gl-matrix'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.8.1
+    - 2.9.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gl-matrix
+      role: distribution
+  - id: antv-gpt-vis
+    name: '@antv/gpt-vis'
+    package: '@antv/gpt-vis'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.0
+    - 1.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gpt-vis
+      role: distribution
+  - id: antv-gpt-vis-ssr
+    name: '@antv/gpt-vis-ssr'
+    package: '@antv/gpt-vis-ssr'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.4.7
+    - 0.5.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/gpt-vis-ssr
+      role: distribution
+  - id: antv-graphin
+    name: '@antv/graphin'
+    package: '@antv/graphin'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.1.5
+    - 3.2.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/graphin
+      role: distribution
+  - id: antv-graphin-components
+    name: '@antv/graphin-components'
+    package: '@antv/graphin-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.5.1
+    - 2.6.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/graphin-components
+      role: distribution
+  - id: antv-graphin-graphscope
+    name: '@antv/graphin-graphscope'
+    package: '@antv/graphin-graphscope'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.5
+    - 1.2.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/graphin-graphscope
+      role: distribution
+  - id: antv-graphin-icons
+    name: '@antv/graphin-icons'
+    package: '@antv/graphin-icons'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.0
+    - 1.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/graphin-icons
+      role: distribution
+  - id: antv-graphlib
+    name: '@antv/graphlib'
+    package: '@antv/graphlib'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.4
+    - 2.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/graphlib
+      role: distribution
+  - id: antv-hierarchy
+    name: '@antv/hierarchy'
+    package: '@antv/hierarchy'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.8.1
+    - 0.9.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/hierarchy
+      role: distribution
+  - id: antv-infographic
+    name: '@antv/infographic'
+    package: '@antv/infographic'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.19
+    - 0.4.19
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/infographic
+      role: distribution
+  - id: antv-interaction
+    name: '@antv/interaction'
+    package: '@antv/interaction'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.5
+    - 0.3.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/interaction
+      role: distribution
+  - id: antv-istanbul
+    name: '@antv/istanbul'
+    package: '@antv/istanbul'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.0
+    - 0.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/istanbul
+      role: distribution
+  - id: antv-knowledge
+    name: '@antv/knowledge'
+    package: '@antv/knowledge'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.4
+    - 1.3.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/knowledge
+      role: distribution
+  - id: antv-l7
+    name: '@antv/l7'
+    package: '@antv/l7'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.26.10
+    - 2.27.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7
+      role: distribution
+  - id: antv-l7-component
+    name: '@antv/l7-component'
+    package: '@antv/l7-component'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.26.10
+    - 2.27.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-component
+      role: distribution
+  - id: antv-l7-composite-layers
+    name: '@antv/l7-composite-layers'
+    package: '@antv/l7-composite-layers'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.18.1
+    - 0.19.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-composite-layers
+      role: distribution
+  - id: antv-l7-core
+    name: '@antv/l7-core'
+    package: '@antv/l7-core'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.26.10
+    - 2.27.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-core
+      role: distribution
+  - id: antv-l7-district
+    name: '@antv/l7-district'
+    package: '@antv/l7-district'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.4.12
+    - 2.5.12
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-district
+      role: distribution
+  - id: antv-l7-draw
+    name: '@antv/l7-draw'
+    package: '@antv/l7-draw'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.2.5
+    - 3.3.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-draw
+      role: distribution
+  - id: antv-l7-editor
+    name: '@antv/l7-editor'
+    package: '@antv/l7-editor'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.13
+    - 1.3.13
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-editor
+      role: distribution
+  - id: antv-l7-extension-g-layer
+    name: '@antv/l7-extension-g-layer'
+    package: '@antv/l7-extension-g-layer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.0
+    - 1.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-extension-g-layer
+      role: distribution
+  - id: antv-l7-layers
+    name: '@antv/l7-layers'
+    package: '@antv/l7-layers'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.26.10
+    - 2.27.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-layers
+      role: distribution
+  - id: antv-l7-leaflet
+    name: '@antv/l7-leaflet'
+    package: '@antv/l7-leaflet'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.2
+    - 1.2.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-leaflet
+      role: distribution
+  - id: antv-l7-map
+    name: '@antv/l7-map'
+    package: '@antv/l7-map'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.26.10
+    - 2.27.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-map
+      role: distribution
+  - id: antv-l7-mapkit
+    name: '@antv/l7-mapkit'
+    package: '@antv/l7-mapkit'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.6.0
+    - 0.7.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-mapkit
+      role: distribution
+  - id: antv-l7-maps
+    name: '@antv/l7-maps'
+    package: '@antv/l7-maps'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.26.10
+    - 2.27.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-maps
+      role: distribution
+  - id: antv-l7-mini
+    name: '@antv/l7-mini'
+    package: '@antv/l7-mini'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.21.8
+    - 2.22.8
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-mini
+      role: distribution
+  - id: antv-l7-pass
+    name: '@antv/l7-pass'
+    package: '@antv/l7-pass'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.0
+    - 1.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-pass
+      role: distribution
+  - id: antv-l7-react
+    name: '@antv/l7-react'
+    package: '@antv/l7-react'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.5.3
+    - 2.6.3
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-react
+      role: distribution
+  - id: antv-l7-renderer
+    name: '@antv/l7-renderer'
+    package: '@antv/l7-renderer'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.26.10
+    - 2.27.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-renderer
+      role: distribution
+  - id: antv-l7-scene
+    name: '@antv/l7-scene'
+    package: '@antv/l7-scene'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.26.10
+    - 2.27.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-scene
+      role: distribution
+  - id: antv-l7-source
+    name: '@antv/l7-source'
+    package: '@antv/l7-source'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.26.10
+    - 2.27.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-source
+      role: distribution
+  - id: antv-l7-three
+    name: '@antv/l7-three'
+    package: '@antv/l7-three'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.26.10
+    - 2.27.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-three
+      role: distribution
+  - id: antv-l7-utils
+    name: '@antv/l7-utils'
+    package: '@antv/l7-utils'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.26.10
+    - 2.27.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7-utils
+      role: distribution
+  - id: antv-l7plot
+    name: '@antv/l7plot'
+    package: '@antv/l7plot'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.6.11
+    - 0.7.11
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7plot
+      role: distribution
+  - id: antv-l7plot-component
+    name: '@antv/l7plot-component'
+    package: '@antv/l7plot-component'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.11
+    - 0.2.11
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/l7plot-component
+      role: distribution
+  - id: antv-larkmap
+    name: '@antv/larkmap'
+    package: '@antv/larkmap'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.6.1
+    - 1.7.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/larkmap
+      role: distribution
+  - id: antv-layout-gpu
+    name: '@antv/layout-gpu'
+    package: '@antv/layout-gpu'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.2.7
+    - 1.3.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/layout-gpu
+      role: distribution
+  - id: antv-layout-wasm
+    name: '@antv/layout-wasm'
+    package: '@antv/layout-wasm'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.5.2
+    - 1.6.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/layout-wasm
+      role: distribution
+  - id: antv-li-aiearth-assets
+    name: '@antv/li-aiearth-assets'
+    package: '@antv/li-aiearth-assets'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.5.7
+    - 0.6.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/li-aiearth-assets
+      role: distribution
+  - id: antv-li-analysis-assets
+    name: '@antv/li-analysis-assets'
+    package: '@antv/li-analysis-assets'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.10.1
+    - 1.11.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/li-analysis-assets
+      role: distribution
+  - id: antv-li-core-assets
+    name: '@antv/li-core-assets'
+    package: '@antv/li-core-assets'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.4.7
+    - 1.5.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/li-core-assets
+      role: distribution
+  - id: antv-li-editor
+    name: '@antv/li-editor'
+    package: '@antv/li-editor'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.7.1
+    - 1.8.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/li-editor
+      role: distribution
+  - id: antv-li-p2
+    name: '@antv/li-p2'
+    package: '@antv/li-p2'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.9.2
+    - 1.10.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/li-p2
+      role: distribution
+  - id: antv-li-sam-assets
+    name: '@antv/li-sam-assets'
+    package: '@antv/li-sam-assets'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.4
+    - 0.3.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/li-sam-assets
+      role: distribution
+  - id: antv-li-sdk
+    name: '@antv/li-sdk'
+    package: '@antv/li-sdk'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.6.1
+    - 1.7.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/li-sdk
+      role: distribution
+  - id: antv-lite-insight
+    name: '@antv/lite-insight'
+    package: '@antv/lite-insight'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/lite-insight
+      role: distribution
+  - id: antv-matrix-util
+    name: '@antv/matrix-util'
+    package: '@antv/matrix-util'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.1.4
+    - 3.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/matrix-util
+      role: distribution
+  - id: antv-mcp-server-antv
+    name: '@antv/mcp-server-antv'
+    package: '@antv/mcp-server-antv'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.8
+    - 0.3.8
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/mcp-server-antv
+      role: distribution
+  - id: antv-mcp-server-chart
+    name: '@antv/mcp-server-chart'
+    package: '@antv/mcp-server-chart'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.10.10
+    - 0.11.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/mcp-server-chart
+      role: distribution
+  - id: antv-my-f2
+    name: '@antv/my-f2'
+    package: '@antv/my-f2'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.7
+    - 2.3.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/my-f2
+      role: distribution
+  - id: antv-my-f2-pc
+    name: '@antv/my-f2-pc'
+    package: '@antv/my-f2-pc'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.1
+    - 0.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/my-f2-pc
+      role: distribution
+  - id: antv-narrative-text-editor
+    name: '@antv/narrative-text-editor'
+    package: '@antv/narrative-text-editor'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.20
+    - 0.4.20
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/narrative-text-editor
+      role: distribution
+  - id: antv-narrative-text-schema
+    name: '@antv/narrative-text-schema'
+    package: '@antv/narrative-text-schema'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.4.7
+    - 0.5.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/narrative-text-schema
+      role: distribution
+  - id: antv-narrative-text-vis
+    name: '@antv/narrative-text-vis'
+    package: '@antv/narrative-text-vis'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.4.16
+    - 0.5.16
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/narrative-text-vis
+      role: distribution
+  - id: antv-path-util
+    name: '@antv/path-util'
+    package: '@antv/path-util'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.1.1
+    - 3.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/path-util
+      role: distribution
+  - id: antv-react-g
+    name: '@antv/react-g'
+    package: '@antv/react-g'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/react-g
+      role: distribution
+  - id: antv-s2
+    name: '@antv/s2'
+    package: '@antv/s2'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.8.1
+    - 2.9.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/s2
+      role: distribution
+  - id: antv-s2-react
+    name: '@antv/s2-react'
+    package: '@antv/s2-react'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.4.1
+    - 2.5.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/s2-react
+      role: distribution
+  - id: antv-s2-react-components
+    name: '@antv/s2-react-components'
+    package: '@antv/s2-react-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.2
+    - 2.3.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/s2-react-components
+      role: distribution
+  - id: antv-s2-ssr
+    name: '@antv/s2-ssr'
+    package: '@antv/s2-ssr'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.1
+    - 0.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/s2-ssr
+      role: distribution
+  - id: antv-s2-vue
+    name: '@antv/s2-vue'
+    package: '@antv/s2-vue'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.3.0
+    - 2.4.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/s2-vue
+      role: distribution
+  - id: antv-sam
+    name: '@antv/sam'
+    package: '@antv/sam'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.0
+    - 0.4.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/sam
+      role: distribution
+  - id: antv-scale
+    name: '@antv/scale'
+    package: '@antv/scale'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.6.2
+    - 0.7.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/scale
+      role: distribution
+  - id: antv-semantic-release-pnpm
+    name: '@antv/semantic-release-pnpm'
+    package: '@antv/semantic-release-pnpm'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.4
+    - 1.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/semantic-release-pnpm
+      role: distribution
+  - id: antv-smart-color
+    name: '@antv/smart-color'
+    package: '@antv/smart-color'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.3.1
+    - 0.4.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/smart-color
+      role: distribution
+  - id: antv-stat
+    name: '@antv/stat'
+    package: '@antv/stat'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.2
+    - 0.2.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/stat
+      role: distribution
+  - id: antv-t8
+    name: '@antv/t8'
+    package: '@antv/t8'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.4.0
+    - 0.5.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/t8
+      role: distribution
+  - id: antv-thumbnails
+    name: '@antv/thumbnails'
+    package: '@antv/thumbnails'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.0
+    - 2.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/thumbnails
+      role: distribution
+  - id: antv-thumbnails-component
+    name: '@antv/thumbnails-component'
+    package: '@antv/thumbnails-component'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.0
+    - 2.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/thumbnails-component
+      role: distribution
+  - id: antv-torch
+    name: '@antv/torch'
+    package: '@antv/torch'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.6
+    - 1.2.6
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/torch
+      role: distribution
+  - id: antv-translator
+    name: '@antv/translator'
+    package: '@antv/translator'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.1
+    - 1.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/translator
+      role: distribution
+  - id: antv-util
+    name: '@antv/util'
+    package: '@antv/util'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.4.11
+    - 3.5.11
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/util
+      role: distribution
+  - id: antv-vendor
+    name: '@antv/vendor'
+    package: '@antv/vendor'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.11
+    - 1.2.11
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/vendor
+      role: distribution
+  - id: antv-vis-predict-engine
+    name: '@antv/vis-predict-engine'
+    package: '@antv/vis-predict-engine'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.1
+    - 0.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/vis-predict-engine
+      role: distribution
+  - id: antv-webgpu-graph
+    name: '@antv/webgpu-graph'
+    package: '@antv/webgpu-graph'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.0
+    - 1.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/webgpu-graph
+      role: distribution
+  - id: antv-word-scale-chart
+    name: '@antv/word-scale-chart'
+    package: '@antv/word-scale-chart'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.4.4
+    - 0.5.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/word-scale-chart
+      role: distribution
+  - id: antv-wx-f2
+    name: '@antv/wx-f2'
+    package: '@antv/wx-f2'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/wx-f2
+      role: distribution
+  - id: antv-x6
+    name: '@antv/x6'
+    package: '@antv/x6'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.2.7
+    - 3.3.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6
+      role: distribution
+  - id: antv-x6-angular-shape
+    name: '@antv/x6-angular-shape'
+    package: '@antv/x6-angular-shape'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.1.1
+    - 3.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-angular-shape
+      role: distribution
+  - id: antv-x6-common
+    name: '@antv/x6-common'
+    package: '@antv/x6-common'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.17
+    - 2.2.17
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-common
+      role: distribution
+  - id: antv-x6-components
+    name: '@antv/x6-components'
+    package: '@antv/x6-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.11.7
+    - 0.12.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-components
+      role: distribution
+  - id: antv-x6-geometry
+    name: '@antv/x6-geometry'
+    package: '@antv/x6-geometry'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.5
+    - 2.2.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-geometry
+      role: distribution
+  - id: antv-x6-plugin-dnd
+    name: '@antv/x6-plugin-dnd'
+    package: '@antv/x6-plugin-dnd'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.1
+    - 2.3.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-plugin-dnd
+      role: distribution
+  - id: antv-x6-plugin-export
+    name: '@antv/x6-plugin-export'
+    package: '@antv/x6-plugin-export'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.6
+    - 2.3.6
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-plugin-export
+      role: distribution
+  - id: antv-x6-plugin-history
+    name: '@antv/x6-plugin-history'
+    package: '@antv/x6-plugin-history'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.3.4
+    - 2.4.4
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-plugin-history
+      role: distribution
+  - id: antv-x6-plugin-keyboard
+    name: '@antv/x6-plugin-keyboard'
+    package: '@antv/x6-plugin-keyboard'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.3.3
+    - 2.4.3
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-plugin-keyboard
+      role: distribution
+  - id: antv-x6-plugin-minimap
+    name: '@antv/x6-plugin-minimap'
+    package: '@antv/x6-plugin-minimap'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.7
+    - 2.2.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-plugin-minimap
+      role: distribution
+  - id: antv-x6-plugin-scroller
+    name: '@antv/x6-plugin-scroller'
+    package: '@antv/x6-plugin-scroller'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.10
+    - 2.2.10
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-plugin-scroller
+      role: distribution
+  - id: antv-x6-plugin-selection
+    name: '@antv/x6-plugin-selection'
+    package: '@antv/x6-plugin-selection'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.3.2
+    - 2.4.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-plugin-selection
+      role: distribution
+  - id: antv-x6-plugin-snapline
+    name: '@antv/x6-plugin-snapline'
+    package: '@antv/x6-plugin-snapline'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.7
+    - 2.3.7
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-plugin-snapline
+      role: distribution
+  - id: antv-x6-plugin-stencil
+    name: '@antv/x6-plugin-stencil'
+    package: '@antv/x6-plugin-stencil'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.5
+    - 2.3.5
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-plugin-stencil
+      role: distribution
+  - id: antv-x6-plugin-transform
+    name: '@antv/x6-plugin-transform'
+    package: '@antv/x6-plugin-transform'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.8
+    - 2.3.8
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-plugin-transform
+      role: distribution
+  - id: antv-x6-react
+    name: '@antv/x6-react'
+    package: '@antv/x6-react'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.2.26
+    - 0.3.26
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-react
+      role: distribution
+  - id: antv-x6-react-components
+    name: '@antv/x6-react-components'
+    package: '@antv/x6-react-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.9
+    - 2.2.9
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-react-components
+      role: distribution
+  - id: antv-x6-react-shape
+    name: '@antv/x6-react-shape'
+    package: '@antv/x6-react-shape'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.1.1
+    - 3.2.1
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-react-shape
+      role: distribution
+  - id: antv-x6-vector
+    name: '@antv/x6-vector'
+    package: '@antv/x6-vector'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.5.2
+    - 1.6.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-vector
+      role: distribution
+  - id: antv-x6-vue-shape
+    name: '@antv/x6-vue-shape'
+    package: '@antv/x6-vue-shape'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 3.1.2
+    - 3.2.2
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-vue-shape
+      role: distribution
+  - id: antv-x6-vue3-shape
+    name: '@antv/x6-vue3-shape'
+    package: '@antv/x6-vue3-shape'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.0
+    - 1.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/x6-vue3-shape
+      role: distribution
+  - id: antv-xflow
+    name: '@antv/xflow'
+    package: '@antv/xflow'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.2.13
+    - 2.3.13
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/xflow
+      role: distribution
+  - id: antv-xflow-diff
+    name: '@antv/xflow-diff'
+    package: '@antv/xflow-diff'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 1.1.0
+    - 1.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@antv/xflow-diff
+      role: distribution
+  - id: lint-md-cli
+    name: '@lint-md/cli'
+    package: '@lint-md/cli'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.0
+    - 2.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@lint-md/cli
+      role: distribution
+  - id: lint-md-core
+    name: '@lint-md/core'
+    package: '@lint-md/core'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.0
+    - 2.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@lint-md/core
+      role: distribution
+  - id: lint-md-parser
+    name: '@lint-md/parser'
+    package: '@lint-md/parser'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 0.1.14
+    - 0.2.14
+    locations:
+    - uri: https://www.npmjs.com/package/@lint-md/parser
+      role: distribution
+  - id: canvas-nest-js
+    name: 'canvas-nest.js'
+    package: 'canvas-nest.js'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 2.1.4
+    - 2.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/canvas-nest.js
+      role: distribution
   - id: echarts-for-react
     name: echarts-for-react
     package: echarts-for-react
@@ -168,32 +3737,11 @@
     kind: source_archive
     start_date: 2026-05-19
     end_date: 2026-05-19
+    versions:
+    - 3.1.7
+    - 3.2.7
     locations:
     - uri: https://www.npmjs.com/package/echarts-for-react
-      role: distribution
-    notes:
-    - Reported at 1.1 to 1.5 million weekly downloads at time of compromise.
-  - id: timeago-js
-    name: timeago.js
-    package: timeago.js
-    ecosystem: npm
-    kind: source_archive
-    start_date: 2026-05-19
-    end_date: 2026-05-19
-    locations:
-    - uri: https://www.npmjs.com/package/timeago.js
-      role: distribution
-    notes:
-    - Reported at roughly 1.5 million weekly downloads at time of compromise.
-  - id: size-sensor
-    name: size-sensor
-    package: size-sensor
-    ecosystem: npm
-    kind: source_archive
-    start_date: 2026-05-19
-    end_date: 2026-05-19
-    locations:
-    - uri: https://www.npmjs.com/package/size-sensor
       role: distribution
   - id: jest-canvas-mock
     name: jest-canvas-mock
@@ -202,6 +3750,9 @@
     kind: source_archive
     start_date: 2026-05-19
     end_date: 2026-05-19
+    versions:
+    - 2.6.3
+    - 2.7.3
     locations:
     - uri: https://www.npmjs.com/package/jest-canvas-mock
       role: distribution
@@ -212,18 +3763,37 @@
     kind: source_archive
     start_date: 2026-05-19
     end_date: 2026-05-19
+    versions:
+    - 1.1.11
+    - 1.2.11
     locations:
     - uri: https://www.npmjs.com/package/jest-date-mock
       role: distribution
-  - id: canvas-nest-js
-    name: canvas-nest.js
-    package: canvas-nest.js
+  - id: size-sensor
+    name: size-sensor
+    package: size-sensor
     ecosystem: npm
     kind: source_archive
     start_date: 2026-05-19
     end_date: 2026-05-19
+    versions:
+    - 1.1.4
+    - 1.2.4
     locations:
-    - uri: https://www.npmjs.com/package/canvas-nest.js
+    - uri: https://www.npmjs.com/package/size-sensor
+      role: distribution
+  - id: timeago-js
+    name: 'timeago.js'
+    package: 'timeago.js'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-19
+    end_date: 2026-05-19
+    versions:
+    - 4.1.2
+    - 4.2.2
+    locations:
+    - uri: https://www.npmjs.com/package/timeago.js
       role: distribution
   references:
   - url: https://www.wiz.io/blog/mini-shai-hulud-teampcp-hits-antv-supply-chain

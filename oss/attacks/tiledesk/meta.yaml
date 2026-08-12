@@ -8,39 +8,13 @@
     the poisoned tree between 2026-05-19 and 2026-05-21, bundling the workflow file into
     every tarball.
   story: |
-    Tiledesk, an open-source LLM agent platform, was the most visible
-    downstream casualty of the Megalodon mass-backdooring campaign that swept
-    across 5,500 GitHub repositories on May 18, 2026. Researchers at SafeDep
-    said the attacker pushed Megalodon's malicious workflow file into nine
-    Tiledesk repositories, and the project's maintainer then unwittingly
-    bundled the poisoned tree into seven new npm releases over the following
-    three days.
+    Tiledesk, an open-source LLM agent platform, was the most visible downstream casualty of the Megalodon mass-backdooring campaign that swept across 5,500 GitHub repositories on May 18, 2026. Researchers at SafeDep said the attacker pushed Megalodon's malicious workflow file into nine Tiledesk repositories, and the project's maintainer then unwittingly bundled the poisoned tree into seven new npm releases over the following three days.
 
-    Tiledesk's server is published to npm as `@tiledesk/tiledesk-server` and
-    builds Docker images through repository workflows. According to SafeDep,
-    the first Megalodon commit landed on `Tiledesk/tiledesk-server` at 12:50
-    UTC on May 18, forged as a build-bot author with a routine chore message.
-    The diff replaced one workflow file with one named `Optimize-Build`, gated
-    on `workflow_dispatch`, that decoded and ran the Megalodon credential
-    collector. The payload is documented at [[megalodon-2026]].
+    Tiledesk's server is published to npm as `@tiledesk/tiledesk-server` and builds Docker images through repository workflows. According to SafeDep, the first Megalodon commit landed on `Tiledesk/tiledesk-server` at 12:50 UTC on May 18, forged as a build-bot author with a routine chore message. The diff replaced one workflow file with one named `Optimize-Build`, gated on `workflow_dispatch`, that decoded and ran the Megalodon credential collector; the payload is documented at [[megalodon-2026]]. Eight more Tiledesk repositories took the same commit within the hour, every push going straight to the default branch with no pull request, consistent with a stolen personal access token or deploy key. SafeDep said the access appears to have originated on the Tiledesk side.
 
-    Eight more Tiledesk repositories took the same commit within the hour.
-    Every push went directly to the default branch with no pull request,
-    consistent with a stolen personal access token or deploy key. SafeDep said
-    the access appears to have originated on the Tiledesk side.
+    The maintainer kept shipping. Between May 19 and May 21, seven releases, 2.18.6 through 2.18.12, were published from the poisoned tree, each tarball carrying the malicious workflow file. Because `npm install` does not execute workflow files, npm consumers were not poisoned at runtime. But anyone who cloned, forked, or rebuilt from the tarball was, and the `workflow_dispatch` trigger meant the attacker controlled the timing: the file could sit dormant in a fork between detection sweeps until the operator chose to fire it. The releases were later withdrawn from npm, and the versions preserved in this dataset are reconstructions built from the exact release commits, each verified to contain the malicious commit `acac5a9854650c4ae2883c4740bf87d34120c038` as an ancestor and checked path by path against a retained file manifest.
 
-    The maintainer kept shipping. Between May 19 and May 21, seven releases —
-    2.18.6 through 2.18.12 — were published from the poisoned tree, each
-    tarball carrying the malicious workflow file. Because `npm install` does
-    not execute workflow files, npm consumers were not poisoned at runtime.
-    But anyone who cloned, forked, or rebuilt from the tarball was, and the
-    `workflow_dispatch` trigger meant the attacker controlled the timing —
-    the file could sit dormant in a fork between detection sweeps until the
-    operator chose to fire it.
-
-    SafeDep's Malysis engine flagged the npm package during a routine scan,
-    traced the workflow file back to GitHub, and used that finding to pivot
-    to the broader Megalodon scope.
+    SafeDep's Malysis engine flagged the npm package during a routine scan, traced the workflow file back to GitHub, and used that finding to pivot to the broader Megalodon scope.
   start_date: 2026-05-18
   end_date: 2026-05-21
   target:
@@ -115,9 +89,23 @@
     locations:
     - uri: https://www.npmjs.com/package/@tiledesk/tiledesk-server
       role: distribution
+    indicators:
+    - kind: git_commit
+      value: 2.18.11 release source 2ec83bfef8bee83a1a49bcc4158556fcf4f9a3ab
+    - kind: git_commit
+      value: 2.18.12 release source 56496322a8e7ba1919eabce3c460f9f388b7c828
+    - kind: file_sha256
+      value: .github/workflows/docker-community-worker-push-latest.yml 8e7601336696553280944993954e278551db2d45b8e0dbafc97554d91fc29a41
     notes:
-    - The malicious workflow file was bundled into each tarball; the runtime entry
-      points (`server.js` and friends) were unchanged.
+    - The malicious workflow file was bundled into each tarball. The affected releases
+      also contain ordinary application changes from their exact release commits; the
+      workflow is the attack-specific modification and does not execute on npm install.
+    - >-
+      Original npm archive checksums are unavailable after removal. Complete-tree
+      reconstructed samples exist for 2.18.11 and 2.18.12 only: their exact release
+      commits produce 519-member package trees that match retained jsDelivr path,
+      size, and SHA-256 manifests. They remain named RECONSTRUCTED because original
+      gzip-byte identity cannot be established.
   - id: tiledesk-org-repos
     name: Tiledesk org repositories
     package: Tiledesk/*
@@ -125,6 +113,8 @@
     kind: source_archive
     start_date: 2026-05-18
     end_date: 2026-05-18
+    hashes:
+    - sha1:acac5a9854650c4ae2883c4740bf87d34120c038
     locations:
     - uri: https://github.com/Tiledesk/tiledesk-server
       role: distribution

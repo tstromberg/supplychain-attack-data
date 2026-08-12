@@ -1,0 +1,247 @@
+- id: bdthemes
+  title: BdThemes plugins poisoned through the vendor's banner feed
+  campaigns:
+    - wordpress-admin-persistence-2026
+  synopsis: >-
+    Attackers with write access to BdThemes' promotional JSON bucket returned a crafted display_id
+    that exploited an unescaped attribute in the vendor's Biggopti banner script. The XSS ran in
+    every admin session, creating rogue admins and installing a webshell.
+  story: |
+    Wordfence was notified on August 7, 2026 of a supply-chain compromise
+    affecting BdThemes, a WordPress plugin vendor whose Elementor add-ons ship
+    through the official WordPress.org directory. No plugin source file was
+    modified. The attackers poisoned a static JSON feed the plugins fetch, and let
+    the vendor's own code do the rest.
+
+    Seven BdThemes plugins bundle a component called Biggopti, which pulls
+    promotional banners from the vendor's API and renders them in the WordPress
+    dashboard. The API is not an application server. It is flat JSON files in a
+    DigitalOcean Spaces bucket behind Cloudflare. Every plugin using Biggopti
+    enqueues its client-side script on `admin_init`, so it runs on every wp-admin
+    page load for every logged-in administrator. The flaw was the vendor's own.
+    When the script builds the notice container, it concatenates the `display_id`
+    field from the remote JSON straight into an HTML `id` attribute with no
+    escaping, while escaping `data-display-id` properly a few lines later, which is
+    how Wordfence concluded this was an oversight rather than a design. SVN history
+    put the unescaped write at March 1, 2026, in Prime Slider 4.1.9, from where it
+    spread to the other plugins.
+
+    Someone with write access to the bucket replaced the legitimate records. The
+    poisoned `display_id` broke out of the attribute and attached an
+    `onanimationstart` handler fired by a 10-millisecond CSS animation, so the
+    payload ran silently on any dashboard page. The handler pulled `w2.js` from
+    `ia-cdn[.]com`, which checked in with the C2, created an administrator through
+    the WordPress REST API using the live session's `X-WP-Nonce`, installed a fake
+    plugin under a slug like `wp-smart-thumbnails` containing a webshell named
+    `emer-run.php`, and used that webshell to drop two must-use plugins: a magic
+    login backdoor keyed to a `?_wplogin=<token>` parameter, and a stealth module
+    that filters the rogue accounts out of the user list and adjusts the user
+    counts to match. Both were backdated to September 2025. A second payload,
+    `x.js`, was served from BdThemes' own infrastructure and generated deterministic
+    credentials from the site hostname, meaning the operators never had to keep a
+    victim list, and responders can compute the exact username and password to hunt
+    for.
+
+    Wordfence tracked the campaign back to a `start_date` of June 23, 2026 in the
+    poisoned records, the earliest the XSS could have been live. The affected
+    plugins were closed on the WordPress directory on August 7, and both API
+    endpoints were serving clean JSON by August 8. Wordfence linked the C2 domain
+    to the same operators behind the Advanced Responsive Video Embedder and
+    OptinMonster compromises earlier in the summer, and noted that the presence of
+    attacker-controlled files inside the vendor's own bucket points to a deeper
+    compromise of BdThemes' cloud storage credentials.
+  start_date: 2026-06-23T00:00:00.000Z
+  end_date: 2026-08-08T00:00:00.000Z
+  target:
+    name: BdThemes
+    kind: organization
+    website: https://bdthemes.com/
+  actor:
+    name: Unknown
+    kind: group
+  language: JavaScript
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+      - account_takeover
+      - backdoor
+      - remote_code_execution
+  locations:
+    - uri: https://api.sigmative.io/prod/store/api/biggopti/api-data-all-records
+      role: distribution
+    - uri: https://api.sigmative.io/prod/store/api/biggopti/api-data-records
+      role: distribution
+  indicators:
+    - kind: domain
+      value: ia-cdn.com
+    - kind: url
+      value: https://ia-cdn.com/fz/w2.js
+    - kind: url
+      value: https://ia-cdn.com/fz/c
+    - kind: domain
+      value: api.sigmative.io
+    - kind: file
+      value: emer-run.php
+    - kind: file_md5
+      value: 'emer-run.php: 1024732009983dd5e54b4cf5593f04d4'
+    - kind: file_md5
+      value: 'class-wp-token-validate.php: 7719cd98a35ffad2771f26d1ceab7d27'
+    - kind: file_md5
+      value: 'class-wp-query-9d127ff3.php: 9aadc3e5c5242b273bd17c5bdc358845'
+    - kind: file_md5
+      value: 'wp-cache-optimizer.php: e450ae5bc4bfc0d960dded06a76bb8e9'
+    - kind: database_option
+      value: fz_emer_login_tokens
+    - kind: database_option
+      value: fz_emer_done_v1
+    - kind: account
+      value: usernames matching bd_ plus 6 alphanumeric characters
+    - kind: account
+      value: accounts using @wordpress.org or @developer.wordpress.org email domains
+    - kind: parameter
+      value: _wplogin
+  notes:
+    - >-
+      No source file in the WordPress.org repository was modified. The compromise was of the
+      vendor's remote JSON data stream, which the plugins fetch and render at runtime, so
+      file-integrity scanners would not detect an affected site.
+    - >-
+      The underlying flaw is an unescaped display_id written into an HTML id attribute by the
+      Biggopti banner script, introduced 2026-03-01 in Prime Slider 4.1.9 at SVN r3471891 and later
+      copied to the other plugins. Wordfence rated it CVSS 5.4 and it was unpatched at the time of
+      writing.
+    - >-
+      Wordfence attributed the C2 domain to the same operators behind the Advanced Responsive Video
+      Embedder and OptinMonster compromises. The presence of the x.js payload inside BdThemes' own
+      bucket indicates compromise of the vendor's cloud storage credentials.
+    - >-
+      The x.js payload derives credentials deterministically from the site hostname as `bd_` plus a
+      6-character base36 hash, with password `Bd@26!` plus the same hash plus `x`. Responders can
+      compute the expected account for a given domain.
+    - >-
+      No plugin version is malicious. The compromise was of the remote JSON feed the plugins fetch
+      at runtime, so affected sites run unmodified plugin releases and no version identifiers or
+      package digests exist to record for this incident.
+    - >-
+      No install-count total was published for the campaign. The seven affected plugins were closed
+      on the WordPress directory on 2026-08-07 pending review.
+  artifacts:
+    - id: bdthemes-element-pack-lite
+      name: Element Pack Addons for Elementor
+      package: bdthemes-element-pack-lite
+      ecosystem: wordpress.org
+      kind: plugin
+      start_date: 2026-06-23T00:00:00.000Z
+      end_date: 2026-08-08T00:00:00.000Z
+      locations:
+        - uri: https://wordpress.org/plugins/bdthemes-element-pack-lite/
+          role: distribution
+      hashes: null
+      notes:
+        - >-
+          The affected releases were recorded as a wildcard rather than enumerated, so this record
+          asserts no version list.
+    - id: bdthemes-prime-slider-lite
+      name: Prime Slider Addons for Elementor
+      package: bdthemes-prime-slider-lite
+      ecosystem: wordpress.org
+      kind: plugin
+      start_date: 2026-06-23T00:00:00.000Z
+      end_date: 2026-08-08T00:00:00.000Z
+      locations:
+        - uri: https://wordpress.org/plugins/bdthemes-prime-slider-lite/
+          role: distribution
+      notes:
+        - >-
+          The unescaped display_id write was introduced here first, in version 4.1.9 on 2026-03-01
+          at SVN r3471891.
+        - >-
+          The affected releases were recorded as a wildcard rather than enumerated, so this record
+          asserts no version list.
+    - id: pixel-gallery
+      name: Pixel Gallery Addons for Elementor
+      package: pixel-gallery
+      ecosystem: wordpress.org
+      kind: plugin
+      start_date: 2026-06-23T00:00:00.000Z
+      end_date: 2026-08-08T00:00:00.000Z
+      locations:
+        - uri: https://wordpress.org/plugins/pixel-gallery/
+          role: distribution
+      hashes: null
+      notes:
+        - >-
+          The affected releases were recorded as a wildcard rather than enumerated, so this record
+          asserts no version list.
+    - id: ultimate-post-kit
+      name: Ultimate Post Kit Addons for Elementor
+      package: ultimate-post-kit
+      ecosystem: wordpress.org
+      kind: plugin
+      start_date: 2026-06-23T00:00:00.000Z
+      end_date: 2026-08-08T00:00:00.000Z
+      locations:
+        - uri: https://wordpress.org/plugins/ultimate-post-kit/
+          role: distribution
+      hashes: null
+      notes:
+        - >-
+          The affected releases were recorded as a wildcard rather than enumerated, so this record
+          asserts no version list.
+    - id: ultimate-store-kit
+      name: Ultimate Store Kit
+      package: ultimate-store-kit
+      ecosystem: wordpress.org
+      kind: plugin
+      start_date: 2026-06-23T00:00:00.000Z
+      end_date: 2026-08-08T00:00:00.000Z
+      locations:
+        - uri: https://wordpress.org/plugins/ultimate-store-kit/
+          role: distribution
+      hashes: null
+      notes:
+        - >-
+          The affected releases were recorded as a wildcard rather than enumerated, so this record
+          asserts no version list.
+    - id: live-copy-paste
+      name: Live Copy Paste for Elementor
+      package: live-copy-paste
+      ecosystem: wordpress.org
+      kind: plugin
+      start_date: 2026-06-23T00:00:00.000Z
+      end_date: 2026-08-08T00:00:00.000Z
+      locations:
+        - uri: https://wordpress.org/plugins/live-copy-paste/
+          role: distribution
+      hashes: null
+      notes:
+        - >-
+          The affected releases were recorded as a wildcard rather than enumerated, so this record
+          asserts no version list.
+    - id: smart-admin-assistant
+      name: Smart Admin Assistant
+      package: smart-admin-assistant
+      ecosystem: wordpress.org
+      kind: plugin
+      start_date: 2026-06-23T00:00:00.000Z
+      end_date: 2026-08-08T00:00:00.000Z
+      locations:
+        - uri: https://wordpress.org/plugins/smart-admin-assistant/
+          role: distribution
+      notes:
+        - >-
+          The affected releases were recorded as a wildcard rather than enumerated, so this record
+          asserts no version list.
+  references:
+    - url: >-
+        https://www.wordfence.com/blog/2026/08/psa-supply-chain-compromise-in-bdthemes-ecosystem-via-poisoned-api-response/
+      title: 'PSA: Supply Chain Compromise in BdThemes Ecosystem via Poisoned API Response - Wordfence'
+    - url: >-
+        https://www.bleepingcomputer.com/news/security/bdthemes-plugins-supply-chain-hack-creates-rogue-wordpress-admins/
+      title: BdThemes plugins supply-chain hack creates rogue WordPress admins - BleepingComputer
+    - url: https://thehackernews.com/2026/08/bdthemes-supply-chain-attack-poisons.html
+      title: BdThemes Supply Chain Attack Poisons JSON to Create Rogue WordPress Admins - The Hacker News

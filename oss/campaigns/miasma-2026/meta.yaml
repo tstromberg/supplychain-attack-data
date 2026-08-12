@@ -1,0 +1,74 @@
+- id: miasma-2026
+  title: Miasma worm burrowed through npm for two months
+  synopsis: >-
+    Miasma was a 2026 npm worm that stole CI and cloud credentials, then republished
+    trojanized versions from any maintainer account it reached. It ran from the
+    @redhat-cloud-services compromise on May 29 through the AsyncAPI releases on July 14.
+  story: |
+    A self-propagating npm worm that researchers named Miasma spent roughly
+    seven weeks in the summer of 2026 moving from one maintainer account to
+    the next, harvesting cloud and CI credentials and using them to publish
+    poisoned versions of whatever packages it could reach. Red Hat, the
+    AsyncAPI project, and the voice-AI vendor Vapi were among the names it
+    burned through.
+
+    Miasma's first widely reported outing came on May 29, 2026, when an
+    attacker used a Red Hat employee's GitHub account to inject a malicious
+    preinstall script into packages in the `@redhat-cloud-services` npm
+    namespace. Red Hat said the account had itself been compromised by a
+    malicious VS Code extension, which is a reminder that the worm did not
+    need to break npm to get npm publish rights.
+
+    Five days later the operators changed how the code fired. On June 3,
+    StepSecurity documented a wave it called "Phantom Gyp," in which the
+    payload abandoned `preinstall` and `postinstall` hooks entirely and
+    instead hid execution inside a 157-byte `binding.gyp` file. Because
+    `node-gyp` evaluates shell commands in that file during dependency
+    installation, the code ran on `npm install` without ever appearing in a
+    lifecycle-script scanner. Snyk counted 57 affected packages and more than
+    300 malicious versions.
+
+    The July 14 AsyncAPI compromise moved the trigger again, this time to
+    module import. Socket said the loader fetched an 8.25 MB encrypted second
+    stage from IPFS and unpacked a modular tasking framework with shell
+    execution, file transfer, and systemd persistence. Across all three waves
+    the objective stayed constant: credentials from developer laptops and
+    build runners, exfiltrated to attacker-controlled GitHub repositories and
+    then reinvested in the next round of publishing.
+  start_date: 2026-05-29
+  end_date: 2026-07-14
+  actor:
+    name: Unknown
+    kind: group
+  impact:
+    types:
+    - credential_theft
+    - self_propagation
+    - data_exfiltration
+    - remote_code_execution
+  references:
+  - url: https://access.redhat.com/security/vulnerabilities/RHSB-2026-006
+    title: RHSB-2026-006 Supply chain compromise of @redhat-cloud-services npm packages
+      - Red Hat
+  - url: https://www.stepsecurity.io/blog/binding-gyp-npm-supply-chain-attack-spreads-like-worm
+    title: 'Miasma npm Supply Chain Attack: Self-Spreading Worm via Phantom Gyp - StepSecurity'
+  - url: https://snyk.io/blog/node-gyp-supply-chain-compromise-self-propagating-npm-worm-binding-gyp/
+    title: Node-gyp Supply Chain Compromise - Snyk
+  - url: https://socket.dev/blog/asyncapi-supply-chain-attack
+    title: Compromised npm Packages in the AsyncAPI Namespace Deliver Miasma Botnet Loader
+      - Socket
+  - url: https://thehackernews.com/2026/06/ironworm-and-new-miasma-worm-variant.html
+    title: IronWorm and New Miasma Worm Variant Hit npm in Supply Chain Attacks - The Hacker
+      News
+  notes:
+  - The three waves recorded here differ in execution trigger rather than in payload
+    goal. May 29 used a preinstall script, June 3 used binding.gyp evaluation during
+    node-gyp dependency installation, and July 14 used module import. Detection tooling
+    that keyed on lifecycle scripts missed the second and third.
+  - The 2026-06-24 wave recorded at [[leoplatform-rstreams]] carried the campaign outside
+    npm for the first time, reaching a Verana Blockchain Go module. Researchers use Mini
+    Shai-Hulud, Miasma, and Hades for overlapping parts of this family.
+  - Miasma is distinct from the TeamPCP Mini Shai-Hulud lineage tracked under
+    [[shai-hulud-here-we-go-again]], though both are credential-harvesting npm worms
+    active in the same period and both abuse npm trusted publishing to self-propagate.
+    No public source attributes them to the same operator.

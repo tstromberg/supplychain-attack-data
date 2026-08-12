@@ -1,0 +1,145 @@
+schema_version: 1
+interpretation:
+  - >-
+    OpenSSH states that it restored the original archives after the compromise. These checksum-exact
+    clean bytes therefore represent the pre-replacement state and the restored post-incident state;
+    they are stored once as the before comparator.
+samples:
+  - artifact_id: openssh-3-4p1
+    phase: before
+    classification: clean
+    version: 3.4p1
+    filename: openssh-3.4p1.tar.gz
+    path: openssh-3-4p1/before/openssh-3.4p1.tar.gz
+    sha256: cae5777dcb6296d1502d4682bf0ebcb872305f2760d1ed39d4a053add24c2ca7
+    size: 837668
+    source:
+      url: https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-3.4p1.tar.gz
+      retrieved_at: '2026-08-09T12:20:54Z'
+      kind: official_distribution
+    verification:
+      status: exact
+      basis:
+        - official_advisory_md5_459c1d0262e939d6432f193c7a4ba8a8
+        - measured_sha256
+    notes:
+      - The restored original is byte-identical to the advisory's clean pre-incident archive.
+  - artifact_id: openssh-3-4p1
+    phase: during
+    classification: malicious
+    version: 3.4p1
+    filename: openssh-3.4p1-trojan-analysis.html
+    path: openssh-3-4p1/during/openssh-3.4p1-trojan-analysis.html
+    sha256: 4f581b44a9051508d614c7fb57d91fb9a7dc4bbc509fa7d915f179f0bc56c7ed
+    size: 31675
+    source:
+      url: https://seclists.org/bugtraq/2002/Aug/21
+      retrieved_at: '2026-08-09T12:23:31Z'
+      kind: contemporary_research_archive
+    verification:
+      status: payload_only
+      basis:
+        - contemporary_bugtraq_analysis
+        - full_bf-test.c_diff_preserved
+        - decoded_payload_preserved
+        - measured_sha256
+    notes:
+      - >-
+        This is preserved evidence containing the full malicious diff and decoded payload, not the
+        original tarball.
+  - artifact_id: openssh-3-4p1
+    phase: during
+    classification: malicious
+    version: 3.4p1
+    filename: openssh-3.4p1-backdoor.patch
+    path: openssh-3-4p1/during/openssh-3.4p1-backdoor.patch
+    sha256: 841dea2e8abbb4388c9a9f42613a17263fcba8160ec4c9b433f4bac60d2790aa
+    size: 13614
+    source:
+      url: https://seclists.org/bugtraq/2002/Aug/21
+      retrieved_at: '2026-08-09T12:23:31Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - complete_published_makefile_and_bf-test.c_diff
+        - html_entities_decoded
+        - measured_sha256
+    relates_to:
+      - artifact_id: openssh-3-4p1
+        version: 3.4p1
+      - artifact_id: openssh-3-4
+        version: '3.4'
+      - artifact_id: openssh-3-2-2p1
+        version: 3.2.2p1
+    notes:
+      - >-
+        Extracted from the preserved Bugtraq analysis capture; HTML entities were decoded without
+        changing the diff text.
+      - >-
+        OpenSSH's official advisory identifies bf-test.c as the Trojan in all three affected
+        archives; this exact diff was generated from 3.4p1.
+  - artifact_id: openssh-3-4
+    phase: before
+    classification: clean
+    version: '3.4'
+    filename: openssh-3.4.tgz
+    path: openssh-3-4/before/openssh-3.4.tgz
+    sha256: 222152b1a531ef3cf9775626484301ef97ef41aff405f7491c933f2b2513ad87
+    size: 398595
+    source:
+      url: https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.4.tgz
+      retrieved_at: '2026-08-09T12:20:54Z'
+      kind: official_distribution
+    verification:
+      status: exact
+      basis:
+        - official_advisory_md5_39659226ff5b0d16d0290b21f67c46f2
+        - measured_sha256
+    notes:
+      - The restored original is byte-identical to the advisory's clean pre-incident archive.
+  - artifact_id: openssh-3-2-2p1
+    phase: before
+    classification: clean
+    version: 3.2.2p1
+    filename: openssh-3.2.2p1.tar.gz
+    path: openssh-3-2-2p1/before/openssh-3.2.2p1.tar.gz
+    sha256: d4632762d732834c6d5d536b3bd1e906e6ac0119d08bd24f775fe32a393b2de1
+    size: 822567
+    source:
+      url: https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-3.2.2p1.tar.gz
+      retrieved_at: '2026-08-09T12:20:54Z'
+      kind: official_distribution
+    verification:
+      status: exact
+      basis:
+        - official_advisory_md5_9d3e1e31e8d6cdbfa3036cb183aa4a01
+        - measured_sha256
+    notes:
+      - The restored original is byte-identical to the advisory's clean pre-incident archive.
+unresolved:
+  - artifact_id: openssh-3-4p1
+    phase: during
+    version: 3.4p1
+    hash: md5:3ac9bc346d736b4a51d676faa2a08a57
+    status: original_distribution_unavailable_payload_recovered
+  - artifact_id: openssh-3-4
+    phase: during
+    version: '3.4'
+    status: original_distribution_unavailable_shared_payload_recovered
+  - artifact_id: openssh-3-2-2p1
+    phase: during
+    version: 3.2.2p1
+    status: original_distribution_unavailable_shared_payload_recovered
+  - artifact_id: openssh-3-4p1
+    phase: during
+    coordinate: md5:3ac9bc346d736b4a51d676faa2a08a57
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-08-10T13:56:44.548-04:00 level=ERROR msg="command failed"
+        error="hash 3ac9bc346d736b4a51d676faa2a08a57 unavailable from configured sources:
+        malwarebazaar: MalwareBazaar has no sample for 3ac9bc346d736b4a51d676faa2a08a57:
+        hash_not_found; triage: Triage has no file analysis for MD5
+        3ac9bc346d736b4a51d676faa2a08a57; malshare: download returned status 404"
+    last_attempted_at: '2026-08-10T17:56:45.642Z'

@@ -1,0 +1,134 @@
+        <!DOCTYPE HTML>
+        <html>
+            <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+                <link rel="stylesheet" type="text/css" href="/style.css"/>
+                <title>npm Blog Archive: Reported malicious module: getcookies</title>
+                <meta name="description" content="npm Blog (Archive); updates from the npm team are now published on the GitHub Blog and the GitHub Changelog"/>
+                <meta name="og:title" content="npm Blog Archive: Reported malicious module: getcookies"/>
+                <meta name="og:description" content="npm Blog (Archive); updates from the npm team are now published on the GitHub Blog and the GitHub Changelog"/>
+                <meta name="og:image" content="https://user-images.githubusercontent.com/29712634/81721690-e2fb5d80-9445-11ea-8602-4b2294c964f3.png"/>
+                <link rel="icon" href="/favicon-32x32.png" type="image/png"/>
+                <link rel="apple-touch-icon" sizes="48x48" href="/icons/icon-48x48.png"/>
+                <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png"/>
+                <link rel="apple-touch-icon" sizes="96x96" href="/icons/icon-96x96.png"/>
+                <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png"/>
+                <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png"/>
+                <link rel="apple-touch-icon" sizes="256x256" href="/icons/icon-256x256.png"/>
+                <link rel="apple-touch-icon" sizes="384x384" href="/icons/icon-384x384.png"/>
+                <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png"/>
+            </head>
+            <body>
+                <div id="rainbar"></div>
+                <header>
+                    <div id="logo_and_title">
+                        <a href="/" class="logo"><svg height="32" width="32" viewBox="0 0 700 700" fill="currentColor"><polygon fill="#cb0000" points="0,700 700,700 700,0 0,0"></polygon><polygon fill="#ffffff" points="150,550 350,550 350,250 450,250 450,550 550,550 550,150 150,150 "></polygon></svg></a>
+                        <a href="/" class="title">npm Blog (Archive)</a>
+                    </div>
+                    <div id="links">
+                        <a href="https://npmjs.com/">npmjs.com</a>
+                        <a href="https://status.npmjs.com/">Status</a>
+                        <a href="https://npmjs.com/support/">Support</a>
+                    </div>
+                </header>
+
+                <main>
+                    <div id="retired">
+                        <p>
+                            The npm blog has been discontinued.
+                        </p>
+
+                        <p>
+                            Updates from the npm team are now published on the
+                            <a href="https://github.blog/">GitHub Blog</a> and
+                            the <a href="https://github.blog/changelog/">GitHub
+                            Changelog</a>.
+                        </p>
+                    </div>
+                
+                
+                                    <h1>Reported malicious module: getcookies</h1>
+                    <p>Early May 2nd, the npm security team received and responded to reports of a package that masqueraded as a cookie parsing library but contained a malicious backdoor. The result of the investigation concluded with three packages and three versions of a fourth package being unpublished from the npm Registry.</p>
+
+<p>No packages published to the npm Registry used the malicious modules in a way that would have allowed the backdoor to be triggered. Applications not published to the registry that directly required the malicious modules might have been vulnerable, but are out of the scope of our analysis.</p>
+
+<h2>Initial report</h2>
+
+<p>Initial information from the community reported that the package <code>getcookies</code> contained a potential backdoor, that <code>express-cookies</code> and <code>http-fetch-cookies</code> depended upon getcookies, and that a popular package, <code>mailparser</code>, depended upon http-fetch-cookies.</p>
+
+<h2>Triage</h2>
+
+<p>Upon receiving the report, npm’s security team started triage. The goal of triage was determining whether the reported package did in fact contain malicious code, and, if so, how this impacted the community.</p>
+
+<p>We won’t disclose the entire backdoor here, but we’ll give a few highlights that we noted as it was reviewed.</p>
+
+<p>The backdoor worked by parsing the user-supplied HTTP <code>request.headers</code>, looking for specifically formatted data that provides three different commands to the backdoor.</p>
+
+<blockquote><div>
+JSON.stringify(req.headers).replace(/g([a-f0-9]{4})h((?:[a-f0-9]{2})+)i/gi, (o, p, v) =&gt; {})
+</div></blockquote>
+
+<p>We can see here that the headers are stringified and the result searched for values in the format of: gCOMMANDhDATAi</p>
+
+<p>The control flow codes available were:</p>
+
+<ul><li>0xfffe—reset the code buffer</li>
+<li>0xfffa—execute the code located in the buffer by calling <code>vm.runInThisContext</code>, providing <code>module.exports</code>, <code>require</code>, <code>req</code>, <code>res</code>, and <code>next</code> as arguments.</li>
+<li>default—load the remote code into memory for execution</li>
+</ul><p>These control codes allowed for an attacker to input arbitrary code into a running server and execute it.</p>
+
+<p>Beyond the backdoor code, other aspects of these modules and the account also stood out:</p>
+
+<ul><li>Based on a reverse image search, the profile image on the user who published getcookies appeared to be a stock photo.</li>
+<li>The GitHub user linked from these npm packages was created in March.</li>
+<li>Download counts spiked a few weeks ago for getcookies, express-cookies, and http-fetch-cookies. This seems to correlate to when a version of mailparser was published that depended upon http-fetch-cookie.</li>
+</ul><pre><code class="language-mailparser">
+mailparser
+└── http-fetch-cookies
+     └── express-cookies
+          └──getcookies
+</code></pre>
+
+<p><em>Dependency relationship of the reported modules</em></p>
+
+<p>Despite being deprecated, mailparser still receives about 64,000 weekly downloads. We searched for how users of this module might be impacted. We determined <em>the published versions of mailparser that depended on http-fetch-cookies did not use the module in any way</em>, eliminating any risk the backdoor posed. We speculate that mailparser’s requiring http-fetch-cookies was to execute an attack in the future or to inflate download counts of express-cookies to add to its legitimacy.</p>
+
+<p>Ultimately, mailparser users weren’t impacted. Only users that directly required and used the express-cookies or getcookies packages would be impacted.</p>
+
+<h2>Actions we took</h2>
+
+<ul><li>removed the <code>dustin87</code> user and unpublished getcookies, express-cookies, and http-fetch-cookies;</li>
+<li>removed the 3 versions of <code>mailparser</code> that depended on the <code>http-fetch-cookies</code> module;</li>
+<li>reset npm tokens for the author of mailparser to prevent further unauthorized publishes.</li>
+</ul><h2>Timeline</h2>
+
+<p><em>All times in Pacific Daylight Time (UTC–7)</em></p>
+
+<p>05:23—Initial community report</p>
+
+<p>05:41—Security team started triage</p>
+
+<p>07:01—Unpublished getcookies, express-cookies, http-fetch-cookies</p>
+
+<p>07:02—Revoked tokens for mailparser maintainer</p>
+
+<p>07:26—Unpublished mailparser versions 2.2.3, 2.2.2, and 2.2.1</p>
+                
+                
+                
+                
+                
+                
+                                <div id="footer">
+                <span id="timestamp"> May 2nd, 2018 3:47pm </span>
+                <span id="author">@adam-npm</span>
+                                                          <span class="tag"><a href="/tagged/security">security</a></span>
+                                          <span class="tag"><a href="/tagged/npm">npm</a></span>
+                                          <span class="tag"><a href="/tagged/javascript">javascript</a></span>
+                                                    </div>
+                </main>
+            </body>
+        </html>
+
+        

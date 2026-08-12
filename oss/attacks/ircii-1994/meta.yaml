@@ -4,13 +4,20 @@
     Some copies of the ircII 2.2.9 source code for UNIX systems contained a Trojan horse that
     created a backdoor into accounts running the IRC client.
   story: |
-    In October 1994, CERT warned that some copies of the ircII 2.2.9 UNIX client source contained a Trojan horse. The corrupt source had been available from many FTP sites as early as May, although CERT did not have a specific first date. Because ircII could be compiled and installed without special privileges, the compromised boundary was not only a central administrator's package tree; any user might have built the poisoned client locally.
+    In October 1994, CERT warned that some copies of the ircII 2.2.9 UNIX client source contained a Trojan horse. The corrupt source had been available from many FTP sites as early as May, although CERT did not have a specific first date. Because ircII could be compiled and installed without special privileges, the compromised boundary was not only a central administrator's package tree; any user might have built the poisoned client locally. The delivery was ordinary source distribution: users fetched an IRC client from FTP sites, compiled it, and ran it under their own accounts. The malicious change rode inside that source tree; the trusted action was the build.
 
-    The delivery was ordinary source distribution. Users fetched an IRC client from FTP sites, compiled it, and ran it under their own accounts. The malicious change rode inside that source tree; the trusted action was the build.
+    The backdoor gave remote intruders access to accounts running the IRC client, and CERT said exploitation was already active. CERT also named the escalation: if IRC was run from a system account such as `root` or `bin`, the Trojan horse let intruders reach that system account. The advisory suggested searching binaries for the strings `JUPE` or `GROK`, but warned that backdoor words could be changed and urged sites to install ircII 2.6 instead. IRCHelp's catalog carries a much later retrospective line about the same incident, that some hacked copies of ircII 2.2.9 gave anyone Unix and IRC access, but it names the CERT advisory as the source of that entry, so it restates CERT rather than corroborating it independently.
 
-    The backdoor gave remote intruders access to accounts running the IRC client, and CERT said exploitation was already active. The advisory suggested searching binaries for the strings `JUPE` or `GROK`, but warned that backdoor words could be changed and urged sites to install ircII 2.6 instead. In the language of early Internet trust, this was a userland source tarball becoming a quiet door into real shell accounts.
+    A contemporary Bugtraq exchange supplies distribution-specific context missing from the CERT summary. ircII maintainer Matthew Green said the standard 2.2.9 did not contain the access bug, but that copies on various FTP sites had `CTCP GROK` and `CTCP JUPE` backdoors. A second participant reported downloading a JUPE-bearing copy from `ftp.funet.fi` within the preceding month, located the change in `source/ctcp.c`, and described it as a three- or four-line command handler that let a remote IRC client execute commands. This confirms that byte-identical-looking version labels did not identify whether a particular copy was poisoned: the compromise was in distribution, not the official version's intended source.
 
-    The scope was awkward because the distribution path was informal by modern standards. CERT could say the bad source had appeared on many FTP sites, but not exactly when each copy changed hands. That left administrators with a provenance problem: find every locally built ircII binary, assume string checks were incomplete, and replace the client from a known-good release.
+    The scope was awkward because the distribution path was informal by modern standards: CERT could say the bad source had appeared on many FTP sites, but not exactly when each copy changed hands. Administrators therefore had to find every locally built ircII binary, assume string checks were incomplete, and replace the client from a known-good release.
+  pull_quote:
+    text: >-
+      The backdoor was three or four lines in `ctcp.c`: a JUPE verb any
+      stranger on IRC could send the client, turning the chat protocol into a
+      command channel that the disclosed example used to write `~/.rhosts`.
+    caption: the chat protocol was the command channel
+    after: 2
   start_date: 1994-05-01
   end_date: 1994-10-19
   target:
@@ -29,6 +36,7 @@
     types:
     - backdoor
     - remote_code_execution
+    - privilege_escalation
   artifacts:
   - id: ircii-2-2-9
     name: ircII
@@ -45,6 +53,16 @@
       role: mirror
     - uri: https://www.sei.cmu.edu/documents/2339/1995_001_001_83550.pdf
       role: mirror
+    - uri: https://www.irchelp.org/security/irc-backdoor.txt
+      role: mirror
+    - uri: https://www.neperos.com/article/q38ic72d5f3aa2f1
+      role: mirror
+    - uri: https://seclists.org/bugtraq/1994/Oct/151
+      role: mirror
+    - uri: https://seclists.org/bugtraq/1994/Oct/154
+      role: mirror
+    - uri: https://ftp.zx.net.nz/pub/mirror/ftp.funet.fi/pub/unix/packages/irc/ircII/ircII2.2.9.tar.gz
+      role: distribution
     indicators:
     - kind: observable
       value: JUPE
@@ -52,9 +70,36 @@
       value: GROK
     - kind: observable
       value: ircII 2.2.9 source obtained from FTP sites in May 1994 or later
+    - kind: path
+      value: source/ctcp.c
+    evidence:
+    - kind: incident_source
+      path: cert-ca-94-14-neperos.txt
+      role: contemporary_advisory_mirror
+    - kind: incident_source
+      path: irc-backdoor.txt
+      role: retrospective_context
+    - kind: sample
+      path: samples/ircii-2-2-9/before/ircII2.2.9.tar.gz
+      role: pre_window_clean_comparator
+    - kind: incident_source
+      path: samples/ircii-2-2-9/during/bugtraq-ircii-maintainer-disclosure.html
+      role: contemporary_maintainer_disclosure
+    - kind: incident_source
+      path: samples/ircii-2-2-9/during/bugtraq-ircii-jupe-analysis.html
+      role: contemporary_payload_analysis
     notes:
     - CERT reported the corrupt source was available as early as May 1994 but did not 
       identify a specific first distribution date.
+    - The preserved clean 2.2.9 archive is dated June 1993 and contains neither JUPE nor
+      GROK. It is a pre-window comparator, not proof that every later copy with this
+      filename was clean.
+    - CERT's recommended 2.6 remediation archive had size 366361 and MD5
+      3FC5FBD18CB3E6C071F51FD8C6C59017; those exact archive bytes remain unresolved.
+    - Unresolved tension. CERT listed `ftp.funet.fi:/pub/unix/irc/ircII` among the FTP
+      sites to fetch the recommended 2.6 source from, but the Bugtraq analysis says a
+      JUPE-bearing 2.2.9 copy came from ftp.funet.fi within the preceding month. No
+      source reconciles the two, and this record does not pick a side.
   notes:
   - The start date is encoded as 1994-05-01 because CERT only gave "as early as May 
     1994"; the advisory date is 1994-10-19.
@@ -64,3 +109,13 @@
     title: 'CERT Advisory CA-94:14: Trojan Horse in IRC Client for UNIX'
   - url: https://www.sei.cmu.edu/documents/2339/1995_001_001_83550.pdf
     title: CERT Coordination Center 1994 Annual Report
+  - url: https://www.irchelp.org/security/irc-backdoor.txt
+    title: Bugs and Backdoors in IRC clients, scripts and bots
+  - url: https://www.neperos.com/article/q38ic72d5f3aa2f1
+    title: 'Mirror of CERT Advisory CA-94:14: Trojan Horse in IRC Client for UNIX'
+  - url: https://seclists.org/bugtraq/1994/Oct/151
+    title: ircII maintainer disclosure of GROK and JUPE backdoors
+  - url: https://seclists.org/bugtraq/1994/Oct/154
+    title: Contemporary analysis of the JUPE-bearing ftp.funet.fi copy
+  - url: https://ftp.zx.net.nz/pub/mirror/ftp.funet.fi/pub/unix/packages/irc/ircII/
+    title: Historical Funet ircII distribution mirror

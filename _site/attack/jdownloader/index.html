@@ -21,16 +21,16 @@
     <div class="meta-item"><strong>Actor:</strong> Unknown (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
     <div class="meta-item"><strong>Language:</strong> Java</div>
-    <div class="meta-item"><strong>Cause:</strong> website_compromise</div>
+    <div class="meta-item"><strong>Cause:</strong> exploit</div>
     <div class="meta-item"><strong>Motive:</strong> unknown</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
-    <div class="meta-item"><strong>Impact:</strong> malware_delivery</div>
+    <div class="meta-item"><strong>Impact:</strong> remote_access, malware_delivery</div>
     <div class="meta-item"><strong>User Impact:</strong> 0</div>
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Attackers changed selected JDownloader website links to malicious third-party files. The real installers and RSA-signed in-app updater were not modified.</p>
+  <p class="synopsis">Attackers exploited a CMS vulnerability on the JDownloader website to swap download links for Windows and Linux installers with trojanized binaries containing a Remote Access Trojan (RAT). The real installers and RSA-signed in-app updater were not modified.</p>
 
   
   <h2>Story</h2>
@@ -38,9 +38,9 @@
     
       <p>The popular open-source download manager JDownloader briefly served
 malicious installers from its own website in early May 2026, after
-attackers used the project&#39;s content management system to swap selected
-download links to unrelated third-party files. The project&#39;s signed
-installers and in-app updater were not modified.</p>
+attackers exploited an unpatched vulnerability in the project&#39;s content management
+system (CMS) to swap selected download links to trojanized third-party files.
+The project&#39;s signed installers and in-app updater were not modified.</p>
     
       <p>In a public incident notice, the JDownloader team described the event as
 a website-content compromise, not a build compromise. Attackers used the
@@ -53,10 +53,17 @@ in-app updater was outside the affected path and continued to verify
 updates with RSA signatures.</p>
     
       <p>The risk window ran from shortly after midnight UTC on May 6 through
-May 7, 2026. According to the project&#39;s writeup, the team was alerted at
-17:06 UTC on May 7, took the site down 18 minutes later, removed the
-malicious link targets, restored legitimate links, and kept the site
+May 7, 2026. The compromise went undetected for more than a day until
+a Reddit user spotted unexpected Windows SmartScreen warnings and the
+malware attempting to disable Microsoft Defender. According to the project&#39;s writeup,
+the team was alerted at 17:06 UTC on May 7, took the site down 18 minutes later,
+removed the malicious link targets, restored legitimate links, and kept the site
 offline until further verification was complete.</p>
+    
+      <p>Security researchers later identified the payload as a sophisticated multi-component
+framework. This included a Python-based Remote Access Trojan (RAT) protected by
+PyArmor, an r77 Rootkit Stager, and a Windows Defender Application Control (WDAC)
+policy designed to disable numerous antivirus products.</p>
     
       <p>The most useful evidence for defenders is the substituted artifact set
 itself. JDownloader published exact byte sizes and SHA-256 hashes for one
@@ -308,6 +315,12 @@ clean release packages.</p>
   <ul>
     
       <li><a href="https://jdownloader.org/incident_8.5.2026.html" target="_blank">Website installer incident - May 2026</a></li>
+    
+      <li><a href="https://www.sophos.com/en-us/blog/sophos-supply-chain-attack" target="_blank">Sophos Endpoint in action - Blocking a novel supply chain attack</a></li>
+    
+      <li><a href="https://www.gendigital.com/blog/insights/research/inside-the-jdownloader-supply-chain-attack" target="_blank">Inside the JDownloader Supply Chain Attack</a></li>
+    
+      <li><a href="https://www.reddit.com/r/jdownloader/comments/1t6goqe/is_the_website_hacked/" target="_blank">Reddit user spots SmartScreen warnings on JDownloader installer</a></li>
     
   </ul>
   

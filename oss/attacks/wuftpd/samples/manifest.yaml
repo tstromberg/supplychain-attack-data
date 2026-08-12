@@ -1,0 +1,105 @@
+schema_version: 1
+interpretation:
+  - >-
+    The WU-FTPD project's preserved attic contains clean 2.2 and 2.3 source distributions, but its
+    entries named for the 2.2 Trojan are only 1,951-byte wish-list notices stating that the project
+    did not possess the bad archive. CERT's exact authentication diff is therefore preserved as
+    malicious payload evidence. The 2.3 .tar.Z is byte-identical to the remediation archive named
+    and checksummed in CERT's original April 6 advisory.
+samples:
+  - artifact_id: wuftpd
+    phase: before
+    classification: clean
+    version: '2.2'
+    filename: wu-ftpd-2.2.tar.gz
+    path: wuftpd/before/wu-ftpd-2.2.tar.gz
+    sha256: 7404ce43572f614d7ceb2f019149e8085143a60c2a3b3a364a8e3bcc80bde65e
+    size: 112045
+    source:
+      url: https://ftp.gwdg.de/pub/misc/wu-ftpd/ftp.wu-ftpd.org/wu-ftpd-attic/wu-ftpd-2.2.tar.gz
+      retrieved_at: '2026-08-09T21:41:39.575583Z'
+      kind: project_archive_mirror
+    verification:
+      status: exact
+      basis:
+        - preserved_project_attic
+        - authentication_block_matches_certs_clean_side
+        - no_quoted_NULL_backdoor_password
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: '2.2'
+    notes:
+      - This is a clean same-version comparator, not the unavailable trojaned 2.2 distribution.
+  - artifact_id: wuftpd
+    phase: during
+    classification: malicious
+    version: 2.1f/2.2
+    filename: wu-ftpd-trojan-ftpd.c.diff
+    path: wuftpd/during/wu-ftpd-trojan-ftpd.c.diff
+    sha256: 8392017bc24be75bff50d45dd3827b9e32c1e381a3cf6427c062c764265d9e3a
+    size: 272
+    source:
+      url: https://www.sei.cmu.edu/documents/517/1994_019_001_496252.pdf
+      retrieved_at: '2026-08-09T22:44:41Z'
+      kind: official_advisory_extract
+    verification:
+      status: payload_only
+      basis:
+        - cert_published_exact_ftpd_c_diff
+        - contemporary_bugtraq_corroboration
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: '2.2'
+    notes:
+      - In CERT's normal diff, the less-than side is malicious and the greater-than side is clean.
+      - The diff shows the quoted NULL backdoor password but is not the complete poisoned archive.
+  - artifact_id: wuftpd
+    phase: after
+    classification: clean
+    version: '2.3'
+    filename: wu-ftpd-2.3.tar.Z
+    path: wuftpd/after/wu-ftpd-2.3.tar.Z
+    sha256: aaa53d02966be26186886e6134ff53b3a12a4f2902b82854b6e3f38538f919e7
+    size: 184616
+    source:
+      url: https://ftp.gwdg.de/pub/misc/wu-ftpd/ftp.wu-ftpd.org/wu-ftpd-attic/wu-ftpd-2.3.tar.Z
+      retrieved_at: '2026-08-09T22:46:25.385845Z'
+      kind: project_archive_mirror
+    verification:
+      status: exact
+      basis:
+        - original_cert_advisory_md5_e58adc5ce0b6eae34f3f2389e9dc9197
+        - original_cert_advisory_size_184616
+        - measured_sha256
+unresolved:
+  - artifact_id: wuftpd
+    phase: during
+    version: '2.2'
+    filename: wu-ftpd-2.2.tar.Z
+    hash: md5:3e12b0efb95bcb97e5b58fb916323618
+    status: original_distribution_unavailable_exact_diff_recovered
+    attempts:
+      - >-
+        The WU-FTPD project attic explicitly lists the Trojan archive as wanted rather than
+        preserved.
+      - MalwareBazaar returned hash_not_found.
+      - Triage returned no file analysis.
+      - Malshare returned HTTP 404.
+  - artifact_id: wuftpd
+    phase: during
+    version: 2.1f
+    status: malicious_archive_identity_and_bytes_unknown_exact_diff_recovered
+  - artifact_id: wuftpd
+    phase: during
+    coordinate: md5:3e12b0efb95bcb97e5b58fb916323618
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-08-10T13:57:09.467-04:00 level=ERROR msg="command failed"
+        error="hash 3e12b0efb95bcb97e5b58fb916323618 unavailable from configured sources:
+        malwarebazaar: MalwareBazaar has no sample for 3e12b0efb95bcb97e5b58fb916323618:
+        hash_not_found; triage: Triage has no file analysis for MD5
+        3e12b0efb95bcb97e5b58fb916323618; malshare: download returned status 404"
+    last_attempted_at: '2026-08-10T17:57:10.598Z'

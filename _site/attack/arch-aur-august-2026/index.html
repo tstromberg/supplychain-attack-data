@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUR adoption disabled after a second malicious commit wave</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>AUR adoption disabled after a second malicious commit wave</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> Arch User Repository · <a href="https://aur.archlinux.org/" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-07-30 to 2026-08-01 (2 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> package_repository</div>
+    <div class="meta-item"><strong>Language:</strong> Shell</div>
+    <div class="meta-item"><strong>Cause:</strong> orphaned_package_takeover</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, backdoor, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+    <div class="meta-item"><strong>Campaigns:</strong>
+      
+        <a href="/campaign/atomic-arch-2026/">Atomic Arch turned orphaned AUR packages into infostealers</a>
+      
+    </div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">A late-July 2026 wave of adopted AUR packages pushed malicious commits that dropped a validator binary into the build path, running with sudo during the build. Arch disabled package adoption on 2026-07-30 and paused all AUR pushes on 2026-08-01.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Six weeks after the Atomic Arch campaign, the Arch User Repository was hit
+again by the same technique, and this time the project shut the door. On July
+30, 2026, Robin Candau, posting as &quot;Antiz&quot; for the Arch Linux DevOps team,
+told the distribution&#39;s mailing list that attackers were adopting neglected
+packages and quietly injecting malicious code through follow-up commits. Arch
+disabled AUR package adoption that day. On August 1 it paused AUR pushes
+entirely while it investigated.</p>
+    
+      <p>The pattern was a refinement of June&#39;s. Rather than adopting a package and
+immediately rewriting its build script, the operators took ownership and waited,
+then landed the malicious change in a later commit, where it read as ordinary
+maintenance rather than the act of a new owner. Researchers corroborated at
+least 89 package names, catalogued in three batches of 27, 42, and 19, spanning
+security tooling, desktop utilities, and AI-themed packages. Named examples
+included `openconnect-sso`, `i915-sriov-dkms`, `rtk-git`, `boringssl-git`,
+`warp-terminal-git`, `weather-display`, and `astro-box`.</p>
+    
+      <p>The `openconnect-sso` update was the clearest case. It introduced a binary
+called `validator` into the package build path, which executed with sudo
+privileges during the build. That is a step beyond the June waves, which pulled
+a malicious npm dependency: here the executable went directly into the build
+process, where AUR helpers already run with elevated privileges as a matter of
+course. The second stage reused the Tor-backed delivery infrastructure from
+Atomic Arch, which is what tied the two waves together.</p>
+    
+      <p>Corgea&#39;s assessment was that package adoption itself now belongs in the threat
+model, and that once malicious content reaches the build path the trusted
+package name is mostly camouflage. Arch&#39;s response conceded the point. Halting
+adoptions removes the mechanism the attackers were using, and pausing pushes
+stopped the follow-up commits, but both are blunt instruments against a
+repository whose model assumes that users read the build scripts they run.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>openconnect-sso</strong>
+            
+            <br><span>aur · package_build_script</span>
+            
+            
+          </td>
+          <td>2026-07-30<br>to 2026-08-01</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>Additional hijacked AUR packages</strong>
+            
+            <br><span>aur · package_build_script</span>
+            
+            
+          </td>
+          <td>2026-07-30<br>to 2026-08-01</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://aur.archlinux.org/</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file:validator</code></li>
+    
+      <li><code>technique:malicious commit pushed after adoption rather than at adoption</code></li>
+    
+      <li><code>technique:Tor-backed second stage shared with the Atomic Arch waves</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://corgea.com/research/arch-aur-openconnect-sso-malware-wave-august-2026" target="_blank">Arch AUR&#39;s August malware wave: openconnect-sso and 89 named packages - Corgea</a></li>
+    
+      <li><a href="https://www.phoronix.com/news/Arch-Linux-AUR-Adoptions-Halted" target="_blank">Arch Linux AUR Under Another Wave Of Malicious Packages, Package Adoptions Halted - Phoronix</a></li>
+    
+      <li><a href="https://cybersecuritynews.com/arch-linux-disables-aur-package/" target="_blank">Arch Linux Disables AUR Package Takeovers as Attackers Push Malicious Commits - Cyber Security News</a></li>
+    
+      <li><a href="https://www.hexnode.com/blogs/arch-linux-aur-malware-campaign/" target="_blank">Arch Linux AUR Malware Halts Adoption and Pushes - Hexnode</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

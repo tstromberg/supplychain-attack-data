@@ -1,0 +1,863 @@
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><title>Fedora, Red Hat, and distributor security [LWN.net]</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="Fedora, Red Hat, and distributor security">
+<meta property="og:site_name" content="LWN.net">
+<meta property="og:type" content="article">
+<meta property="og:description" content="On August 22, the Fedora Project released an 'infrastructure report' confirming what most obser [...]">
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="robots" CONTENT="noai, noimageai">
+        <link rel="icon" href="https://static.lwn.net/images/favicon.png"
+              type="image/png">
+        <link rel="alternate" type="application/rss+xml" title="LWN.net headlines" href="https://lwn.net/headlines/rss">
+        <link rel="stylesheet" href="/CSS/lwn-v1">
+<style>div.MakeALink { display: none }</style>
+
+        
+        </head>
+        <body>
+        <a name="t"></a>
+<div id="menu"><a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/logo/barepenguin-70.webp" class="logo"
+                 border="0" alt="LWN.net Logo">
+            <span class="logo">LWN<br>.net</span>
+            <span class="logobl">News from the source</span></a>
+            <a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/lcorner-ss.png" class="sslogo"
+                 border="0" alt="LWN"></a><div class="navmenu-container">
+           <ul class="navmenu">
+        <li><a class="navmenu" href="#t"><b>Content</b></a><ul><li><a href="/current/">Weekly Edition</a></li><li><a href="/Archives/">Archives</a></li><li><a href="/Search/">Search</a></li><li><a href="/Kernel/">Kernel</a></li><li><a href="/Security/">Security</a></li><li><a href="/Calendar/">Events calendar</a></li><li><a href="/Comments/unread">Unread comments</a></li><li><hr></li><li><a href="/op/FAQ.lwn">LWN FAQ</a></li><li><a href="/op/AuthorGuide.lwn">Write for us</a></li></ul></li>
+<li><a class="navmenu" href="#t"><b>Edition</b></a><ul><li><a href="/Articles/294984/">Return to the Front page</a></li></ul></li>
+</ul></div>
+</div> <!-- menu -->
+<div class="topnav-spacer"></div>
+<div class="top-banner not-print"><!-- no top ad served --></div>
+<div class="topnav-container">
+<div class="not-handset"><form action="https://lwn.net/Login/" method="post" name="loginform"
+                 class="loginform">
+        <label><b>User:</b> <input type="text" name="uname" value="" size="8" id="uc" /></label> 
+		<label><b>Password:</b> <input type="password" name="pword" size="8" id="pc" /></label> <input type="hidden" name="target" value="/Articles/295406/" /> <input type="submit" name="submit" value="Log in" /></form> |
+           <form action="https://lwn.net/subscribe/" method="post" class="loginform">
+           <input type="submit" name="submit" value="Subscribe" />
+           </form> |
+           <form action="https://lwn.net/Login/newaccount" method="post" class="loginform">
+           <input type="submit" name="submit" value="Register" />
+           </form>
+        </div>
+               <div class="handset-only">
+               <a href="/Login/"><b>Log in</b></a> /
+               <a href="/subscribe/"><b>Subscribe</b></a> /
+               <a href="/Login/newaccount"><b>Register</b></a>
+               </div>
+               </div><div class="maincolumn flexcol">
+<div class="middlecolumn">
+<div class="PageHeadline">
+<h1>Fedora, Red Hat, and distributor security</h1>
+</div>
+<div class="ArticleText"><main>
+<blockquote class="ad">
+<b>We're bad at marketing</b>
+<p>
+We can admit it, marketing is not our strong suit. Our strength is
+writing the kind of articles that developers, administrators, and
+free-software supporters depend on to know what is going on in the
+Linux world. Please <a href="/Promo/nsn-bad/subscribe">subscribe today</a> to help us keep doing that, and so
+we don’t have to get good at marketing.
+</blockquote>
+<div class="FeatureByline">
+           By <b>Jonathan Corbet</b><br>August 25, 2008</br>
+           </div>
+On August 22, the Fedora Project released an "<a
+href="http://lwn.net/Articles/295134/">infrastructure report</a>"
+confirming what most observers had, by then, suspected: the project had
+suffered a major security breach.  The attacker got as far as a system used
+to sign packages distributed by Fedora.  That, of course, is something
+close to a worst-case scenario: if an intruder has control over such a
+system, it's a relatively small step to capture the package signing key and
+the passphrase used to employ that key.  And those, in turn, could be used
+to create hostile packages which would be accepted as genuine by Fedora
+installations worldwide.
+<p>
+
+Fortunately for the Fedora Project (and its users), an audit has determined
+that nobody made use of the key while the intruder was present.  So, even
+if some means for capturing something as transient as the passphrase were
+in place, that passphrase was not exposed, and, thus, cannot have been
+compromised.
+
+<p>
+Needless to say, the project is changing its package signing key anyway.
+<p>
+
+Interestingly, the Fedora Project was not the only target in this attack: Red Hat,
+too, was compromised.  Unlike Fedora, Red Hat did not issue a statement
+specifically about this intrusion; instead, the information was included in
+an <a href="http://rhn.redhat.com/errata/RHSA-2008-0855.html">openssh
+security update</a>.  In this case, the attacker was more successful, to
+the point of being able to sign "<q>...a small number of OpenSSH
+packages relating only to Red Hat Enterprise Linux 4 (i386 and x86_64
+architectures only) and Red Hat Enterprise Linux 5 (x86_64 architecture
+only).</q>" This language deserves to be questioned: it is only
+necessary to sign a single openssh package (certainly qualifying as a
+"small number") to compromise thousands of RHEL hosts, and the "only" terms
+describe what must be a large majority of deployed RHEL systems.  Seriously
+scary, but Red Hat has been able to convince itself that none of the
+compromised packages were fed out to RHEL subscribers.  So this attack,
+too, failed - but not by much.
+<p>
+
+Needless to say, disclosures like this raise more questions than they
+answer.  The one question that Fedora and Red Hat will have to answer at
+some point is this: how did the intruder get in?  One assumes that Fedora
+and Red Hat are running their own distributions on their internal systems;
+it thus stands to reason 
+that, if those distributions contained a vulnerability that allowed the
+attacker to get in, many other systems will also be vulnerable.  If,
+instead, this compromise is the result of administrator or developer error
+(or, say, of a lost laptop), administrators responsible for Fedora and RHEL
+systems can breathe a little easier.  Either way, they deserve to know how
+this series of events came to pass.
+<p>
+
+Some people would like to have that information immediately.  Beyond that,
+there has, predictably, been a fair amount of grumbling (also
+predictably, from a relatively small number of people) on the Fedora lists
+on how this incident was handled.  Your editor, too, has <a
+href="http://lwn.net/Articles/294834/">argued</a> that some information
+took too long to emerge.  He will now argue that, while Fedora still has
+more to disclose, the project has said enough to give itself some breathing
+room while it struggles to put its infrastructure back together and figure
+out what really happened.  There's all kinds of good reasons why more
+information may not be immediately forthcoming, including the obvious
+possibility that nobody really knows yet how the intruder gained access.  There is
+little to be gained from hammering on Fedora at this point at this time.
+<p>
+That said, anything the project can say to tell its users whether they
+should be worried about an undisclosed vulnerability in their systems would
+be most welcome, and sooner would be better than later.
+<p>
+Meanwhile, what <i>can</i> be done, and what Fedora board member Jeff
+Spaleta, in particular, has been 
+pushing for, is to think about how things should be handled the next time.
+<a href="/Articles/295417/">Says Jeff</a>:
+<p>
+<div class="BigQuote">
+	Did we have a communication problem? Maybe. But communication
+	problems are not equivalent to trust issues.  But considering that
+	was a first of its kind event for us as a project, I don't think
+	its necessarily unexpected to see some miscommunication. I don't
+	think any of us, either inside Red Hat or outside had talked
+	through how this sort of thing should be handled.  I don't remember
+	a serious public discussion about how to deal with communication of
+	an event like this before having an event like this. And I'm not
+	going to let the assumption stand that to do things differently
+	should have been obvious to those in a position to deal with the
+	information...
+	<p>
+	If people want things to be better, if god forbid something like
+	this happens again, then a serious effort to write a communication
+	process has to be written up and it must be agreeable to legal as a
+	workable process that won't set off any legal liability landmines.
+</div>
+<p>
+The Fedora Project should certainly write up a policy for situations like
+this.  It would be good for Fedora's users, but it could have an effect far
+beyond that: such a policy could serve as an example for other distributors
+as well.  It is, after all, probably safe to say that Fedora is not the
+only distributor which has, thus far, neglected to put plans in place for
+this sort of disaster.
+<p>
+We all need such plans.  For better or for worse, distributors have come to
+occupy an important position with regard to the security of much of the
+net.  Millions of systems run packages signed by Linux distributors; they
+depend, implicitly, on the security of the process used to create those
+packages.  That process is not a small one; it can involve hundreds of
+developers, before even counting all of those involved in upstream
+development projects.  The consequences of a failure anywhere in that chain of trust
+can be severe.  It is not surprising that the distribution system was
+attacked; perhaps the only real surprise is that it has not happened more
+often - that we know of.  These attacks will happen again; distributors
+need to have a firm idea of how they will respond.
+<p>
+A related subject is worth a quick mention: as of this writing, the Fedora
+Project has issued no security updates since August&nbsp;12, almost a full
+two weeks.  A number of significant vulnerabilities, including the <a
+href="http://lwn.net/Articles/294667/">postfix symbolic link
+vulnerability</a>, remain unpatched for Fedora users.  Red Hat has done
+better, but not by much.  Linux users depend heavily on the distributor
+security update process, and, for these two distributions, that process has
+been severely disrupted.  If there had been a truly serious vulnerability
+disclosed during this time, people charged with keeping Fedora and RHEL
+systems secure might have found themselves in a difficult position.  One
+need not be overly paranoid to envision this type of disruption being done
+intentionally as part of a zero-day attack on the net.
+<p>
+
+This incident should serve as a sort of wake-up call for both distributors
+and their users.  Distributors wanting to retain their users' trust should
+be thinking about documenting things like:
+<p>
+<ul>
+<li> How the packaging chain is kept secure.  It would be good to know 
+     how many people are able to sign packages, and how they gain access to
+     the systems where this signing is done.
+<p>
+<li> What sort of plans the distributor has in place for dealing with
+     security problems.  One can only assume that Red Hat dedicated (and
+     continues to dedicate) a large amount of staff time to understanding
+     and recovering from this incident.  Would other distributors be willing
+     and able to do the same?
+<p>
+<li> What are the plans for dealing with a major security breach?  How
+     might a critical security update be propagated during a time when the
+     integrity of the packaging system has been compromised?
+<p>
+<li> Should something go wrong, when and how will information be
+     communicated to the wider community?
+</ul>
+<p>
+
+Conversely, anybody who is deploying an important Linux-based system should
+be asking such questions when choosing a distribution for that system.  If
+the system requires high-assurance guarantees in this regard, it probably
+makes sense to look at the vendors who are willing to provide such
+guarantees for a fee.  But, again, the lesson we have learned from recent
+events is that the time to ask these questions is now, and not when
+something has gone wrong and people are running around in circles.
+<p>
+
+As a whole, Linux users have been very well served by distributors since
+the very beginning.  The distributors pull together thousands of software
+releases and integrate them into a coherent whole; they then make the
+results available, often for free.  They provide fixes when things break,
+and most of them pay particular attention to fixing security-related
+problems.  And they have done a top-quality job of not being used as a
+conduit for hostile software.  It's a great system, and that has not
+changed.  But we have learned something about how heavily we depend on that
+system, and how it can fail.  Proper application of the lessons from this
+episode should help us all to be more secure in the future.<br clear="all"><hr width="60%%" align="left">
+            <form action="/Login/" method="post">
+            <input type="hidden" name="target" value="/Articles/295406/" />
+            <input type="submit" name="login" value="Log in" /> to post comments
+            <p>
+        <p><a name="Comments"></a>
+<a name="CommAnchor295451"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 25, 2008 20:46 UTC (Mon)
+                               by <b>gnu_lorien</b> (subscriber, #44036)
+                              [<a href="/Articles/295451/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Going a step beyond, I'd also like to see the following things:<br>
+<p>
+1] An explanation of how they discovered, tracked, and have verified the damage that the intruder caused.<br>
+<p>
+2] What, if anything, can we users do to alert Fedora/Red Hat if we come across a package that seems to be forged or exploited in their distribution?<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295451/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor295454"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 25, 2008 21:00 UTC (Mon)
+                               by <b>rahulsundaram</b> (subscriber, #21946)
+                              [<a href="/Articles/295454/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+I will answer just the second question<br>
+<p>
+<a href="http://fedoraproject.org/wiki/Security/Bugs">http://fedoraproject.org/wiki/Security/Bugs</a><br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295454/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor295469"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Packaging chain</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 25, 2008 23:57 UTC (Mon)
+                               by <b>bojan</b> (subscriber, #14302)
+                              [<a href="/Articles/295469/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+<font class="QuotedText">&gt; How the packaging chain is kept secure. It would be good to know how many people are able to sign packages, and how they gain access to the systems where this signing is done.</font><br>
+<p>
+It would be relatively easy to physically separate the system used for signing packages, so that no network access is possible (i.e. backup built packages to a medium, take it to the signing machine, sign, backup again, put into repository). Sure, this would make things slower, but even now there is quite a delay between building a new package in koji and having it available in the repo. But that would only deal with half the problem.<br>
+<p>
+If the build system gets compromised (which is used by _many_), it may be all over too. In such a case you would have legitimate signers signing packages that are no good. I guess having a disconnected replica of the build system may be a solution, where all built packages destined to land in updates would be rebuilt for verification, but that would be quite complicated and expensive to do.<br>
+<p>
+Of course, all the above would assume that Fedora contributors themselves are not subverting the system (knowingly or not). Maybe the real solution is to actually use this potential vulnerability to create more protection, by requiring certain number of contributors to sign all packages with their own private keys before they are considered valid. In such a scenario, attackers would have to compromise many private keys owned by many different people in order to have an effect. And these signers would have an opportunity to verify that the builds are correct, by performing their own.<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295469/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor295476"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 25, 2008 23:58 UTC (Mon)
+                               by <b>jengelh</b> (subscriber, #33263)
+                              [<a href="/Articles/295476/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+<font class="QuotedText">&gt;The one question that Fedora and Red Hat will have to answer at some point is this: how did the intruder get in? [...] That said, anything the project can say to tell its users whether they should be worried about an undisclosed vulnerability in their systems would be most welcome, and sooner would be better than later. </font><br>
+<p>
+My guess is that a company like Microsoft would not even tell the world that intrusions have happened. So Redhat is a big step ahead already.<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295476/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor295481"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 26, 2008 0:47 UTC (Tue)
+                               by <b>kov</b> (subscriber, #7423)
+                              [<a href="/Articles/295481/">Link</a>] (3 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+@jengelh: while I agree with you with regards to what a company such as Microsoft would do it's not like Fedora/RedHat treated this incident in a way that makes it stand when compared to other standards.<br>
+<p>
+The Debian servers compromise of 2003 was handled much more timely and in a better fashion, and should be taken as example and standard for comparison in my opinion. Taking a look at the history for the 2003 compromise may be a good way of understanding what I am talking about:<br>
+<p>
+Initial announcement: <a href="http://www.debian.org/News/2003/20031121">http://www.debian.org/News/2003/20031121</a><br>
+<p>
+Initial detailed report for the public developers announce mailing list: <a href="http://lists.debian.org/debian-devel-announce/2003/11/msg00012.html">http://lists.debian.org/debian-devel-announce/2003/11/msg...</a><br>
+<p>
+Final detailed report: <a href="http://www.debian.org/News/2003/20031202">http://www.debian.org/News/2003/20031202</a><br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295481/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor295482"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 26, 2008 1:01 UTC (Tue)
+                               by <b>jspaleta</b> (subscriber, #50639)
+                              [<a href="/Articles/295482/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Thanks for the pointers to the deb incident.  I think this will make for an excellent point of discussion for Fedora policy.<br>
+<p>
+-jef  <br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295482/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor295491"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 26, 2008 5:45 UTC (Tue)
+                               by <b>sbergman27</b> (guest, #10767)
+                              [<a href="/Articles/295491/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+"""<br>
+I think this will make for an excellent point of discussion for Fedora policy.<br>
+"""<br>
+<p>
+Please do let us know how it goes and what comes of the discussion.<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295491/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor295909"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 28, 2008 9:54 UTC (Thu)
+                               by <b>hadess</b> (subscriber, #24252)
+                              [<a href="/Articles/295909/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+And there's no mention in there of the fact that Red Hat people helped diagnose the intrusion (if that's the Debian intrusion I remember about, might well have been another one).<br>
+<p>
+And it's easier to report about a break-in when the problem has been diagnosed. It's most likely still being diagnosed and plugged before making the full timeline public.<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295909/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor295492"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 26, 2008 6:10 UTC (Tue)
+                               by <b>sbergman27</b> (guest, #10767)
+                              [<a href="/Articles/295492/">Link</a>] (5 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+"""<br>
+Fortunately for the Fedora Project (and its users), an audit has determined that nobody made use of the key while the intruder was present. <br>
+"""<br>
+<p>
+Uhhh, how do we know that, exactly?<br>
+<p>
+"""<br>
+...but Red Hat has been able to convince itself that none of the compromised packages were fed out to RHEL subscribers. So this attack, too, failed - but not by much.<br>
+"""<br>
+<p>
+And how, exactly, can we be sure of that?<br>
+<p>
+The strictly proper, though perhaps impractical procedure, at this point, would be for affected RHEL users to reinstall.  And Fedora users, too, really. In this particular situation, there is too much at stake on all sides to allow for blind trust on the users' part.<br>
+<p>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295492/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor295494"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 26, 2008 6:16 UTC (Tue)
+                               by <b>drag</b> (guest, #31333)
+                              [<a href="/Articles/295494/">Link</a>] (2 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Or if your paraniod and your using Fedora/Redhat just disable Openssh. <br>
+<p>
+Compile it from scratch or whatever you want.<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295494/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor295554"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 26, 2008 17:16 UTC (Tue)
+                               by <b>sbergman27</b> (guest, #10767)
+                              [<a href="/Articles/295554/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+The CentOS folks are kind enough to do that for me.<br>
+<p>
+Recompiling Fedora, though, is not as trivial as you seem to imply.  It takes the CentOS team two weeks to a month to make the much smaller and more stable recompiled RHEL available after a new release. (Though individual package/security updates are lightning fast to arrive.)<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295554/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor295575"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 26, 2008 18:22 UTC (Tue)
+                               by <b>drag</b> (guest, #31333)
+                              [<a href="/Articles/295575/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Well I didn't mean the entire OS. Just OpenSSH. <br>
+<p>
+If you want a entire new OS, just use Debian or CentOS! :D<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295575/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+<a name="CommAnchor295493"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 26, 2008 6:18 UTC (Tue)
+                               by <b>JoeBuck</b> (subscriber, #2330)
+                              [<a href="/Articles/295493/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      If you've suddenly decided not to trust that Red Hat and Fedora are telling the truth, what are you going to install?  You could install from older media, and then you get the security bugs back.  To get the bug fixes, you have to upgrade, but since you say that you won't trust that they've gotten the bad guys out, how are you going to do that?
+<p>
+There's no rational reason why a reinstall would be a good move.
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295493/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor295555"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 26, 2008 17:39 UTC (Tue)
+                               by <b>sbergman27</b> (guest, #10767)
+                              [<a href="/Articles/295555/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+"""<br>
+If you've suddenly decided not to trust that Red Hat and Fedora are telling the truth, what are you going to install?<br>
+"""<br>
+<p>
+Good point. It really depends upon how many hours, days, or weeks, one thinks that the "infrastructure issues" have actually been going on. Their carefully worded statement (written by RH Legal and channeled through Paul, IMO) implies that they caught it quickly.  If one believes that, then one could simply reinstall and apply only the security related updates. (There is a yum plugin to do that.) As of Aug 25, 2008, they have not released any security updates since Aug 12, 2008 anyway. And I think that we can be reasonably certain that they have expunged the intruders at this time. If the baddies had actually been into their infrastructure for longer, it may make more sense to reinstall... another distro. (I would not be in that camp, though.)  The problem, there, is deciding what to install. For servers SLES comes to mind.  But I'd trust Novell even less during such a time of crisis.  I'm really, really, not one to push Debian.  But, in this context, I must admit that I would trust them, more than just about anyone else, to be forthcoming, communicative, and to do the right thing (after a number of absolutely *huge* and entertaining flame wars on their mailing lists) even if it meant damaging their reputation.  Viewed from a financial liability standpoint, whereas Red Hat has much to protect, with Debian... well... you can't get blood out of a turnip.<br>
+<p>
+Oh my.  I fear that I may have succeeded in offending pretty much everybody with this post.  Try to take it in the spirit in which it was intended. :-)<br>
+<p>
+-Steve<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295555/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+<a name="CommAnchor295507"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">key storage</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 26, 2008 11:06 UTC (Tue)
+                               by <b>tialaramex</b> (subscriber, #21167)
+                              [<a href="/Articles/295507/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+My understanding is that Red Hat's signing infrastructure is a physical apparatus, the same approach taken by serious CAs and other public key infrastructure authorities. Such hardware isn't designed to reveal the key via software, because such a feature serves no day-to-day function and has obvious negative security implications. Thus no amount of breaking into Red Hat systems would allow attackers to steal the key (though with enough privileges they could ask the hardware to sign individual packages and they seem to have done this). I don't recall reading anything similar about Fedora's keys so those may not be so well protected -- and the mentions of a "passphrase" suggest that they're just ordinary software OpenPGP keys, easily copied from the filesystem.<br>
+<p>
+If the encrypted Fedora key was stolen then the only things protecting a typical Fedora installation from trojans and similar attacks are a trustworthy communication channel (dubious since they mostly update via HTTP or FTP) and the strength of the passphrase for the encryption. Let's hope they chose well.<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295507/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor295578"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 26, 2008 19:07 UTC (Tue)
+                               by <b>OLPC</b> (guest, #47981)
+                              [<a href="/Articles/295578/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Note it can be very time consuming to figure out exactly how far/what was vulnerable in a compromise.<br>
+<p>
+Depending on the precise circumstances it may be quick, or very slow to be able to come to a final conclusion on happened....<br>
+<p>
+When freedesktop was compromised, it was several months before the *last* project hosted there verified that no source had been tampered with,  and we could finally conclude it was extremely likely the compromise was just a spammer attracted to a fast machine on a gigabit/second link.  Everything important was up within a week or so.  In the RH/Fedora case, they are in a much worse situation.<br>
+<p>
+So your milage will vary....<br>
+<p>
+<p>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295578/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor296038"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Trust: Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 28, 2008 19:57 UTC (Thu)
+                               by <b>jcvw</b> (subscriber, #50475)
+                              [<a href="/Articles/296038/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Your mileage may vary a lot...<br>
+You cannot ever trust what you get, not even when you recompile yourself, not even when recomiling gcc.<br>
+<p>
+Don't forget Ken Thompson's Turing award lecture...<br>
+<p>
+See <a href="http://cm.bell-labs.com/who/ken/trust.html">http://cm.bell-labs.com/who/ken/trust.html</a><br>
+<p>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/296038/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor295911"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 28, 2008 10:16 UTC (Thu)
+                               by <b>ortalo</b> (guest, #4654)
+                              [<a href="/Articles/295911/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Going a step backwards from this specific incident, don't we need first some kind of risk analysis of our systems (the whole infrastructure if possible).<br>
+<p>
+Obviously, compromission of the primary package signing key of a major distributor is a kind of a big deal. But while adressing communication concerns, crisis organization, etc., shouldn't we ask ourselves too if there are there other big risks (possibly unadressed) and try to propose some sensible list?<br>
+I can think of several other "big threats" that could be "amusing" to consider (if we do that before they occur):<br>
+- single-file compiler compromission;<br>
+- top-level administrator compromission (via big amount of money or other kind of human pressure)<br>
+- whole company compromission (e.g. company acquisition by an open-source hostile competitor)<br>
+- theoretical cryptanalysis breakthrough (ouch, AES in the dustbin!)<br>
+- [your idea here]<br>
+[Start another list with safety-related issues: fire, water, electricity, etc.]<br>
+<p>
+Furthermore, with open-source systems, we can do no less than trying to do such risk analysis in the open too, no? And, an "open" risk analysis would be some rather new and possibly very interesting thing in that area (my humble opinion).<br>
+<p>
+There is also a recurrent problem with this kind of debate: for a while after a big incident happened, everyone listens to the question but also heavily focusses on the specific incident; and when everything goes well, nobody really listens to those trying to prepare (quietly) for bad things... (Well, I suppose that's human...;-)<br>
+<p>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/295911/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor298338"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Sep 13, 2008 2:00 UTC (Sat)
+                               by <b>lsatenstein</b> (guest, #34741)
+                              [<a href="/Articles/298338/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+I sincerely believe that Red Hat acted with due deligence and did the right thing to keep what they discovered confidential.  <br>
+<p>
+Suppose the method of breaking in is common to Debian, and any other linux distribution.  Should explaining the breakin in public add comfort to end-users and clues to hackers?  I would say yes to the latter situation.<br>
+<p>
+A comparison was made that Debian released an announcement and fix within three days of determining / solving the problem.  But that was a SSH problem, not a compromise of any of their packages that would end up around the world.<br>
+<p>
+Thank you Red Hat for following the course of action you did.<br>
+<p>
+Leslie Satenstein<br>
+Montreal Quebec, Canada<br>
+   <br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/298338/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor299888"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Fedora, Red Hat, and distributor security</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Sep 23, 2008 1:35 UTC (Tue)
+                               by <b>ch</b> (guest, #4097)
+                              [<a href="/Articles/299888/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+the solution: two-factor authentication, one being physical<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/299888/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+
+</main></div> <!-- ArticleText -->
+</div> <!-- middlecolumn -->
+<div class="rightcol not-print">
+<!-- no side ad served -->
+</div>
+</div> <!-- maincolumn -->
+
+            <br clear="all">
+            <center>
+            <P>
+            <span class="ReallySmall">
+            Copyright &copy; 2008, Eklektix, Inc.<BR>
+            This article may be redistributed under the terms of the
+              <a href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+              Commons CC BY-SA 4.0</a> license<br>
+            Comments and public postings are copyrighted by their creators.<br>
+            Linux  is a registered trademark of Linus Torvalds<br>
+            </span>
+            </center>
+            
+            </body></html>

@@ -7,11 +7,9 @@
   story: |
     Bitcoin Gold's compromise started as the sort of thing careful users are supposed to catch: a checksum mismatch. On November 25, 2017, a user opened a GitHub issue after the Windows installer downloaded from the official Bitcoin Gold release did not match the SHA-256 hash published on the project's download page.
 
-    The first warning was necessarily broad. Bitcoin Gold said an unknown party had gained access to the GitHub repository and replaced the compiled Windows wallet installer. The source code was unchanged, the Linux build was not changed, and the project told users to treat any Windows wallet downloaded between November 21, 2017, 09:39 UTC and November 25, 2017, 22:30 UTC as hostile. Two different suspicious installers had been served during that window, and neither matched the public checksum.
+    The first warning was necessarily broad. Bitcoin Gold said an unknown party had gained access to the GitHub repository and replaced the compiled Windows wallet installer. The source code was unchanged and the Linux build was not touched, but the project told users to treat any Windows wallet downloaded between November 21, 2017, 09:39 UTC and November 25, 2017, 22:30 UTC as hostile. Two different suspicious installers had been served during that window, and neither matched the public checksum.
 
-    The later analysis made the attack more interesting, and more dangerous, than a generic infected installer. Bitcoin Gold reported that the planted wallet did not appear to contain a conventional virus or upload private keys. Instead, it sabotaged `CKey::MakeNewKey`, the function responsible for generating new private keys. A normal wallet draws 32 bytes of strong entropy. The malicious build replaced that with a value derived from a timestamp, one random byte, and constants, shrinking the key space from 2^256 possibilities to roughly 2^40 before accounting for the known download window.
-
-    That is still too much for a person, but it is not too much for an attacker watching the blockchain. New wallets created by the phony installer could look normal, receive BTG, and later be reconstructed by someone who knew the weakened key-generation scheme. Once Bitcoin Gold understood the trick, the team scanned for vulnerable addresses, swept just under 77.5 BTG into a safe address before the attacker did, and began returning funds to owners who could prove control.
+    The later analysis made the attack more interesting, and more dangerous, than a generic infected installer. Bitcoin Gold reported that the planted wallet did not appear to contain a conventional virus or upload private keys. Instead it sabotaged `CKey::MakeNewKey`, the function responsible for generating new private keys. A normal wallet draws 32 bytes of strong entropy; the malicious build replaced that with a value derived from a timestamp, one random byte, and constants, shrinking the key space from 2^256 possibilities to roughly 2^40 before accounting for the known download window. That is still too much for a person, but it is not too much for an attacker watching the blockchain. New wallets created by the phony installer could look normal, receive BTG, and later be reconstructed by someone who knew the weakened key-generation scheme. Once Bitcoin Gold understood the trick, the team scanned for vulnerable addresses, swept just under 77.5 BTG into a safe address before the attacker did, and began returning funds to owners who could prove control.
 
     The lesson is not that checksums are ceremonial. They were the first alarm. The failure was that the release channel itself, trusted by the official download page, could serve a wallet that quietly changed the math behind ownership.
   start_date: '2017-11-21T09:39:00Z'
@@ -53,9 +51,9 @@
     - uri: https://bitcoingold.org/downloads/
       role: distribution
     - uri: https://web.archive.org/web/20201109001210/https://www.bitcoingold.org/critical-warning-nov-26/
-      role: advisory
+      role: mirror
     - uri: https://www.bitcoingold.org/vulnerable-core-wallet-update/
-      role: analysis
+      role: mirror
     hashes:
     - sha256:0ccbae26914fc36973c5b74f0c031ba324bcffc7bbb188e752498573345215d5
     - sha256:8e9d4cb73116beb173d6079792d474ba29488c6de30a05d2d77bff7850c80b0d

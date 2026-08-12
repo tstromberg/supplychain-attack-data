@@ -1,0 +1,64 @@
+- id: wordpress-admin-persistence-2026
+  title: Vendor-side WordPress compromises seeded rogue admins
+  synopsis: >-
+    Between June and August 2026 the same operators reached WordPress sites through three
+    vendor-side compromises rather than through site vulnerabilities, hitting Awesome Motive's
+    CDN, the ARVE plugin's source, and BdThemes' promotional API feed.
+  story: |
+    Three WordPress supply-chain compromises in the summer of 2026 shared an
+    approach and, according to Wordfence, infrastructure. In each case the
+    attackers did not exploit the victim sites. They compromised something the
+    sites already trusted, and used an administrator's own authenticated session
+    to create a rogue account and install persistence.
+
+    The first was Awesome Motive. On June 12, an attacker who had reached the
+    company's marketing server through a known UpdraftPlus vulnerability found a
+    CDN API key there and used it to modify the SDK JavaScript that OptinMonster,
+    TrustPulse, and PushEngage load into more than 1.2 million customer sites. The
+    second, on July 28, was a hardcoded authentication bypass committed into
+    Advanced Responsive Video Embedder, a plugin with about 20,000 installations,
+    by someone with access to the developer's account. The third, disclosed August
+    8, poisoned the static JSON promotional feed that seven BdThemes plugins render
+    in the dashboard, exploiting an unescaped attribute the vendor had introduced
+    in March.
+
+    The payloads converged. All three created administrator accounts through the
+    live admin session, installed a plugin that filters itself out of the admin
+    plugin list, and reported back to a command-and-control host. Wordfence, which
+    analyzed the ARVE and BdThemes cases, said the C2 domain in the BdThemes
+    campaign tied back to the operators behind the other two.
+
+    What the group appears to have understood is that vendor-side compromise
+    defeats the standard defenses. In the Awesome Motive and BdThemes cases nothing
+    on the victim's disk changed, so file-integrity scanning saw a clean site, and
+    no plugin update was required to become a victim. Site owners were left
+    auditing user tables and plugin directories rather than version numbers.
+  start_date: 2026-06-12
+  end_date: 2026-08-08
+  actor:
+    name: Unknown
+    kind: group
+  impact:
+    types:
+    - account_takeover
+    - backdoor
+    - remote_code_execution
+    users: 1220000
+  references:
+  - url: https://www.wordfence.com/blog/2026/08/psa-supply-chain-compromise-in-bdthemes-ecosystem-via-poisoned-api-response/
+    title: 'PSA: Supply Chain Compromise in BdThemes Ecosystem via Poisoned API Response
+      - Wordfence'
+  - url: https://www.wordfence.com/blog/2026/07/wordfence-prism-detected-backdoored-wordpress-plugin-within-two-hours-of-it-being-introduced/
+    title: Wordfence PRISM Detected Backdoored WordPress Plugin within Two Hours of it
+      Being Introduced - Wordfence
+  - url: https://sansec.io/research/optinmonster-supply-chain-attack
+    title: OptinMonster supply chain attack hits 1.2 million sites - Sansec
+  notes:
+  - The link between the three is Wordfence's statement in the BdThemes analysis that the
+    C2 domain is related to the same threat actors behind the Advanced Responsive Video
+    Embedder and OptinMonster compromises. No public naming of the group exists.
+  - The ShapedPlugin compromise recorded at [[shapedplugin]] occurred in the same period
+    and also targeted a vendor distribution pipeline, but no source ties it to these
+    operators, so it is not linked to this campaign.
+  - The user figure is dominated by the Awesome Motive installed base. BdThemes install
+    counts were not published and ARVE contributes roughly 20,000.

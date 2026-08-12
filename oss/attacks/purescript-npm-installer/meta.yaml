@@ -7,9 +7,7 @@
   story: |
     The PureScript incident was a supply-chain attack with an unusually personal-looking payload. The purescript package was not itself republished with credential theft code. Instead, two dependencies maintained outside the PureScript team were changed so they would break the new PureScript npm installer while trying to avoid obvious failure in other paths.
 
-    The timing mattered. PureScript 0.13.2 shipped on July 5, 2019, after the compiler maintainers had taken over the purescript npm package and replaced the older install-purescript-cli path with their own purescript-installer. About eight hours later, load-from-cwd-or-npm 3.0.2 was published. When pulled through dl-tar during a normal install, it returned a PassThrough stream where the installer expected the request module, so the binary download step silently went nowhere.
-
-    The first sabotage looked enough like a bug that maintainers initially worked around it. Then, on July 9, rate-map 1.0.3 appeared with a sharper version of the same idea. It used similar activation logic, resolved the local dl-tar package through an obfuscated string, removed the callback that let the download stream advance, and then rewrote its own installed file to erase the malicious block after it ran.
+    The timing mattered. PureScript 0.13.2 shipped on July 5, 2019, after the compiler maintainers had taken over the purescript npm package and replaced the older install-purescript-cli path with their own purescript-installer. About eight hours later, load-from-cwd-or-npm 3.0.2 was published. When pulled through dl-tar during a normal install, it returned a PassThrough stream where the installer expected the request module, so the binary download step silently went nowhere. That first sabotage looked enough like a bug that maintainers initially worked around it. Then, on July 9, rate-map 1.0.3 appeared with a sharper version of the same idea: it used similar activation logic, resolved the local dl-tar package through an obfuscated string, removed the callback that let the download stream advance, and then rewrote its own installed file to erase the malicious block after it ran.
 
     The targeting logic is what made the case stand out. The code tried not to fire when the old install-purescript-cli path was in use, and it checked for nearby Git directories to make local reproduction harder. Jarrod Overson later summarized the oddity well: there was no obvious monetization, no miner, no token theft, and no remote shell. The effect was sabotage of one installer lineage after a messy maintainer handoff.
 
@@ -43,11 +41,16 @@
     end_date: 2019-07-12
     versions:
     - 3.0.2
+    hashes:
+    - sha256:9912f3c8953c2c00e2a1c0b249b02c932747fb15ac94e1c38392d0c951dae106
     locations:
     - uri: https://www.npmjs.com/package/load-from-cwd-or-npm/v/3.0.2
       role: distribution
     - uri: https://gist.github.com/hdgarrood/358e98b5956e5f7f59c85c2e56534f2b
-      role: analysis
+      role: mirror
+    - uri: >-
+        https://gist.githubusercontent.com/hdgarrood/358e98b5956e5f7f59c85c2e56534f2b/raw/623f82a021907639f3673c283912a7c8ca7f6207/load-from-cwd-or-npm%403.0.2.js
+      role: mirror
     indicators:
     - kind: package
       value: load-from-cwd-or-npm
@@ -59,6 +62,8 @@
       value: PassThrough
     - kind: file
       value: index.js
+    - kind: file_sha256
+      value: index.js 9912f3c8953c2c00e2a1c0b249b02c932747fb15ac94e1c38392d0c951dae106
     - kind: observable
       value: Returned a PassThrough stream instead of the request module when
         reached through the PureScript installer path.
@@ -74,11 +79,16 @@
     end_date: 2019-07-12
     versions:
     - 1.0.3
+    hashes:
+    - sha256:0d11971c5859327a93825e5ea5d2e4259663650b58f2166a343c41abb6954021
     locations:
     - uri: https://www.npmjs.com/package/rate-map/v/1.0.3
       role: distribution
     - uri: https://gist.github.com/hdgarrood/358e98b5956e5f7f59c85c2e56534f2b
-      role: analysis
+      role: mirror
+    - uri: >-
+        https://gist.githubusercontent.com/hdgarrood/358e98b5956e5f7f59c85c2e56534f2b/raw/623f82a021907639f3673c283912a7c8ca7f6207/rate-map%401.0.3.js
+      role: mirror
     indicators:
     - kind: package
       value: rate-map
@@ -88,6 +98,8 @@
       value: dl-tar
     - kind: file
       value: index.js
+    - kind: file_sha256
+      value: index.js 0d11971c5859327a93825e5ea5d2e4259663650b58f2166a343c41abb6954021
     - kind: function
       value: writeFileSync
     - kind: observable

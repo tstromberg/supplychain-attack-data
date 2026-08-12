@@ -1,19 +1,16 @@
 - id: operation-red-signature
   title: Remote support updater delivered 9002 RAT
   synopsis: >-
-    Operation Red Signature compromised a South Korean remote-support provider's
-    update server so selected customer IP ranges received a signed malicious
-    update that launched 9002 RAT.
+    Operation Red Signature compromised a South Korean remote-support provider's update server so
+    selected customer IP ranges received a signed malicious update that launched 9002 RAT.
   story: |
-    Operation Red Signature was narrow by design. Trend Micro and IssueMakersLab found that the attackers did not simply post a poisoned installer and wait. They compromised the update server of a South Korean remote-support software provider, stole the provider's code-signing certificate, and used both pieces together.
+    Operation Red Signature was narrow by design. Trend Micro and IssueMakersLab found that the attackers did not simply post a poisoned installer and wait. They compromised the update server of a South Korean remote-support software provider, stole the provider's code-signing certificate, and used both pieces together. The update server acted as the selector: when the remote-support client checked in from ordinary networks it could receive normal behavior, but when it came from IP ranges belonging to targeted South Korean organizations, the server redirected the update path toward attacker-controlled infrastructure at 207.148.94.157 and delivered a malicious update.zip.
 
-    The update server acted as the selector. When the remote-support client checked in from ordinary networks, it could receive normal behavior. When it came from IP ranges belonging to targeted South Korean organizations, the server redirected the update path toward attacker-controlled infrastructure at 207.148.94.157 and delivered a malicious update.zip.
-
-    That archive carried an update.ini telling the client to download file000.zip and file001.zip, extract them as rcview40u.dll and rcview.log, and run the DLL through regsvr32.exe. The DLL was signed with the stolen vendor certificate, so it fit the trust model expected by the updater. Its job was to decrypt rcview.log in memory and launch 9002 RAT, which then connected to 66.42.37.101.
+    That archive carried an update.ini telling the client to download file000.zip and file001.zip, extract them as rcview40u.dll and rcview.log, and run the DLL through regsvr32.exe. The DLL was signed with the stolen vendor certificate, so it fit the trust model the updater expected. Its job was to decrypt rcview.log in memory and launch 9002 RAT, which then connected to 66.42.37.101.
 
     The payload was built for intrusion, not noise. 9002 RAT pulled down cabinet-compressed tools for Active Directory discovery, password dumping, browser-password recovery, IIS 6 WebDAV exploitation, scanning, Mimikatz-style credential checks, and a PlugX variant that used the same command-and-control server. Trend Micro saw the RAT compiled on July 17, 2018, the malicious configuration created on July 18, and an update log showing execution at about 13:35 on July 18. The malware was also coded to sleep in August, making the observed activity window short.
 
-    A later Avast/Gen report on a U.S. government commission found an oci.dll decryptor that closely resembled Red Signature's rcview40u.dll. That is useful lineage evidence, but it is not the same supply-chain incident unless a compromised updater is shown. For this catalog, the scoped attack is the South Korean remote-support update channel that delivered a signed, targeted 9002 RAT payload.
+    A later Avast and Gen report on a U.S. government commission found an oci.dll decryptor that closely resembled Red Signature's rcview40u.dll. That is useful lineage evidence, but it is not the same supply-chain incident unless a compromised updater is shown. For this catalog, the scoped attack is the South Korean remote-support update channel that delivered a signed, targeted 9002 RAT payload.
   start_date: '2018-07-18T13:35:00Z'
   end_date: '2018-07-31T23:59:59Z'
   target:
@@ -30,162 +27,166 @@
     transitive: false
   impact:
     types:
-    - backdoor
-    - credential_theft
-    - data_theft
-    - remote_access
+      - backdoor
+      - credential_theft
+      - data_theft
+      - remote_access
   indicators:
-  - kind: campaign
-    value: Operation Red Signature
-  - kind: family
-    value: 9002 RAT
-  - kind: family
-    value: PlugX
-  - kind: family
-    value: ShiftDoor
-  - kind: file
-    value: update.zip
-  - kind: file
-    value: update.ini
-  - kind: file
-    value: rcview40u.dll
-  - kind: file
-    value: rcview.log
-  - kind: process
-    value: regsvr32.exe
-  - kind: ip
-    value: 207.148.94.157
-  - kind: ip
-    value: 66.42.37.101
-  - kind: observable
-    value: Update server delivered the malicious update only to configured target
-      organization IP ranges.
-  - kind: observable
-    value: Malware used a stolen remote-support provider certificate to satisfy
-      the updater's trust path.
-  artifacts:
-  - id: remote-support-update
-    name: Remote support client update
-    package: remote support client update
-    ecosystem: windows updater
-    kind: updater_payload
-    start_date: '2018-07-18T13:35:00Z'
-    end_date: '2018-07-31T23:59:59Z'
-    locations:
-    - uri: http://207.148.94.157/update/rcv50/update.zip
-      role: distribution
-    - uri: http://207.148.94.157/update/rcv50/file000.zip
-      role: distribution
-    - uri: http://207.148.94.157/update/rcv50/file001.zip
-      role: distribution
-    - uri: 
-        https://www.trendmicro.com/en_us/research/18/h/supply-chain-attack-operation-red-signature-targets-south-korean-organizations.html
-      role: analysis
-    hashes:
-    - sha256:bcfacc1ad5686aee3a9d8940e46d32af62f8e1cd1631653795778736b67b6d6e
-    - sha256:52374f68d1e43f1ca6cd04e5816999ba45c4e42eb0641874be25808c9fe15005
-    indicators:
+    - kind: campaign
+      value: Operation Red Signature
+    - kind: family
+      value: 9002 RAT
+    - kind: family
+      value: PlugX
+    - kind: family
+      value: ShiftDoor
+    - kind: file
+      value: update.zip
+    - kind: file
+      value: update.ini
     - kind: file
       value: rcview40u.dll
     - kind: file
       value: rcview.log
-    - kind: file_sha256
-      value: rcview40u.dll bcfacc1ad5686aee3a9d8940e46d32af62f8e1cd1631653795778736b67b6d6e
-    - kind: file_sha256
-      value: rcview.log 52374f68d1e43f1ca6cd04e5816999ba45c4e42eb0641874be25808c9fe15005
-    - kind: ip
-      value: 66.42.37.101
     - kind: process
       value: regsvr32.exe
-    notes:
-    - Trend Micro reported that `rcview40u.dll` decrypted the encrypted `rcview.log`
-      payload in memory and executed 9002 RAT.
-  - id: red-signature-follow-on-tools
-    name: 9002 RAT follow-on tools
-    kind: malware_bundle
-    start_date: '2018-07-18T13:35:00Z'
-    end_date: '2018-07-31T23:59:59Z'
-    locations:
-    - uri: http://207.148.94.157/aio.exe
-      role: distribution
-    - uri: http://207.148.94.157/smb.exe
-      role: distribution
-    - uri: http://207.148.94.157/m.ex_
-      role: distribution
-    - uri: http://207.148.94.157/w
-      role: distribution
-    - uri: http://207.148.94.157/Web.ex_
-      role: distribution
-    hashes:
-    - sha256:c14ea9b81f782ba36ae3ea450c2850642983814a0f4dc0ea4888038466839c1e
-    - sha256:a3a1b1cf29a8f38d05b4292524c3496cb28f78d995dfb0a9aef7b2f949ac278b
-    - sha256:9415ca80c51b2409a88e26a9eb3464db636c2e27f9c61e247d15254e6fbb31eb
-    - sha256:279cf1773903b7a5de63897d55268aa967a87f915a07924c574e42c9ed12de30
-    - sha256:e5029808f78ec4a079e889e5823ee298edab34013e50a47c279b6dc4d57b1ffc
-    - sha256:e530e16d5756cdc2862b4c9411ac3bb3b113bc87344139b4bfa2c35cd816e518
-    - sha256:28c5a6aefcc57e2862ea16f5f2ecb1e7df84b68e98e5814533262595b237917d
-    indicators:
-    - kind: file
-      value: dsget.exe
-    - kind: file
-      value: dsquery.exe
-    - kind: file
-      value: sharphound.exe
-    - kind: file
-      value: aio.exe
-    - kind: file
-      value: ssms.exe
-    - kind: file
-      value: printdat.dll
-    - kind: file
-      value: w.exe
-    - kind: file
-      value: Web.exe
-    - kind: file
-      value: smb.exe
-    - kind: file
-      value: m.exe
-    - kind: vulnerability
-      value: CVE-2017-7269
-    - kind: family
-      value: PlugX
-    notes:
-    - Trend Micro described these as additional tools pulled by 9002 RAT after the
-      updater-delivered payload was running.
-  - id: red-signature-related-shiftdoor
-    name: ShiftDoor signed with stolen certificate
-    kind: malware_sample
-    start_date: 2018-04-08
-    end_date: 2018-04-08
-    hashes:
-    - sha1:4ae4aed210f2b4f75bdb855f6a5c11e625d56de2
-    - sha256:0703a917aaa0630ae1860fb5fb1f64f3cfb4ea8c57eac71c2b0a407b738c4e19
-    indicators:
-    - kind: family
-      value: ShiftDoor
+    - kind: ip
+      value: 207.148.94.157
+    - kind: ip
+      value: 66.42.37.101
     - kind: observable
-      value: Trend Micro found an April 8, 2018 ShiftDoor sample signed with the
-        stolen remote-support provider certificate.
-    notes:
-    - Included as certificate-theft context; the supply-chain update activity
-      observed by Trend Micro began in July 2018.
+      value: >-
+        Update server delivered the malicious update only to configured target organization IP
+        ranges.
+    - kind: observable
+      value: >-
+        Malware used a stolen remote-support provider certificate to satisfy the updater's trust
+        path.
+  artifacts:
+    - id: remote-support-update
+      name: Remote support client update
+      package: remote support client update
+      ecosystem: windows updater
+      kind: updater_payload
+      start_date: '2018-07-18T13:35:00Z'
+      end_date: '2018-07-31T23:59:59Z'
+      locations:
+        - uri: http://207.148.94.157/update/rcv50/update.zip
+          role: distribution
+        - uri: http://207.148.94.157/update/rcv50/file000.zip
+          role: distribution
+        - uri: http://207.148.94.157/update/rcv50/file001.zip
+          role: distribution
+      hashes:
+        - sha256:bcfacc1ad5686aee3a9d8940e46d32af62f8e1cd1631653795778736b67b6d6e
+        - sha256:52374f68d1e43f1ca6cd04e5816999ba45c4e42eb0641874be25808c9fe15005
+      indicators:
+        - kind: file
+          value: rcview40u.dll
+        - kind: file
+          value: rcview.log
+        - kind: file_sha256
+          value: rcview40u.dll bcfacc1ad5686aee3a9d8940e46d32af62f8e1cd1631653795778736b67b6d6e
+        - kind: file_sha256
+          value: rcview.log 52374f68d1e43f1ca6cd04e5816999ba45c4e42eb0641874be25808c9fe15005
+        - kind: ip
+          value: 66.42.37.101
+        - kind: process
+          value: regsvr32.exe
+      notes:
+        - >-
+          Trend Micro reported that `rcview40u.dll` decrypted the encrypted `rcview.log` payload in
+          memory and executed 9002 RAT.
+    - id: red-signature-follow-on-tools
+      name: 9002 RAT follow-on tools
+      kind: malware_bundle
+      start_date: '2018-07-18T13:35:00Z'
+      end_date: '2018-07-31T23:59:59Z'
+      locations:
+        - uri: http://207.148.94.157/aio.exe
+          role: distribution
+        - uri: http://207.148.94.157/smb.exe
+          role: distribution
+        - uri: http://207.148.94.157/m.ex_
+          role: distribution
+        - uri: http://207.148.94.157/w
+          role: distribution
+        - uri: http://207.148.94.157/Web.ex_
+          role: distribution
+      hashes:
+        - sha256:c14ea9b81f782ba36ae3ea450c2850642983814a0f4dc0ea4888038466839c1e
+        - sha256:a3a1b1cf29a8f38d05b4292524c3496cb28f78d995dfb0a9aef7b2f949ac278b
+        - sha256:9415ca80c51b2409a88e26a9eb3464db636c2e27f9c61e247d15254e6fbb31eb
+        - sha256:279cf1773903b7a5de63897d55268aa967a87f915a07924c574e42c9ed12de30
+        - sha256:e5029808f78ec4a079e889e5823ee298edab34013e50a47c279b6dc4d57b1ffc
+        - sha256:e530e16d5756cdc2862b4c9411ac3bb3b113bc87344139b4bfa2c35cd816e518
+        - sha256:28c5a6aefcc57e2862ea16f5f2ecb1e7df84b68e98e5814533262595b237917d
+      indicators:
+        - kind: file
+          value: dsget.exe
+        - kind: file
+          value: dsquery.exe
+        - kind: file
+          value: sharphound.exe
+        - kind: file
+          value: aio.exe
+        - kind: file
+          value: ssms.exe
+        - kind: file
+          value: printdat.dll
+        - kind: file
+          value: w.exe
+        - kind: file
+          value: Web.exe
+        - kind: file
+          value: smb.exe
+        - kind: file
+          value: m.exe
+        - kind: vulnerability
+          value: CVE-2017-7269
+        - kind: family
+          value: PlugX
+      notes:
+        - >-
+          Trend Micro described these as additional tools pulled by 9002 RAT after the
+          updater-delivered payload was running.
+    - id: red-signature-related-shiftdoor
+      name: ShiftDoor signed with stolen certificate
+      kind: malware_sample
+      start_date: 2018-04-08T00:00:00.000Z
+      end_date: 2018-04-08T00:00:00.000Z
+      hashes:
+        - sha1:4ae4aed210f2b4f75bdb855f6a5c11e625d56de2
+        - sha256:0703a917aaa0630ae1860fb5fb1f64f3cfb4ea8c57eac71c2b0a407b738c4e19
+      indicators:
+        - kind: family
+          value: ShiftDoor
+        - kind: observable
+          value: >-
+            Trend Micro found an April 8, 2018 ShiftDoor sample signed with the stolen
+            remote-support provider certificate.
+      notes:
+        - >-
+          Included as certificate-theft context; the supply-chain update activity observed by Trend
+          Micro began in July 2018.
   references:
-  - url: 
-      https://www.trendmicro.com/en_us/research/18/h/supply-chain-attack-operation-red-signature-targets-south-korean-organizations.html
-    title: Operation Red Signature Targets South Korean Companies
-  - url: http://taylor-blog.issuemakerslab.com/2018/07/malware-disguised-as-company-document.html
-    title: Malware disguised as company document related to inter-Korean economic cooperation
-  - url: https://securityaffairs.com/75562/hacking/supply-chain-attack-2.html
-    title: Operation Red Signature - South Korean Firms victims of a supply chain attack
-  - url: https://gbhackers.com/operation-red-signature-delivers-malware/
-    title: Operation Red Signature delivers malware through remote support updates
-  - url: https://www.gendigital.com/blog/insights/research/avast-finds-backdoor-on-us-government-commission-network
-    title: Avast finds backdoor on US government commission network
-  - url: https://m.51dns.com/news/851.html
-    title: Chinese mirror of Operation Red Signature reporting
-  - url: https://www.tlkjt.com/index.php/experience/23203.html
-    title: Operation Red Signature mirror
-  - url: https://www.stackbrothersvps.com/news/40_9335.html
-    title: Operation Red Signature mirror
-  - url: https://cloud.tencent.cn/developer/news/322883
-    title: Tencent Cloud mirror of Operation Red Signature reporting
+    - url: >-
+        https://www.trendmicro.com/en_us/research/18/h/supply-chain-attack-operation-red-signature-targets-south-korean-organizations.html
+      title: Operation Red Signature Targets South Korean Companies
+    - url: http://taylor-blog.issuemakerslab.com/2018/07/malware-disguised-as-company-document.html
+      title: Malware disguised as company document related to inter-Korean economic cooperation
+    - url: https://securityaffairs.com/75562/hacking/supply-chain-attack-2.html
+      title: Operation Red Signature - South Korean Firms victims of a supply chain attack
+    - url: https://gbhackers.com/operation-red-signature-delivers-malware/
+      title: Operation Red Signature delivers malware through remote support updates
+    - url: >-
+        https://www.gendigital.com/blog/insights/research/avast-finds-backdoor-on-us-government-commission-network
+      title: Avast finds backdoor on US government commission network
+    - url: https://m.51dns.com/news/851.html
+      title: Chinese mirror of Operation Red Signature reporting
+    - url: https://www.tlkjt.com/index.php/experience/23203.html
+      title: Operation Red Signature mirror
+    - url: https://www.stackbrothersvps.com/news/40_9335.html
+      title: Operation Red Signature mirror
+    - url: https://cloud.tencent.cn/developer/news/322883
+      title: Tencent Cloud mirror of Operation Red Signature reporting

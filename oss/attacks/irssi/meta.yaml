@@ -11,6 +11,13 @@
     The injected code looked like a small autoconf test, but it forked, opened a TCP connection to 204.120.36.206 on port 6667, and duped standard input, output, and error to that socket. The practical detection advice was equally direct: grep the source tree for `SOCK_STREAM` in `configure`, replace the source, and verify future releases with the author's GPG key.
 
     The cleanup question was therefore about provenance, not configuration. Anyone who built Irssi 0.8.4 from the affected source window had to treat the build host as exposed, even if the installed IRC client itself looked normal or had never connected to a server.
+  pull_quote:
+    text: >-
+      Only `irssi-0.8.4.tar.gz` was backdoored; the `.bz2` of the same release
+      was clean, which is why the FreeBSD port escaped. GLib sources fetched
+      from irssi.org during the build carried the same block.
+    caption: gzip backdoored, bzip2 clean
+    after: 2
   start_date: 2002-03-14
   end_date: 2002-05-25
   target:
@@ -52,7 +59,16 @@
       value: configure
     - kind: observable
       value: SOCK_STREAM
+    evidence:
+    - kind: source_fragment
+      path: samples/irssi/during/configure-backdoor.c.fragment
+      role: impacted_code_fragment
+    - kind: document
+      path: samples/irssi/during/irssi-backdoor-advisory.html
+      role: contemporary_advisory_and_fragment_source
   references:
+  - url: https://seclists.org/bugtraq/2002/Aug/333
+    title: 'Debian DSA-157-1: signed checksums for the clean Irssi 0.8.4 source archive'
   - url: 
       https://irssi.org/2002/05/25/irssi.org-cracked-irssis-configure-backdoored-for-past-two-months/
     title: irssi.org cracked, irssi's configure backdoored for past two months

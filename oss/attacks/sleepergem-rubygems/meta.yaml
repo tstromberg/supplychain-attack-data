@@ -1,0 +1,146 @@
+- id: sleepergem-rubygems
+  title: Dormant RubyGems accounts woke up to publish a backdoor
+  synopsis: >-
+    Attackers took over two long-idle RubyGems maintainer accounts and published the first
+    releases in years for Dendreo and a fastlane plugin. The loader skipped CI environments
+    and installed a persistent daemon on developer workstations instead.
+  story: |
+    Between July 18 and 19, 2026, malicious versions of two long-dormant Ruby gems
+    appeared on RubyGems.org, published from maintainer accounts that had been
+    quiet for years. Researchers named the campaign SleeperGem.
+
+    The tell was the publishing history. `Dendreo`, a gem whose public release line
+    had stopped at 1.1.2 in 2020, gained versions 1.1.3 and 1.1.4 on July 18.
+    `fastlane-plugin-run_tests_firebase_testlab`, untouched since 2019, gained
+    0.3.2 on July 19. The two gems belong to different maintainers, `LR-DEV` and
+    `pinkroom`, which points to at least two compromised accounts rather than one.
+    A third gem in the campaign, `git_credential_manager`, was newly created to
+    impersonate Microsoft's Git Credential Manager, and is not treated here as a
+    compromised project.
+
+    The stage-one Ruby code disabled TLS certificate verification with
+    `OpenSSL::SSL::VERIFY_NONE` and fetched a second stage from an
+    attacker-controlled Forgejo instance at `git.disroot.org`, then spawned
+    `/bin/sh` or PowerShell. Before doing any of that it looked around. The loader
+    checked roughly thirty CI-related environment variables and exited if it
+    believed it was running inside GitHub Actions, GitLab CI, CircleCI, Jenkins,
+    Travis, or Vercel. That is the inversion worth noting: most 2026 npm and PyPI
+    worms went hunting for build runners because that is where the cloud
+    credentials live. SleeperGem deliberately avoided them, presumably because
+    build systems are monitored and laptops are not.
+
+    On a developer machine it dropped a native daemon into `~/.local/share/gcm/`
+    and installed redundant persistence through both a `systemd --user` unit and
+    cron, with an attempted privilege escalation by way of `/usr/local/sbin/ping6`.
+    The operators iterated visibly across the four `git_credential_manager`
+    releases over about nine hours, moving execution into the `require()` path in
+    2.8.2 with the final script commented out, then re-enabling it in 2.8.3, which
+    the rubygems-security-team yanked.
+  start_date: 2026-07-18
+  end_date: 2026-07-19
+  target:
+    name: RubyGems
+    kind: package_registry
+    website: https://rubygems.org/
+  actor:
+    name: Unknown
+    kind: group
+  language: Ruby
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - backdoor
+    - credential_theft
+    - remote_code_execution
+  locations:
+  - uri: https://rubygems.org/
+    role: distribution
+  indicators:
+  - kind: domain
+    value: git.disroot.org
+  - kind: directory
+    value: ~/.local/share/gcm/
+  - kind: file
+    value: /usr/local/sbin/ping6
+  - kind: technique
+    value: exits when CI environment variables are detected
+  - kind: technique
+    value: 'redundant persistence via systemd --user and cron'
+  - kind: account
+    value: 'RubyGems: LR-DEV'
+  - kind: account
+    value: 'RubyGems: pinkroom'
+  notes:
+  - Only the hijacked pre-existing gems are recorded as artifacts. The third gem in the
+    campaign, git_credential_manager 2.8.0 through 2.8.3, was created by the attacker to
+    impersonate Microsoft's Git Credential Manager and is out of scope as its own record.
+  - The loader checks roughly thirty CI-related environment variables and exits if it
+    detects GitHub Actions, GitLab CI, CircleCI, Jenkins, Travis, or Vercel. This targets
+    developer workstations rather than build runners, inverting the usual pattern for
+    2026 registry worms.
+  - Two distinct maintainer accounts were involved, LR-DEV and pinkroom, indicating at
+    least two account compromises rather than a single hijack.
+  - Reported download exposure across the campaign has been cited at over 574,000, which
+    counts historical downloads of the affected gem names rather than installs of the
+    malicious versions.
+  - RubyGems yanked both malicious versions, which now return 404. The surviving version
+    lists corroborate the dormancy that made these accounts attractive. Dendreo ends at
+    1.1.2 from 2020-10-24 and fastlane-plugin-run_tests_firebase_testlab ends at 0.3.1 from
+    2019-03-04. Because the versions were yanked, no sample of either malicious gem could
+    be acquired.
+  artifacts:
+  - id: dendreo
+    name: Dendreo
+    package: Dendreo
+    ecosystem: rubygems
+    kind: source_archive
+    start_date: 2026-07-18
+    end_date: 2026-07-19
+    versions:
+    - 1.1.3
+    - 1.1.4
+    fixed_versions:
+    - 1.1.2
+    locations:
+    - uri: https://rubygems.org/gems/Dendreo
+      role: distribution
+    notes:
+    - The public release line had stopped at 1.1.2 on 2020-10-24 before 1.1.3 and 1.1.4
+      appeared on 2026-07-18. Both have since been yanked and 1.1.2 is again the latest
+      version.
+  - id: fastlane-plugin-run-tests-firebase-testlab
+    name: fastlane-plugin-run_tests_firebase_testlab
+    package: fastlane-plugin-run_tests_firebase_testlab
+    ecosystem: rubygems
+    kind: source_archive
+    start_date: 2026-07-19
+    end_date: 2026-07-19
+    versions:
+    - 0.3.2
+    fixed_versions:
+    - 0.3.1
+    locations:
+    - uri: https://rubygems.org/gems/fastlane-plugin-run_tests_firebase_testlab
+      role: distribution
+    notes:
+    - The gem had seen no releases since 0.3.1 on 2019-03-04 before 0.3.2 appeared on
+      2026-07-19. 0.3.2 has since been yanked and 0.3.1 is again the latest version.
+  references:
+  - url: https://www.stepsecurity.io/blog/sleepergem-compromised-rubygems-drop-persistent-backdoor
+    title: 'SleeperGem: Compromised git_credential_manager, Dendreo, and fastlane RubyGems
+      Drop a Persistent Backdoor - StepSecurity'
+  - url: https://corgea.com/research/sleepergem-rubygems-dormant-maintainer-backdoor-july-2026
+    title: 'SleeperGem: hijacked dormant RubyGems accounts turned require into a persistent
+      developer backdoor - Corgea'
+  - url: https://thehackernews.com/2026/07/sleepergem-uses-three-malicious.html
+    title: SleeperGem Uses Three Malicious RubyGems Packages to Target Developer Machines
+      - The Hacker News
+  - url: https://www.developer-tech.com/news/sleepergem-rubygems-attack-evades-ci-to-hit-developer-laptops/
+    title: SleeperGem RubyGems attack evades CI to hit developer laptops - Developer Tech
+  - url: https://www.aikido.dev/blog/sleepergem-rubygems-supply-chain-attack
+    title: 'SleeperGem: RubyGems supply chain attack targets dormant maintainer accounts -
+      Aikido'

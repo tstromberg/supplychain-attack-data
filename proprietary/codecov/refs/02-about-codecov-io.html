@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+
+<head profile="http://gmpg.org/xfn/11">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="google-site-verification" content="vJJzG_HitBMzWgMMYHRCAa6Y2voMwC9OTHuxgHL2358" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+    <title>Post-Mortem / Root Cause Analysis (April 2021) - Codecov</title>
+
+    <!-- WP HEAD -->
+    <meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+
+	<!-- This site is optimized with the Yoast SEO plugin v27.7 - https://yoast.com/product/yoast-seo-wordpress/ -->
+	<link rel="canonical" href="https://about.codecov.io/apr-2021-post-mortem/" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="Post-Mortem / Root Cause Analysis (April 2021) - Codecov" />
+	<meta property="og:url" content="https://about.codecov.io/apr-2021-post-mortem/" />
+	<meta property="og:site_name" content="Codecov" />
+	<meta property="article:publisher" content="https://www.facebook.com/Codecov-106795907636673/" />
+	<meta property="article:modified_time" content="2021-06-11T16:11:04+00:00" />
+	<meta property="og:image" content="https://about.codecov.io/wp-content/uploads/2022/04/0433_SocialCard_LinkedIn-100-1.jpg" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="637" />
+	<meta property="og:image:type" content="image/jpeg" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@codecov" />
+	<meta name="twitter:label1" content="Est. reading time" />
+	<meta name="twitter:data1" content="6 minutes" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https:\/\/schema.org","@graph":[{"@type":"WebPage","@id":"https:\/\/about.codecov.io\/apr-2021-post-mortem\/","url":"https:\/\/about.codecov.io\/apr-2021-post-mortem\/","name":"Post-Mortem \/ Root Cause Analysis (April 2021) - Codecov","isPartOf":{"@id":"https:\/\/about.codecov.io\/#website"},"datePublished":"2021-06-08T19:59:13+00:00","dateModified":"2021-06-11T16:11:04+00:00","breadcrumb":{"@id":"https:\/\/about.codecov.io\/apr-2021-post-mortem\/#breadcrumb"},"inLanguage":"en-US","potentialAction":[{"@type":"ReadAction","target":["https:\/\/about.codecov.io\/apr-2021-post-mortem\/"]}]},{"@type":"BreadcrumbList","@id":"https:\/\/about.codecov.io\/apr-2021-post-mortem\/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https:\/\/about.codecov.io\/"},{"@type":"ListItem","position":2,"name":"Post-Mortem \/ Root Cause Analysis (April 2021)"}]},{"@type":"WebSite","@id":"https:\/\/about.codecov.io\/#website","url":"https:\/\/about.codecov.io\/","name":"Codecov","description":"Code coverage done right.","publisher":{"@id":"https:\/\/about.codecov.io\/#organization"},"potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https:\/\/about.codecov.io\/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"en-US"},{"@type":"Organization","@id":"https:\/\/about.codecov.io\/#organization","name":"Codecov","url":"https:\/\/about.codecov.io\/","logo":{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/about.codecov.io\/#\/schema\/logo\/image\/","url":"https:\/\/about.codecov.io\/wp-content\/uploads\/2020\/09\/codecov.svg","contentUrl":"https:\/\/about.codecov.io\/wp-content\/uploads\/2020\/09\/codecov.svg","width":1,"height":1,"caption":"Codecov"},"image":{"@id":"https:\/\/about.codecov.io\/#\/schema\/logo\/image\/"},"sameAs":["https:\/\/www.facebook.com\/Codecov-106795907636673\/","https:\/\/x.com\/codecov","https:\/\/www.instagram.com\/codecov\/","https:\/\/www.linkedin.com\/company\/codecov\/","https:\/\/www.youtube.com\/channel\/UCj-fJuvXv-m05HkSNn0OS9g\/featured"]}]}</script>
+	<!-- / Yoast SEO plugin. -->
+
+
+<link rel='dns-prefetch' href='//cdnjs.cloudflare.com' />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://about.codecov.io/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fabout.codecov.io%2Fapr-2021-post-mortem%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://about.codecov.io/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fabout.codecov.io%2Fapr-2021-post-mortem%2F&#038;format=xml" />
+<style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style*=border-color]){border-style:solid}html :where([style*=border-top-color]){border-top-style:solid}html :where([style*=border-right-color]){border-right-style:solid}html :where([style*=border-bottom-color]){border-bottom-style:solid}html :where([style*=border-left-color]){border-left-style:solid}html :where([style*=border-width]){border-style:solid}html :where([style*=border-top-width]){border-top-style:solid}html :where([style*=border-right-width]){border-right-style:solid}html :where([style*=border-bottom-width]){border-bottom-style:solid}html :where([style*=border-left-width]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=/wp-includes/css/dist/block-library/common.min.css */
+</style>
+<style id="classic-theme-styles-inline-css">
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+/*# sourceURL=/wp-includes/css/classic-themes.min.css */
+</style>
+
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}:where(body) { margin: 0; }:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;font-style: inherit;font-weight: inherit;letter-spacing: inherit;line-height: inherit;padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link rel='stylesheet' id='font-awesome-css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?ver=6.5.1' media='all' />
+<link rel='stylesheet' id='styles-css' href='https://about.codecov.io/wp-content/themes/codecov/style.css?ver=1786422504' media='all' />
+<script id="plausible-analytics-js" defer data-cfasync='false' data-no-minify="true" data-no-optimize="1" data-noptimize="1" src="//about.codecov.io/wp-content/uploads/0ef4f2a49f/pa-Qaww9CMzg1xUGDn1I0lAR.js"></script>
+<script id="plausible-analytics-js-after">
+window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+plausible.init({"endpoint":"https:\/\/about.codecov.io\/wp-json\/fb8d43\/v1\/fef8\/87d0ca76"});
+//# sourceURL=plausible-analytics-js-after
+</script>
+<script id="jquery-core-js" src="https://about.codecov.io/wp-content/plugins/jquery-updater/js/jquery-4.0.0.min.js?ver=4.0.0"></script>
+<script id="jquery-migrate-js" src="https://about.codecov.io/wp-content/plugins/jquery-updater/js/jquery-migrate-3.6.0.min.js?ver=3.6.0"></script>
+<link rel="https://api.w.org/" href="https://about.codecov.io/wp-json/" /><link rel="alternate" title="JSON" type="application/json" href="https://about.codecov.io/wp-json/wp/v2/pages/5245" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://about.codecov.io/xmlrpc.php?rsd" />
+
+<link rel='shortlink' href='https://about.codecov.io/?p=5245' />
+
+    <!-- FAVICON INFO -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/wp-content/themes/codecov/assets/brand/icons/favicons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/wp-content/themes/codecov/assets/brand/icons/favicons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/wp-content/themes/codecov/assets/brand/icons/favicons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/wp-content/themes/codecov/assets/brand/icons/favicons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/wp-content/themes/codecov/assets/brand/icons/favicons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/wp-content/themes/codecov/assets/brand/icons/favicons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/wp-content/themes/codecov/assets/brand/icons/favicons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/wp-content/themes/codecov/assets/brand/icons/favicons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/wp-content/themes/codecov/assets/brand/icons/favicons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/wp-content/themes/codecov/assets/brand/icons/favicons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/wp-content/themes/codecov/assets/brand/icons/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/wp-content/themes/codecov/assets/brand/icons/favicons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/wp-content/themes/codecov/assets/brand/icons/favicons/favicon-16x16.png">
+<!--    <link rel="manifest" href="/wp-content/themes/codecov/assets/brand/icons/favicons/manifest.json">-->
+    <meta name="msapplication-TileColor" content="#ff0077">
+    <meta name="msapplication-TileImage" content="/wp-content/themes/codecov/assets/brand/icons/favicons/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ff0077">
+    <!-- Facebook Verification -->
+    <meta name="facebook-domain-verification" content="d8454acosfhz6aizm750a0qtfm99pn" />
+    <!-- COMMENT SCRIPTS -->
+    
+    <!-- Relyance Consent script (loaded on every page; Vue pages tolerate late/deferred script execution via a document.readyState check in their bootstrap) -->
+    <script data-relyance-consent-appId="app-8714c85d-643c-53ba-a7a5-048097c23f89" data-relyance-zero-fire-mode="true" src="https://consent.app.relyance.ai/relyance-agent.js"></script>
+    <!-- prod script data-relyance-consent-appId="app-da645478-ff93-536f-a80f-d14bd189fbe2" data-relyance-zero-fire-mode="true" src="https://consent.app.relyance.ai/relyance-agent.js"></script -->
+
+    <!-- Google Tag Manager -->`
+    <script>
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-KGH2DSG');
+        window.dataLayer.push({
+            "codecov": {
+                "page": {
+                    "type": "Page"
+                }
+            }
+        });
+    </script>
+    <!-- End Google Tag Manager -->
+
+</head>
+
+<body class="wp-singular page-template-default page page-id-5245 wp-theme-codecov">
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KGH2DSG" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) --><div id="mega-header"><div class="hero-texture"><div class="texture-left"></div><div class="texture-right"></div></div><header id="header">
+
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-12">
+
+                <div class="header__content">
+
+                    <!-- LOGO -->
+                    <a class="header__logo" href="https://about.codecov.io">
+                        <img src="/wp-content/themes/codecov/assets/brand/harness-cobranding/logos/codecov-by-harness-logo.png" title="Code Coverage by Codecov" alt="Code Coverage by Codecov" />
+                    </a>
+
+                    <!-- MAIN NAVIGATION -->
+                    <nav class="header__main-navigation">
+                        <ul>
+                            <li>
+                                <a href="/product/features/">Product</a>
+                                <!-- PRODUCT MENU -->
+                                <div class="menu menu--product">
+
+                                    <div class="row">
+
+                                        <div class="col-md-12">
+
+                                            <ul>
+                                                <li><a href="/product/features/">Features</a></li>
+                                                <li><a href="/product/integrations/">Integrations</a></li>
+                                                <li><a href="/product/documentation/">Docs</a></li>
+                                                <li><a href="/product/api/">API</a></li>
+                                                <li><a href="/product/status/">Status</a></li>
+                                            </ul>
+
+                                        </div>
+
+                                    </div>
+                                    <!--<div class="row callout">
+
+                                        <div class="col">
+
+                                            <p><a href="https://about.codecov.io/blog/introducing-codecovs-new-uploader/"><span class="badge badge-primary">Product Update</span>Introducing Codecov's New Uploader<i class="fa fa-arrow-right"></i></a></p>
+
+                                        </div>
+
+                                    </div>-->
+
+                                </div>
+                            </li>
+                            <li>
+                                <a href="/product/documentation/" target="_BLANK">Docs</a>
+                            </li>
+                            <li>
+                                <a href="/customers/">Customers</a>
+                            </li>
+                            <li>
+                                <a href="/resources/">Blog</a>
+                            </li>
+                            <li><a href="/pricing/">Pricing</a></li>
+                            <li>
+                                <a href="/contact/">Help</a>
+                                <!-- COMPANY -->
+                                <div class="menu menu--company">
+
+                                    <div class="row">
+
+                                        <div class="col-md-12">
+
+                                            <ul>
+                                                <li><a href="https://codecovpro.zendesk.com/">Pro Support</a></li>
+                                                <li><a href="https://codecoventerprise.zendesk.com/">Enterprise Support</a></li>
+                                                <li><a href="https://community.codecov.com/">Community</a></li>
+                                                <li><a href="/contact/">Contact Us</a></li>
+                                            </ul>
+
+                                        </div>
+
+                                    </div>
+                                    <!--<div class="row callout">
+
+                                        <div class="col">
+
+                                            <p><a href="https://angel.co/job-collections/52-best-startup-companies-to-watch-out-for-in-2020" target="_blank" rel="noopener noreferrer"><span class="badge badge-primary">Angel List</span>Company to watch out for in 2020 <i class="fa fa-arrow-right"></i></a></p>
+                                        </div>
+
+                                    </div>-->
+
+                                </div>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <!-- LOGIN NAVIGATION -->
+                    <nav class="header__login-navigation">
+                        <ul>
+                            <li class="d-inline-inline-block d-lg-none">
+                                <div class="effect-02">
+                                    <div class="menu-icon js-menu_toggle">
+                                    <span class="menu-icon_box">
+                                        <span class="menu-icon_line menu-icon_line--1"></span>
+                                        <span class="menu-icon_line menu-icon_line--2"></span>
+                                        <span class="menu-icon_line menu-icon_line--3"></span>
+                                    </span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="d-none d-lg-inline-block">
+                                <a class="header--login" href="javascript:;">Login</a>
+                                <div class="menu menu--login">
+
+                                    <div class="row">
+
+                                        <div class="col">
+
+                                            <ul>
+                                                <li><a href="https://codecov.io/login/gh"><img src="/wp-content/themes/codecov/assets/logos/ci/github/github-icon.svg" /> GitHub</a></li>
+                                                <li><a href="https://codecov.io/login/gl"><img src="/wp-content/themes/codecov/assets/logos/ci/gitlab/gitlab-icon.svg" /> GitLab</a></li>
+                                                <li><a href="https://codecov.io/login/bb"><img src="/wp-content/themes/codecov/assets/logos/ci/bitbucket/bitbucket-icon.svg" /> Bitbucket</a></li>
+                                                <li><a href="https://api.codecov.io/login/sentry?to=https%3A%2F%2Fapp.codecov.io%2Fsentry"><img src="/wp-content/themes/codecov/assets/logos/sentry-logo.svg" /> Sentry</a></li>
+                                            </ul>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </li>
+                            <li class="d-none d-lg-inline-block">
+<!--                                <a href="/sign-up/" class="btn btn-md btn-dark-blue btn-signup">Sign Up</a>-->
+                                <a href="/demo/" class="btn btn-md btn-dark-blue btn-signup plausible-event-name=Nav+Click+CTA">Get Demo</a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <!-- MOBILE NAVIGATION -->
+                    <nav class="header__mobile-navigation">
+                        <ul>
+                            <li>
+                                <a href="/product/" class="has-menu">Product</a>
+                                <!-- PRODUCT MENU -->
+                                <div class="menu menu--product">
+
+                                    <div class="row">
+
+                                        <div class="col">
+                                            <ul>
+                                                <li><a href="/product/">Overview</a></li>
+                                                <li><a href="/product/features/">Features</a></li>
+                                                <li><a href="/product/integrations/">Integrations</a></li>
+                                                <li><a href="/product/getting-started/" class="d-none">Getting Started</a></li>
+                                                <li><a href="/product/documentation/">Documentation</a></li>
+                                                <li><a href="/product/api/">API</a></li>
+                                                <li><a href="/product/status/">Status</a></li>
+                                            </ul>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </li>
+                            
+                            <li>
+                                <a href="/customers/">Customers</a>
+
+                            </li>
+                            <li>
+                                <a href="/resources/">Blog</a>
+                            </li>
+                            <li><a href="https://docs.codecov.io"  target="_blank" rel="noopener noreferrer">Docs</a></li>
+                            <li><a href="/pricing/">Pricing</a></li>
+                            <li><a href="/contact/">Contact</a></li>
+                            <li><a href="/sign-up/">Login</a></li>
+                        </ul>
+                    </nav>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header><section id="hero"><div class="container"><div class="row d-flex">
+		
+	<div class="col-12">
+
+        <div class="title-content">
+
+            <h1>Post-Mortem / Root Cause Analysis (April 2021)</h1>
+        </div>
+				
+	</div>
+		
+</div>
+	
+
+</div></section></div><section id="scrollbar">
+
+    <div class="container">
+
+        <div class="row d-flex justify-content-between align-items-center">
+
+
+            <!-- LOGO -->
+            <a class="logo" href="https://about.codecov.io">
+                <img src="/wp-content/themes/codecov/assets/brand/harness-cobranding/logos/codecov-by-harness-logo.png" title="Codecov" alt="Codecov" />
+            </a>
+            <a class="d-flex d-lg-none btn btn-md btn-primary" href="https://codecov.io/login/">Get Started For Free</a>
+
+            <ul class="list-inline d-none d-lg-block">
+                <!--<li class="mr-2">
+                    <h6 class="my-0">Get Started With</h6>
+                </li>
+                <li>
+                    <a class="btn btn-sm btn-white btn-github plausible-event-name=Scrollbar+Click+Github" href="https://codecov.io/login/gh"><img src="/wp-content/themes/codecov/assets/logos/ci/github/github-icon.svg"> GitHub</a>
+                </li>
+                <li>
+                    <a class="btn btn-sm btn-white btn-gitlab plausible-event-name=Scrollbar+Click+Gitlab" href="https://codecov.io/login/gl"><img src="/wp-content/themes/codecov/assets/logos/ci/gitlab/gitlab-icon.svg"> GitLab</a>
+                </li>
+                <li>
+                    <a class="btn btn-sm btn-white btn-bitbucket plausible-event-name=Scrollbar+Click+Bitbucket" href="https://codecov.io/login/bb"><img src="/wp-content/themes/codecov/assets/logos/ci/bitbucket/bitbucket-icon.svg"> Bitbucket</a>
+                </li>
+                <li>
+                    <a class="btn btn-sm btn-white btn-sentry plausible-event-name=Scrollbar+Click+Sentry" href="https://api.codecov.io/login/sentry?to=https%3A%2F%2Fapp.codecov.io%2Fsentry"><img src="/wp-content/themes/codecov/assets/logos/sentry-logo.svg" /> Sentry</a>
+                </li> -->
+                <li>
+                    <a class="btn btn-sm btn-white plausible-event-name=Scrollbar+Click+Login" href="https://codecov.io/login/">Login</a>
+                </li>
+                <li>
+                    <a class="btn btn-sm btn-secondary plausible-event-name=Scrollbar+Click+Signup" href="https://about.codecov.io/codecov-free-trial">Try Codecov for Free</a>
+                </li>
+            </ul>
+
+        </div>
+
+    </div>
+
+</section>
+<main id="main">
+
+    <div class="container">
+
+        <div class="row justify-content-center">
+
+            <div class="col">
+
+                
+                    
+
+	<h2><strong>Summary</strong></h2>
+<p>On April 1, 2021, the Codecov team was alerted to a security event involving our Bash Uploader. The threat actor specifically targeted the Codecov Bash Uploader and used it to deliver a malicious payload to all Codecov users utilizing the Bash Uploader, The Codecov GitHub Action, The Codecov CircleCI Orb, and the Codecov Bitrise Step (collectively, the &#8220;Bash Uploaders&#8221;).</p>
+<p>The team immediately worked to mitigate future impact of the incident by removing the malicious change from the Bash Uploader, and implementing controls to prevent it from being added again. </p>
+<p>There were further impacts as the nature of the malicious code change extracted git remote origin URLs and environment variables from the environment where the maliciously altered Bash Uploader was executed. The nature of this attack and follow on impacts were detailed thoroughly in our <a href="https://about.codecov.io/security-update">Security Update</a> on April 15, 2021. </p>
+<p>&nbsp;</p>
+<h2><strong>Root Cause</strong></h2>
+<p>The attacker leverage two key exploits:</p>
+<ol>
+<li aria-level="1">The attacker was able to extract an HMAC key for a Google Cloud Storage service account from an intermediate layer in our public Codecov Self-Hosted Docker image. </li>
+<li aria-level="1">The attacker used this key to modify the Bash Uploader in Google Cloud Storage, such that it was served directly to end-users with the malicious changes in place. </li>
+</ol>
+<p>&nbsp;</p>
+<h2><strong>Impact</strong></h2>
+<p>Customers most likely experiencing this event were those that downloaded the Bash Uploader during the window when the threat actor had unauthorized access to the Bash Uploader and executed it. </p>
+<p>Specifically affected customers received communication via individual emails and in-app notifications. Customers were instructed on how to assess their own situation by:</p>
+<ol>
+<li aria-level="1">Executing the env command in their CI pipelines/steps that also executed the Bash Uploader</li>
+<li aria-level="1">Making note of the variables printed to output from this command, and determining the sensitivity of each variable.</li>
+<li aria-level="1">Determining the impacts to their own applications, infrastructure, and customers if those credentials were used by an unauthorized third party. </li>
+</ol>
+<p>Additionally, from April 29th onward, Codecov included in-app notifications indicating specifically impacted organizations and repositories, and the names of potentially leaked environment variables. </p>
+<h2></h2>
+<p>&nbsp;</p>
+<h2><strong>Detection</strong></h2>
+<p>The incident was first detected on April 1, 2021. A customer performing SHASUM checking on the Bash Uploader noticed a discrepancy between the SHA256 reported on GitHub and their own calculated SHA256 for the Bash Uploader. The customer raised this issue to us via our security email alias.</p>
+<h2></h2>
+<p>&nbsp;</p>
+<h2><strong>Response</strong></h2>
+<p>Upon discovering the situation, our team moved swiftly to understand the root cause and develop mitigation and remediation measures for customers.</p>
+<p>Ongoing response to the incident was handled as follows:</p>
+<h3>Before April 15th Disclosure:</h3>
+<ul>
+<li aria-level="1"><b>Security Task Force:</b> Management of discovery process; engaging with third-party forensic analysts and federal investigators.</li>
+<li aria-level="1"><b>Engineering Team:</b> Core auditing of all systems; regeneration of all keys, secrets, and credentials; root cause analysis.</li>
+<li aria-level="1"><b>Support Team:</b> Assisting with root cause analysis and system audit as necessary.</li>
+</ul>
+<h3><br />
+After April 15th Disclosure:</h3>
+<ul>
+<li aria-level="1"><b>Security Task Force:</b> Continued engagement with third-party forensic analysts and federal investigators; Customer calls and technical support; Management of process modifications.</li>
+<li aria-level="1"><b>Engineering Team:</b> Process modification; development of supporting software for altered processes; Technical changes to build pipelines as needed</li>
+<li aria-level="1"><b>Support Team:</b> Technical and customer support related to disclosure.</li>
+</ul>
+<p>We moved as quickly as possible in our response efforts, while (a) coordinating with federal law enforcement and cybersecurity agencies and (b) investigating the situation thoroughly so that we could provide accurate, actionable information to our customers.</p>
+<p>&nbsp;</p>
+<h2><strong>Recovery</strong></h2>
+<p>To recover from the incident itself, the key taken by the attacker was revoked. Additionally, all production keys were audited and rotated. Furthermore, we updated all publicly accessible Codecov Docker images to use squashed and/or multistage builds. Previous Docker images were also pushed over with new squash builds and all previous versions removed from Dockerhub. </p>
+<p>With the help of our third-party forensic team, we also conducted a full investigation of our infrastructure, associated logs, and application logs to confirm that there were no other intrusions or inappropriate access to our systems.</p>
+<h2></h2>
+<p>&nbsp;</p>
+<h2><strong>Corrective Actions and Lessons Learned</strong></h2>
+<p>Many remedial steps were taken as a result of the incident, and the following improvements were either made or are in the process of being made:</p>
+<ul>
+<li>
+<ul>
+<li aria-level="1"><b>Full Key Rotation:</b> All relevant keys have been rotated, with previous keys revoked.</li>
+<li aria-level="1"><b>Updates to Docker Image Deployment:</b> All public images are now squashed and/or converted to multistage to prevent a future Docker Layer attack.</li>
+<li aria-level="1"><b>Launch of New Uploader and Deprecation of the Bash Uploader:</b> Codecov released a <a href="https://about.codecov.io/blog/introducing-codecovs-new-uploader/?utm_medium=article&amp;utm_source=blog&amp;utm_campaign=security-incident&amp;utm_content=security-event&amp;utm_term=clicked-inline-cta">new Uploader</a>. The new Uploader will be shipped as a signed and SHASUM verifiable binary executable. This builds on existing plans to ship a new Uploader and deprecate the existing Bash Uploader. </li>
+<li aria-level="1"><b>Active Monitoring of Relevant Google Cloud Storage Assets:</b> Any changes to the Bash Uploader will now trigger alerts and notifications that escalate to the appropriate members of the Codecov team.</li>
+<li aria-level="1"><b>Signature and SHASUM Validation of the Bash Uploader:</b> The Bash Uploader has always possessed a method of SHASUM validation; however, Codecov did not fully or properly document the processes required to do so. External documentation has been updated to better demonstrate how to perform SHASUM validation of the uploader. Future work will be to sign the Bash Uploader using a GPG key.</li>
+<li aria-level="1"><b>Key Generation, Usage, and Rotation Policy Changes:</b> Codecov developed its own in-house tool for properly tracking key generation, as well as enforcing rotation policies (with a specific rotation policy to be determined), and key use auditing.</li>
+<li aria-level="1"><b>Enhance Incident Response Processes, Policies, and Procedures: </b>Codecov is using this security event as a learning experience for enhancing our incident response process, policies, and procedures. Codecov is committed to quickly responding to indicators of compromise, investigating to determine what happened and why, and communicating that to our stakeholders in order to protect our customers.</li>
+<li aria-level="1"><b>Codecov Staffing Changes:</b> Based on this event and its outcomes, we will be building a dedicated security team, starting with product/application security and infrastructure security.<br />
+</li>
+</ul>
+</li>
+</ul>
+<h2></h2>
+<p>&nbsp;</p>
+<h2><strong>Systemic Problems and Wider Areas of Concern</strong></h2>
+<p>The Codecov team observed several points that we hope to share with the industry: </p>
+<ul>
+<li aria-level="1"><b>Software Distribution and Signing:</b> Curl pipe to bash, while incredibly convenient, if rife with security issues. Issues in software distribution and signing is one of the most important lessons learned by the Codecov team. Securing the supply chain software distribution is a difficult problem. Many potential solutions to this problem exist, with a recent entrant, <a href="https://sigstore.dev/">Sigstore</a>, showing particular promise. Codecov chose to address this problem by shipping a <a href="https://about.codecov.io/blog/introducing-codecovs-new-uploader/?utm_medium=article&amp;utm_source=blog&amp;utm_campaign=security-incident&amp;utm_content=security-event&amp;utm_term=clicked-inline-cta">new Uploader</a>, which will be shipped as a signed and SHASUM-verifiable binary executable.</li>
+<li aria-level="1"><b>Key Management:</b> Challenges around key rotation, provenance, and use are ever-present in the software industry. While many tools exist to help with the secure <i>distribution</i> of keys and secrets (e.g., Google Secret Manager, Hashicorp Vault, etc); few solutions exist to properly track all the metadata associated with a secret. Questions like, When was this key generated? Where is it used? How can it be revoked? And others are still incredibly difficult to answer. Ultimately, as a result of this incident and the ensuing challenge of a full key rotation, Codecov chose to address this problem by building our own internal tool.</li>
+<li aria-level="1"><b>Docker Layer Attacks:</b> Publicly distributed Docker images should be either squashed or multistage such that intermediate layers that contain sensitive information are excluded from the final build. Codecov chose to solve this problem by using multi-staged and squashed builds of our Self-Hosted offering.</li>
+</ul>
+<p>&nbsp;</p>
+
+
+                
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+<footer id="footer">
+
+    <!-- TOP FOOTER -->
+    <div id="footer__top">
+    
+        <div class="container">
+
+            <div class="row d-flex justify-content-center justify-content-lg-start text-center text-lg-left align-items-center">
+
+                <div class="col-12 col-lg-1">
+
+                    <a href="https://about.codecov.io" id="footer__logo" title="codecov">
+                        <img src="/wp-content/themes/codecov/assets/brand/icons/codecov/codecov-circle.svg" loading="lazy" alt="codecov code coverage">
+                    </a>
+
+                </div>
+                <div class="col-12 col-lg-11 mt-3 mt-lg-0">
+            
+                    <nav id="follow">
+  <ul>
+    <li>
+      <a href="https://www.linkedin.com/company/codecov/" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+    </li>
+    <li>
+      <a href="https://twitter.com/codecov" target="_blank" rel="noopener noreferrer" title="Twitter"><i class="fab fa-twitter"></i></a>
+    </li>
+    <li>
+      <a href="https://github.com/codecov" target="_blank" rel="noopener noreferrer" title="Github"><i class="fab fa-github"></i></a>
+    </li>
+    <li>
+      <a href="https://www.youtube.com/channel/UCj-fJuvXv-m05HkSNn0OS9g/featured" target="_blank" rel="noopener noreferrer" title="YouTube"><i class="fab fa-youtube"></i></a>
+    </li>
+      <li>
+          <a href="https://angel.co/company/codecov" target="_blank" rel="noopener noreferrer" title="AngelList"><i class="fab fa-angellist"></i></a>
+      </li>
+    <li>
+      <a href="https://community.codecov.io/" target="_blank" rel="noopener noreferrer" title="Discourse"><i class="fab fa-discourse"></i></a>
+    </li>
+    <li>
+      <a href="https://www.instagram.com/codecov/" target="_blank" rel="noopener noreferrer" title="Instagram"><i class="fab fa-instagram"></i></a>
+    </li>
+  </ul>
+</nav>
+
+                </div>
+
+            </div>
+        
+        </div>
+
+    </div>
+
+    <!-- MIDDLE FOOTER -->
+    <div id="footer__middle">
+
+        <div class="container">
+
+            <div class="row d-flex justify-content-between">
+
+                <div class="col-12 col-sm-6 col-lg-2 text-center text-lg-left">
+
+                    <h3><a href="/product/features/">Product</a></h3>
+                    <ul>
+                        <li><a href="/product/features/">Features</a></li>
+                        <li><a href="/product/integrations/">Integrations</a></li>
+<!--                        <li><a href="/product/getting-started/">Getting Started</a></li>-->
+                        <li><a href="/product/documentation/">Documentation</a></li>
+                        <li><a href="/product/api/">API</a></li>
+                        <li><a href="/product/status/">Status</a></li>
+                    </ul>
+                
+                </div>
+                <div class="col-12 col-sm-6 col-lg-2 text-center text-lg-left">
+
+                    <h3><a href="/solutions/">Solutions</a></h3>
+                    <ul>
+                        <li><a href="/for/open-source/">Open Source</a></li>
+                        <li><a href="/for/enterprises/">Enterprise</a></li>
+                        <li><a href="/for/startups/">Startups</a></li>
+                        <li><a href="/for/education/">Education</a></li>
+                    </ul>
+
+                </div>
+                <div class="col-12 col-sm-6 col-lg-2 text-center text-lg-left">
+
+                    <h3><a href="/customers/">Customers</a></h3>
+                    <ul>
+                        <li><a href="/customers/">Customers</a></li>
+                        <li><a href="/resources/?_type=case-study">Case Studies</a></li>
+                        <li><a href="/resources/community/">Community</a></li>
+<!--                        <li><a href="/customers/advisory-board/">Customer Advisory Board</a></li>-->
+<!--                        <li><a href="/resources/swag/">Swag</a></li>-->
+                    </ul>
+                
+                </div>
+                <div class="col-12 col-sm-6 col-lg-2 text-center text-lg-left">
+
+                    <h3><a href="/resources/">Resources</a></h3>
+                    <ul>
+<!--                        <li><a href="/resources/?_type=case-study">Case Studies</a></li>-->
+                        <li><a href="/resources/?_type=webinar%2Con-demand-webinar">Webinars</a></li>
+                        <li><a href="/blog/">Blog</a></li>
+                        <li><a href="/product/documentation/">Documentation</a></li>
+                    </ul>
+                
+                </div>
+                <div class="col-12 col-sm-6 col-lg-2 text-center text-lg-left">
+
+                    <h3><a href="/">Company</a></h3>
+                    <ul>
+<!--                        <li><a href="/company/">About Us</a></li>-->
+                        <li><a href="/team/">Team</a></li>
+                        <li><a href="/company/press/">Press</a></li>
+                        <li><a href="/careers/">Careers</a></li>
+                        <!--<li><a href="/write-for-us/">Write for us</a></li> -->
+<!--                        <li><a href="/company/partners/">Partners</a></li>-->
+                    </ul>
+
+                </div>
+                <div class="col-12 col-sm-6 col-lg-2 text-center text-lg-left">
+
+                    <h3><a href="/contact/">Contact Us</a></h3>
+                    <ul>
+                        <li><a href="/contact/">Contact</a></li>
+                        <li><a href="/demo/">Demo</a></li>
+<!--                        <li><a href="#chat">Live Chat</a></li>
+                        <li><a href="https://codecovpro.zendesk.com/">Pro Support</a></li>
+                        <li><a href="https://codecoventerprise.zendesk.com/">Enterprise Support</a></li>
+                        <li><a href="https://community.codecov.com/">Community Board</a></li>
+                        -->
+                        <li><a href="mailto:support@codecov.com">Pro Support</a></li>
+                        <li><a href="mailto:support@codecov.com">Enterprise Support</a></li>
+                    </ul>
+                
+                </div>
+
+            </div>
+
+        </div>
+    
+    </div>
+    
+     <!-- BOTTOM FOOTER -->
+    <div id="footer__bottom">
+    
+        <div class="container">
+
+            <div class="row d-flex justify-content-center">
+
+                <div class="col-12 col-lg-10 d-flex justify-content-center align-items-center text-center mb-3 mb-lg-0">
+    <script type="text/javascript">
+	// Handle Cookie Settings Click
+	const handleCookieSettingsClick = e => {
+		if (window.Relyance !== undefined) {
+    	    window.Relyance.showPreferenceCenter();
+        }
+	}
+    </script>
+                    <nav>
+                        <ul>
+                            <li><a href="https://www.harness.io/legal/subscription-terms">Terms of Service</a></li>
+                            <li><a href="https://www.harness.io/legal/privacy">Privacy</a></li>
+                            <li><a href="https://www.harness.io/security">Security</a></li>
+                            <li><a href="https://www.harness.io/legal/dpa">Data Processing Addendum</a></li>
+                            <li><a href="javascript:void(0)" onclick="handleCookieSettingsClick()" class="x_cky-banner-element">Cookie Preferences</a></li>
+                            <li>
+                                <a href="https://harness-privacy.relyance.ai" class="privacy-opt-out">
+                                    Opt-Out
+                                    <img src="https://cdn.prod.website-files.com/6222ca42ea87e1bd1aa1d10c/6613fea4c0a0d1f3a0a977a0_privacyoptions.svg" width="30" height="14" loading="lazy" alt="">
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    
+                </div>
+                <div class="col-12 d-flex justify-content-center align-items-center">
+
+                    <p>© 2026 Harness Inc.</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</footer>
+    <script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/codecov/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<script id="script-single-js" src="https://about.codecov.io/wp-content/themes/codecov/assets/scripts/main-lean.js?version=1786422504&#038;ver=7.0.2"></script>
+<script id="page-links-to-js" src="https://about.codecov.io/wp-content/plugins/page-links-to/dist/new-tab.js?ver=3.4.1"></script>
+<script async data-wp-strategy="async" fetchpriority="low" id="comment-reply-js" src="https://about.codecov.io/wp-includes/js/comment-reply.min.js?ver=7.0.2"></script>
+
+        <div id="github-login-interstitial">
+
+            <div class="row">
+
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <h5>Before we redirect you to GitHub...</h5>
+                        <small>In order to use Codecov an admin must approve your org.</small>
+                    </div>
+                </div>
+
+                <div class="col-10 mx-auto my-3">
+
+                    <img src="/wp-content/themes/codecov/assets/temp/request-access.gif" class="img-fluid" loading="lazy" />
+
+                </div>
+                <div class="col-12">
+                    <a class="btn-github-private plausible-event-name=Click+Github" id="github-private" class="btn btn-sm btn-pink float-right d-block" href="https://codecov.io/login/gh">Continue to GitHub &rarr;</a>
+                </div>
+                <div class="col-12 pt-2">
+                    <a class="btn-github-public plausible-event-name=Click+Github" class="float-right d-block" href="https://codecov.io/login/gh"><small>Continue to GitHub (Public Repos Only) &rarr;</small></a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </body>
+
+</html>

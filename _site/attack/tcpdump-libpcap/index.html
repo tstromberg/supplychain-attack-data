@@ -40,7 +40,7 @@
     
       <p>The delivery split across related tools. tcpdump carried build-time code that fetched and compiled a payload. libpcap, the packet capture library under it, was changed to hide traffic on the port the payload used.</p>
     
-      <p>This compromise was more elaborate than a single hidden shell. The tcpdump configure script attempted to fetch a shell script named `services` over HTTP, generate `conftes.c`, compile it, and run it. The resulting program connected to a fixed address on TCP/1963 and accepted byte-sized commands to exit, sleep, or spawn an obfuscated shell. Libpcap was changed in `gencode.c` to hide traffic on port 1963, bending the sniffer&#39;s own eyes away from the backdoor.</p>
+      <p>This compromise was more elaborate than a single hidden shell. The poisoned configure scripts attempted to fetch a shell script named `services` over HTTP, generate `conftes.c`, compile it, and run it. The resulting program connected to a fixed address on TCP/1963 and accepted byte-sized commands to exit, sleep, or spawn an XOR-obfuscated shell. Libpcap was also changed in `gencode.c` to hide traffic on port 1963, bending the sniffer&#39;s own eyes away from the backdoor.</p>
     
       <p>That pairing is why the incident still stands out. The attacker did not just compromise a network diagnostic tool; they also altered the capture library so the diagnostic stack was less likely to see the backdoor&#39;s own traffic. Verification had to cover both archives, not only the obvious tcpdump executable.</p>
     
@@ -156,6 +156,10 @@
   
   <h2>References</h2>
   <ul>
+    
+      <li><a href="https://seclists.org/bugtraq/2002/Nov/219" target="_blank">Latest libpcap and tcpdump sources from tcpdump.org contain a trojan</a></li>
+    
+      <li><a href="https://web.archive.org/web/20021229020300id_/http://www.hlug.org:80/trojan/" target="_blank">Houston Linux Users Group original tcpdump/libpcap trojan analysis</a></li>
     
       <li><a href="https://bbs.archlinux.org/viewtopic.php?id=165" target="_blank">Arch Linux forum thread on trojaned tcpdump/libpcap sources</a></li>
     

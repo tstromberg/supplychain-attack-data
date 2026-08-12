@@ -1,0 +1,78 @@
+schema_version: 1
+interpretation:
+  - >-
+    The exact malicious 3.2.0.3 gem was recovered by its published SHA-256
+    from Hopper. The original reporter independently preserved the complete
+    backdoor fragment from lib/active-controller/middleware.rb.
+  - >-
+    The attacker yanked clean predecessor 3.2.0.2 before publishing 3.2.0.3.
+    RubyGems no longer serves that gem, so the before sample is the immutable
+    official v3.2.0+2 release commit as a source-tree substitute. Clean 3.2.0.4
+    is preserved as the official remediated RubyGems archive.
+samples:
+  - artifact_id: bootstrap-sass
+    phase: before
+    classification: clean
+    version: 3.2.0.2
+    filename: bootstrap-sass-3.2.0.2-source.tar.gz
+    path: bootstrap-sass/before/bootstrap-sass-3.2.0.2-source.tar.gz
+    sha256: 316d44b6071d1831c3fefd31c5f70e4673bab1051b9a5693d9755e2789f8f74e
+    size: 201955
+    source:
+      url: https://codeload.github.com/twbs/bootstrap-sass/tar.gz/881ce27c6b4101698ea849283933203e20861a33
+      retrieved_at: '2026-08-10T10:57:51.586259Z'
+      kind: official_repository_archive
+    verification:
+      status: substitute
+      basis:
+        - official_v3_2_0_plus_2_tag_peeled_to_commit_881ce27c6b4101698ea849283933203e20861a33
+        - incident_research_identifies_3_2_0_2_as_clean_predecessor
+        - measured_sha256_and_size
+    notes:
+      - Official release source tree; not a byte-equivalent replacement for the yanked 3.2.0.2 gem.
+  - artifact_id: bootstrap-sass
+    phase: during
+    classification: malicious
+    version: 3.2.0.3
+    filename: bootstrap-sass-3.2.0.3.gem
+    path: bootstrap-sass/during/bootstrap-sass-3.2.0.3.gem
+    sha256: 366d6162fe36fc81dadc114558b43c6c8890c8bcc7e90e2949ae6344d0785dc0
+    size: 205312
+    source:
+      url: http://10.9.8.5:8081/api/file/366d6162fe36fc81dadc114558b43c6c8890c8bcc7e90e2949ae6344d0785dc0
+      retrieved_at: '2026-08-09T00:28:39.19639Z'
+      kind: research_corpus
+    verification:
+      status: exact
+      basis:
+        - reported_sha256_366d6162fe36fc81dadc114558b43c6c8890c8bcc7e90e2949ae6344d0785dc0
+        - original_issue_identifies_version_and_backdoor_path
+        - measured_sha256_and_size
+  - artifact_id: bootstrap-sass
+    phase: after
+    classification: clean
+    version: 3.2.0.4
+    filename: bootstrap-sass-3.2.0.4.gem
+    path: bootstrap-sass/after/bootstrap-sass-3.2.0.4.gem
+    sha256: a2cf4f5e1aedf56f1b7cb93f8ac467f772282850600c7e379a4eddd3fcf4e4c7
+    size: 205312
+    source:
+      url: https://rubygems.org/gems/bootstrap-sass-3.2.0.4.gem
+      retrieved_at: '2026-08-10T10:55:05.830897Z'
+      kind: official_registry
+    verification:
+      status: exact
+      basis:
+        - rubygems_api_sha256_a2cf4f5e1aedf56f1b7cb93f8ac467f772282850600c7e379a4eddd3fcf4e4c7
+        - measured_sha256_and_size
+unresolved:
+  - artifact_id: bootstrap-sass
+    phase: before
+    coordinate: pkg:gem/bootstrap-sass@3.2.0.2
+    status: substitute
+    attempts:
+      - RubyGems returns 403 because the attacker-yanked release is no longer downloadable.
+      - No capture was found under the gems, downloads, or production RubyGems URLs in Wayback.
+      - Tsinghua, Aliyun, Huawei Cloud, and Ruby China mirrors did not yield the archive.
+      - The immutable official release source commit is preserved instead.
+    last_attempted_at: '2026-08-10T10:56:42Z'

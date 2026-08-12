@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>keyv and cacheable maintainer compromise seeded the ChainDrop worm</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>keyv and cacheable maintainer compromise seeded the ChainDrop worm</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> jaredwray · <a href="https://www.npmjs.com/~jaredwray" target="_blank">website</a> · <a href="https://github.com/jaredwray" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-08-04 to 2026-08-05 (1 day)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> maintainer</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, self_propagation, data_exfiltration, backdoor</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> source</div>
+    <div class="meta-item"><strong>Campaigns:</strong>
+      
+        <a href="/campaign/chaindrop-2026/">ChainDrop worm poisoned 444 npm packages in four hours</a>
+      
+    </div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">On 2026-08-04 an attacker took over the jaredwray account and republished the keyv and cacheable families with a preinstall hook that downloaded Bun and ran a credential harvester. The worm spread to 444 package names and 2,212 versions in under four hours.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>On August 4, 2026, an attacker took over the GitHub account of Jared Wray, the
+maintainer behind the `keyv` and `cacheable` npm families, and published
+malicious versions of ten widely used caching packages. Within four hours the
+worm those packages carried had poisoned 444 package names across 2,212
+versions, reaching more than a dozen victim organizations.</p>
+    
+      <p>The affected packages sit deep in the JavaScript dependency graph rather than
+at the top of it. `keyv@6.0.0` has more than 150 million weekly downloads,
+`flat-cache@6.1.24` around 149.9 million, and `file-entry-cache@11.1.6` roughly
+147.6 million. Very few developers install them deliberately. Almost everyone
+installs them. The publishing path is what made the releases hard to dismiss.
+Rather than
+pushing tarballs by hand with a stolen npm token, the attacker committed
+malicious files directly to the main branch and immediately cut a release, so
+the poisoned versions went out through GitHub Actions with valid provenance
+attestations. Every package received two new files, `setup.mjs` and
+`Math_Symbol.js`, plus a `&quot;preinstall&quot;: &quot;node setup.mjs&quot;` entry in
+`package.json`. The hook downloaded a standalone Bun runtime and executed an
+obfuscated second stage before `npm install` returned.</p>
+    
+      <p>The payload collected npm and GitHub tokens, AWS credentials, HashiCorp Vault
+secrets, database connection strings, and private keys, and read GitHub Actions
+runner memory for secrets that never touch disk. It planted autostart hooks in
+`.claude` and `.vscode` directories so that a developer cloning affected source
+would run it again. Then it republished trojanized versions of every package
+the stolen token could reach, using npm&#39;s OIDC trusted publishing to mint
+credentials under legitimate workflow identities.</p>
+    
+      <p>StepSecurity, which named the worm ChainDrop, documented the part that most
+interested defenders: the exfiltration endpoint was not hardcoded. The malware
+queried an Ethereum smart contract at
+`0xE1f2395ee43e45A1556EC6438a88c31B83493103` to retrieve the current address at
+runtime, rotating through roughly 60 public Ethereum RPC endpoints until one
+answered. Late on August 4, researchers watched the operator reconfigure the
+entire C2 infrastructure with a single Ethereum transaction, without touching
+the deployed malware. Wiz assessed the payload as a descendant of the Mini
+Shai-Hulud family used in the TeamPCP and AntV campaigns earlier in the year.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>keyv</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-08-04</td>
+          <td>
+            
+              <code>6.0.0</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha512:37f9f847e9c3e520b47d83a9029e199dbc30c6a195a1d80467d0fb1a6fd5068728ad4d1a422995ca578359263afdac5d3b4fed7a6b9befad27de19cca6966952</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>flat-cache</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-08-04</td>
+          <td>
+            
+              <code>6.1.24</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>file-entry-cache</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-08-04</td>
+          <td>
+            
+              <code>11.1.6</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:1918c60437e9696d3eacdc86211515906cf32cb9</code><br><code>sha512:e7c690fab0c0a3f5dedae56e1f836a83e6eca3b4ef44d7b38a6335fe2d10943efd95256201adfcd0938338a76e90803fe859387c81a32fe0bc0665e19d0ad062</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/package/keyv</code></li>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/package/cacheable</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file:setup.mjs</code></li>
+    
+      <li><code>file:Math_Symbol.js</code></li>
+    
+      <li><code>ethereum_contract:0xE1f2395ee43e45A1556EC6438a88c31B83493103</code></li>
+    
+      <li><code>technique:C2 endpoint retrieved from an Ethereum smart contract at runtime</code></li>
+    
+      <li><code>technique:standalone Bun runtime downloaded during preinstall</code></li>
+    
+      <li><code>technique:autostart hooks written to .claude and .vscode</code></li>
+    
+      <li><code>technique:republishing via npm OIDC trusted publishing</code></li>
+    
+      <li><code>malware_family:ChainDrop</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.stepsecurity.io/blog/chaindrop-npm-worm" target="_blank">ChainDrop npm Worm: Bun-loaded CI/CD credential harvester with Ethereum dead-drop C2 - StepSecurity</a></li>
+    
+      <li><a href="https://socket.dev/blog/popular-npm-packages-in-the-keyv-and-cacheable-namespaces-compromised-in-active-supply-chain" target="_blank">Popular npm Packages in the keyv and Cacheable Namespaces Compromised in Active Supply Chain Attack - Socket</a></li>
+    
+      <li><a href="https://www.wiz.io/blog/keyv-and-cacheable-npm-supply-chain-attack" target="_blank">keyv and cacheable npm Package Hijacked in Supply Chain Attack - Wiz</a></li>
+    
+      <li><a href="https://snyk.io/blog/inside-keyv-npm-compromise-preinstall-malware-trusted-provenance-ide-hooks/" target="_blank">Inside the keyv npm Supply Chain Compromise - Snyk</a></li>
+    
+      <li><a href="https://www.elastic.co/security-labs/shai-hulud-chaindrop-npm-supply-chain" target="_blank">Shai-Hulud strikes again: CHAINDROP worm hits 400+ npm packages - Elastic Security Labs</a></li>
+    
+      <li><a href="https://research.jfrog.com/post/shai-hulud-is-back-august/" target="_blank">Major Shai Hulud campaign strikes npm again, affecting keyv and 400+ packages - JFrog Security Research</a></li>
+    
+      <li><a href="https://www.aikido.dev/blog/keyv-and-friends-compromised-in-npm-supply-chain-attack" target="_blank">Keyv and friends compromised in active Shai-Hulud supply chain attack - Aikido</a></li>
+    
+      <li><a href="https://safedep.io/keyv-npm-supply-chain-compromise/" target="_blank">keyv and cacheable npm compromise: 400+ packages - SafeDep</a></li>
+    
+      <li><a href="https://github.com/ossf/malicious-packages" target="_blank">OSSF malicious-packages database</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

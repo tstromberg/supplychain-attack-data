@@ -6,9 +6,7 @@
   story: |
     Octopus Scanner reached GitHub as a strange abuse report: repositories were serving malware, but the maintainers did not appear to be the attackers. GitHub Security Lab traced the problem to 26 open-source NetBeans projects whose checked-in sources and artifacts had already been infected.
 
-    The malware looked for NetBeans project metadata on a developer machine, copied a payload named `cache.dat` into `nbproject/cache.dat`, and modified `nbproject/build-impl.xml`. That edit hooked the normal NetBeans build flow so the payload ran whenever the project was built.
-
-    The build step was the distribution mechanism. A developer who cloned and built an infected project could produce infected JARs; GitHub also found variants that backdoored existing JAR dependencies checked into the project. Deleting one obvious file was not enough if the repository still carried tainted artifacts.
+    The malware looked for NetBeans project metadata on a developer machine, copied a payload named `cache.dat` into `nbproject/cache.dat`, and modified `nbproject/build-impl.xml`. That edit hooked the normal NetBeans build flow so the payload ran whenever the project was built, which made the build step the distribution mechanism. A developer who cloned and built an infected project could produce infected JARs, and GitHub also found variants that backdoored existing JAR dependencies checked into the project, so deleting one obvious file was not enough if the repository still carried tainted artifacts.
 
     The payload chain then moved from project infection to host persistence. The first-stage dropper unpacked `octopus.dat`, installed autostart or scheduled-task persistence depending on platform, and spawned a remote administration tool that attempted to reach command-and-control infrastructure. GitHub reported that the C2 servers did not appear active during analysis, but the repositories still exposed anyone who cloned and built them.
 

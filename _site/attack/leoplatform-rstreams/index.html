@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Miasma poisoned LeoPlatform npm and jumped to a Go module</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Miasma poisoned LeoPlatform npm and jumped to a Go module</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> LeoPlatform · <a href="https://www.npmjs.com/org/leoplatform" target="_blank">website</a> · <a href="https://github.com/LeoPlatform" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-06-24 to 2026-06-26 (2 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, self_propagation, data_exfiltration, backdoor</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+    <div class="meta-item"><strong>Campaigns:</strong>
+      
+        <a href="/campaign/miasma-2026/">Miasma worm burrowed through npm for two months</a>
+      
+    </div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">In late June 2026 the Miasma worm republished 23 LeoPlatform and RStreams npm packages with a malicious binding.gyp, then reached the Verana Blockchain Go module. It was the campaign&#39;s first move outside npm and into the Go ecosystem.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>A late-June 2026 wave of the Miasma worm poisoned 23 npm packages belonging to
+the LeoPlatform and RStreams data-streaming projects, along with three packages
+published by the account `llxlr`. Socket, which analyzed the wave, also found
+compromise indicators in a Go module for the Verana Blockchain project. That
+made it the first time the campaign reached outside npm.</p>
+    
+      <p>LeoPlatform and RStreams publish serverless data-streaming libraries for AWS.
+The malicious releases went out in a tight window, inserted as new patch
+versions across every supported major release series at once, so a project
+pinned to any maintained line would pick one up. The delivery reused the
+technique from the June 3 wave: a weaponized `binding.gyp` that runs during
+`npm install` when `node-gyp` evaluates it, rather than a lifecycle script that
+an install-time scanner would flag.</p>
+    
+      <p>From there the chain ran through a ROT Caesar layer, AES-GCM decryption, and a
+downloaded Bun runtime used to execute the JavaScript payload outside Node&#39;s
+own security hooks. It collected npm tokens, GitHub secrets, SSH keys, and
+cloud credentials, and searched for GitHub Actions workflows with publishing
+permissions to extract more. The marker string `RevokeAndItGoesKaboom` tied the
+wave to earlier GitHub Actions compromises in the same family.</p>
+    
+      <p>The persistence is what distinguishes this wave. Rather than relying on the
+package staying installed, the malware wrote hooks into developer tooling
+configuration for Claude, VS Code, Cursor, and Copilot, staging payloads in a
+`.claude` folder with a VS Code folder-open task that invokes
+`node .claude/setup.mjs`. A developer who merely opened a poisoned repository
+later would execute it, which extends the blast radius well past whoever ran
+the original install. Socket advised rotating exposed credentials from a clean
+machine and auditing repositories for injected workflows, unexpected branches,
+and `.claude/` or `.github/` configuration files. Researchers track the family
+under the overlapping names Mini Shai-Hulud, Miasma, and Hades.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>hexo-deployer-wrangler</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>1.0.4</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:c05068f18e7f94304b92a307a030e0038ab61004</code><br><code>sha512:390c4d84add0f4a1724d09efe7a7dc1e6fadf18a81884f0a51a47a1a67e4a841a43d6df7c4ef6654ffa51bab92954f46699f3074b95b4441ff12fd7d6952501e</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>hexo-shoka-swiper</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>0.1.10</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:cb78d0dca573f99a22b41ca01e99853a6162d5d5</code><br><code>sha512:ba214fa047898a732cd51bf8ac12e3592814b3bfaf601a8a50d0f2efd1d3f08ada56363d302c7cc6dc69d7399a576caaf6b4848c3540fa799699cf75aaa4ac7e</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-auth</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>4.0.6</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:809ce3680adfdb8f0746189b68b6b5a6888a960f</code><br><code>sha512:ff729ca2a8f9b83bef2402bb237483d5c805747a0963362eda9b34a51189705460b51ce34b44b444e72d282354743583b034b20a562b285ec6dfd963b8c2b1a9</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-aws</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>2.0.4</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:1dcc0a39e1cd7293a9058cfc41e1afe8b397c943</code><br><code>sha512:2eec3e719b6aaa84634664af8e070f606ff14226a7bb8368135d2a0784f094955c5282a3765e5b41ae7587300052f8ad76770f4ff9a0e0afb10691a696678279</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-cache</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>1.0.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:e973173fb757d2dab9c6424b440dd9f7cbe4f14a</code><br><code>sha512:59d2a229fd08b233c478d049d0a77bb7ced441f56b1741114763fa297129c5aedecb70eef536fef284c879a73f70974e9f809f01f631a2a5d56f665bd302fa85</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-cdk-lib</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>0.0.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:ef8bf6dd92cbc29ef8d23f3f0fa786ed20a856b1</code><br><code>sha512:fc661480db99b8bee9b2bc3ab8fa3a4bd01fd7b740a891941029b7ec4abfff28b4c37b9809be7972232b383e5dc13b2ada413cce55fbbc9f6d17daaa7d61b3ca</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-cli</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>3.0.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:92221eb202e9f2ac577e5c33658c8a05c6d67556</code><br><code>sha512:63bc43ce0b97477c4c2dd423be899fd789265ceaae458843dec3dad4af4e928953941930d9c87f955d1b5e036f066c64f3ca68957a7e19cc015e0370975cdd08</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-config</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>1.1.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:ed9a17d6567101fa4f9f552a4a52cfcca88fa662</code><br><code>sha512:8805c933e0cc3dfa4b786db5f710c8fc5b5ebcc2ca80e4a1268773083fbcd298acc0927da2735045bb64803eebfc39915de8044e4f46795d4b87bb679b445207</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-connector-elasticsearch</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>2.0.6</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:be3b1f7f1b50f5d53b164a72fb3a9845f4734325</code><br><code>sha512:5731c6f6ceadce932341803a5cce4fa8d85ffeceab37628eb3c7e8d405dfca6ee1e414086d8863acf9b4ef559dd290ad16a6d3df53c6c1ce3d580dd226b7c594</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-connector-mongo</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>3.0.8</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:68a1cd589b2ce322f5f03fe7f85dc3f176a759d4</code><br><code>sha512:ba5acf10c01587d11b00c9a0dc84be327281b83428393a9c3cbf9a959957d50b77d5efca197206abe279a7bbb741af46d988f2fc6705f9c5d38598226d94f597</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-connector-mysql</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>3.0.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:f03a3e0dca9ef402352ce61cad59e5d850744960</code><br><code>sha512:10d3ce3c5cef840110203857791cc5e3f1544cf045b1ac6bed81500a14581577429cc531e10a4b843e0d3cd797d65b7d6b425f53f81104f53005257df4bf4bb8</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-connector-oracle</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>2.0.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:d7224b6b1f5d2f9403f1cebc8f82518c20b4d0f7</code><br><code>sha512:fd4deb449fb3224b69cc24dfd053205794d4363e016025d4ccb048e08142f3d9e8a676de9066a8c86471a4af7e0e472e889b18e4b0ad108319400341d046c66b</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-connector-redshift</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>3.0.6</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:888094a9b842cfe98e8e24c8f729be1fb6384563</code><br><code>sha512:004c303bdf54e1460abbc807c8df0749f7fa06e9e8a9e35739e9f24b32f0ebc123afba159a950078eaf8dbbf1538898fa9912de9262a967617942232ad7be9d3</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-cron</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>2.0.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:be6bb1cf88c46e9e4a6f1a68ed001b77769d58de</code><br><code>sha512:f3dcdf3c6977d91b83627c9c9b36e129275b195e5788b50f127fafb6813a66f2344789b33a62968f5f23ad31ead096b57d98349a22266c3372402869a22fbfe8</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-logger</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>1.0.8</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:24a0d9e496ec07ca978fab602d5f5e0b39fa03a0</code><br><code>sha512:6d4d679fe5e90f68d4e7db7c1daa5ca216531f017068860a71abc812ed3671520d234c39bcbfe68a5709e2321f369c14e4446474a6d7dae10ba04044a327adc5</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-sdk</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>6.0.19</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:d45ad3cffbcc7c4b354ebe9d71d002fa585379ec</code><br><code>sha512:c0d97cee97d711877b3fa9fd88f3aa678aea1a850f1ba1107e7d75978d3556a763448c9e4691456b66a74724fbb2cb73a3d20194058315475870b898317fde50</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>leo-streams</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>2.0.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:effa8576594fdd59907b5c5c07293ce28a9a3393</code><br><code>sha512:4b26c78eb963cfd7d67032053d8bfc96d03fdfd06a4e75ea4c3dab5c8547b3dad1e645a6b3578394db89f4ced04bc94ecbf415c2c0521522c6eecf18b406150a</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>prism-silq</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>1.0.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:c721c184dbb5c2dc23bacfd28571daef1decfac1</code><br><code>sha512:4cb2778d44fece1bc18d34f4bc62863bfa44d4fcb065de7eb22df24dae67d3150a42b99ca5c1401a61c84815bbadc36243736a60fb3f097cb48b651de91bd006</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>rstreams-metrics</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>2.0.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:1a5a1445fcd73133f22a0e7895993ac0a42b56da</code><br><code>sha512:7525dfb83076714164f0b7b4d215c42e6f41f52dd7ae9ed02eb7888a5981d498dbf54299bfe3a5933e8f974c12a0b735d8470204c674698c5e4af4aaf3766db7</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>rstreams-shard-util</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>1.0.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:a8cb86b78ca56befe90dc466642cb04b98079909</code><br><code>sha512:10ddb006e4e7d6cf606227a5a73a076de9983a29efbb4b9a17fd6b7fddd0e72922b433b994896547fc7d83ccfde07af1b77b9ee46eb9c407c6ef1a277a59f25f</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>serverless-convention</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>2.0.4</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:5e75c14b8acd5752819ab7a10874ddd6389f5238</code><br><code>sha512:2c5382b7a35ade87a8bedbdfa7130b39d0f73cf17632f9ac3fd713ce3e4d5539125a2d3424935c42bdbcf21a2928e36c318017d9a28375f8df18e7837b3bd82f</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>serverless-leo</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>3.0.14</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:47d73156df1c767bb168c4309fd17b92324d587d</code><br><code>sha512:983abaf56e81cfb7b42cfc81193798c40ab7d19c193f38d9acb0008caad208e130834aac5c3ae53bff3d399ed678cb2d8892cd4f5673835d52afe06858fb4b88</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>solo-nav</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>1.0.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:9be49287057cd6a54ef4a70a8d541a7259efbd2d</code><br><code>sha512:881fc30750901ddb083c2fb3562d203c175ee58c87b30af0de1a6f99f6101cd413ed4a4cbeaa4be235e20a969c5e0d5d5315c15f9285bdc9601acd72b73e4594</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>Verana Blockchain Go module</strong>
+            <br><code>github.com/verana-labs/verana-blockchain</code>
+            <br><span>go · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-24<br>to 2026-06-26</td>
+          <td>
+            
+              <code>v0.10.1-dev.20</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:b3e217f4354e8a4383038b99b0bcaeaff191a79df58e7a1f2355a79aac2faf13</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/org/leoplatform</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>malware_family:Miasma</code></li>
+    
+      <li><code>file:binding.gyp</code></li>
+    
+      <li><code>file:.claude/setup.mjs</code></li>
+    
+      <li><code>string:RevokeAndItGoesKaboom</code></li>
+    
+      <li><code>technique:patch releases inserted into every supported major release series at once</code></li>
+    
+      <li><code>technique:persistence hooks in Claude, VS Code, Cursor, and Copilot configuration</code></li>
+    
+      <li><code>account:npm: llxlr</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://socket.dev/blog/miasma-mini-shai-hulud-hits-leoplatform-npm-packages-go-ecosystem" target="_blank">Miasma Mini Shai-Hulud Hits LeoPlatform npm Packages and Go Ecosystem - Socket</a></li>
+    
+      <li><a href="https://thehackernews.com/2026/06/miasma-malware-targets-npm-packages-and.html" target="_blank">Miasma Malware Targets npm Packages and GitHub Actions in Supply Chain Attack - The Hacker News</a></li>
+    
+      <li><a href="https://gbhackers.com/shai-hulud-worm-poisons-leoplatform/" target="_blank">Mini Shai-Hulud Worm Poisons LeoPlatform npm Packages to Steal Developer and CI/CD Secrets - GBHackers</a></li>
+    
+      <li><a href="https://cybersecurefox.com/en/shai-hulud-miasma-supply-chain-attack-leoplatform-go/" target="_blank">Shai-Hulud Miasma Supply Chain Attack On LeoPlatform - CyberSecureFox</a></li>
+    
+      <li><a href="https://github.com/ossf/malicious-packages" target="_blank">OSSF malicious-packages database</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

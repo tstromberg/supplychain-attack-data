@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Miasma worm burrowed through npm for two months</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Miasma worm burrowed through npm for two months</h1>
+
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Campaign:</strong> miasma-2026</div>
+    <div class="meta-item"><strong>Date:</strong> 2026-05-29 to 2026-07-14 (46 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, self_propagation, data_exfiltration, remote_code_execution</div>
+    
+  </div>
+
+  
+  <h2>Synopsis</h2>
+  <p class="synopsis">Miasma was a 2026 npm worm that stole CI and cloud credentials, then republished trojanized versions from any maintainer account it reached. It ran from the @redhat-cloud-services compromise on May 29 through the AsyncAPI releases on July 14.</p>
+  
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>A self-propagating npm worm that researchers named Miasma spent roughly
+seven weeks in the summer of 2026 moving from one maintainer account to
+the next, harvesting cloud and CI credentials and using them to publish
+poisoned versions of whatever packages it could reach. Red Hat, the
+AsyncAPI project, and the voice-AI vendor Vapi were among the names it
+burned through.</p>
+    
+      <p>Miasma&#39;s first widely reported outing came on May 29, 2026, when an
+attacker used a Red Hat employee&#39;s GitHub account to inject a malicious
+preinstall script into packages in the `@redhat-cloud-services` npm
+namespace. Red Hat said the account had itself been compromised by a
+malicious VS Code extension, which is a reminder that the worm did not
+need to break npm to get npm publish rights.</p>
+    
+      <p>Five days later the operators changed how the code fired. On June 3,
+StepSecurity documented a wave it called &quot;Phantom Gyp,&quot; in which the
+payload abandoned `preinstall` and `postinstall` hooks entirely and
+instead hid execution inside a 157-byte `binding.gyp` file. Because
+`node-gyp` evaluates shell commands in that file during dependency
+installation, the code ran on `npm install` without ever appearing in a
+lifecycle-script scanner. Snyk counted 57 affected packages and more than
+300 malicious versions.</p>
+    
+      <p>The July 14 AsyncAPI compromise moved the trigger again, this time to
+module import. Socket said the loader fetched an 8.25 MB encrypted second
+stage from IPFS and unpacked a modular tasking framework with shell
+execution, file transfer, and systemd persistence. Across all three waves
+the objective stayed constant: credentials from developer laptops and
+build runners, exfiltrated to attacker-controlled GitHub repositories and
+then reinvested in the next round of publishing.</p>
+    
+  </div>
+  
+
+  
+  <h2>Member Attacks</h2>
+  <div class="record-list">
+    
+      <div class="record-list-item">
+        <div class="timeline-date">2026-05-29</div>
+        <h4><a href="/attack/redhat-cloud-services/">Red Hat npm namespace poisoned via a maintainer&#39;s editor</a></h4>
+        <p class="attack-meta"><strong>Target:</strong> @redhat-cloud-services | <strong>Impact:</strong> credential_theft, self_propagation, data_exfiltration</p>
+      </div>
+    
+      <div class="record-list-item">
+        <div class="timeline-date">2026-06-03</div>
+        <h4><a href="/attack/vapi-server-sdk/">Vapi server SDK caught in the Phantom Gyp npm wave</a></h4>
+        <p class="attack-meta"><strong>Target:</strong> @vapi-ai/server-sdk | <strong>Impact:</strong> credential_theft, self_propagation, data_exfiltration, remote_code_execution</p>
+      </div>
+    
+      <div class="record-list-item">
+        <div class="timeline-date">2026-06-24</div>
+        <h4><a href="/attack/leoplatform-rstreams/">Miasma poisoned LeoPlatform npm and jumped to a Go module</a></h4>
+        <p class="attack-meta"><strong>Target:</strong> LeoPlatform | <strong>Impact:</strong> credential_theft, self_propagation, data_exfiltration, backdoor</p>
+      </div>
+    
+      <div class="record-list-item">
+        <div class="timeline-date">2026-07-14</div>
+        <h4><a href="/attack/asyncapi/">AsyncAPI npm releases carried a Miasma botnet loader</a></h4>
+        <p class="attack-meta"><strong>Target:</strong> AsyncAPI | <strong>Impact:</strong> credential_theft, remote_code_execution, backdoor, data_exfiltration</p>
+      </div>
+    
+  </div>
+  
+
+  
+  <h2>Notes</h2>
+  <ul>
+    
+      <li>The three waves recorded here differ in execution trigger rather than in payload goal. May 29 used a preinstall script, June 3 used binding.gyp evaluation during node-gyp dependency installation, and July 14 used module import. Detection tooling that keyed on lifecycle scripts missed the second and third.</li>
+    
+      <li>The 2026-06-24 wave recorded at [[leoplatform-rstreams]] carried the campaign outside npm for the first time, reaching a Verana Blockchain Go module. Researchers use Mini Shai-Hulud, Miasma, and Hades for overlapping parts of this family.</li>
+    
+      <li>Miasma is distinct from the TeamPCP Mini Shai-Hulud lineage tracked under [[shai-hulud-here-we-go-again]], though both are credential-harvesting npm worms active in the same period and both abuse npm trusted publishing to self-propagate. No public source attributes them to the same operator.</li>
+    
+  </ul>
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://access.redhat.com/security/vulnerabilities/RHSB-2026-006" target="_blank">RHSB-2026-006 Supply chain compromise of @redhat-cloud-services npm packages - Red Hat</a></li>
+    
+      <li><a href="https://www.stepsecurity.io/blog/binding-gyp-npm-supply-chain-attack-spreads-like-worm" target="_blank">Miasma npm Supply Chain Attack: Self-Spreading Worm via Phantom Gyp - StepSecurity</a></li>
+    
+      <li><a href="https://snyk.io/blog/node-gyp-supply-chain-compromise-self-propagating-npm-worm-binding-gyp/" target="_blank">Node-gyp Supply Chain Compromise - Snyk</a></li>
+    
+      <li><a href="https://socket.dev/blog/asyncapi-supply-chain-attack" target="_blank">Compromised npm Packages in the AsyncAPI Namespace Deliver Miasma Botnet Loader - Socket</a></li>
+    
+      <li><a href="https://thehackernews.com/2026/06/ironworm-and-new-miasma-worm-variant.html" target="_blank">IronWorm and New Miasma Worm Variant Hit npm in Supply Chain Attacks - The Hacker News</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

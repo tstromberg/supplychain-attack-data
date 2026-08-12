@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orphaned AUR packages adopted and rewritten to steal credentials</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Orphaned AUR packages adopted and rewritten to steal credentials</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> Arch User Repository · <a href="https://aur.archlinux.org/" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-06-11 to 2026-06-12 (1 day)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> package_repository</div>
+    <div class="meta-item"><strong>Language:</strong> Rust</div>
+    <div class="meta-item"><strong>Cause:</strong> orphaned_package_takeover</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration, backdoor</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+    <div class="meta-item"><strong>Campaigns:</strong>
+      
+        <a href="/campaign/atomic-arch-2026/">Atomic Arch turned orphaned AUR packages into infostealers</a>
+      
+    </div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Starting 2026-06-11 attackers used the AUR&#39;s orphaned-package adoption process to take over abandoned packages, then rewrote their PKGBUILDs to npm install atomic-lockfile during the build. The Rust payload harvested credentials and loaded an eBPF rootkit.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Sonatype researchers disclosed on June 11, 2026 that attackers had begun taking
+over abandoned packages in the Arch User Repository and rewriting their build
+scripts to install a credential stealer. They named the campaign Atomic Arch.
+Sonatype counted more than 20 hijacked packages that day. Community trackers
+passed 400 within a day, and later estimates for the combined waves reached
+roughly 1,500.</p>
+    
+      <p>The AUR carries user-contributed build recipes rather than binaries, and it is
+where Arch users get software that is not in the official repositories. Each
+package is a `PKGBUILD` shell script that helpers like `yay` and `paru` run on
+the installing machine. When a maintainer walks away, the package is marked
+orphaned and any AUR account can adopt it through the site&#39;s normal process.
+That is what the attackers used. No credential theft, no forged commits, no
+compromised infrastructure. They requested packages that already had years of
+accumulated trust, and the AUR handed them over.</p>
+    
+      <p>The modified `PKGBUILD` files ran `npm install atomic-lockfile minimist chalk`
+during the build, which kept the payload out of the script a cautious user
+would actually read. A second wave on June 12 swapped in `js-digest` and
+`lockfile-js`, the latter delivered through Bun. Sonatype tracked
+`atomic-lockfile` as Sonatype-2026-003775 at CVSS 8.7 and the second-wave
+packages as Sonatype-2026-003808.</p>
+    
+      <p>The bundled Linux executable was written in Rust. It collected GitHub
+credentials, SSH keys, HashiCorp Vault tokens, browser cookies, and session
+material for Slack, Discord, Teams, and Telegram, checked for PTRACE to
+frustrate debugging, and where it ran with root it installed an eBPF rootkit
+that hid its processes, files, and network connections at the kernel level.
+Truesec advised that any AUR package installed or updated after June 11 be
+treated as suspect, that credentials be rotated, and that machines which built
+an affected package with elevated privileges be reinstalled rather than
+cleaned. AUR maintainers reverted the malicious commits, banned the accounts
+involved, and published a checklist of affected packages. Arch&#39;s official
+`core`, `extra`, and `multilib` repositories were untouched.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>Hijacked AUR packages</strong>
+            
+            <br><span>aur · package_build_script</span>
+            
+            
+          </td>
+          <td>2026-06-11<br>to 2026-06-12</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>js-digest</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>Wed Jun 10 2026 20:00:00 GMT-0400 (Eastern Daylight Time)<br>to Thu Jun 11 2026 20:00:00 GMT-0400 (Eastern Daylight Time)</td>
+          <td>
+            
+              <code>4.2.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:25dc63fac83bcc50520f9584e99fcea38ce538a2</code><br><code>sha512:ee081ace3cf31a347f65e94056f97d06bcb41740cc0c795d67dede17720f94b06e4ba65334eded8e6f142ff7797d7657e53ccc1bf7591766026eb3eb2e07df5c</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://aur.archlinux.org/</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>package:atomic-lockfile</code></li>
+    
+      <li><code>package:js-digest</code></li>
+    
+      <li><code>package:lockfile-js</code></li>
+    
+      <li><code>package:nextfile-js</code></li>
+    
+      <li><code>advisory:Sonatype-2026-003775</code></li>
+    
+      <li><code>advisory:Sonatype-2026-003808</code></li>
+    
+      <li><code>technique:eBPF rootkit hiding processes, files, and network connections</code></li>
+    
+      <li><code>technique:PTRACE anti-debugging</code></li>
+    
+      <li><code>technique:orphaned package adoption through the AUR stewardship process</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.sonatype.com/blog/atomic-arch-npm-campaign-adds-malicious-dependency" target="_blank">Atomic Arch npm Campaign Adds Malicious Dependency - Sonatype</a></li>
+    
+      <li><a href="https://www.stepsecurity.io/blog/400-aur-packages-hijacked-atomic-arch-campaign" target="_blank">400+ AUR Packages Hijacked: What the &quot;Atomic Arch&quot; Campaign Means for Supply-Chain Security - StepSecurity</a></li>
+    
+      <li><a href="https://www.truesec.com/hub/blog/supply-chain-attack-compromising-arch-linux-aur-packages-infostealer-rootkit" target="_blank">Supply Chain Attack Compromising Arch Linux AUR Packages with Infostealer and Rootkit - Truesec</a></li>
+    
+      <li><a href="https://cybersecuritynews.com/arch-linux-aur-packages-compromised/" target="_blank">400+ Arch Linux AUR Packages Compromised in a Supply Chain Attack Deploying Infostealers - Cyber Security News</a></li>
+    
+      <li><a href="https://safedep.io/ti/campaigns/atomic-arch/" target="_blank">Atomic Arch campaign - SafeDep Threat Intelligence</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

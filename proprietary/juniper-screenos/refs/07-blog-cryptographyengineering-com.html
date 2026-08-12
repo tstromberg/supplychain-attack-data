@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="profile" href="http://gmpg.org/xfn/11">
+<link rel="pingback" href="https://blog.cryptographyengineering.com/xmlrpc.php">
+
+<script>(function(html){html.className = html.className.replace(/\bno-js\b/,'js')})(document.documentElement);</script>
+<title>On the Juniper backdoor &#8211; A Few Thoughts on Cryptographic Engineering</title>
+<meta name='robots' content='max-image-preview:large' />
+
+<!-- Async WordPress.com Remote Login -->
+<script id="wpcom_remote_login_js">
+var wpcom_remote_login_extra_auth = '';
+function wpcom_remote_login_remove_dom_node_id( element_id ) {
+	var dom_node = document.getElementById( element_id );
+	if ( dom_node ) { dom_node.parentNode.removeChild( dom_node ); }
+}
+function wpcom_remote_login_remove_dom_node_classes( class_name ) {
+	var dom_nodes = document.querySelectorAll( '.' + class_name );
+	for ( var i = 0; i < dom_nodes.length; i++ ) {
+		dom_nodes[ i ].parentNode.removeChild( dom_nodes[ i ] );
+	}
+}
+function wpcom_remote_login_final_cleanup() {
+	wpcom_remote_login_remove_dom_node_classes( "wpcom_remote_login_msg" );
+	wpcom_remote_login_remove_dom_node_id( "wpcom_remote_login_key" );
+	wpcom_remote_login_remove_dom_node_id( "wpcom_remote_login_validate" );
+	wpcom_remote_login_remove_dom_node_id( "wpcom_remote_login_js" );
+	wpcom_remote_login_remove_dom_node_id( "wpcom_request_access_iframe" );
+	wpcom_remote_login_remove_dom_node_id( "wpcom_request_access_styles" );
+}
+
+// Watch for messages back from the remote login
+window.addEventListener( "message", function( e ) {
+	if ( e.origin === "https://r-login.wordpress.com" ) {
+		var data = {};
+		try {
+			data = JSON.parse( e.data );
+		} catch( e ) {
+			wpcom_remote_login_final_cleanup();
+			return;
+		}
+
+		if ( data.msg === 'LOGIN' ) {
+			// Clean up the login check iframe
+			wpcom_remote_login_remove_dom_node_id( "wpcom_remote_login_key" );
+
+			var id_regex = new RegExp( /^[0-9]+$/ );
+			var token_regex = new RegExp( /^.*|.*|.*$/ );
+			if (
+				token_regex.test( data.token )
+				&& id_regex.test( data.wpcomid )
+			) {
+				// We have everything we need to ask for a login
+				var script = document.createElement( "script" );
+				script.setAttribute( "id", "wpcom_remote_login_validate" );
+				script.src = '/remote-login.php?wpcom_remote_login=validate'
+					+ '&wpcomid=' + data.wpcomid
+					+ '&token=' + encodeURIComponent( data.token )
+					+ '&host=' + window.location.protocol
+					+ '//' + window.location.hostname
+					+ '&postid=102'
+					+ '&is_singular=1';
+				document.body.appendChild( script );
+			}
+
+			return;
+		}
+
+		// Safari ITP, not logged in, so redirect
+		if ( data.msg === 'LOGIN-REDIRECT' ) {
+			window.location = 'https://wordpress.com/log-in?redirect_to=' + window.location.href;
+			return;
+		}
+
+		// Safari ITP, storage access failed, remove the request
+		if ( data.msg === 'LOGIN-REMOVE' ) {
+			var css_zap = 'html { -webkit-transition: margin-top 1s; transition: margin-top 1s; } /* 9001 */ html { margin-top: 0 !important; } * html body { margin-top: 0 !important; } @media screen and ( max-width: 782px ) { html { margin-top: 0 !important; } * html body { margin-top: 0 !important; } }';
+			var style_zap = document.createElement( 'style' );
+			style_zap.type = 'text/css';
+			style_zap.appendChild( document.createTextNode( css_zap ) );
+			document.body.appendChild( style_zap );
+
+			var e = document.getElementById( 'wpcom_request_access_iframe' );
+			e.parentNode.removeChild( e );
+
+			document.cookie = 'wordpress_com_login_access=denied; path=/; max-age=31536000';
+
+			return;
+		}
+
+		// Safari ITP
+		if ( data.msg === 'REQUEST_ACCESS' ) {
+			console.log( 'request access: safari' );
+
+			// Check ITP iframe enable/disable knob
+			if ( wpcom_remote_login_extra_auth !== 'safari_itp_iframe' ) {
+				return;
+			}
+
+			// If we are in a "private window" there is no ITP.
+			var private_window = false;
+			try {
+				var opendb = window.openDatabase( null, null, null, null );
+			} catch( e ) {
+				private_window = true;
+			}
+
+			if ( private_window ) {
+				console.log( 'private window' );
+				return;
+			}
+
+			var iframe = document.createElement( 'iframe' );
+			iframe.id = 'wpcom_request_access_iframe';
+			iframe.setAttribute( 'scrolling', 'no' );
+			iframe.setAttribute( 'sandbox', 'allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-top-navigation-by-user-activation' );
+			iframe.src = 'https://r-login.wordpress.com/remote-login.php?wpcom_remote_login=request_access&origin=' + encodeURIComponent( data.origin ) + '&wpcomid=' + encodeURIComponent( data.wpcomid );
+
+			var css = 'html { -webkit-transition: margin-top 1s; transition: margin-top 1s; } /* 9001 */ html { margin-top: 46px !important; } * html body { margin-top: 46px !important; } @media screen and ( max-width: 660px ) { html { margin-top: 71px !important; } * html body { margin-top: 71px !important; } #wpcom_request_access_iframe { display: block; height: 71px !important; } } #wpcom_request_access_iframe { border: 0px; height: 46px; position: fixed; top: 0; left: 0; width: 100%; min-width: 100%; z-index: 99999; background: #23282d; } ';
+
+			var style = document.createElement( 'style' );
+			style.type = 'text/css';
+			style.id = 'wpcom_request_access_styles';
+			style.appendChild( document.createTextNode( css ) );
+			document.body.appendChild( style );
+
+			document.body.appendChild( iframe );
+		}
+
+		if ( data.msg === 'DONE' ) {
+			wpcom_remote_login_final_cleanup();
+		}
+	}
+}, false );
+
+// Inject the remote login iframe after the page has had a chance to load
+// more critical resources
+window.addEventListener( "DOMContentLoaded", function( e ) {
+	var iframe = document.createElement( "iframe" );
+	iframe.style.display = "none";
+	iframe.setAttribute( "scrolling", "no" );
+	iframe.setAttribute( "id", "wpcom_remote_login_key" );
+	iframe.src = "https://r-login.wordpress.com/remote-login.php"
+		+ "?wpcom_remote_login=key"
+		+ "&origin=aHR0cHM6Ly9ibG9nLmNyeXB0b2dyYXBoeWVuZ2luZWVyaW5nLmNvbQ%3D%3D"
+		+ "&wpcomid=9549322"
+		+ "&time=" + Math.floor( Date.now() / 1000 );
+	document.body.appendChild( iframe );
+}, false );
+</script>
+<link rel='dns-prefetch' href='//s0.wp.com' />
+<link rel='dns-prefetch' href='//fonts-api.wp.com' />
+<link rel="alternate" type="application/rss+xml" title="A Few Thoughts on Cryptographic Engineering &raquo; Feed" href="https://blog.cryptographyengineering.com/feed/" />
+<link rel="alternate" type="application/rss+xml" title="A Few Thoughts on Cryptographic Engineering &raquo; Comments Feed" href="https://blog.cryptographyengineering.com/comments/feed/" />
+<link rel="alternate" type="application/rss+xml" title="A Few Thoughts on Cryptographic Engineering &raquo; On the Juniper&nbsp;backdoor Comments Feed" href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/feed/" />
+	<script type="text/javascript">
+		/* <![CDATA[ */
+		function addLoadEvent(func) {
+			var oldonload = window.onload;
+			if (typeof window.onload != 'function') {
+				window.onload = func;
+			} else {
+				window.onload = function () {
+					oldonload();
+					func();
+				}
+			}
+		}
+		/* ]]> */
+	</script>
+	<style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<link crossorigin='anonymous' rel='stylesheet' id='all-css-2-1' href='/wp-content/mu-plugins/jetpack-plugin/sun/modules/related-posts/related-posts.css?m=1770915482i&cssminify=yes' type='text/css' media='all' />
+<style id="wp-emoji-styles-inline-css">
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+/*# sourceURL=wp-emoji-styles-inline-css */
+</style>
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-break:normal!important}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style^=border-color],[style*=";border-color"],[style*="; border-color"]){border-style:solid}html :where([style^=border-top-color],[style*=";border-top-color"],[style*="; border-top-color"]){border-top-style:solid}html :where([style^=border-right-color],[style*=";border-right-color"],[style*="; border-right-color"]){border-right-style:solid}html :where([style^=border-bottom-color],[style*=";border-bottom-color"],[style*="; border-bottom-color"]){border-bottom-style:solid}html :where([style^=border-left-color],[style*=";border-left-color"],[style*="; border-left-color"]){border-left-style:solid}html :where([style^=border-width],[style*=";border-width"],[style*="; border-width"]){border-style:solid}html :where([style^=border-top-width],[style*=";border-top-width"],[style*="; border-top-width"]){border-top-style:solid}html :where([style^=border-right-width],[style*=";border-right-width"],[style*="; border-right-width"]){border-right-style:solid}html :where([style^=border-bottom-width],[style*=";border-bottom-width"],[style*="; border-bottom-width"]){border-bottom-style:solid}html :where([style^=border-left-width],[style*=";border-left-width"],[style*="; border-left-width"]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=/wp-content/plugins/gutenberg-core/v23.7.1/build/styles/block-library/common.min.css */
+</style>
+<style id="wp-block-library-inline-css-extra">
+.has-text-align-justify {
+	text-align:justify;
+}
+.has-text-align-justify{text-align:justify;}
+/*# sourceURL=wp-block-library-inline-css */
+</style>
+
+<style id="classic-theme-styles-inline-css">
+.wp-block-button__link{background-color:#32373c;border-radius:9999px;box-shadow:none;color:#fff;font-size:1.125em;padding:calc(.667em + 2px) calc(1.333em + 2px);text-decoration:none}.wp-block-file__button{background:#32373c;color:#fff}.wp-block-accordion-heading{margin:0}.wp-block-accordion-heading__toggle{background-color:inherit!important;color:inherit!important}.wp-block-accordion-heading__toggle:not(:focus-visible){outline:none}.wp-block-accordion-heading__toggle:focus,.wp-block-accordion-heading__toggle:hover{background-color:inherit!important;border:none;box-shadow:none;color:inherit;padding:var(--wp--preset--spacing--20,1em) 0;text-decoration:none}.wp-block-accordion-heading__toggle:focus-visible{outline:auto;outline-offset:0}.wp-block-tab:not(.has-text-color){color:inherit!important}.wp-block-tab:not(.has-background){background-color:inherit!important}.wp-block-tab:focus,.wp-block-tab:hover{text-decoration:none}.wp-block-tab:focus-visible{outline:auto;outline-offset:0}
+/*# sourceURL=/wp-content/plugins/gutenberg-core/v23.7.1/build/styles/block-library/classic.min.css */
+</style>
+
+<style id="coblocks-inline-format-inline-css">
+.uppercase{text-transform:uppercase}
+/*# sourceURL=coblocks-inline-format-inline-css */
+</style>
+<link crossorigin='anonymous' rel='stylesheet' id='all-css-12-1' href='/_static/??-eJx9jcEKg0AMRH+oaVhorR7Eb9E16IpZg8min2889FZ6GYbhPQYPgbhlo2zIBWQtU8qKcdvJd5be0AmmMfW0Ejv2jKoP/K0daZzIXNdvB6PzvyJ+A8MgO6mCJ6fCYLN/6e113IZXU9WfUL/DcgHSTkDo&cssminify=yes' type='text/css' media='all' />
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--font-family--albert-sans: 'Albert Sans', sans-serif;--wp--preset--font-family--alegreya: Alegreya, serif;--wp--preset--font-family--arvo: Arvo, serif;--wp--preset--font-family--bodoni-moda: 'Bodoni Moda', serif;--wp--preset--font-family--bricolage-grotesque: 'Bricolage Grotesque', sans-serif;--wp--preset--font-family--cabin: Cabin, sans-serif;--wp--preset--font-family--chivo: Chivo, sans-serif;--wp--preset--font-family--commissioner: Commissioner, sans-serif;--wp--preset--font-family--cormorant: Cormorant, serif;--wp--preset--font-family--courier-prime: 'Courier Prime', monospace;--wp--preset--font-family--crimson-pro: 'Crimson Pro', serif;--wp--preset--font-family--dm-mono: 'DM Mono', monospace;--wp--preset--font-family--dm-sans: 'DM Sans', sans-serif;--wp--preset--font-family--dm-serif-display: 'DM Serif Display', serif;--wp--preset--font-family--domine: Domine, serif;--wp--preset--font-family--eb-garamond: 'EB Garamond', serif;--wp--preset--font-family--epilogue: Epilogue, sans-serif;--wp--preset--font-family--fahkwang: Fahkwang, sans-serif;--wp--preset--font-family--figtree: Figtree, sans-serif;--wp--preset--font-family--fira-sans: 'Fira Sans', sans-serif;--wp--preset--font-family--fjalla-one: 'Fjalla One', sans-serif;--wp--preset--font-family--fraunces: Fraunces, serif;--wp--preset--font-family--gabarito: Gabarito, system-ui;--wp--preset--font-family--ibm-plex-mono: 'IBM Plex Mono', monospace;--wp--preset--font-family--ibm-plex-sans: 'IBM Plex Sans', sans-serif;--wp--preset--font-family--ibarra-real-nova: 'Ibarra Real Nova', serif;--wp--preset--font-family--instrument-serif: 'Instrument Serif', serif;--wp--preset--font-family--inter: Inter, sans-serif;--wp--preset--font-family--josefin-sans: 'Josefin Sans', sans-serif;--wp--preset--font-family--jost: Jost, sans-serif;--wp--preset--font-family--libre-baskerville: 'Libre Baskerville', serif;--wp--preset--font-family--libre-franklin: 'Libre Franklin', sans-serif;--wp--preset--font-family--literata: Literata, serif;--wp--preset--font-family--lora: Lora, serif;--wp--preset--font-family--merriweather: Merriweather, serif;--wp--preset--font-family--montserrat: Montserrat, sans-serif;--wp--preset--font-family--newsreader: Newsreader, serif;--wp--preset--font-family--noto-sans-mono: 'Noto Sans Mono', sans-serif;--wp--preset--font-family--nunito: Nunito, sans-serif;--wp--preset--font-family--open-sans: 'Open Sans', sans-serif;--wp--preset--font-family--overpass: Overpass, sans-serif;--wp--preset--font-family--pt-serif: 'PT Serif', serif;--wp--preset--font-family--petrona: Petrona, serif;--wp--preset--font-family--piazzolla: Piazzolla, serif;--wp--preset--font-family--playfair-display: 'Playfair Display', serif;--wp--preset--font-family--plus-jakarta-sans: 'Plus Jakarta Sans', sans-serif;--wp--preset--font-family--poppins: Poppins, sans-serif;--wp--preset--font-family--raleway: Raleway, sans-serif;--wp--preset--font-family--roboto: Roboto, sans-serif;--wp--preset--font-family--roboto-slab: 'Roboto Slab', serif;--wp--preset--font-family--rubik: Rubik, sans-serif;--wp--preset--font-family--rufina: Rufina, serif;--wp--preset--font-family--sora: Sora, sans-serif;--wp--preset--font-family--source-sans-3: 'Source Sans 3', sans-serif;--wp--preset--font-family--source-serif-4: 'Source Serif 4', serif;--wp--preset--font-family--space-mono: 'Space Mono', monospace;--wp--preset--font-family--syne: Syne, sans-serif;--wp--preset--font-family--texturina: Texturina, serif;--wp--preset--font-family--urbanist: Urbanist, sans-serif;--wp--preset--font-family--work-sans: 'Work Sans', sans-serif;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}.wp-block-button{--wp--preset--dimension--25: 25%;--wp--preset--dimension--50: 50%;--wp--preset--dimension--75: 75%;--wp--preset--dimension--100: 100%;}:where(body) { margin: 0; }:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;font-style: inherit;font-weight: inherit;letter-spacing: inherit;line-height: inherit;padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}.has-albert-sans-font-family{font-family: var(--wp--preset--font-family--albert-sans) !important;}.has-alegreya-font-family{font-family: var(--wp--preset--font-family--alegreya) !important;}.has-arvo-font-family{font-family: var(--wp--preset--font-family--arvo) !important;}.has-bodoni-moda-font-family{font-family: var(--wp--preset--font-family--bodoni-moda) !important;}.has-bricolage-grotesque-font-family{font-family: var(--wp--preset--font-family--bricolage-grotesque) !important;}.has-cabin-font-family{font-family: var(--wp--preset--font-family--cabin) !important;}.has-chivo-font-family{font-family: var(--wp--preset--font-family--chivo) !important;}.has-commissioner-font-family{font-family: var(--wp--preset--font-family--commissioner) !important;}.has-cormorant-font-family{font-family: var(--wp--preset--font-family--cormorant) !important;}.has-courier-prime-font-family{font-family: var(--wp--preset--font-family--courier-prime) !important;}.has-crimson-pro-font-family{font-family: var(--wp--preset--font-family--crimson-pro) !important;}.has-dm-mono-font-family{font-family: var(--wp--preset--font-family--dm-mono) !important;}.has-dm-sans-font-family{font-family: var(--wp--preset--font-family--dm-sans) !important;}.has-dm-serif-display-font-family{font-family: var(--wp--preset--font-family--dm-serif-display) !important;}.has-domine-font-family{font-family: var(--wp--preset--font-family--domine) !important;}.has-eb-garamond-font-family{font-family: var(--wp--preset--font-family--eb-garamond) !important;}.has-epilogue-font-family{font-family: var(--wp--preset--font-family--epilogue) !important;}.has-fahkwang-font-family{font-family: var(--wp--preset--font-family--fahkwang) !important;}.has-figtree-font-family{font-family: var(--wp--preset--font-family--figtree) !important;}.has-fira-sans-font-family{font-family: var(--wp--preset--font-family--fira-sans) !important;}.has-fjalla-one-font-family{font-family: var(--wp--preset--font-family--fjalla-one) !important;}.has-fraunces-font-family{font-family: var(--wp--preset--font-family--fraunces) !important;}.has-gabarito-font-family{font-family: var(--wp--preset--font-family--gabarito) !important;}.has-ibm-plex-mono-font-family{font-family: var(--wp--preset--font-family--ibm-plex-mono) !important;}.has-ibm-plex-sans-font-family{font-family: var(--wp--preset--font-family--ibm-plex-sans) !important;}.has-ibarra-real-nova-font-family{font-family: var(--wp--preset--font-family--ibarra-real-nova) !important;}.has-instrument-serif-font-family{font-family: var(--wp--preset--font-family--instrument-serif) !important;}.has-inter-font-family{font-family: var(--wp--preset--font-family--inter) !important;}.has-josefin-sans-font-family{font-family: var(--wp--preset--font-family--josefin-sans) !important;}.has-jost-font-family{font-family: var(--wp--preset--font-family--jost) !important;}.has-libre-baskerville-font-family{font-family: var(--wp--preset--font-family--libre-baskerville) !important;}.has-libre-franklin-font-family{font-family: var(--wp--preset--font-family--libre-franklin) !important;}.has-literata-font-family{font-family: var(--wp--preset--font-family--literata) !important;}.has-lora-font-family{font-family: var(--wp--preset--font-family--lora) !important;}.has-merriweather-font-family{font-family: var(--wp--preset--font-family--merriweather) !important;}.has-montserrat-font-family{font-family: var(--wp--preset--font-family--montserrat) !important;}.has-newsreader-font-family{font-family: var(--wp--preset--font-family--newsreader) !important;}.has-noto-sans-mono-font-family{font-family: var(--wp--preset--font-family--noto-sans-mono) !important;}.has-nunito-font-family{font-family: var(--wp--preset--font-family--nunito) !important;}.has-open-sans-font-family{font-family: var(--wp--preset--font-family--open-sans) !important;}.has-overpass-font-family{font-family: var(--wp--preset--font-family--overpass) !important;}.has-pt-serif-font-family{font-family: var(--wp--preset--font-family--pt-serif) !important;}.has-petrona-font-family{font-family: var(--wp--preset--font-family--petrona) !important;}.has-piazzolla-font-family{font-family: var(--wp--preset--font-family--piazzolla) !important;}.has-playfair-display-font-family{font-family: var(--wp--preset--font-family--playfair-display) !important;}.has-plus-jakarta-sans-font-family{font-family: var(--wp--preset--font-family--plus-jakarta-sans) !important;}.has-poppins-font-family{font-family: var(--wp--preset--font-family--poppins) !important;}.has-raleway-font-family{font-family: var(--wp--preset--font-family--raleway) !important;}.has-roboto-font-family{font-family: var(--wp--preset--font-family--roboto) !important;}.has-roboto-slab-font-family{font-family: var(--wp--preset--font-family--roboto-slab) !important;}.has-rubik-font-family{font-family: var(--wp--preset--font-family--rubik) !important;}.has-rufina-font-family{font-family: var(--wp--preset--font-family--rufina) !important;}.has-sora-font-family{font-family: var(--wp--preset--font-family--sora) !important;}.has-source-sans-3-font-family{font-family: var(--wp--preset--font-family--source-sans-3) !important;}.has-source-serif-4-font-family{font-family: var(--wp--preset--font-family--source-serif-4) !important;}.has-space-mono-font-family{font-family: var(--wp--preset--font-family--space-mono) !important;}.has-syne-font-family{font-family: var(--wp--preset--font-family--syne) !important;}.has-texturina-font-family{font-family: var(--wp--preset--font-family--texturina) !important;}.has-urbanist-font-family{font-family: var(--wp--preset--font-family--urbanist) !important;}.has-work-sans-font-family{font-family: var(--wp--preset--font-family--work-sans) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link rel='stylesheet' id='independent-publisher-fonts-css' href='https://fonts-api.wp.com/css?family=PT+Sans%3A400%2C700%2C400italic%2C700italic%7CPT+Serif%3A400%2C700%2C400italic%2C700italic&#038;subset=latin%2Clatin-ext' media='all' />
+<link crossorigin='anonymous' rel='stylesheet' id='all-css-16-1' href='/_static/??-eJyVj9EKwjAMRX/Imu1h7kn8FNlq7DLbtDQpw7+3Ex8miuBLuAdyLgksydjIiqwQikm+OGKBGTUN9vZikMJwJrbgkDFTFeR73FuRHWw6dcKAAqmMQHzBhHWwmsqeZMIMoneP/2vrMU/VLMnG8FGw+SXj6KOr0UHd2uAvyWE0PtpBKfIbmKsfKK/qKRzbvm8PTd813fwASyt79Q==&cssminify=yes' type='text/css' media='all' />
+<style id="independent-publisher-style-inline-css">
+#hero-header { background: url("https://blog.cryptographyengineering.com/wp-content/uploads/2016/07/2274252795_918bcffc01_b.jpg") no-repeat center; background-size: cover; background-attachment: scroll; }
+/*# sourceURL=independent-publisher-style-inline-css */
+</style>
+<link crossorigin='anonymous' rel='stylesheet' id='print-css-17-1' href='/wp-content/mu-plugins/global-print/global-print.css?m=1465851035i&cssminify=yes' type='text/css' media='print' />
+<style id="jetpack-global-styles-frontend-style-inline-css">
+:root { --font-headings: unset; --font-base: unset; --font-headings-default: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif; --font-base-default: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;}
+/*# sourceURL=jetpack-global-styles-frontend-style-inline-css */
+</style>
+<link crossorigin='anonymous' rel='stylesheet' id='all-css-20-1' href='/wp-content/themes/h4/global.css?m=1420737423i&cssminify=yes' type='text/css' media='all' />
+<script id="jetpack_related-posts-js-extra">
+var related_posts_js_options = {"post_heading":"h4"};
+//# sourceURL=jetpack_related-posts-js-extra
+</script>
+<script id="wpcom-actionbar-placeholder-js-extra">
+var actionbardata = {"siteID":"9549322","postID":"102","siteURL":"https://blog.cryptographyengineering.com","xhrURL":"https://blog.cryptographyengineering.com/wp-admin/admin-ajax.php","nonce":"2258f5c228","isLoggedIn":"","statusMessage":"","subsEmailDefault":"instantly","proxyScriptUrl":"https://s0.wp.com/wp-content/js/wpcom-proxy-request.js?m=1513050504i&amp;ver=20211021","shortlink":"https://wp.me/pE4dk-1E","i18n":{"followedText":"New posts from this site will now appear in your \u003Ca href=\"https://wordpress.com/reader\"\u003EReader\u003C/a\u003E","foldBar":"Collapse this bar","unfoldBar":"Expand this bar","shortLinkCopied":"Shortlink copied to clipboard."}};
+//# sourceURL=wpcom-actionbar-placeholder-js-extra
+</script>
+<script id="jetpack-mu-wpcom-settings-js-before">
+var JETPACK_MU_WPCOM_SETTINGS = {"assetsUrl":"https://s0.wp.com/wp-content/mu-plugins/jetpack-mu-wpcom-plugin/sun/jetpack_vendor/automattic/jetpack-mu-wpcom/src/build/"};
+//# sourceURL=jetpack-mu-wpcom-settings-js-before
+</script>
+<script crossorigin='anonymous' type='text/javascript'  src='/_static/??-eJx1jcEOwiAQRH9IunJo2ovxU0yFTQPCguyS2r8XE0zqwdNkMi9vYMvKJBIkgVhVDnV1xOBR8mIevQNXgpsjA/fqgoWCYRG0KicW/m1DdDR4PsHB6xsTROWSXvt3a7JQLfJn9M+KZe9xFPyFVHRraacdvsaLnsbxrPU0z/4NC+ROAA=='></script>
+<script id="rlt-proxy-js-after">
+	rltInitialize( {"token":null,"iframeOrigins":["https:\/\/widgets.wp.com"]} );
+//# sourceURL=rlt-proxy-js-after
+</script>
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://matthewdgreen.wordpress.com/xmlrpc.php?rsd" />
+<meta name="generator" content="WordPress.com" />
+<link rel="canonical" href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/" />
+<link rel='shortlink' href='https://wp.me/pE4dk-1E' />
+<link rel="alternate" type="application/json+oembed" href="https://public-api.wordpress.com/oembed/?format=json&amp;url=https%3A%2F%2Fblog.cryptographyengineering.com%2F2015%2F12%2F22%2Fon-juniper-backdoor%2F&amp;for=wpcom-auto-discovery" /><link rel="alternate" type="application/xml+oembed" href="https://public-api.wordpress.com/oembed/?format=xml&amp;url=https%3A%2F%2Fblog.cryptographyengineering.com%2F2015%2F12%2F22%2Fon-juniper-backdoor%2F&amp;for=wpcom-auto-discovery" />
+<!-- Jetpack Open Graph Tags -->
+<meta property="og:type" content="article" />
+<meta property="og:title" content="On the Juniper backdoor" />
+<meta property="og:url" content="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/" />
+<meta property="og:description" content="You might have heard that a few days ago, Juniper Systems announced the discovery of &#8220;unauthorized code&#8221; in the ScreenOS software that underlies the NetScreen line of devices. As a resu…" />
+<meta property="article:published_time" content="2015-12-22T08:22:00+00:00" />
+<meta property="article:modified_time" content="2016-07-18T23:57:00+00:00" />
+<meta property="og:site_name" content="A Few Thoughts on Cryptographic Engineering" />
+<meta property="og:image" content="https://blog.cryptographyengineering.com/wp-content/uploads/2015/12/a826e-juniperberries.png?w=300" />
+<meta property="og:image:width" content="320" />
+<meta property="og:image:height" content="240" />
+<meta property="og:image:alt" content="" />
+<meta property="og:locale" content="en_US" />
+<meta property="article:publisher" content="https://www.facebook.com/WordPresscom" />
+<meta name="twitter:text:title" content="On the Juniper&nbsp;backdoor" />
+<meta name="twitter:image" content="https://blog.cryptographyengineering.com/wp-content/uploads/2015/12/a826e-juniperberries.png?w=640" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<!-- End Jetpack Open Graph Tags -->
+<link rel="shortcut icon" type="image/x-icon" href="https://s0.wp.com/i/favicon.ico?m=1713425267i" sizes="16x16 24x24 32x32 48x48" />
+<link rel="icon" type="image/x-icon" href="https://s0.wp.com/i/favicon.ico?m=1713425267i" sizes="16x16 24x24 32x32 48x48" />
+<link rel="apple-touch-icon" href="https://s0.wp.com/i/webclip.png?m=1713868326i" />
+<link rel='openid.server' href='https://blog.cryptographyengineering.com/?openidserver=1' />
+<link rel='openid.delegate' href='https://blog.cryptographyengineering.com/' />
+<link rel="search" type="application/opensearchdescription+xml" href="https://blog.cryptographyengineering.com/osd.xml" title="A Few Thoughts on Cryptographic Engineering" />
+<link rel="search" type="application/opensearchdescription+xml" href="https://s1.wp.com/opensearch.xml" title="WordPress.com" />
+<meta name="description" content="You might have heard that a few days ago, Juniper Systems announced the discovery of &quot;unauthorized code&quot; in the ScreenOS software that underlies the NetScreen line of devices. As a result of this discovery, the company announced a pair of separate vulnerabilities, CVE-2015-7755 and CVE-2015-7756 and urged their customers to patch immediately. The first of these CVEs (#7755) was&hellip;" />
+			<link rel="stylesheet" id="custom-css-css" type="text/css" href="https://s0.wp.com/?custom-css=1&#038;csblog=E4dk&#038;cscache=6&#038;csrev=14" />
+			<link crossorigin='anonymous' rel='stylesheet' id='all-css-0-3' href='/wp-content/mu-plugins/jetpack-plugin/sun/modules/widgets/top-posts/style.css?m=1753279645i&cssminify=yes' type='text/css' media='all' />
+
+</head>
+
+<body class="wp-singular post-template-default single single-post postid-102 single-format-standard wp-theme-pubindependent-publisher customizer-styles-applied has-header-image has-sidebar gravatar-logo-disabled jetpack-reblog-enabled">
+
+<div id="page" class="hfeed site">
+	<a class="skip-link screen-reader-text" href="#content">Skip to content</a>
+
+	
+<div id="hero-header" class="site-hero-section">
+			<a id="slide-menu-toggle" class="menu-toggle" href="#slide-menu" aria-controls="slide-menu" aria-expanded="false" role="button" onclick="return false;">
+			Menu		</a><!-- #slide-menu-toggle -->
+	
+	<div class="inner">
+				<h1 class="site-title"><a href="https://blog.cryptographyengineering.com/" rel="home">A Few Thoughts on Cryptographic Engineering</a></h1>
+		<h2 class="site-description">Some random thoughts about crypto. Notes from a course I teach. Pictures of my dachshunds.</h2>
+
+			</div><!-- .inner -->
+</div><!-- #hero-header -->
+
+
+	<div id="content-wrapper">
+		<header id="masthead" class="site-header" role="banner">
+			
+			
+<div id="secondary" class="widget-area" role="complementary">
+	<aside id="media_image-3" class="widget widget_media_image"><style>.widget.widget_media_image { overflow: hidden; }.widget.widget_media_image img { height: auto; max-width: 100%; }</style><img class="image alignnone" src="https://matthewdgreen.files.wordpress.com/2016/08/matthew-green.jpg?w=200&#038;h=300" alt="" width="160" height="240" /></aside><aside id="text-4" class="widget widget_text"><h1 class="widget-title">Matthew Green</h1>			<div class="textwidget">I'm a cryptographer and professor at Johns Hopkins University. I've designed and analyzed cryptographic systems used in wireless networks, payment systems and digital content protection platforms. In my research I look at the various ways cryptography can be used to promote user privacy. 
+<p>
+<a href="https://matthewgreen.io">My academic website</a><br>
+<a href="https://bsky.app/profile/did:plc:xvgztewzbfh7bpnklayrsvds">BlueSky</a><br>
+<a href="https://ioc.exchange/@matthew_d_green">Mastodon</a><br>
+<a href="https://twitter.com/matthew_d_green">Twitter</a><br>
+<a href="https://blog.cryptographyengineering.com/top-posts/">Top Posts</a><br>
+<a href="https://staging.cryptographyengineering.com/useful-cryptography-resources/">Useful crypto resources</a><br>
+<a href="https://blog.cryptographyengineering.com/p/bitcoin-tipjar.html">
+Bitcoin tipjar</a><br>
+<a href="http://cryptopals.com/">Cryptopals challenges</a><br>
+<a href="https://acrab.isi.jhu.edu/">Applied Cryptography Research: A Board</a><p>
+
+<a href="http://www.springer.com/computer/security+and+cryptology/journal/13389">Journal of Cryptographic Engineering
+(not related to this blog)</a></div>
+		</aside><aside id="search-4" class="widget widget_search"><form role="search" method="get" class="search-form" action="https://blog.cryptographyengineering.com/">
+				<label>
+					<span class="screen-reader-text">Search for:</span>
+					<input type="search" class="search-field" placeholder="Search &hellip;" value="" name="s" />
+				</label>
+				<input type="submit" class="search-submit" value="Search" />
+			</form></aside><aside id="top-posts-4" class="widget widget_top-posts"><h1 class="widget-title">Top Posts &amp; Pages</h1><ul><li><a href="https://blog.cryptographyengineering.com/2026/07/29/some-notes-about-anthropics-new-results/" class="bump-view" data-bump-view="tp">Some thoughts about Anthropic&#039;s new cryptanalysis results</a></li><li><a href="https://blog.cryptographyengineering.com/2026/05/29/fooling-around-with-encrypted-reasoning-blobs/" class="bump-view" data-bump-view="tp">Let&#039;s talk about encrypted reasoning</a></li><li><a href="https://blog.cryptographyengineering.com/2026/06/09/apples-siri-ai-or-more-shouting-into-the-void-about-private-agents/" class="bump-view" data-bump-view="tp">The future of Siri, or: why private inference isn’t private enough</a></li><li><a href="https://blog.cryptographyengineering.com/useful-cryptography-resources/" class="bump-view" data-bump-view="tp">Useful Cryptography Resources</a></li><li><a href="https://blog.cryptographyengineering.com/about-me/" class="bump-view" data-bump-view="tp">About Me</a></li><li><a href="https://blog.cryptographyengineering.com/2024/08/25/telegram-is-not-really-an-encrypted-messaging-app/" class="bump-view" data-bump-view="tp">Is Telegram really an encrypted messaging app?</a></li><li><a href="https://blog.cryptographyengineering.com/all-posts/" class="bump-view" data-bump-view="tp">All Posts</a></li><li><a href="https://blog.cryptographyengineering.com/2026/03/02/anonymous-credentials-an-illustrated-primer/" class="bump-view" data-bump-view="tp">Anonymous credentials: an illustrated primer</a></li><li><a href="https://blog.cryptographyengineering.com/2025/03/01/dear-apple-add-disappearing-messages-to-imessage-right-now/" class="bump-view" data-bump-view="tp">Dear Apple: add &quot;Disappearing Messages&quot; to iMessage right now</a></li><li><a href="https://blog.cryptographyengineering.com/2012/05/19/how-to-choose-authenticated-encryption/" class="bump-view" data-bump-view="tp">How to choose an Authenticated Encryption mode</a></li></ul></aside><aside id="text-6" class="widget widget_text">			<div class="textwidget"><i>Banner image by Matt Blaze</i></div>
+		</aside><aside id="archives-6" class="widget widget_archive"><h1 class="widget-title">Archives</h1>		<label class="screen-reader-text" for="archives-dropdown-6">Archives</label>
+		<select id="archives-dropdown-6" name="archive-dropdown">
+			
+			<option value="">Select Month</option>
+				<option value='https://blog.cryptographyengineering.com/2026/07/'> July 2026 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2026/06/'> June 2026 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2026/05/'> May 2026 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2026/04/'> April 2026 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2026/03/'> March 2026 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2026/02/'> February 2026 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2025/09/'> September 2025 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2025/06/'> June 2025 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2025/03/'> March 2025 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2025/02/'> February 2025 &nbsp;(5)</option>
+	<option value='https://blog.cryptographyengineering.com/2025/01/'> January 2025 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2024/08/'> August 2024 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2024/04/'> April 2024 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2024/01/'> January 2024 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2023/11/'> November 2023 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2023/10/'> October 2023 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2023/08/'> August 2023 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2023/05/'> May 2023 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2023/04/'> April 2023 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2023/03/'> March 2023 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2022/12/'> December 2022 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2022/10/'> October 2022 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2022/06/'> June 2022 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2022/01/'> January 2022 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2021/08/'> August 2021 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2021/07/'> July 2021 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2021/03/'> March 2021 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2020/11/'> November 2020 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2020/08/'> August 2020 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2020/07/'> July 2020 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2020/04/'> April 2020 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2020/03/'> March 2020 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2020/01/'> January 2020 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2019/12/'> December 2019 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2019/10/'> October 2019 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2019/09/'> September 2019 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2019/06/'> June 2019 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2019/02/'> February 2019 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2018/12/'> December 2018 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2018/10/'> October 2018 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2018/09/'> September 2018 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2018/07/'> July 2018 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2018/05/'> May 2018 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2018/04/'> April 2018 &nbsp;(3)</option>
+	<option value='https://blog.cryptographyengineering.com/2018/02/'> February 2018 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2018/01/'> January 2018 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2017/12/'> December 2017 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2017/11/'> November 2017 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2017/10/'> October 2017 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2017/09/'> September 2017 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2017/07/'> July 2017 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2017/03/'> March 2017 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2017/02/'> February 2017 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2017/01/'> January 2017 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2016/11/'> November 2016 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2016/08/'> August 2016 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2016/07/'> July 2016 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2016/06/'> June 2016 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2016/03/'> March 2016 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2015/12/'> December 2015 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2015/11/'> November 2015 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2015/10/'> October 2015 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2015/09/'> September 2015 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2015/08/'> August 2015 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2015/07/'> July 2015 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2015/05/'> May 2015 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2015/04/'> April 2015 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2015/03/'> March 2015 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2015/02/'> February 2015 &nbsp;(3)</option>
+	<option value='https://blog.cryptographyengineering.com/2015/01/'> January 2015 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2014/12/'> December 2014 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2014/11/'> November 2014 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2014/10/'> October 2014 &nbsp;(3)</option>
+	<option value='https://blog.cryptographyengineering.com/2014/09/'> September 2014 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2014/08/'> August 2014 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2014/07/'> July 2014 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2014/04/'> April 2014 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2014/03/'> March 2014 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2014/02/'> February 2014 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2014/01/'> January 2014 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2013/12/'> December 2013 &nbsp;(4)</option>
+	<option value='https://blog.cryptographyengineering.com/2013/10/'> October 2013 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2013/09/'> September 2013 &nbsp;(4)</option>
+	<option value='https://blog.cryptographyengineering.com/2013/08/'> August 2013 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2013/07/'> July 2013 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2013/06/'> June 2013 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2013/05/'> May 2013 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2013/04/'> April 2013 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2013/03/'> March 2013 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2013/02/'> February 2013 &nbsp;(3)</option>
+	<option value='https://blog.cryptographyengineering.com/2013/01/'> January 2013 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/12/'> December 2012 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/11/'> November 2012 &nbsp;(1)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/10/'> October 2012 &nbsp;(4)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/09/'> September 2012 &nbsp;(3)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/08/'> August 2012 &nbsp;(4)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/07/'> July 2012 &nbsp;(2)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/06/'> June 2012 &nbsp;(3)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/05/'> May 2012 &nbsp;(5)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/04/'> April 2012 &nbsp;(6)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/03/'> March 2012 &nbsp;(4)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/02/'> February 2012 &nbsp;(7)</option>
+	<option value='https://blog.cryptographyengineering.com/2012/01/'> January 2012 &nbsp;(8)</option>
+	<option value='https://blog.cryptographyengineering.com/2011/12/'> December 2011 &nbsp;(11)</option>
+	<option value='https://blog.cryptographyengineering.com/2011/11/'> November 2011 &nbsp;(13)</option>
+	<option value='https://blog.cryptographyengineering.com/2011/10/'> October 2011 &nbsp;(7)</option>
+	<option value='https://blog.cryptographyengineering.com/2011/09/'> September 2011 &nbsp;(8)</option>
+
+		</select>
+
+			<script>
+( ( dropdownId ) => {
+	const dropdown = document.getElementById( dropdownId );
+	function onSelectChange() {
+		setTimeout( () => {
+			if ( 'escape' === dropdown.dataset.lastkey ) {
+				return;
+			}
+			if ( dropdown.value ) {
+				document.location.href = dropdown.value;
+			}
+		}, 250 );
+	}
+	function onKeyUp( event ) {
+		if ( 'Escape' === event.key ) {
+			dropdown.dataset.lastkey = 'escape';
+		} else {
+			delete dropdown.dataset.lastkey;
+		}
+	}
+	function onClick() {
+		delete dropdown.dataset.lastkey;
+	}
+	dropdown.addEventListener( 'keyup', onKeyUp );
+	dropdown.addEventListener( 'click', onClick );
+	dropdown.addEventListener( 'change', onSelectChange );
+})( "archives-dropdown-6" );
+
+//# sourceURL=WP_Widget_Archives%3A%3Awidget
+</script>
+</aside></div><!-- #secondary -->		</header><!-- #masthead -->
+
+		<div id="content" class="site-content">
+
+	<div id="primary" class="content-area">
+		<main id="main" class="site-main" role="main">
+
+		
+			
+<article id="post-102" class="post-102 post type-post status-publish format-standard hentry category-attacks category-backdoors tag-backdoors tag-juniper tag-vpn">
+			<div class="entry-meta light-text">
+			<a href="https://blog.cryptographyengineering.com/author/matthewdgreen/" rel="author">Matthew Green</a>			<span class="cat-links">
+				in <a href="https://blog.cryptographyengineering.com/category/attacks/" rel="category tag">attacks</a>, <a href="https://blog.cryptographyengineering.com/category/backdoors/" rel="category tag">backdoors</a>			</span><!-- .cat-links -->
+
+			<span class="published-on"><time class="entry-date published" datetime="2015-12-22T08:22:00+00:00">December 22, 2015</time><time class="updated" datetime="2016-07-18T23:57:00+00:00">July 18, 2016</time></span>
+
+							<span class="word-count">1,843 Words</span>
+			
+					</div><!-- .entry-meta -->
+			<header class="entry-header">
+			<h1 class="entry-title">On the Juniper&nbsp;backdoor</h1>		</header><!-- .entry-header -->
+	<div class="entry-content">
+		<p><a style="clear:right;float:right;margin-bottom:1em;margin-left:1em;" href="https://blog.cryptographyengineering.com/wp-content/uploads/2015/12/a826e-juniperberries.png"><img src="https://blog.cryptographyengineering.com/wp-content/uploads/2015/12/a826e-juniperberries.png?w=320&#038;h=240" width="320" height="240" border="0" /></a>You might have heard that a few days ago, Juniper Systems <a href="http://www.wired.com/2015/12/juniper-networks-hidden-backdoors-show-the-risk-of-government-backdoors/">announced the discovery</a> of &#8220;unauthorized code&#8221; in the ScreenOS software that underlies the <a href="http://www.juniper.net/techpubs/en_US/release-independent/screenos/information-products/pathway-pages/netscreen-series/product/">NetScreen</a> line of devices. As a result of this discovery, the company announced a pair of separate vulnerabilities, <a href="https://kb.juniper.net/InfoCenter/index?page=content&amp;id=JSA10713&amp;cat=SIRT_1&amp;actp=LIST">CVE-2015-7755 and CVE-2015-7756</a> and urged their customers to patch immediately.</p>
+<p>The first of these CVEs (#7755) was an authentication vulnerability, caused by a malicious hardcoded password in SSH and Telnet. <a href="https://community.rapid7.com/community/infosec/blog/2015/12/20/cve-2015-7755-juniper-screenos-authentication-backdoor"><span id="goog_1815142176"></span>Rapid7 has an excellent writeup of the issue.</a> This is a pretty fantastic vulnerability, if you measure by the impact on security of NetScreen users. But on the <i>technological</i> <i>awesomeness</i> scale it rates about a two out of ten, maybe a step above &#8216;<a href="https://xkcd.com/538/">hit the guy with a wrench</a>&#8216;.</p>
+<p>The <i>second</i> vulnerability is a whole different animal. The <a href="https://kb.juniper.net/InfoCenter/index?page=content&amp;id=JSA10713&amp;cat=SIRT_1&amp;actp=LIST">advisory</a> notes that CVE-7756 &#8212; which is independent of the first issue &#8212; &#8220;may allow a knowledgeable attacker who can monitor VPN traffic to decrypt that traffic.&#8221;<i> </i>This is the kind of vulnerability that makes applied cryptographers cry tears of joy. It certainly did that for me:</p>
+<div class="embed-twitter">
+<blockquote class="twitter-tweet" data-width="550" data-dnt="true">
+<p lang="en" dir="ltr">I&#39;m really invested in the idea that this Juniper encryption vulnerability is going to be amazing. Like, Flame-level amazing.</p>
+<p>&mdash; Matthew Green (@matthew_d_green) <a href="https://twitter.com/matthew_d_green/status/677692264676749312?ref_src=twsrc%5Etfw">December 18, 2015</a></p></blockquote>
+<p><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></div>
+<p>&nbsp;</p>
+<p>And while every reasonable person knows you can&#8217;t just drop &#8220;passive decryption vulnerability&#8221; and expect the world to go on with its business, this is exactly what Juniper tried to do. Since they weren&#8217;t talking about it, it fell to software experts to try to work out what was happening by looking carefully at firmware released by the company.</p>
+<p>Now I want to be clear that <i>I</i> was not one of those software experts. IDA scares the crap out of me. But I&#8217;m fortunate to know some of the right kind of people, like <a href="https://www.cs.uic.edu/~s/">Steve Checkoway</a>, who I was able to get on the job, mostly by encouraging him to neglect his professional obligations. I also follow some talented folks on Twitter, like <a href="https://twitter.com/hdmoore">H.D. Moore</a> and <a href="https://twitter.com/esizkur?lang=en">Ralf Philipp Weinmann</a>. So I was fortunate enough to watch them work, and occasionally (I think?) chip in a helpful observation.</p>
+<p>And yes, it was worth it. Because what Ralf and Steve <i>et al. </i>found is beyond belief. Ralf&#8217;s excellent post <a href="https://rpw.sh/blog/2015/12/21/the-backdoored-backdoor/">provides all of the technical details</a>, and you should honest just stop reading now and go read that. But since you&#8217;re still here, the TL;DR is this:</p>
+<blockquote class="tr_bq"><p>For the past several years, it appears that Juniper NetScreen devices have incorporated a potentially backdoored random number generator, based on the NSA&#8217;s Dual_EC_DRBG algorithm. At some point in 2012, the NetScreen code was further subverted <i>by some unknown party</i>, so that the very same backdoor could be used to eavesdrop on NetScreen connections. While this alteration was not authorized by Juniper, it&#8217;s important to note that the attacker made <i>no major code changes</i> to the encryption mechanism &#8212; they only changed parameters. This means that the systems were potentially vulnerable to other parties, even beforehand. Worse, the nature of this vulnerability is particularly insidious and generally messed up.</p></blockquote>
+<p>In the rest of this post I&#8217;m going to try to fill in the last part of that statement. But first, some background.</p>
+<h3><b>Dual EC DRBG</b></h3>
+<p><a style="clear:right;float:right;margin-bottom:1em;margin-left:1em;" href="https://blog.cryptographyengineering.com/wp-content/uploads/2015/12/93863-dice.jpeg"><img src="https://blog.cryptographyengineering.com/wp-content/uploads/2015/12/93863-dice.jpeg?w=200&#038;h=183" width="200" height="183" border="0" /></a>Pretty much every cryptographic system depends on a secure <a href="https://blog.cryptographyengineering.com/2012/02/random-number-generation-illustrated.html">random number generator</a>, or RNG. These algorithms produce the unpredictable random bits that are consumed by cryptographic protocols. The key word in this description is <i>unpredictable</i>: if an attacker can predict the output of your RNG, then virtually everything you build on it will <a href="https://blog.cryptographyengineering.com/2012/03/surviving-bad-rng.html">end up broken</a>.</p>
+<p>This fact has not been lost on attackers! The most famous (alleged) example of <i>deliberate</i> random number generator subversion was discovered in 2007 by Dan Shumow and Neils Ferguson from Microsoft, when they <a href="http://rump2007.cr.yp.to/15-shumow.pdf">announced</a> the possibility of a backdoor in a NIST standard called <a href="https://en.wikipedia.org/wiki/Dual_EC_DRBG">Dual_EC_DRBG</a>.</p>
+<p>I&#8217;ve written extensively about the <a href="https://blog.cryptographyengineering.com/2013/09/the-many-flaws-of-dualecdrbg.html">design of the Dual_EC generator</a> and the <a href="https://blog.cryptographyengineering.com/2015/01/hopefully-last-post-ill-ever-write-on.html">process that led to it its standardization.</a> Omitting the mathematics, the short version is that Dual EC relies on a special 32-byte constant called <i>Q, </i>which &#8212; <i>if generated by a malicious attacker</i> &#8212; can allow said attacker to predict future outputs of the RNG after seeing a mere 30 bytes of raw output from your generator.</p>
+<p>The NIST specification of Dual_EC comes with a default value for <i>Q</i> that was generated by the NSA. Nobody has ever been able to determine how NSA generated this value, but <a href="http://www.nytimes.com/2013/09/06/us/nsa-foils-much-internet-encryption.html">leaks by Edward Snowden in 2013</a> provide strong evidence that NSA may have generated it maliciously. It certainly doesn&#8217;t smell good.</p>
+<p>But enough with the ancient history. We&#8217;re here to talk about Juniper.</p>
+<div></div>
+<p><b>Juniper ScreenOS &#8212; <i>before</i> the &#8220;unauthorized code&#8221;</b></p>
+<p>Although it was not widely publicized before this week, Juniper&#8217;s ScreenOS devices have used Dual EC for some time &#8212; probably since before Juniper acquired <a href="https://en.wikipedia.org/wiki/NetScreen_Technologies">NetScreen Technologies</a>. Prior to this week, the only place you might have learned about this was <a href="https://kb.juniper.net/InfoCenter/index?page=content&amp;id=KB28205&amp;pmv=print&amp;actp=LIST">on this tiny page</a> posted by the company after the Snowden leaks.</p>
+<div class="separator" style="clear:both;text-align:center;"><a style="margin-left:1em;margin-right:1em;" href="https://blog.cryptographyengineering.com/wp-content/uploads/2015/12/b32a3-whacko.png"><img src="https://blog.cryptographyengineering.com/wp-content/uploads/2015/12/b32a3-whacko.png?w=400&#038;h=75" width="400" height="75" border="0" /></a></div>
+<p>The decision to use Dual EC is strange all by itself. But it gets weirder.</p>
+<p><a style="clear:right;float:right;margin-bottom:1em;margin-left:1em;" href="https://blog.cryptographyengineering.com/wp-content/uploads/2015/12/33080-jtbmlh1450766921.jpg"><img loading="lazy" src="https://blog.cryptographyengineering.com/wp-content/uploads/2015/12/33080-jtbmlh1450766921.jpg?w=200&#038;h=175" width="200" height="175" border="0" /></a>First, ScreenOS <i>doesn&#8217;t</i> use the NSA&#8217;s default <i>Q. </i>Instead, they use an alternative <i>Q</i> value that was generated by Juniper and/or NetScreen. If Juniper had really wanted to rule out the possibility of surveillance, this would have been a good opportunity to do so. They could have generated the new constant in a &#8220;provably&#8221; safe way &#8212; <i>e.g.,</i> by hashing some English-language string. Since we have no evidence that they did so, a conservative view holds that the Juniper/NetScreen constant may <i>also</i> have been generated maliciously, rendering it useful for eavesdropping.</p>
+<p>Next, ScreenOS uses Dual EC in a strange, non-standard way. Rather than generating all of their random numbers with Dual EC (which would be slow), they only use Dual EC to generate a seed for a fast 3DES-based generator called ANSI X9.17. Since that generator is actually <a href="https://en.wikipedia.org/wiki/FIPS_140">FIPS-140 approved</a> and generally believed to be sufficient to the purpose, it&#8217;s not clear what value Dual EC is really adding to the system in the first place &#8212; except, of course, its usefulness as a potential backdoor.</p>
+<p>The good news here is that the post-processing by ANSI X9.17 <i>should</i> kill the Dual EC backdoor, since the attack relies on the attacker seeing <i>raw</i> output from Dual EC. The ANSI generator appears to completely obfuscate this output, thus rendering Dual EC &#8220;safe&#8221;. This is indeed the argument Juniper made in 2013 when it <a href="https://kb.juniper.net/InfoCenter/index?page=content&amp;id=KB28205&amp;pmv=print&amp;actp=LIST">decided to leave the Dual EC code in ScreenOS.</a></p>
+<p>The problem with this argument is that it assumes that <i>no</i> other code could ever &#8220;accidentally&#8221; exfiltrate a few bytes bit of raw Dual EC output. Yet this is exactly the kind of threat you&#8217;d worry about in a deliberately backdoored system &#8212; the threat that, just maybe, the developers are <i>not your friend</i>. Thus Dual EC is safe only if you assume no tiny bug in the code could accidentally leak out 30 bytes or so of raw Dual EC output. If it did, this would make all subsequent seeding calls predictable, and thus render <i>all numbers generated by the system predictable.</i> In general, this would spell doom for the confidentiality of VPN connections.<br />
+<i><br />
+</i>And unbelievably, amazingly, <i>who coulda thunk it,</i> it appears that<i> </i>such a bug does exist in many versions<i> </i>of ScreenOS, dating to both before and after the &#8220;unauthorized code&#8221; noted by Juniper. This issue was discovered by <a href="https://twitter.com/_dvorak_">Willem Pinckaers</a> and can be illustrated by the following code snippet, which Steve Checkoway decompiled (see full context <a href="http://pastebin.com/GcN8QKXT">here</a>):</p>
+<p><span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">void prng_generate()</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">{</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  int index; // eax@4</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  unsigned int bytes_generated; // ebx@4</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  int v2; // eax@9</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  int v3; // eax@12</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  char v4; // ST04_1@12</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  int time[2]; // [sp+10h] [bp-10h]@1</span><br />
+<span style="font-size:xx-small;"><br />
+</span><span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  time[0] = 0;</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  time[1] = get_cycles();</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  prng_output_index = 0; <b>// this is a global</b></span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  ++blocks_generated_since_reseed;</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  if ( !do_not_need_to_reseed() )</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">    <b>// the routine below fills a buffer with raw Dual EC output</b></span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">    prng_reseed(); <b>// internally sets prng_output_index to 32</b></span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  for ( ; (unsigned int)prng_output_index &lt;= 0x1F; prng_output_index += 8 )</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">  {</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;"><b>    // this loop is supposed to process the same buffer</b></span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;"><b>    // through the ANSI (3DES) generator. However, since the</b></span><br />
+<b style="font-family:'Courier New', Courier, monospace;"><span style="font-size:xx-small;">    // value of prng_output_index was set to 32 above, it never executes</span></b><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">    memcpy(prev_prng_seed, prng_seed, 8);</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">    memcpy(prev_prng_block, prng_block, 8);</span><br />
+<span style="font-family:Courier New, Courier, monospace;font-size:xx-small;">    ANSI_X9_31_generate_block(time, prng_seed, prng_key, prng_block);<br />
+&#8230;</span></p>
+<p>Thus what comes out from this function is 32 bytes of raw Dual EC output, which is all you need to recover the internal Dual EC generator state and predict all future outputs.</p>
+<h3><b>So if this was the authorized code, what the hell was the <i>unauthorized</i> code?</b></h3>
+<p>The creepiest thing about CVE-2015-7756 is that there doesn&#8217;t <i>seem to be</i> any unauthorized code. Indeed, what&#8217;s changed in the modified versions is simply the value of the <i>Q</i> point. According to Ralf this point changed in 2012, presumably to a value that the hacker(s) generated themselves. This would likely have allowed these individuals to passively decrypt ScreenOS VPN sessions.</p>
+<p>In the more recent Juniper patch to fix the vulnerability, <i>Q </i>is simply set back to the the original Juniper/NetScreen value.</p>
+<p>The attacker also replaced some test vectors. But that appears to be it.</p>
+<p>To sum up, some hacker or group of hackers noticed <i>an existing backdoor</i> in the Juniper software, which may have been intentional or unintentional &#8212; you be the judge! They then piggybacked on top of it to build a backdoor of their own, something they were able to do because all of the hard work had already been done for them. The end result was a period in which someone &#8212; maybe a foreign government &#8212; was able to decrypt Juniper traffic in the U.S. and around the world.</p>
+<p>And all because Juniper had already paved the road.</p>
+<p><b>So why does this matter?</b><br />
+<b><br />
+</b>For the past several months I&#8217;ve been running around with various groups of technologists, doing everything I can to convince important people that the sky is falling. Or rather, that the sky <i>will</i> fall if they act on some of the <i>very bad, terrible </i>ideas that are currently bouncing around Washington &#8212; namely, that our encryption systems should come equipped with &#8220;backdoors&#8221; intended to allow law enforcement and national security agencies to access our communications.</p>
+<p>One of the most serious concerns we raise during these meetings is the possibility that encryption backdoors could be subverted. Specifically, that a backdoor intended for law enforcement could somehow become a backdoor for people who we don&#8217;t trust to read our messages. Normally when we talk about this, we&#8217;re concerned about failures in storage of things like escrow keys. What this Juniper vulnerability illustrates is that the danger is much broader and more serious than that.</p>
+<p>The problem with cryptographic backdoors isn&#8217;t that they&#8217;re the <i>only</i> way that an attacker can break into our cryptographic systems. It&#8217;s merely that they&#8217;re <i>one of the best</i>. They take care of the hard work, the laying of plumbing and electrical wiring, so attackers can simply walk in and change the drapes.</p>
+<p><i>This post made possible by Ralf Philipp Weinmann, H. D. Moore, Steve Checkoway, Willem Pinckaers, Nadia Heninger, Shaanan Cohney and the letter Q.</i></p>
+<div id="jp-post-flair" class="sharedaddy sd-sharing-enabled">
+<div id='jp-relatedposts' class='jp-relatedposts' >
+	<h3 class="jp-relatedposts-headline"><em>Related</em></h3>
+</div></div>	</div><!-- .entry-content -->
+
+			<div class="entry-footer">
+			<ul class="post-tags light-text"><li>Tagged</li><li><a href="https://blog.cryptographyengineering.com/tag/backdoors/" rel="tag">backdoors</a></li><li><a href="https://blog.cryptographyengineering.com/tag/juniper/" rel="tag">juniper</a></li><li><a href="https://blog.cryptographyengineering.com/tag/vpn/" rel="tag">vpn</a></li></ul><!-- .post-tags -->
+					</div><!-- .entry-footer -->
+	</article><!-- #post-## -->
+			
+	<nav class="navigation post-navigation" aria-label="Posts">
+		<h2 class="screen-reader-text">Post navigation</h2>
+		<div class="nav-links"><div class="nav-previous"><a href="https://blog.cryptographyengineering.com/2015/11/12/why-tor-attack-matters/" rel="prev">Why the Tor attack&nbsp;matters</a></div><div class="nav-next"><a href="https://blog.cryptographyengineering.com/2016/03/01/attack-of-week-drown/" rel="next">Attack of the week:&nbsp;DROWN</a></div></div>
+	</nav>
+			
+<div id="comments" class="comments-area">
+
+	
+			<h2 class="comments-title">
+			45 thoughts on &ldquo;<span>On the Juniper&nbsp;backdoor</span>&rdquo;		</h2><!-- .comments-title -->
+
+		
+		<ol class="comment-list">
+					<li id="comment-1823" class="comment even thread-even depth-1">
+			<article id="div-comment-1823" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/02459956234258070611" class="url" rel="ugc external nofollow">Jay Abber</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1823"><time datetime="2015-12-22T12:44:32+00:00">December 22, 2015 at 12:44 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Thank you very much for this, one of the best posts I have read all year, good good writing to boot not just the technical details.</p>
+<p>But your last two paragraphs wrap it all up and put a bow on it. Lastly the CIO, CFO, CTO and CEO should be prosecuted and imprisioned. No accountability here whatsoever. </p>
+<p>I used to work with a guy, that strangely enough was the biggest Juniper ScreenOS fanboy in the world. So ironically sad.</p>
+<p>But yes sir, INDEED, the sky is falling.</p>
+<p>and we are well past 1984, in the orwellian sense of things.</p>
+<p>Jim Abercromby</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1824" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1824" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1824"><time datetime="2015-12-22T13:09:03+00:00">December 22, 2015 at 1:09 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Excellent article, and very clearly explained. <br />On the &#8220;&#8230;that a back door intended for law enforcement could somehow become a backdoor for people who we don&#39;t trust&#8221; part, I admire your trust of law enforcement. </p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1825" class="comment even thread-even depth-1">
+			<article id="div-comment-1825" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/15657143496506662902" class="url" rel="ugc external nofollow">Karl Katzke</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1825"><time datetime="2015-12-22T13:18:14+00:00">December 22, 2015 at 1:18 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>I usually just describe this to non technical folks as &#8220;Sure, the NSA had a back door with a lock on it. And now the Chinese or Russians or ISIS or whomever re-keyed that lock for themselves and moved in to your router. Why would we make it so easy for them to do that?&#8221;</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1826" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1826" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/01547881462472619875" class="url" rel="ugc external nofollow">Tony</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1826"><time datetime="2015-12-22T14:01:51+00:00">December 22, 2015 at 2:01 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Fantastic article.  A great job of making non-conspiracy theory based arguments about how government back doors in crypto is a really really bad idea.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1827" class="comment even thread-even depth-1">
+			<article id="div-comment-1827" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/08144825161954779759" class="url" rel="ugc external nofollow">Matt</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1827"><time datetime="2015-12-22T14:14:24+00:00">December 22, 2015 at 2:14 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Top notch write up and fact-based, logical conclusions.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1828" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1828" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1828"><time datetime="2015-12-22T14:14:29+00:00">December 22, 2015 at 2:14 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Great work. An excellent article. Thanks very much. </p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1829" class="comment even thread-even depth-1">
+			<article id="div-comment-1829" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Ben Nnatuanya</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1829"><time datetime="2015-12-22T15:09:24+00:00">December 22, 2015 at 3:09 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>A very well written article with an amazing conclusion.  Sure most of our boxes are shipped with backdoors</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1830" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1830" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://paragonie.com/blog/2015/12/let-s-re-think-security-trade-offs" class="url" rel="ugc external nofollow">Scott Arciszewski</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1830"><time datetime="2015-12-22T15:50:24+00:00">December 22, 2015 at 3:50 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>> Or rather, that the sky will fall if they act on some of the very bad, terrible ideas that are currently bouncing around Washington &#8212; namely, that our encryption systems should come equipped with &#8220;back doors&#8221; intended to allow law enforcement and national security agencies to access our communications.</p>
+<p>Quoting for emphasis. Backdoors are a bad idea, perpetuated by people who have a poor understanding of security trade-offs.</p>
+<p>Privacy and security are not opposites. Anyone who frames the argument that way is ignorant of computer security.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1831" class="comment even thread-even depth-1">
+			<article id="div-comment-1831" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/01888571483220532754" class="url" rel="ugc external nofollow">Philip Gladstone</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1831"><time datetime="2015-12-22T16:12:58+00:00">December 22, 2015 at 4:12 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>I wonder *why* Juniper did their careful source code review &#8212; and how they found the changed DBRG constant. Could it be that the NSA found that they could no longer break into Juniper VPN connections?</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1832" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1832" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1832"><time datetime="2015-12-22T16:19:12+00:00">December 22, 2015 at 4:19 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>I would trust law enforcement keeps an alternative backdoor key around, just in case they lock themselves out.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1833" class="comment even thread-even depth-1">
+			<article id="div-comment-1833" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1833"><time datetime="2015-12-22T16:30:16+00:00">December 22, 2015 at 4:30 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Great explanation! </p>
+<p>For non-technical folks that might not make it to the end of the article though, I think it would be helpful to summarize the last couple of paragraphs and what they say about the idea of &#8220;sanctioned backdoors for the good guys&#8221; and place it at the top of the article as a tl;dr.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1834" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1834" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1834"><time datetime="2015-12-22T17:25:11+00:00">December 22, 2015 at 5:25 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>The timing of the announcement of these vulnerabilities is quite curious. It is just as there is a big public policy debate taking place about encryption back doors triggered by the Paris attacks. Is this merely coincidence, or is there something else going on in the background to force their hand?</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1835" class="comment even thread-even depth-1">
+			<article id="div-comment-1835" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="http://matael.info" class="url" rel="ugc external nofollow">Elie Mabo</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1835"><time datetime="2015-12-22T17:30:50+00:00">December 22, 2015 at 5:30 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Thank you very much for your enlightening article.</p>
+<p>It allowed me to understand that cryptography backdoor is a double-edged knife, and we have to take more precaution before thinking of implementation. </p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1836" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1836" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/00889962591508530116" class="url" rel="ugc external nofollow">Kyler Middleton</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1836"><time datetime="2015-12-22T17:37:33+00:00">December 22, 2015 at 5:37 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Great article! Going to read through the works you cited to learn more. </p>
+<p>Few grammatical issues to clean up: <br />&#8220;This would likely have allowed them to passively decrypt and ScreenOS VPN sessions they were able to eavesdrop.&#8221;</p>
+<p>&#8220;To sum up, some hacker or group of hackers attacker noticed an existing backdoor&#8230;&#8221;<br />Kyler</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1837" class="comment even thread-even depth-1">
+			<article id="div-comment-1837" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1837"><time datetime="2015-12-22T17:37:43+00:00">December 22, 2015 at 5:37 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Another twist would make this a perfect Hollywood movie: it was later revealed that Juniper was hacked by some crazy cryptographer, who just wants to give a proof of his anti crypto backdoor arguments. We all know that cryptographers would go to great lengths to prove their schemes, so this is not very surprisingly after all.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1838" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1838" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/07204924500744120455" class="url" rel="ugc external nofollow">Thomas Hofmann</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1838"><time datetime="2015-12-22T18:39:04+00:00">December 22, 2015 at 6:39 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>If the old Q was the original backdoor how would this go unnoticed for 3 years? Any thoughts why this took 3 years to discover. One would think that it would be discovered earlier. Well, maybe not too many devices were updated with the new software.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1839" class="comment even thread-even depth-1">
+			<article id="div-comment-1839" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">steven</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1839"><time datetime="2015-12-22T19:13:10+00:00">December 22, 2015 at 7:13 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Wow, yet more plot twists!</p>
+<p>This opens another possibility then, that an insider realised the existence of a backdoor, and in 2012 changed the Q to a safe one nobody can decrypt!</p>
+<p>And as everyone now rushes to patch, it may put the original backdoor into place?  They&#39;re effectively forced to, because of the other backdoor being closed at the same time in the same firmware update.</p>
+<p>In any case, how can anyone trust these devices at all?  The blowback on other US tech companies too could be immeasurable.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1840" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1840" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1840"><time datetime="2015-12-22T20:38:07+00:00">December 22, 2015 at 8:38 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Excellent Article.  Would be useful to check every vendor in this space to ensure this was not an industry-wide affliction.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1841" class="comment even thread-even depth-1">
+			<article id="div-comment-1841" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1841"><time datetime="2015-12-22T20:41:14+00:00">December 22, 2015 at 8:41 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Phil, did you ever work in this space?</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1842" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1842" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/07636792554779123708" class="url" rel="ugc external nofollow">Rui Seabra</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1842"><time datetime="2015-12-22T20:43:45+00:00">December 22, 2015 at 8:43 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Just pointing out something nobody seems to say: their internal repositories must have been attacked successfully.</p>
+<p>They&#39;re p0wned. Who&#39;s to say other products from them don&#39;t have other or similar vulnerabilities?</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1843" class="comment even thread-even depth-1">
+			<article id="div-comment-1843" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1843"><time datetime="2015-12-22T21:22:56+00:00">December 22, 2015 at 9:22 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Excellent article, thanks. Especially useful for a non-technical, lay person with a limited brain like me&#8230;</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1844" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1844" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://franciskim.co" class="url" rel="ugc external nofollow">Francis Kim</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1844"><time datetime="2015-12-23T00:37:47+00:00">December 23, 2015 at 12:37 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>In other news Juniper&#39;s stock price hasn&#39;t really taken a big hit&#8230; </p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1845" class="comment even thread-even depth-1">
+			<article id="div-comment-1845" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/17913579404892643967" class="url" rel="ugc external nofollow">DTA</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1845"><time datetime="2015-12-23T08:26:31+00:00">December 23, 2015 at 8:26 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>You* (or your template? it&#39;s set individually for every single line) has code samples set to display extra extra small.  Please fix this so I can stop wishing you&#39;ll die in a fire.  Thanks!</p>
+<p>*sorry to single you out because this is mind-bogglingly common and it also extends to anyone else who does the same</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1846" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1846" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/01888571483220532754" class="url" rel="ugc external nofollow">Philip Gladstone</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1846"><time datetime="2015-12-23T11:40:23+00:00">December 23, 2015 at 11:40 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>I worked on commercial VPN software (but not at Juniper) &#8212; google will reveal who I am (but some of the search results are NSFW &#8212; but that isn&#39;t me!). </p>
+<p>We always wondered if/which of our coworkers were actually paid by intelligence agencies to insert subtle bugs. The only comforting things is to remember &#8220;Never attribute to malice that which is adequately explained by stupidity.&#8221;. </p>
+<p>There are so many ways to make a product insecure that I&#39;m not sure that you need much conspiracy to insert backdoors. If I was the NSA, I&#39;d focus on binary analysis (and source code analysis) to generate a good stream of vulnerabilities that I could exploit.</p>
+<p>This episode does indicate that the defensive side of the NSA did fall down on its job. It is supposed to protect the US Government and it didn&#39;t. If it found these vulns and decided not to inform Juniper to get them fixed then it implies that the existence of the vulns was a net positive to the US &#8212; probably because they were being actively exploited by the offensive side of the NSA. The alternative (which I think is more likely) is that the defensive side didn&#39;t know of the existence of these vulns. Maybe the NSA is a vast government bureaucracy that is just good at spending taxpayer dollars.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1847" class="comment even thread-even depth-1">
+			<article id="div-comment-1847" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="http://www.pensz.com/" class="url" rel="ugc external nofollow">Pensz</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1847"><time datetime="2015-12-23T12:06:19+00:00">December 23, 2015 at 12:06 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>I was recommended this website by my cousin. I am not sure whether this post is written by him as no one else know such detailed about my trouble. You are incredible! Thanks!</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1848" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1848" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/16115281578739979183" class="url" rel="ugc external nofollow">Dave Taht</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1848"><time datetime="2015-12-23T12:54:44+00:00">December 23, 2015 at 12:54 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>In terms of upping the paranoia &#8211; since this was a decompiled code snippet &#8211; the backdoor could very well have been in the compiler. This is a very easily recognized function that the same methods Ken Thompson used back in 1984. <a href="https://www.ece.cmu.edu/~ganger/712.fall02/papers/p761-thompson.pdf" rel="nofollow ugc">https://www.ece.cmu.edu/~ganger/712.fall02/papers/p761-thompson.pdf</a></p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1849" class="comment even thread-even depth-1">
+			<article id="div-comment-1849" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1849"><time datetime="2015-12-23T14:51:44+00:00">December 23, 2015 at 2:51 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Dave Taht:  The real bug is the scoping of prng_output_index.  It could have been global, as the comment says, or just static but with both prng_generate() and prng_reseed() in the same file.  The coder should have made prng_output_index local on the stack frame of prng_generate() and all would have been fine.  Safety critical code (avionics, medical devices, etc.) usually uses MISRA static code analysis to catch stuff like this.  This code would not have passed a MISRA scan.  Why is it that crypto code is not considered as safety critical as those other areas?  Many times, it secures the communications link with such devices.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1850" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1850" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1850"><time datetime="2015-12-23T23:31:43+00:00">December 23, 2015 at 11:31 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>>>Maybe the NSA is a vast government bureaucracy that is just good at spending taxpayer dollars.</p>
+<p>Maybe?</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1851" class="comment even thread-even depth-1">
+			<article id="div-comment-1851" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/02397694554972928476" class="url" rel="ugc external nofollow">Charlie Elgholm</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1851"><time datetime="2015-12-24T00:22:44+00:00">December 24, 2015 at 12:22 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Great article. Simple explanation of events. </p>
+<p>What I can&#39;t get my head around, though, is why this &#8220;government-must-insert-backdoor-here&#8221;-ideology has been such a big &#8220;thing&#8221; the last couple of years&#8230; Do the govs really think that the &#8220;bad people&#8221; will use potentially-already-eavesdropped-technology? Why would they?</p>
+<p>Nowadays a normally gifted 12-year old can roll his own encryption-algorithm with a standard computer and an open source compiler in a day or two. Who are we kidding? What am I missing? If Bob really. REALLY, wants to whisper something secret to Alice &#8211; why use a product under someone elses control, when they can easily make their own?</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1852" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1852" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/02043171792913033707" class="url" rel="ugc external nofollow">Guy Gordon</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1852"><time datetime="2015-12-24T03:58:45+00:00">December 24, 2015 at 3:58 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Wait.  They reset Q, but left the bug?  How does that make sense?</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1853" class="comment even thread-even depth-1">
+			<article id="div-comment-1853" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/04078388681121684629" class="url" rel="ugc external nofollow">Eddie Yong Meng Fai</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1853"><time datetime="2015-12-24T12:25:09+00:00">December 24, 2015 at 12:25 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Thank you, Sir, for this easy-to-understand and impactful explanation of what&#39;s encryption, how it affected Juniper and its devastating consequences if government legislate backdoors. This noob here finally gained an insight into the basic idea of encryption. Fascinating! TQ! 🙂</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1854" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1854" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Monir</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1854"><time datetime="2015-12-24T13:31:39+00:00">December 24, 2015 at 1:31 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Now i am feeling very proud for your great post. After reading your whole blog content now i get more knowledge. Your all information is very helpful for me. Thank you so much for your great post. <a href="http://www.whowritesbest.com/superiorpapers-com-review/" rel="nofollow">superior papers review</a></p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1855" class="comment even thread-even depth-1">
+			<article id="div-comment-1855" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="http://nsa.gov" class="url" rel="ugc external nofollow">Fred Schlip</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1855"><time datetime="2015-12-24T14:22:56+00:00">December 24, 2015 at 2:22 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Philip, how do I know you didn&#39;t plant the backdoors by your sloppy coding?  </p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1856" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1856" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/01888571483220532754" class="url" rel="ugc external nofollow">Philip Gladstone</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1856"><time datetime="2015-12-24T15:14:22+00:00">December 24, 2015 at 3:14 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>I never worked for Juniper (or NetScreen)!</p>
+<p>More seriously, I have never deliberately inserted a backdoor into any product &#8212; but then I would say that! </p>
+<p>Are there any backdoors in any product that I have worked on? I don&#39;t know. At one company it was specifically against corporate policy to have backdoors in any product. However, it is much easier to have a policy than to be sure that the policy is followed.</p>
+<p>Did everybody on the team follow that policy? I hope so. The trouble with backdoors is that they can be very subtle &#8212; the real root cause of Juniper&#39;s problem in this case is the fact that the X9.17 generator was bypassed. I suspect that this was the actual backdoor and the bypass was (AFAIK) due to a global variable not being reset. In this way, it is similar to the GOTOFAIL bug (only that was a duplicate line of code). </p>
+<p>Have I worked on products with security vulnerabilities? Yes. We always endeavoured to fix those in a timely manner. </p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1857" class="comment even thread-even depth-1">
+			<article id="div-comment-1857" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/07610008528112855603" class="url" rel="ugc external nofollow">Ismail</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1857"><time datetime="2015-12-24T18:18:00+00:00">December 24, 2015 at 6:18 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>this is amizr</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1858" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1858" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/17244246887667530601" class="url" rel="ugc external nofollow">Sivasankar Chander</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1858"><time datetime="2015-12-24T23:53:11+00:00">December 24, 2015 at 11:53 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>The bug in prng_output_index is most probably another part of the backdoor, but probably inserted at another time to avoid suspicion. Without the bug, the internal state of the Dual_EC PRNG gets obfuscated, and its chosen/weak constants would be irrelevant.</p>
+<p>The following for-loop which does not get executed is probably intended to obfuscate and reassure &#8211; i.e. this is a partial *social-engineering* exploit played on the SW developers/reviewers who work with the code at Juniper.</p>
+<p>In other words, the usage of prng_output_index was probably a backdoor feature, not a bug. It looks intentional and obfuscated, and allows plausible deniability even after decompilation of the binary. It looks like a typical TLA approach.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1859" class="comment even thread-even depth-1">
+			<article id="div-comment-1859" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1859"><time datetime="2015-12-25T02:35:37+00:00">December 25, 2015 at 2:35 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Oh man&#8230;. so many reasons not to roll your own crypto. 12 year old home rolled crypto beats the NSA, come on now.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1860" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1860" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/17628582479545078313" class="url" rel="ugc external nofollow">Wim Van Leuven</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1860"><time datetime="2015-12-25T09:19:21+00:00">December 25, 2015 at 9:19 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Great write-up! But what terrifies me the most is that apparently you have to convince people why installing backdoors is not good (malicious exploit), whereas the thought of the govermment installing it in the first place&#8230; Well, sure, why not?</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1861" class="comment even thread-even depth-1">
+			<article id="div-comment-1861" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn">Anonymous</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1861"><time datetime="2015-12-26T07:34:38+00:00">December 26, 2015 at 7:34 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Exactly my thoughts, static code analyses are mandatory in safety critical code nowadays. Why the cryptography stays aside is beyond my comprehension.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1862" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1862" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/04810392740674199906" class="url" rel="ugc external nofollow">zaumka</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1862"><time datetime="2015-12-27T01:20:13+00:00">December 27, 2015 at 1:20 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Fabulous post, Matt.<br />You might want to take a look at out Eurocrypt paper.<br /><a href="http://cs.nyu.edu/~dodis/ps/tprg.pdf" rel="nofollow ugc">http://cs.nyu.edu/~dodis/ps/tprg.pdf</a></p>
+<p>See section 5 about post-processing (it does NOT necessarily remove the backdoor).<br />Yevgeniy</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1863" class="comment even thread-even depth-1">
+			<article id="div-comment-1863" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/07610008528112855603" class="url" rel="ugc external nofollow">Ismail</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1863"><time datetime="2015-12-28T13:50:46+00:00">December 28, 2015 at 1:50 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>why   </p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1864" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1864" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/05435675622017105709" class="url" rel="ugc external nofollow">Erma Casias</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1864"><time datetime="2015-12-29T11:39:18+00:00">December 29, 2015 at 11:39 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>This comment has been removed by the author.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1865" class="comment even thread-even depth-1">
+			<article id="div-comment-1865" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/02161325981169884113" class="url" rel="ugc external nofollow">Richard Pearse</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1865"><time datetime="2016-01-02T12:15:39+00:00">January 2, 2016 at 12:15 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>the firefox &#8220;No Small Text&#8221; plugin could help, with customizations by font class (e.g. fixed-width). There is also the &#8220;No Squint&#8221; plugin, but that changes (and remembers) all (unfortunately) of the font sizes on the website. </p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1866" class="comment odd alt thread-odd thread-alt depth-1">
+			<article id="div-comment-1866" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/03174959058934043689" class="url" rel="ugc external nofollow">Dave Howe</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1866"><time datetime="2016-01-04T15:41:44+00:00">January 4, 2016 at 3:41 pm</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>They restored the *original Q* &#8211; so if this was an intentional backdoor, and that Q was the key for someone Juniper approved of, they have restored that access for that actor (and cut off access to those who rekeyed the backdoor for their own use)</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		<li id="comment-1867" class="comment even thread-even depth-1">
+			<article id="div-comment-1867" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img referrerpolicy="no-referrer" alt='Unknown&#039;s avatar' src='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG' srcset='https://0.gravatar.com/avatar/?s=48&#038;d=identicon&#038;r=PG 1x, https://0.gravatar.com/avatar/?s=72&#038;d=identicon&#038;r=PG 1.5x, https://0.gravatar.com/avatar/?s=96&#038;d=identicon&#038;r=PG 2x, https://0.gravatar.com/avatar/?s=144&#038;d=identicon&#038;r=PG 3x, https://0.gravatar.com/avatar/?s=192&#038;d=identicon&#038;r=PG 4x' class='avatar avatar-48' height='48' width='48' loading='lazy' decoding='async' />						<b class="fn"><a href="https://www.blogger.com/profile/03049412878821578827" class="url" rel="ugc external nofollow">Sharda Hinkel</a></b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/#comment-1867"><time datetime="2016-01-08T10:10:02+00:00">January 8, 2016 at 10:10 am</time></a>					</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>This comment has been removed by the author.</p>
+				</div><!-- .comment-content -->
+
+							</article><!-- .comment-body -->
+		</li><!-- #comment-## -->
+		</ol><!-- .comment-list -->
+
+		
+	
+			<p class="no-comments">Comments are closed.</p>
+	
+	
+</div><!-- #comments -->
+		
+		</main><!-- #main -->
+	</div><!-- #primary -->
+
+
+		</div><!-- #content -->
+
+		<footer id="colophon" class="site-footer" role="contentinfo">
+			<div class="site-info">
+				<a href="https://wordpress.com/?ref=footer_custom_svg" title="Create a website or blog at WordPress.com" rel="nofollow"><svg style="fill: currentColor; position: relative; top: 1px;" width="14px" height="15px" viewBox="0 0 14 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-labelledby="title" role="img">
+				<desc id="title">Create a website or blog at WordPress.com</desc>
+				<path d="M12.5225848,4.97949746 C13.0138466,5.87586309 13.2934037,6.90452431 13.2934037,7.99874074 C13.2934037,10.3205803 12.0351007,12.3476807 10.1640538,13.4385638 L12.0862862,7.88081544 C12.4453251,6.98296834 12.5648813,6.26504621 12.5648813,5.62667922 C12.5648813,5.39497674 12.549622,5.17994084 12.5225848,4.97949746 L12.5225848,4.97949746 Z M7.86730089,5.04801561 C8.24619178,5.02808979 8.58760099,4.98823815 8.58760099,4.98823815 C8.9267139,4.94809022 8.88671369,4.44972248 8.54745263,4.46957423 C8.54745263,4.46957423 7.52803983,4.54957381 6.86996227,4.54957381 C6.25158863,4.54957381 5.21247202,4.46957423 5.21247202,4.46957423 C4.87306282,4.44972248 4.83328483,4.96816418 5.17254589,4.98823815 C5.17254589,4.98823815 5.49358462,5.02808979 5.83269753,5.04801561 L6.81314716,7.73459399 L5.43565839,11.8651647 L3.14394256,5.04801561 C3.52312975,5.02808979 3.86416859,4.98823815 3.86416859,4.98823815 C4.20305928,4.94809022 4.16305906,4.44972248 3.82394616,4.46957423 C3.82394616,4.46957423 2.80475558,4.54957381 2.14660395,4.54957381 C2.02852925,4.54957381 1.88934333,4.54668493 1.74156477,4.54194422 C2.86690406,2.83350881 4.80113651,1.70529256 6.99996296,1.70529256 C8.638342,1.70529256 10.1302017,2.33173369 11.2498373,3.35765419 C11.222726,3.35602457 11.1962815,3.35261718 11.1683554,3.35261718 C10.5501299,3.35261718 10.1114609,3.89113285 10.1114609,4.46957423 C10.1114609,4.98823815 10.4107217,5.42705065 10.7296864,5.94564049 C10.969021,6.36482346 11.248578,6.90326506 11.248578,7.68133501 C11.248578,8.21992476 11.0413918,8.84503256 10.7696866,9.71584277 L10.1417574,11.8132391 L7.86730089,5.04801561 Z M6.99996296,14.2927074 C6.38218192,14.2927074 5.78595654,14.2021153 5.22195356,14.0362644 L7.11048207,8.54925635 L9.04486267,13.8491542 C9.05760348,13.8802652 9.07323319,13.9089317 9.08989995,13.9358945 C8.43574834,14.1661896 7.73285573,14.2927074 6.99996296,14.2927074 L6.99996296,14.2927074 Z M0.706448182,7.99874074 C0.706448182,7.08630113 0.902152921,6.22015756 1.25141403,5.43749503 L4.25357806,13.6627848 C2.15393732,12.6427902 0.706448182,10.4898387 0.706448182,7.99874074 L0.706448182,7.99874074 Z M6.99996296,0.999 C3.14016476,0.999 0,4.13905746 0,7.99874074 C0,11.8585722 3.14016476,14.999 6.99996296,14.999 C10.8596871,14.999 14,11.8585722 14,7.99874074 C14,4.13905746 10.8596871,0.999 6.99996296,0.999 L6.99996296,0.999 Z" id="wordpress-logo-simplified-cmyk" stroke="none" fill=“currentColor” fill-rule="evenodd"></path>
+			</svg></a>
+				
+							</div><!-- .site-info -->
+		</footer><!-- #colophon -->
+	</div><!-- #content-wrapper -->
+
+			<div id="slide-menu" aria-expanded="false">
+			<button class="menu-toggle" aria-controls="slide-menu" aria-expanded="false">Menu</button>
+
+			<h2 class="menu-title">Menu</h2>
+			<nav id="slide-navigation" class="main-slide-navigation" role="navigation">
+				<ul id="menu-about" class="menu"><li id="menu-item-860" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-860"><a href="https://matthewdgreen.wordpress.com">Home</a></li>
+<li id="menu-item-871" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-871"><a href="https://blog.cryptographyengineering.com/about-me/">About Me</a></li>
+<li id="menu-item-872" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-872"><a href="https://blog.cryptographyengineering.com/bitcoin-tipjar/">Crypto Tipjar</a></li>
+<li id="menu-item-1249" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1249"><a href="https://blog.cryptographyengineering.com/top-posts/">Top Posts</a></li>
+<li id="menu-item-1232" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1232"><a href="https://blog.cryptographyengineering.com/all-posts/">All Posts</a></li>
+<li id="menu-item-873" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-873"><a href="https://blog.cryptographyengineering.com/useful-cryptography-resources/">Useful Cryptography Resources</a></li>
+</ul>			</nav><!-- #slide-navigation -->
+
+					</div><!-- #slide-menu -->
+	</div><!-- #page -->
+
+<!--  -->
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/files/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/pub/independent-publisher/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<script id="grofiles-cards-js" src="//0.gravatar.com/js/hovercards/hovercards.min.js?ver=202632d1133547e8a1f2801609f51cef12522abe7f6647d869e9fbc974fe356a37e613"></script>
+<script id="wpgroho-js-extra">
+var WPGroHo = {"my_hash":""};
+//# sourceURL=wpgroho-js-extra
+</script>
+<script crossorigin='anonymous' type='text/javascript'  src='/wp-content/mu-plugins/gravatar-hovercards/wpgroho.js?m=1610363240i'></script>
+
+	<script>
+		// Initialize and attach hovercards to all gravatars
+		( function() {
+			function init() {
+				if ( typeof Gravatar === 'undefined' ) {
+					return;
+				}
+
+				if ( typeof Gravatar.init !== 'function' ) {
+					return;
+				}
+
+				Gravatar.profile_cb = function ( hash, id ) {
+					WPGroHo.syncProfileData( hash, id );
+				};
+
+				Gravatar.my_hash = WPGroHo.my_hash;
+				Gravatar.init(
+					'body',
+					'#wp-admin-bar-my-account',
+					{
+						i18n: {
+							'Edit your profile →': 'Edit your profile →',
+							'View profile →': 'View profile →',
+							'Contact': 'Contact',
+							'Send money': 'Send money',
+							'Sorry, we are unable to load this Gravatar profile.': 'Sorry, we are unable to load this Gravatar profile.',
+							'Gravatar not found.': 'Gravatar not found.',
+							'Too Many Requests.': 'Too Many Requests.',
+							'Internal Server Error.': 'Internal Server Error.',
+							'Is this you?': 'Is this you?',
+							'Claim your free profile.': 'Claim your free profile.',
+							'Email': 'Email',
+							'Home Phone': 'Home Phone',
+							'Work Phone': 'Work Phone',
+							'Cell Phone': 'Cell Phone',
+							'Contact Form': 'Contact Form',
+							'Calendar': 'Calendar',
+						},
+					}
+				);
+			}
+
+			if ( document.readyState !== 'loading' ) {
+				init();
+			} else {
+				document.addEventListener( 'DOMContentLoaded', init );
+			}
+		} )();
+	</script>
+
+		<div style="display:none">
+	<div class="grofile-hash-map-d41d8cd98f00b204e9800998ecf8427e">
+	</div>
+	</div>
+		<div id="actionbar" dir="ltr" style="display: none;"
+			class="actnbr-pub-independent-publisher actnbr-has-follow actnbr-has-actions">
+		<ul>
+								<li class="actnbr-btn actnbr-hidden">
+						<a class="actnbr-action actnbr-actn-reblog" href="">
+							<svg class="gridicon gridicons-reblog" height="20" width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g><path d="M22.086 9.914L20 7.828V18c0 1.105-.895 2-2 2h-7v-2h7V7.828l-2.086 2.086L14.5 8.5 19 4l4.5 4.5-1.414 1.414zM6 16.172V6h7V4H6c-1.105 0-2 .895-2 2v10.172l-2.086-2.086L.5 15.5 5 20l4.5-4.5-1.414-1.414L6 16.172z"/></g></svg><span>Reblog</span>
+						</a>
+					</li>
+									<li class="actnbr-btn actnbr-hidden">
+								<a class="actnbr-action actnbr-actn-follow " href="">
+			<svg class="gridicon" height="20" width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path clip-rule="evenodd" d="m4 4.5h12v6.5h1.5v-6.5-1.5h-1.5-12-1.5v1.5 10.5c0 1.1046.89543 2 2 2h7v-1.5h-7c-.27614 0-.5-.2239-.5-.5zm10.5 2h-9v1.5h9zm-5 3h-4v1.5h4zm3.5 1.5h-1v1h1zm-1-1.5h-1.5v1.5 1 1.5h1.5 1 1.5v-1.5-1-1.5h-1.5zm-2.5 2.5h-4v1.5h4zm6.5 1.25h1.5v2.25h2.25v1.5h-2.25v2.25h-1.5v-2.25h-2.25v-1.5h2.25z"  fill-rule="evenodd"></path></svg>
+			<span>Subscribe</span>
+		</a>
+		<a class="actnbr-action actnbr-actn-following  no-display" href="">
+			<svg class="gridicon" height="20" width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M16 4.5H4V15C4 15.2761 4.22386 15.5 4.5 15.5H11.5V17H4.5C3.39543 17 2.5 16.1046 2.5 15V3H17.5V12.5H16V4.5ZM5.5 6.5H14.5V8H5.5V6.5ZM5.5 9.5H9.5V11H5.5V9.5ZM12 11H13V12H12V11ZM10.5 9.5H14.5V13.5H10.5V9.5ZM5.5 12H9.5V13.5H5.5V12Z" fill="#008A20"></path><path d="M19.5303 15.0303L15.5 19.0605L12.9697 16.5303L14.0303 15.4697L15.5 16.9395L18.4697 13.9697L19.5303 15.0303Z" fill="#008A20"></path></svg>
+			<span>Subscribed</span>
+		</a>
+							<div class="actnbr-popover tip tip-top-left actnbr-notice" id="follow-bubble">
+							<div class="tip-arrow"></div>
+							<div class="tip-inner actnbr-follow-bubble">
+															<ul>
+											<li class="actnbr-sitename">
+			<a href="https://blog.cryptographyengineering.com">
+				<img loading='lazy' alt='' src='https://s0.wp.com/i/logo/wpcom-gray-white.png?m=1479929237i' srcset='https://s0.wp.com/i/logo/wpcom-gray-white.png 1x' class='avatar avatar-50' height='50' width='50' />				A Few Thoughts on Cryptographic Engineering			</a>
+		</li>
+										<div class="actnbr-message no-display"></div>
+									<form method="post" action="https://subscribe.wordpress.com" accept-charset="utf-8" style="display: none;">
+																						<div class="actnbr-follow-count">Join 1,057 other subscribers</div>
+																					<div>
+										<input type="email" name="email" placeholder="Enter your email address" class="actnbr-email-field" aria-label="Enter your email address" />
+										</div>
+										<input type="hidden" name="action" value="subscribe" />
+										<input type="hidden" name="blog_id" value="9549322" />
+										<input type="hidden" name="source" value="https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/" />
+										<input type="hidden" name="sub-type" value="actionbar-follow" />
+										<input type="hidden" id="_wpnonce" name="_wpnonce" value="14da7807af" />										<div class="actnbr-button-wrap">
+											<button type="submit" value="Sign me up">
+												Sign me up											</button>
+										</div>
+									</form>
+									<li class="actnbr-login-nudge">
+										<div>
+											Already have a WordPress.com account? <a href="https://wordpress.com/log-in?redirect_to=https%3A%2F%2Fr-login.wordpress.com%2Fremote-login.php%3Faction%3Dlink%26back%3Dhttps%253A%252F%252Fblog.cryptographyengineering.com%252F2015%252F12%252F22%252Fon-juniper-backdoor%252F">Log in now.</a>										</div>
+									</li>
+								</ul>
+															</div>
+						</div>
+					</li>
+							<li class="actnbr-ellipsis actnbr-hidden">
+				<svg class="gridicon gridicons-ellipsis" height="24" width="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g><path d="M7 12c0 1.104-.896 2-2 2s-2-.896-2-2 .896-2 2-2 2 .896 2 2zm12-2c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-7 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2z"/></g></svg>				<div class="actnbr-popover tip tip-top-left actnbr-more">
+					<div class="tip-arrow"></div>
+					<div class="tip-inner">
+						<ul>
+								<li class="actnbr-sitename">
+			<a href="https://blog.cryptographyengineering.com">
+				<img loading='lazy' alt='' src='https://s0.wp.com/i/logo/wpcom-gray-white.png?m=1479929237i' srcset='https://s0.wp.com/i/logo/wpcom-gray-white.png 1x' class='avatar avatar-50' height='50' width='50' />				A Few Thoughts on Cryptographic Engineering			</a>
+		</li>
+								<li class="actnbr-folded-follow">
+										<a class="actnbr-action actnbr-actn-follow " href="">
+			<svg class="gridicon" height="20" width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path clip-rule="evenodd" d="m4 4.5h12v6.5h1.5v-6.5-1.5h-1.5-12-1.5v1.5 10.5c0 1.1046.89543 2 2 2h7v-1.5h-7c-.27614 0-.5-.2239-.5-.5zm10.5 2h-9v1.5h9zm-5 3h-4v1.5h4zm3.5 1.5h-1v1h1zm-1-1.5h-1.5v1.5 1 1.5h1.5 1 1.5v-1.5-1-1.5h-1.5zm-2.5 2.5h-4v1.5h4zm6.5 1.25h1.5v2.25h2.25v1.5h-2.25v2.25h-1.5v-2.25h-2.25v-1.5h2.25z"  fill-rule="evenodd"></path></svg>
+			<span>Subscribe</span>
+		</a>
+		<a class="actnbr-action actnbr-actn-following  no-display" href="">
+			<svg class="gridicon" height="20" width="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M16 4.5H4V15C4 15.2761 4.22386 15.5 4.5 15.5H11.5V17H4.5C3.39543 17 2.5 16.1046 2.5 15V3H17.5V12.5H16V4.5ZM5.5 6.5H14.5V8H5.5V6.5ZM5.5 9.5H9.5V11H5.5V9.5ZM12 11H13V12H12V11ZM10.5 9.5H14.5V13.5H10.5V9.5ZM5.5 12H9.5V13.5H5.5V12Z" fill="#008A20"></path><path d="M19.5303 15.0303L15.5 19.0605L12.9697 16.5303L14.0303 15.4697L15.5 16.9395L18.4697 13.9697L19.5303 15.0303Z" fill="#008A20"></path></svg>
+			<span>Subscribed</span>
+		</a>
+								</li>
+														<li class="actnbr-signup"><a href="https://wordpress.com/start/">Sign up</a></li>
+							<li class="actnbr-login"><a href="https://wordpress.com/log-in?redirect_to=https%3A%2F%2Fr-login.wordpress.com%2Fremote-login.php%3Faction%3Dlink%26back%3Dhttps%253A%252F%252Fblog.cryptographyengineering.com%252F2015%252F12%252F22%252Fon-juniper-backdoor%252F">Log in</a></li>
+																<li class="actnbr-shortlink">
+										<a href="https://wp.me/pE4dk-1E">
+											<span class="actnbr-shortlink__text">Copy shortlink</span>
+											<span class="actnbr-shortlink__icon"><svg class="gridicon gridicons-checkmark" height="16" width="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g><path d="M9 19.414l-6.707-6.707 1.414-1.414L9 16.586 20.293 5.293l1.414 1.414"/></g></svg></span>
+										</a>
+									</li>
+																<li class="flb-report">
+									<a href="https://wordpress.com/abuse/?report_url=https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/" target="_blank" rel="noopener noreferrer">
+										Report this content									</a>
+								</li>
+															<li class="actnbr-reader">
+									<a href="https://wordpress.com/reader/blogs/9549322/posts/102">
+										View post in Reader									</a>
+								</li>
+															<li class="actnbr-subs">
+									<a href="https://subscribe.wordpress.com/">Manage subscriptions</a>
+								</li>
+																<li class="actnbr-fold"><a href="">Collapse this bar</a></li>
+														</ul>
+					</div>
+				</div>
+			</li>
+		</ul>
+	</div>
+	
+<script>
+window.addEventListener( "DOMContentLoaded", function( event ) {
+	var link = document.createElement( "link" );
+	link.href = "/wp-content/mu-plugins/actionbar/actionbar.css?v=20250116";
+	link.type = "text/css";
+	link.rel = "stylesheet";
+	document.head.appendChild( link );
+
+	var script = document.createElement( "script" );
+	script.src = "/wp-content/mu-plugins/actionbar/actionbar.js?v=20250204";
+	document.body.appendChild( script );
+} );
+</script>
+
+	
+	<script type="text/javascript">
+		(function () {
+			var wpcom_reblog = {
+				source: 'toolbar',
+
+				toggle_reblog_box_flair: function (obj_id, post_id) {
+
+					// Go to site selector. This will redirect to their blog if they only have one.
+					const postEndpoint = `https://wordpress.com/post`;
+
+					// Ideally we would use the permalink here, but fortunately this will be replaced with the 
+					// post permalink in the editor.
+					const originalURL = `${ document.location.href }?page_id=${ post_id }`; 
+					
+					const url =
+						postEndpoint +
+						'?url=' +
+						encodeURIComponent( originalURL ) +
+						'&is_post_share=true' +
+						'&v=5';
+
+					const redirect = function () {
+						if (
+							! window.open( url, '_blank' )
+						) {
+							location.href = url;
+						}
+					};
+
+					if ( /Firefox/.test( navigator.userAgent ) ) {
+						setTimeout( redirect, 0 );
+					} else {
+						redirect();
+					}
+				},
+			};
+
+			window.wpcom_reblog = wpcom_reblog;
+		})();
+	</script>
+<script crossorigin='anonymous' type='text/javascript'  src='/_static/??-eJydzEEOgjAQheELOQ4mEMPCeBYsU5nSThtmCh7fegTcvORfvA+PAi6LkRjaQokUS30hy0yF2ohB68i60IZB0Vdxxln0GvSCJ88aeSaQaef39EP+MlYuEFlW8NlVBc+f0wyLQ3UbF4OjuJwa8EyPWz90Yzf29yF8AexdaF8='></script>
+<script id="wp-emoji-settings" type="application/json">
+{"baseUrl":"https://s0.wp.com/wp-content/mu-plugins/wpcom-smileys/twemoji/2/72x72/","ext":".png","svgUrl":"https://s0.wp.com/wp-content/mu-plugins/wpcom-smileys/twemoji/2/svg/","svgExt":".svg","source":{"concatemoji":"/wp-includes/js/wp-emoji-release.min.js?m=1783090810i&ver=7.1-alpha-62543"}}
+</script>
+<script type="module">
+/*! This file is auto-generated */
+var e="script#wp-emoji-settings",t=document.querySelector(e);if(!(t instanceof HTMLScriptElement))throw new Error("Element missing: "+e);const r=JSON.parse(t.text),s=(window._wpemojiSettings=r,"wpEmojiSettingsSupports"),o=["flag","emoji"];function i(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(s,JSON.stringify(t))}catch(e){}}function c(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0);const r=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);return t.every((e,t)=>e===r[t])}function p(e,t){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var n=e.getImageData(16,16,1,1);for(let e=0;e<n.data.length;e++)if(0!==n.data[e])return!1;return!0}function u(e,t,n,r){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\udde8\ud83c\uddf6","\ud83c\udde8\u200b\ud83c\uddf6")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!r(e,"\ud83e\u1fac8")}return!1}function f(e,t,n,r){let a;const s=(a="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):document.createElement("canvas")).getContext("2d",{willReadFrequently:!0}),o=(s.textBaseline="top",s.font="600 32px Arial",{});return e.forEach(e=>{o[e]=t(s,e,n,r)}),o}function a(e){var t=document.createElement("script");t.src=e,t.defer=!0,document.head.appendChild(t)}r.supports={everything:!0,everythingExceptFlag:!0},new Promise(t=>{let n=function(){try{var e=JSON.parse(sessionStorage.getItem(s));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(o),u.toString(),c.toString(),p.toString()].join(",")+"));",r=new Blob([e],{type:"text/javascript"});const a=new Worker(URL.createObjectURL(r),{name:"wpTestEmojiSupports"});return void(a.onmessage=e=>{i(n=e.data),a.terminate(),t(n)})}catch(e){}i(n=f(o,u,c,p))}t(n)}).then(e=>{for(const n in e)r.supports[n]=e[n],r.supports.everything=r.supports.everything&&r.supports[n],"flag"!==n&&(r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&r.supports[n]);var t;r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&!r.supports.flag,r.supports.everything||((t=r.source||{}).concatemoji?a(t.concatemoji):t.wpemoji&&t.twemoji&&(a(t.twemoji),a(t.wpemoji)))});
+//# sourceURL=/wp-includes/js/wp-emoji-loader.min.js
+</script>
+<script src="//stats.wp.com/w.js?69" defer></script> <script type="text/javascript">
+_tkq = window._tkq || [];
+_stq = window._stq || [];
+_tkq.push(['storeContext', {'blog_id':'9549322','blog_tz':'0','user_lang':'en','blog_lang':'en','user_id':'0'}]);
+		// Prevent sending pageview tracking from WP-Admin pages.
+		_stq.push(['view', {'blog':'9549322','v':'wpcom','tz':'0','user_id':'0','post':'102','subd':'matthewdgreen'}]);
+		_stq.push(['extra', {'crypt':'UE5tW3cvZGRTd1VXTHx0Q0pyYT89K3QrZXh+YlZKVEp3X2Z4d2lWfG5QN2wzaCV3czAtUzk5X19SflczRll4NGxhRnwzVl09PU9ObC0wR3I3WTRZY0ZDX3lsdFlXMl96NnN1c0Zic2RZaS5yZHM2UmgzNSZPMzJbYzJQUVY3c0hjJmY0VngyZFE1fFVrOE8lTE0xJUhzTHRGJV8tNUg/SDRbVW9XY2d8OVdBME5NdUsySVhdUnZ+ZVt6ZFg4SGRWMD9rdWMsNFlJelRYaGZ4cCx1OVIrPTA1NHhBTlpKVi1ESVs2UXolZ2pvJSxwTzRJVGkwWXxVRnBFdC1UZ3ozaEI='}]);
+_stq.push([ 'clickTrackerInit', '9549322', '102' ]);
+</script>
+<noscript><img src="https://pixel.wp.com/b.gif?v=noscript" style="height:1px;width:1px;overflow:hidden;position:absolute;bottom:1px;" alt="" /></noscript>
+<meta id="bilmur" property="bilmur:data" content="" data-provider="wordpress.com" data-service="simple" data-site-tz="Etc/GMT-0" data-custom-props="{&quot;enq_jquery&quot;:&quot;1&quot;,&quot;logged_in&quot;:&quot;0&quot;,&quot;wptheme&quot;:&quot;pub\/independent-publisher&quot;,&quot;wptheme_is_block&quot;:&quot;0&quot;}"   >
+		<script defer src="/wp-content/js/bilmur.min.js?i=17&amp;m=202632"></script> 	
+</body>
+</html>

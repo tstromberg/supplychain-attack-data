@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BdThemes plugins poisoned through the vendor&amp;#39;s banner feed</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>BdThemes plugins poisoned through the vendor&#39;s banner feed</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> BdThemes · <a href="https://bdthemes.com/" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-06-23 to 2026-08-08 (46 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> organization</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> unauthorized_access_control</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> account_takeover, backdoor, remote_code_execution</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+    <div class="meta-item"><strong>Campaigns:</strong>
+      
+        <a href="/campaign/wordpress-admin-persistence-2026/">Vendor-side WordPress compromises seeded rogue admins</a>
+      
+    </div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Attackers with write access to BdThemes&#39; promotional JSON bucket returned a crafted display_id that exploited an unescaped attribute in the vendor&#39;s Biggopti banner script. The XSS ran in every admin session, creating rogue admins and installing a webshell.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Wordfence was notified on August 7, 2026 of a supply-chain compromise
+affecting BdThemes, a WordPress plugin vendor whose Elementor add-ons ship
+through the official WordPress.org directory. No plugin source file was
+modified. The attackers poisoned a static JSON feed the plugins fetch, and let
+the vendor&#39;s own code do the rest.</p>
+    
+      <p>Seven BdThemes plugins bundle a component called Biggopti, which pulls
+promotional banners from the vendor&#39;s API and renders them in the WordPress
+dashboard. The API is not an application server. It is flat JSON files in a
+DigitalOcean Spaces bucket behind Cloudflare. Every plugin using Biggopti
+enqueues its client-side script on `admin_init`, so it runs on every wp-admin
+page load for every logged-in administrator. The flaw was the vendor&#39;s own.
+When the script builds the notice container, it concatenates the `display_id`
+field from the remote JSON straight into an HTML `id` attribute with no
+escaping, while escaping `data-display-id` properly a few lines later, which is
+how Wordfence concluded this was an oversight rather than a design. SVN history
+put the unescaped write at March 1, 2026, in Prime Slider 4.1.9, from where it
+spread to the other plugins.</p>
+    
+      <p>Someone with write access to the bucket replaced the legitimate records. The
+poisoned `display_id` broke out of the attribute and attached an
+`onanimationstart` handler fired by a 10-millisecond CSS animation, so the
+payload ran silently on any dashboard page. The handler pulled `w2.js` from
+`ia-cdn[.]com`, which checked in with the C2, created an administrator through
+the WordPress REST API using the live session&#39;s `X-WP-Nonce`, installed a fake
+plugin under a slug like `wp-smart-thumbnails` containing a webshell named
+`emer-run.php`, and used that webshell to drop two must-use plugins: a magic
+login backdoor keyed to a `?_wplogin=&lt;token&gt;` parameter, and a stealth module
+that filters the rogue accounts out of the user list and adjusts the user
+counts to match. Both were backdated to September 2025. A second payload,
+`x.js`, was served from BdThemes&#39; own infrastructure and generated deterministic
+credentials from the site hostname, meaning the operators never had to keep a
+victim list, and responders can compute the exact username and password to hunt
+for.</p>
+    
+      <p>Wordfence tracked the campaign back to a `start_date` of June 23, 2026 in the
+poisoned records, the earliest the XSS could have been live. The affected
+plugins were closed on the WordPress directory on August 7, and both API
+endpoints were serving clean JSON by August 8. Wordfence linked the C2 domain
+to the same operators behind the Advanced Responsive Video Embedder and
+OptinMonster compromises earlier in the summer, and noted that the presence of
+attacker-controlled files inside the vendor&#39;s own bucket points to a deeper
+compromise of BdThemes&#39; cloud storage credentials.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>Element Pack Addons for Elementor</strong>
+            <br><code>bdthemes-element-pack-lite</code>
+            <br><span>wordpress.org · plugin</span>
+            
+            
+          </td>
+          <td>2026-06-23<br>to 2026-08-08</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>Prime Slider Addons for Elementor</strong>
+            <br><code>bdthemes-prime-slider-lite</code>
+            <br><span>wordpress.org · plugin</span>
+            
+            
+          </td>
+          <td>2026-06-23<br>to 2026-08-08</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>Pixel Gallery Addons for Elementor</strong>
+            <br><code>pixel-gallery</code>
+            <br><span>wordpress.org · plugin</span>
+            
+            
+          </td>
+          <td>2026-06-23<br>to 2026-08-08</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>Ultimate Post Kit Addons for Elementor</strong>
+            <br><code>ultimate-post-kit</code>
+            <br><span>wordpress.org · plugin</span>
+            
+            
+          </td>
+          <td>2026-06-23<br>to 2026-08-08</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>Ultimate Store Kit</strong>
+            <br><code>ultimate-store-kit</code>
+            <br><span>wordpress.org · plugin</span>
+            
+            
+          </td>
+          <td>2026-06-23<br>to 2026-08-08</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>Live Copy Paste for Elementor</strong>
+            <br><code>live-copy-paste</code>
+            <br><span>wordpress.org · plugin</span>
+            
+            
+          </td>
+          <td>2026-06-23<br>to 2026-08-08</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>Smart Admin Assistant</strong>
+            <br><code>smart-admin-assistant</code>
+            <br><span>wordpress.org · plugin</span>
+            
+            
+          </td>
+          <td>2026-06-23<br>to 2026-08-08</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://api.sigmative.io/prod/store/api/biggopti/api-data-all-records</code></li>
+    
+      <li><code>distribution</code>: <code>https://api.sigmative.io/prod/store/api/biggopti/api-data-records</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>domain:ia-cdn.com</code></li>
+    
+      <li><code>url:https://ia-cdn.com/fz/w2.js</code></li>
+    
+      <li><code>url:https://ia-cdn.com/fz/c</code></li>
+    
+      <li><code>domain:api.sigmative.io</code></li>
+    
+      <li><code>file:emer-run.php</code></li>
+    
+      <li><code>file_md5:emer-run.php: 1024732009983dd5e54b4cf5593f04d4</code></li>
+    
+      <li><code>file_md5:class-wp-token-validate.php: 7719cd98a35ffad2771f26d1ceab7d27</code></li>
+    
+      <li><code>file_md5:class-wp-query-9d127ff3.php: 9aadc3e5c5242b273bd17c5bdc358845</code></li>
+    
+      <li><code>file_md5:wp-cache-optimizer.php: e450ae5bc4bfc0d960dded06a76bb8e9</code></li>
+    
+      <li><code>database_option:fz_emer_login_tokens</code></li>
+    
+      <li><code>database_option:fz_emer_done_v1</code></li>
+    
+      <li><code>account:usernames matching bd_ plus 6 alphanumeric characters</code></li>
+    
+      <li><code>account:accounts using @wordpress.org or @developer.wordpress.org email domains</code></li>
+    
+      <li><code>parameter:_wplogin</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.wordfence.com/blog/2026/08/psa-supply-chain-compromise-in-bdthemes-ecosystem-via-poisoned-api-response/" target="_blank">PSA: Supply Chain Compromise in BdThemes Ecosystem via Poisoned API Response - Wordfence</a></li>
+    
+      <li><a href="https://www.bleepingcomputer.com/news/security/bdthemes-plugins-supply-chain-hack-creates-rogue-wordpress-admins/" target="_blank">BdThemes plugins supply-chain hack creates rogue WordPress admins - BleepingComputer</a></li>
+    
+      <li><a href="https://thehackernews.com/2026/08/bdthemes-supply-chain-attack-poisons.html" target="_blank">BdThemes Supply Chain Attack Poisons JSON to Create Rogue WordPress Admins - The Hacker News</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

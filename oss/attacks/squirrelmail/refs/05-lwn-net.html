@@ -1,0 +1,1172 @@
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><title>Security [LWN.net]</title>
+        <link rel="next" href="/Articles/262091/"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="Security">
+<meta property="og:site_name" content="LWN.net">
+<meta property="og:type" content="article">
+<meta property="og:description" content="">
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="robots" CONTENT="noai, noimageai">
+        <link rel="icon" href="https://static.lwn.net/images/favicon.png"
+              type="image/png">
+        <link rel="alternate" type="application/rss+xml" title="LWN.net headlines" href="https://lwn.net/headlines/rss">
+        <link rel="stylesheet" href="/CSS/lwn-v1">
+<style>div.MakeALink { display: none }</style>
+
+        
+        </head>
+        <body>
+        <a name="t"></a>
+<div id="menu"><a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/logo/barepenguin-70.webp" class="logo"
+                 border="0" alt="LWN.net Logo">
+            <span class="logo">LWN<br>.net</span>
+            <span class="logobl">News from the source</span></a>
+            <a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/lcorner-ss.png" class="sslogo"
+                 border="0" alt="LWN"></a><div class="navmenu-container">
+           <ul class="navmenu">
+        <li><a class="navmenu" href="#t"><b>Content</b></a><ul><li><a href="/current/">Weekly Edition</a></li><li><a href="/Archives/">Archives</a></li><li><a href="/Search/">Search</a></li><li><a href="/Kernel/">Kernel</a></li><li><a href="/Security/">Security</a></li><li><a href="/Calendar/">Events calendar</a></li><li><a href="/Comments/unread">Unread comments</a></li><li><hr></li><li><a href="/op/FAQ.lwn">LWN FAQ</a></li><li><a href="/op/AuthorGuide.lwn">Write for us</a></li></ul></li>
+<li><a class="navmenu" href="#t"><b>Edition</b></a><ul><li><a href="/Articles/262088/">Front page</a></li><li><a href="/Articles/262090/">⇒ Security</a></li><li><a href="/Articles/262091/">Kernel development</a></li><li><a href="/Articles/262092/">Distributions</a></li><li><a href="/Articles/262093/">Development</a></li><li><a href="/Articles/262094/">Linux in the news</a></li><li><a href="/Articles/262095/">Announcements</a></li><li><a href="/Articles/262088/bigpage">One big page</a></li><li><p></li><li><a href="/Articles/261091/">Previous week</a></li><li><a href="/Articles/262835/">Following week</a></li><li><p></li><li><a href="https://lwn.net/Articles/262088/epub">Download EPUB</a></li></ul></li>
+</ul></div>
+</div> <!-- menu -->
+<div class="topnav-spacer"></div>
+<div class="top-banner not-print"><!-- no top ad served --></div>
+<div class="topnav-container">
+<div class="not-handset"><form action="https://lwn.net/Login/" method="post" name="loginform"
+                 class="loginform">
+        <label><b>User:</b> <input type="text" name="uname" value="" size="8" id="uc" /></label> 
+		<label><b>Password:</b> <input type="password" name="pword" size="8" id="pc" /></label> <input type="hidden" name="target" value="/Articles/262090/" /> <input type="submit" name="submit" value="Log in" /></form> |
+           <form action="https://lwn.net/subscribe/" method="post" class="loginform">
+           <input type="submit" name="submit" value="Subscribe" />
+           </form> |
+           <form action="https://lwn.net/Login/newaccount" method="post" class="loginform">
+           <input type="submit" name="submit" value="Register" />
+           </form>
+        </div>
+               <div class="handset-only">
+               <a href="/Login/"><b>Log in</b></a> /
+               <a href="/subscribe/"><b>Subscribe</b></a> /
+               <a href="/Login/newaccount"><b>Register</b></a>
+               </div>
+               </div><div class="maincolumn flexcol">
+<div class="middlecolumn">
+<div class="PageHeadline">
+<h1>Security</h1>
+</div>
+<div class="ArticleText"><main>
+<div class="SummarySection">
+<a name="262688"></a><h3 class="SummaryHL"><a href="/Articles/262688/">The backdooring of SquirrelMail</a></h3>
+
+<div class="FeatureByline">
+           By <b>Jonathan Corbet</b><br>December 19, 2007</br>
+           </div>
+<a href="http://squirrelmail.org/">SquirrelMail</a> advertises itself as
+"webmail for nuts."  It is a PHP-based package which is in wide use; most
+distributions include a SquirrelMail package.  Security problems in
+SquirrelMail are certainly not unheard-of; even so, the <a
+href="/Articles/262690/">announcement</a> that the source distribution for
+version 1.4.12 had been compromised raised some eyebrows.  Initially the
+project downplayed the problem:
+<p>
+<div class="BigQuote">
+	Further investigations show that the modifications to the code
+	should have little to no impact at this time.  Modifications seemed
+	to be based around a PHP global variable which we cannot track
+	down.  The changes made will most likely generate an error, rather
+	than a compromise of a system in the event the code does get
+	executed.
+</div>
+<p>
+It only took one day, though, before Uwe Schindler <a
+href="/Articles/262691/">pointed out</a> that, in fact, the changes made to
+the source opened a remote-execution back door into deployed SquirrelMail
+systems.  Somewhere along the way, the project discovered that the 1.4.11
+release had also been tampered with.  The SquirrelMail developers released
+<a href="http://lwn.net/Articles/262211/">version 1.4.13</a> to close the
+vulnerabilities.  
+<p>
+There have not been any public reports of systems being compromised by way
+of this vulnerability.  Additionally, it would appear that all of the
+distributors which shipped the affected versions got their version of the
+code prior to the attack.  So the episode would appear to have ended
+reasonably well - as far as we know.  There are some lessons that one can
+take from this attack, though.
+<p>
+
+The downplaying of the problem initially was a potentially fatal mistake.
+If somebody has been tampering with the sources, there is no excuse not to
+go into red-alert mode immediately, even if the developers involved do not
+understand the attack.  When a project has been compromised at such a
+fundamental level, one must assume the worst.
+<p>
+
+
+The compromise was discovered after a user noticed that the tarballs on the
+download site did not match the posted MD5 checksums.  Your editor suspects
+that very few of us actually verify checksums in the packages they take
+from the net.  Doing so more often would be a good exercise in software
+hygiene for all of us.
+<p>
+
+That said, the project got lucky this time around.  A smarter attacker
+would have replaced the checksums after adding the back door, making the
+changes harder to detect.  Longer-term, the <a
+href="http://www.win.tue.nl/hashclash/SoftIntCodeSign/">increasing doubts
+about the security of MD5</a> suggest that relying on it to detect changes
+to tarballs might not be entirely safe.  Far better to use public-key
+signatures; they should have a longer shelf life, and, if the keys
+are managed properly, they are impossible to replace.  It seems that the
+project has posted GPG signatures for 1.4.13, though the Wayback Machine <a
+href="http://web.archive.org/web/20070616190044/http://www.squirrelmail.org/download.php">suggests</a>
+that this is a recent practice.  Your editor was unable to find the public
+key needed to verify the signatures.
+<p>
+
+The modifications to the tarballs were done using a compromised developer's
+account.  The specific changes made were not put into the SquirrelMail
+source repository.  The project has said nothing, though, about what has
+been done to ensure that no other changes were made there.  Some sort of
+statement from the project along these lines would be most reassuring to
+SquirrelMail's users.
+<p>
+
+Perhaps the most encouraging conclusion, though, is this: there have been
+several attempts to compromise source distributions over the years.  Many
+of them have succeeded in getting bad code into high-profile packages.  But
+none of these attacks - so far as we know - have escaped detection for any
+significant period of time, and none of them have led to any sort of
+wide-scale exploit.  As a whole, we would appear to be reasonably resistant
+to this kind of attack, even when the front-line defenses fail.  With luck,
+and continued vigilance, that trend will continue.  Both will be required,
+though: there is no doubt that the attackers will keep trying.
+<p><a href="/Articles/262688/#Comments">Comments (20 posted)</a>
+<p>
+</div>
+<h2 class="Cat2HL">Brief items</h2>
+<div class="SummarySection">
+<a name="262020"></a><h3 class="SummaryHL"><a href="/Articles/262020/">'You've Got Cross-Site Scripting' (Dark Reading)</a></h3>
+Dark Reading <a
+href="http://www.darkreading.com/document.asp?doc_id=141204">reports on a
+new email alert service for cross-site scripting bugs</a>.  "<q>So
+XSSed.com, a site dedicated to archiving publicly disclosed XSS bugs, is
+now offering a free email alert service that notifies you as soon as an XSS
+vulnerability affecting your Website gets indexed to its archive. XSSed
+claims to have the industry's largest XSS archive, with over 17,000
+disclosed vulnerabilities as of this posting.</q>"
+<p>
+<a href="/Articles/262020/">Comments (2 posted)</a>
+<p>
+
+</div>
+<h2 class="Cat2HL">New vulnerabilities</h2>
+<div class="SummarySection">
+<a name="262720"></a><h3 class="SummaryHL">clamav: integer overflow and off-by-one</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">clamav</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6335">CVE-2007-6335</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6336">CVE-2007-6336</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 19, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">July 17, 2008</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>ClamAV contains integer overflow and off-by-one errors which could be exploited (via specially-crafted email) to execute arbitrary code.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/290487/">FEDORA-2008-6422</a></td>
+                   <td>clamav</td>
+                   <td>2008-07-17</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/269164/">FEDORA-2008-1625</a></td>
+                   <td>clamav</td>
+                   <td>2008-02-13</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/269163/">FEDORA-2008-1608</a></td>
+                   <td>clamav</td>
+                   <td>2008-02-13</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/266110/">FEDORA-2008-0115</a></td>
+                   <td>clamav</td>
+                   <td>2008-01-22</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/266101/">FEDORA-2008-0170</a></td>
+                   <td>clamav</td>
+                   <td>2008-01-22</td></tr>
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/264470/">SUSE-SR:2008:001</a></td>
+                   <td>libexiv2 dvips libsndfile squid rsync clamav xen</td>
+                   <td>2008-01-09</td></tr>
+<tr>
+                   <td>Mandriva</td>
+                   <td><a href="/Articles/264466/">MDVSA-2008:003</a></td>
+                   <td>clamav</td>
+                   <td>2007-01-08</td></tr>
+<tr>
+                   <td>Debian</td>
+                   <td><a href="/Articles/262707/">DSA-1435-1</a></td>
+                   <td>clamav</td>
+                   <td>2007-12-19</td></tr>
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/263484/">200712-20</a></td>
+                   <td>clamav</td>
+                   <td>2007-12-29</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262720/">Comments (none posted)</a>
+<p>
+<a name="262712"></a><h3 class="SummaryHL">cups: multiple vulnerabilities</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">cups</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-5849">CVE-2007-5849</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6358">CVE-2007-6358</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-4352">CVE-2007-4352</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-5392">CVE-2007-5392</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-5393">CVE-2007-5393</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 19, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">October 16, 2008</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>The <a href="http://cups.org/articles.php?L519">cups 1.3.5</a> release fixes a number of vulnerabilities in the PDF filters.  Additionally, there is a buffer overflow in the SNMP code and a temporary file vulnerability.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/626013/">201412-11</a></td>
+                   <td>emul-linux-x86-baselibs</td>
+                   <td>2014-12-11</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/303430/">FEDORA-2008-8801</a></td>
+                   <td>cups</td>
+                   <td>2008-10-16</td></tr>
+<tr>
+                   <td>Debian</td>
+                   <td><a href="/Articles/276388/">DSA-1537-1</a></td>
+                   <td>xpdf</td>
+                   <td>2008-04-02</td></tr>
+<tr>
+                   <td>Mandriva</td>
+                   <td><a href="/Articles/268184/">MDVSA-2008:036</a></td>
+                   <td>cups</td>
+                   <td>2007-02-06</td></tr>
+<tr>
+                   <td>Debian</td>
+                   <td><a href="/Articles/267975/">DSA-1480-1</a></td>
+                   <td>poppler</td>
+                   <td>2008-02-05</td></tr>
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/266611/">SUSE-SR:2008:002</a></td>
+                   <td>tog-pegasus, xine, libxml2, libqt4, XFree86/X.Org, krb5, libexif, openafs, Apache, MozillaThunderbird, Xen</td>
+                   <td>2008-01-25</td></tr>
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/264622/">SUSE-SA:2008:002</a></td>
+                   <td>cups</td>
+                   <td>2008-01-10</td></tr>
+<tr>
+                   <td>Ubuntu</td>
+                   <td><a href="/Articles/264463/">USN-563-1</a></td>
+                   <td>cupsys</td>
+                   <td>2008-01-09</td></tr>
+<tr>
+                   <td>Debian</td>
+                   <td><a href="/Articles/263192/">DSA-1437-1</a></td>
+                   <td>cupsys</td>
+                   <td>2007-12-26</td></tr>
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/262699/">200712-14</a></td>
+                   <td>cups</td>
+                   <td>2007-12-18</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262712/">Comments (none posted)</a>
+<p>
+<a name="262713"></a><h3 class="SummaryHL">flash-plugin: lots of problems</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">flash-plugin</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-5275">CVE-2007-5275</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-4324">CVE-2007-4324</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-4768">CVE-2007-4768</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6242">CVE-2007-6242</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6243">CVE-2007-6243</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6244">CVE-2007-6244</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6245">CVE-2007-6245</a>
+                <a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6246">CVE-2007-6246</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 19, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">November 14, 2008</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>A vast number of vulnerabilities exists in the proprietary Flash plugin for Firefox.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/307256/">SUSE-SR:2008:025</a></td>
+                   <td>apache2, ipsec-tools, kernel-bigsmp, flash-player, mysql, ktorrent</td>
+                   <td>2008-11-14</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/306817/">RHSA-2008:0980-02</a></td>
+                   <td>flash-plugin</td>
+                   <td>2008-11-12</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/304951/">RHSA-2008:0945-01</a></td>
+                   <td>flash-plugin</td>
+                   <td>2008-10-28</td></tr>
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/278644/">200804-21</a></td>
+                   <td>netscape-flash</td>
+                   <td>2008-04-18</td></tr>
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/277590/">SUSE-SA:2008:022</a></td>
+                   <td>flash-player</td>
+                   <td>2008-04-11</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/277243/">RHSA-2008:0221-01</a></td>
+                   <td>flash-plugin</td>
+                   <td>2008-04-08</td></tr>
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/265993/">200801-07:02</a></td>
+                   <td>netscape-flash</td>
+                   <td>2008-01-20</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/262700/">RHSA-2007:1126-01</a></td>
+                   <td>flash-plugin</td>
+                   <td>2007-12-18</td></tr>
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/263027/">SUSE-SA:2007:069</a></td>
+                   <td>flash-player</td>
+                   <td>2007-12-21</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262713/">Comments (3 posted)</a>
+<p>
+<a name="262154"></a><h3 class="SummaryHL">IRC Services: denial of service</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">ircservices</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6122">CVE-2007-6122</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 14, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">December 19, 2007</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>loverboy reported that the "default_encrypt()" function in file
+encrypt.c does not properly handle overly long passwords.  A remote attacker could provide an overly long password to the vulnerable server, resulting in a denial of service.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/262150/">200712-12</a></td>
+                   <td>ircservices</td>
+                   <td>2007-12-13</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262154/">Comments (none posted)</a>
+<p>
+<a name="262539"></a><h3 class="SummaryHL">kdebase: denial of service</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">kdebase</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-5963">CVE-2007-5963</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 18, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">January 19, 2009</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>The kdebase package is vulnerable to a denial of service in which a local user can render KDM unusable for logins by any user or cause KDM to exceed system resource limits.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Mandriva</td>
+                   <td><a href="/Articles/315631/">MDVSA-2009:017</a></td>
+                   <td>kdebase</td>
+                   <td>2009-01-16</td></tr>
+<tr>
+                   <td>rPath</td>
+                   <td><a href="/Articles/262534/">rPSA-2007-0268-1</a></td>
+                   <td>kdebase</td>
+                   <td>2007-12-17</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262539/">Comments (none posted)</a>
+<p>
+<a name="262709"></a><h3 class="SummaryHL">kernel: denial of service</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">kernel</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-5966">CVE-2007-5966</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 19, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">February 3, 2010</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>A bug in high-resolution timers (prior to kernel 2.6.22.15) can cause very long sleeps when large timeout values are used.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/372612/">RHSA-2010:0079-01</a></td>
+                   <td>kernel</td>
+                   <td>2010-02-02</td></tr>
+<tr>
+                   <td>CentOS</td>
+                   <td><a href="/Articles/345456/">CESA-2009:1193</a></td>
+                   <td>kernel</td>
+                   <td>2009-08-05</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/345210/">RHSA-2009:1193-01</a></td>
+                   <td>kernel</td>
+                   <td>2009-08-04</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/295751/">RHSA-2008:0585-01</a></td>
+                   <td>kernel</td>
+                   <td>2008-08-26</td></tr>
+<tr>
+                   <td>Mandriva</td>
+                   <td><a href="/Articles/286030/">MDVSA-2008:112</a></td>
+                   <td>kernel</td>
+                   <td>2007-06-12</td></tr>
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/268363/">SUSE-SA:2008:006</a></td>
+                   <td>kernel</td>
+                   <td>2008-02-07</td></tr>
+<tr>
+                   <td>Ubuntu</td>
+                   <td><a href="/Articles/267774/">USN-574-1</a></td>
+                   <td>linux-source-2.6.17/20/22</td>
+                   <td>2008-02-04</td></tr>
+<tr>
+                   <td>Debian</td>
+                   <td><a href="/Articles/263007/">DSA-1436-1</a></td>
+                   <td>linux-2.6</td>
+                   <td>2007-12-20</td></tr>
+<tr>
+                   <td>rPath</td>
+                   <td><a href="/Articles/262695/">rPSA-2007-0269-1</a></td>
+                   <td>kernel</td>
+                   <td>2007-12-18</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262709/">Comments (none posted)</a>
+<p>
+<a name="262716"></a><h3 class="SummaryHL">libexif: integer overflow</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">libexif</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6352">CVE-2007-6352</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 19, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">October 15, 2008</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>From the Red Hat advisory: An integer overflow flaw was found in the way libexif parses Exif image
+tags. If a victim opens a carefully crafted Exif image file, it could cause
+the application linked against libexif to execute arbitrary code, or crash.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Ubuntu</td>
+                   <td><a href="/Articles/303227/">USN-654-1</a></td>
+                   <td>libexif</td>
+                   <td>2008-10-14</td></tr>
+<tr>
+                   <td>Debian</td>
+                   <td><a href="/Articles/268731/">DSA-1487-1</a></td>
+                   <td>libexif</td>
+                   <td>2008-02-08</td></tr>
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/266611/">SUSE-SR:2008:002</a></td>
+                   <td>tog-pegasus, xine, libxml2, libqt4, XFree86/X.Org, krb5, libexif, openafs, Apache, MozillaThunderbird, Xen</td>
+                   <td>2008-01-25</td></tr>
+<tr>
+                   <td>Mandriva</td>
+                   <td><a href="/Articles/264620/">MDVSA-2008:005</a></td>
+                   <td>libexif</td>
+                   <td>2007-01-09</td></tr>
+<tr>
+                   <td>rPath</td>
+                   <td><a href="/Articles/264096/">rPSA-2008-0006-1</a></td>
+                   <td>libexif</td>
+                   <td>2008-01-04</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/263000/">FEDORA-2007-4667</a></td>
+                   <td>libexif</td>
+                   <td>2007-12-20</td></tr>
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/263479/">200712-15</a></td>
+                   <td>libexif</td>
+                   <td>2007-12-29</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/263001/">FEDORA-2007-4608</a></td>
+                   <td>libexif</td>
+                   <td>2007-12-20</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/262704/">RHSA-2007:1165-01</a></td>
+                   <td>libexif</td>
+                   <td>2007-12-19</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/262703/">RHSA-2007:1166-01</a></td>
+                   <td>libexif</td>
+                   <td>2007-12-19</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262716/">Comments (none posted)</a>
+<p>
+<a name="262719"></a><h3 class="SummaryHL">libexif: denial of service</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">libexif</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6351">CVE-2007-6351</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 19, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">October 15, 2008</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>From the Red Hat advisory: An infinite recursion flaw was found in the way libexif parses Exif image
+tags. If a victim opens a carefully crafted Exif image file, it could cause
+the application linked against libexif to crash.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Ubuntu</td>
+                   <td><a href="/Articles/303227/">USN-654-1</a></td>
+                   <td>libexif</td>
+                   <td>2008-10-14</td></tr>
+<tr>
+                   <td>Debian</td>
+                   <td><a href="/Articles/268731/">DSA-1487-1</a></td>
+                   <td>libexif</td>
+                   <td>2008-02-08</td></tr>
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/266611/">SUSE-SR:2008:002</a></td>
+                   <td>tog-pegasus, xine, libxml2, libqt4, XFree86/X.Org, krb5, libexif, openafs, Apache, MozillaThunderbird, Xen</td>
+                   <td>2008-01-25</td></tr>
+<tr>
+                   <td>Mandriva</td>
+                   <td><a href="/Articles/264620/">MDVSA-2008:005</a></td>
+                   <td>libexif</td>
+                   <td>2007-01-09</td></tr>
+<tr>
+                   <td>rPath</td>
+                   <td><a href="/Articles/264096/">rPSA-2008-0006-1</a></td>
+                   <td>libexif</td>
+                   <td>2008-01-04</td></tr>
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/263479/">200712-15</a></td>
+                   <td>libexif</td>
+                   <td>2007-12-29</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/263000/">FEDORA-2007-4667</a></td>
+                   <td>libexif</td>
+                   <td>2007-12-20</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/262704/">RHSA-2007:1165-01</a></td>
+                   <td>libexif</td>
+                   <td>2007-12-19</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/263001/">FEDORA-2007-4608</a></td>
+                   <td>libexif</td>
+                   <td>2007-12-20</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262719/">Comments (none posted)</a>
+<p>
+<a name="262714"></a><h3 class="SummaryHL">libgd2: buffer overflow</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">libgd2</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-3996">CVE-2007-3996</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 19, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">October 13, 2009</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>The GD library does not perform proper bounds checking when creating images; as a result, an attacker could, via crafted input, potentially execute arbitrary code.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Mandriva</td>
+                   <td><a href="/Articles/356671/">MDVSA-2009:264</a></td>
+                   <td>gd</td>
+                   <td>2009-10-09</td></tr>
+<tr>
+                   <td>Ubuntu</td>
+                   <td><a href="/Articles/319228/">USN-720-1</a></td>
+                   <td>php5</td>
+                   <td>2009-02-12</td></tr>
+<tr>
+                   <td>Debian</td>
+                   <td><a href="/Articles/291198/">DSA-1613-1</a></td>
+                   <td>libgd2</td>
+                   <td>2008-07-22</td></tr>
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/267021/">SUSE-SA:2008:004</a></td>
+                   <td>php4, php5</td>
+                   <td>2008-01-29</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/256121/">RHSA-2007:0891-01</a></td>
+                   <td>PHP</td>
+                   <td>2007-10-25</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/255536/">RHSA-2007:0917-01</a></td>
+                   <td>PHP</td>
+                   <td>2007-10-23</td></tr>
+<tr>
+                   <td>Ubuntu</td>
+                   <td><a href="/Articles/262701/">USN-557-1</a></td>
+                   <td>libgd2</td>
+                   <td>2007-12-18</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262714/">Comments (none posted)</a>
+<p>
+<a name="262680"></a><h3 class="SummaryHL">mysql: privilege escalation</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">mysql</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6303">CVE-2007-6303</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 19, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">April 7, 2008</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>From the CVE entry: MySQL 5.0.x before 5.0.52, 5.1.x before 5.1.23, and 6.0.x before 6.0.4 does not update the DEFINER value of a view when the view is altered, which allows remote authenticated users to gain privileges via a sequence of statements including a CREATE SQL SECURITY DEFINER VIEW statement and an ALTER VIEW statement.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/276874/">200804-04</a></td>
+                   <td>mysql</td>
+                   <td>2008-04-06</td></tr>
+<tr>
+                   <td>Ubuntu</td>
+                   <td><a href="/Articles/276394/">USN-588-2</a></td>
+                   <td>USN-588-1 fixed</td>
+                   <td>2008-04-02</td></tr>
+<tr>
+                   <td>Ubuntu</td>
+                   <td><a href="/Articles/274324/">USN-588-1</a></td>
+                   <td>mysql-dfsg-5.0</td>
+                   <td>2008-03-19</td></tr>
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/268366/">SUSE-SR:2008:003</a></td>
+                   <td>java, nss_ldap, cairo, geronimo, moodle, SDL_image, python, mysql, nx, xemacs</td>
+                   <td>2008-02-07</td></tr>
+<tr>
+                   <td>Mandriva</td>
+                   <td><a href="/Articles/265997/">MDVSA-2008:017</a></td>
+                   <td>mysql</td>
+                   <td>2008-01-19</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/262705/">RHSA-2007:1157-01</a></td>
+                   <td>mysql</td>
+                   <td>2007-12-19</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262282/">FEDORA-2007-4465</a></td>
+                   <td>mysql</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262244/">FEDORA-2007-4471</a></td>
+                   <td>mysql</td>
+                   <td>2007-12-15</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262680/">Comments (none posted)</a>
+<p>
+<a name="262153"></a><h3 class="SummaryHL">portage: information disclosure</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">portage</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6249">CVE-2007-6249</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 14, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">December 19, 2007</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>Mike Frysinger reported that the "etc-update" utility uses temporary
+files with the standard umask, which results in the files being
+world-readable when merging configuration files in a default setup.  A local attacker could access sensitive information when configuration
+files are being merged.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/262147/">200712-11</a></td>
+                   <td>portage</td>
+                   <td>2007-12-13</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262153/">Comments (none posted)</a>
+<p>
+<a name="262540"></a><h3 class="SummaryHL">squid: denial of service</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">squid</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6239">CVE-2007-6239</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 18, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">March 25, 2009</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>A flaw was found in the way squid stored HTTP headers for cached objects
+in system memory. An attacker could cause squid to use additional memory,
+and trigger high CPU usage when processing requests for certain cached
+objects, possibly leading to a denial of service.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/325386/">200903-38</a></td>
+                   <td>squid</td>
+                   <td>2009-03-24</td></tr>
+<tr>
+                   <td>Debian</td>
+                   <td><a href="/Articles/302862/">DSA-1646-2</a></td>
+                   <td>squid</td>
+                   <td>2008-10-11</td></tr>
+<tr>
+                   <td>Debian</td>
+                   <td><a href="/Articles/302181/">DSA-1646-1</a></td>
+                   <td>squid</td>
+                   <td>2008-10-07</td></tr>
+<tr>
+                   <td>Mandriva</td>
+                   <td><a href="/Articles/288963/">MDVSA-2008:134</a></td>
+                   <td>squid</td>
+                   <td>2007-07-04</td></tr>
+<tr>
+                   <td>Ubuntu</td>
+                   <td><a href="/Articles/277993/">USN-601-1</a></td>
+                   <td>squid</td>
+                   <td>2008-04-14</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/277241/">RHSA-2008:0214-01</a></td>
+                   <td>squid</td>
+                   <td>2008-04-08</td></tr>
+<tr>
+                   <td>Debian</td>
+                   <td><a href="/Articles/267979/">DSA-1482-1</a></td>
+                   <td>squid</td>
+                   <td>2008-02-05</td></tr>
+<tr>
+                   <td>Ubuntu</td>
+                   <td><a href="/Articles/264623/">USN-565-1</a></td>
+                   <td>squid</td>
+                   <td>2008-01-09</td></tr>
+<tr>
+                   <td>Gentoo</td>
+                   <td><a href="/Articles/264618/">200801-05</a></td>
+                   <td>squid</td>
+                   <td>2008-01-09</td></tr>
+<tr>
+                   <td>SuSE</td>
+                   <td><a href="/Articles/264470/">SUSE-SR:2008:001</a></td>
+                   <td>libexiv2 dvips libsndfile squid rsync clamav xen</td>
+                   <td>2008-01-09</td></tr>
+<tr>
+                   <td>Mandriva</td>
+                   <td><a href="/Articles/264095/">MDVSA-2008:002</a></td>
+                   <td>squid</td>
+                   <td>2007-01-04</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262275/">FEDORA-2007-4170</a></td>
+                   <td>squid</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262263/">FEDORA-2007-4161</a></td>
+                   <td>squid</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Red Hat</td>
+                   <td><a href="/Articles/262535/">RHSA-2007:1130-01</a></td>
+                   <td>squid</td>
+                   <td>2007-12-18</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262540/">Comments (none posted)</a>
+<p>
+<a name="262155"></a><h3 class="SummaryHL">wpa_supplicant: stack-based buffer overflow</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">wpa_supplicant</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"><a href="http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6025">CVE-2007-6025</a>
+                </td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 14, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">December 19, 2007</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>A stack-based buffer overflow in driver_wext.c in wpa_supplicant 0.6.0 allows remote attackers to cause a denial of service (crash) via crafted TSF data.
+</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Mandriva</td>
+                   <td><a href="/Articles/262149/">MDKSA-2007:245</a></td>
+                   <td>wpa_supplicant</td>
+                   <td>2007-12-13</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262155/">Comments (1 posted)</a>
+<p>
+<a name="262677"></a><h3 class="SummaryHL">Xfce: buffer overflows</h3>
+<table cellpadding=3>
+<tr><td valign="top"><b>Package(s)</b>:</td><td valign="top">xfce4</td>
+                     <td valign="top"><b>CVE&nbsp;#(s)</b>:</td><td valign="top"></td></tr>
+                     <tr><td valign="top"><b>Created</b>:</td><td valign="top">December 19, 2007</td>
+                     <td valign="top"><b>Updated</b>:</td><td valign="top">December 19, 2007</td></tr>
+                     <tr><td valign="top"><b>Description</b>:</td>
+               <td valign="top" colspan=3>The Xfce desktop contains a number of buffer overflow vulnerabilities; they have been fixed in the <a href="http://www.xfce.org/documentation/changelogs/4.4.2">4.4.2 release</a>.</td></tr>
+               <tr><td valign="top"><b>Alerts</b>:</td>
+               <td valign="top" colspan=3>
+               <table cellpadding=1 class="OddEven">
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262287/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-panel</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262280/">FEDORA-2007-4368</a></td>
+                   <td>exo</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262259/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-appfinder</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262256/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-notes-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262254/">FEDORA-2007-4385</a></td>
+                   <td>libxfce4mcs</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262252/">FEDORA-2007-4385</a></td>
+                   <td>thunar-volman</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262251/">FEDORA-2007-4385</a></td>
+                   <td>gtk-xfce-engine</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262250/">FEDORA-2007-4385</a></td>
+                   <td>xfprint</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262249/">FEDORA-2007-4385</a></td>
+                   <td>exo</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262296/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-icon-theme</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262248/">FEDORA-2007-4385</a></td>
+                   <td>orage</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262295/">FEDORA-2007-4368</a></td>
+                   <td>xfdesktop</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262247/">FEDORA-2007-4385</a></td>
+                   <td>Terminal</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262246/">FEDORA-2007-4385</a></td>
+                   <td>xfwm4</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262293/">FEDORA-2007-4368</a></td>
+                   <td>xfce-utils</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262245/">FEDORA-2007-4385</a></td>
+                   <td>Thunar</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262292/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-weather-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262291/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-mixer</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262243/">FEDORA-2007-4385</a></td>
+                   <td>xfce-utils</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262290/">FEDORA-2007-4368</a></td>
+                   <td>thunar-volman</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262242/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-sensors-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262241/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-modemlights-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262288/">FEDORA-2007-4368</a></td>
+                   <td>libxfce4util</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262240/">FEDORA-2007-4385</a></td>
+                   <td>xfwm4-themes</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262239/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-panel</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262286/">FEDORA-2007-4368</a></td>
+                   <td>xfce-mcs-plugins</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262238/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-cpugraph-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262285/">FEDORA-2007-4368</a></td>
+                   <td>libxfce4mcs</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262237/">FEDORA-2007-4385</a></td>
+                   <td>xfdesktop</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262284/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-notes-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262236/">FEDORA-2007-4385</a></td>
+                   <td>libxfce4util</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262283/">FEDORA-2007-4368</a></td>
+                   <td>xfwm4</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262235/">FEDORA-2007-4385</a></td>
+                   <td>libxfcegui4</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262281/">FEDORA-2007-4368</a></td>
+                   <td>libxfcegui4</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262279/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-places-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262278/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-cpugraph-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262277/">FEDORA-2007-4368</a></td>
+                   <td>gtk-xfce-engine</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262276/">FEDORA-2007-4368</a></td>
+                   <td>mousepad</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262274/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-session</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262273/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-modemlights-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262272/">FEDORA-2007-4368</a></td>
+                   <td>Thunar</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262271/">FEDORA-2007-4368</a></td>
+                   <td>orage</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262270/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-appfinder</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262269/">FEDORA-2007-4368</a></td>
+                   <td>xfwm4-themes</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262268/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-sensors-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262267/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-mixer</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262266/">FEDORA-2007-4385</a></td>
+                   <td>xfce-mcs-plugins</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262265/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-icon-theme</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262264/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-session</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262262/">FEDORA-2007-4385</a></td>
+                   <td>mousepad</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262261/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-fsguard-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262260/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-weather-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262258/">FEDORA-2007-4385</a></td>
+                   <td>xfce-mcs-manager</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262257/">FEDORA-2007-4385</a></td>
+                   <td>xfce4-places-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262297/">FEDORA-2007-4368</a></td>
+                   <td>xfce4-fsguard-plugin</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262294/">FEDORA-2007-4368</a></td>
+                   <td>xfce-mcs-manager</td>
+                   <td>2007-12-15</td></tr>
+<tr>
+                   <td>Fedora</td>
+                   <td><a href="/Articles/262289/">FEDORA-2007-4368</a></td>
+                   <td>xfprint</td>
+                   <td>2007-12-15</td></tr>
+</table>
+</table>
+<p><a href="/Articles/262677/">Comments (none posted)</a>
+<p>
+</div>
+<p>
+<b>Page editor</b>: Jake Edge<br>
+<b>Next page</b>:
+                  <a href="/Articles/262091/">Kernel development&gt;&gt;</a><br>
+                  
+</main></div> <!-- ArticleText -->
+</div> <!-- middlecolumn -->
+<div class="rightcol not-print">
+<!-- no side ad served -->
+</div>
+</div> <!-- maincolumn -->
+
+            <br clear="all">
+            <center>
+            <P>
+            <span class="ReallySmall">
+            Copyright &copy; 2007, Eklektix, Inc.<BR>
+            
+            Comments and public postings are copyrighted by their creators.<br>
+            Linux  is a registered trademark of Linus Torvalds<br>
+            </span>
+            </center>
+            
+            </body></html>

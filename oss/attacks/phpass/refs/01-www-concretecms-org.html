@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="preconnect" href="https://www.google-analytics.com">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--suppress HtmlUnknownTarget -->
+    <link rel="stylesheet" type="text/css" href="/packages/concrete_cms_theme/themes/concrete_cms/css/main.css"/>
+    
+<title>Supply Chain Hack - phpass repo-jacking</title>
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<meta name="description" content="We are normally informed about supply chain hacks like this one from sources such as US-CERT (Homeland Security), DoD ARCYBER, SANS and the like. Official sources like these are important to follow to stay current, but yesterday we saw one happen more or less in real time."/>
+<meta name="generator" content="Concrete CMS"/>
+<link rel="shortcut icon" href="https://www.concretecms.org/application/files/4416/2466/0946/favicon-32x32.png" type="image/x-icon"/>
+<link rel="icon" href="https://www.concretecms.org/application/files/4416/2466/0946/favicon-32x32.png" type="image/x-icon"/>
+<script type="text/javascript">
+    var CCM_DISPATCHER_FILENAME = "/index.php";
+    var CCM_CID = 3006;
+    var CCM_EDIT_MODE = false;
+    var CCM_ARRANGE_MODE = false;
+    var CCM_IMAGE_PATH = "/concrete/images";
+    var CCM_APPLICATION_URL = "https://www.concretecms.org";
+    var CCM_REL = "";
+    var CCM_ACTIVE_LOCALE = "en_US";
+    var CCM_USER_REGISTERED = false;
+</script>
+
+<link href="/concrete/css/fontawesome/all.css?ccm_nocache=11dd19ce36fe41724d46bec6d428416413353c71" rel="stylesheet" type="text/css" media="all">
+<script type="text/javascript" src="/concrete/js/jquery.js?ccm_nocache=11dd19ce36fe41724d46bec6d428416413353c71"></script>
+<link href="/concrete/css/features/social/frontend.css?ccm_nocache=11dd19ce36fe41724d46bec6d428416413353c71" rel="stylesheet" type="text/css" media="all">
+<meta name="google-site-verification" content="0mC7iGqL6NNK_yzSBhVrGNt9q_xiorVvRqR8p6BFwqw" />
+
+<style>
+.fa-linkedin-square::before {
+    content: "\f08c";
+}
+</style>
+<!-- Matomo Tag Manager -->
+<!-- Matomo Tag Manager -->
+<script>
+  var _mtm = window._mtm = window._mtm || [];
+  _mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
+  (function() {
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src='https://analytics.portlandlabs.com/js/container_ZvPRl4tO.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Tag Manager -->
+    
+<meta property='og:title' content='Supply Chain Hack - phpass repo-jacking' />
+<meta property='og:url' content='https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking' />
+<meta property='og:description' content='We are normally informed about supply chain hacks like this one from sources such as US-CERT (Homeland Security), DoD ARCYBER, SANS and the like. Official sources like these are important to follow to stay current, but yesterday we saw one happen more or less in real time.' />
+<meta property='og:type' content='website' />
+<meta property='og:image' content='https://www.concretecms.org/application/files/1416/5350/7967/Security_Announcement.png' />
+    <script type="text/javascript">
+        var CCM_SECURITY_TOKEN = '1786492079:c6b794cb43e2bd20c9d8790bb42f3ca8';    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<script class="disclosure" role="template" type='text/template'>
+    <div class='disclosure-container ccm-ui'>
+        <div class='disclosure'>
+            <div>
+                <p>
+                    This website stores cookies on your computer. These cookies are used to improve
+                    your website experience and provide more personalized services to you, both on this website and through
+                    other media. To find out more about the cookies we use, see our <a href='https://www.concretecms.com/about/legal/privacy-policy' target='_blank'>Privacy Policy</a>.
+                </p>
+            </div>
+            <button class='ack btn btn-primary '>Accept</button>
+        </div>
+    </div>
+</script>
+
+<div id="ccm-loading-screen" style="display: none">
+    <div class="loading-wrapper">
+        <div class="loader"></div>
+    </div>
+</div>
+
+<div class="ccm-page ccm-page-id-3006 page-type-blog-entry page-template-blog-entry ccm-dark-mode">
+    <header class=" ">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <div class="navbar-inner">
+                    <div class="navbar-brand">
+                        <div class="header-site-title d-lg-none d-xl-block">
+                                                            <a href="https://www.concretecms.org">
+                                    <img src="/packages/concrete_cms_theme/themes/concrete_cms/images/logo_text_dark_mode.svg" alt="" class="img-fluid">
+                                </a>
+                                                    </div>
+                        <div class="header-site-title-logo-only d-none d-lg-block d-xl-none">
+                                                            <a href="https://www.concretecms.org">
+                                    <img src="/packages/concrete_cms_theme/themes/concrete_cms/images/logo_dark_mode.svg" alt="" class="img-fluid">
+                                </a>
+                                                    </div>
+                    </div>
+
+                    <a href="https://www.concretecms.com/search" class="d-block d-lg-none"
+                       id="ccm-mobile-search-btn">
+                        <i class="fas fa-search"></i>
+                    </a>
+
+                    <button id="ccm-toggle-mobile-nav"
+                            class="hamburger hamburger--spin navbar-toggler d-block d-lg-none"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="hamburger-box">
+                        <span class="hamburger-inner"></span>
+                    </span>
+                    </button>
+                </div>
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <div id="ccm-desktop-nav" class="header-navigation ms-auto">
+                        
+<ul class="nav navbar-nav navbar-right">
+
+            <li class="nav-item dropdown">
+            <a href="https://www.concretecms.org" class="nav-link">
+                About            </a>
+
+                            <ul class="dropdown-menu">
+                                            <li class="nav-item">
+                            <a href="https://www.concretecms.org/vision" target="_self" class="nav-link">
+                                Vision                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://www.concretecms.org/security" target="_self" class="nav-link">
+                                Security                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://www.concretecms.org/about/project-news/core-releases" target="_self" class="nav-link">
+                                Releases                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://www.concretecms.org/town-halls" target="_self" class="nav-link">
+                                Town Halls                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://www.concretecms.org/open-source-license " target="_self" class="nav-link">
+                                License                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://www.concretecms.org/get-involved" target="_self" class="nav-link">
+                                Get Involved                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://www.concretecms.org/about/project-news" target="_self" class="nav-link">
+                                Project News                            </a>
+                        </li>
+                                    </ul>
+            
+        </li>
+            <li class="nav-item dropdown">
+            <a href="https://www.concretecms.com/get-started" class="nav-link">
+                Get Started            </a>
+
+                            <ul class="dropdown-menu">
+                                            <li class="nav-item">
+                            <a href="https://www.concretecms.com/hosting" target="_self" class="nav-link">
+                                Hosting                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://www.concretecms.org/download" target="_self" class="nav-link">
+                                Download                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://documentation.concretecms.org/developers/introduction/installing-concrete-cms" target="_self" class="nav-link">
+                                Installation                            </a>
+                        </li>
+                                    </ul>
+            
+        </li>
+            <li class="nav-item dropdown">
+            <a href="https://www.concretecms.com/extensions" class="nav-link">
+                Extensions            </a>
+
+                            <ul class="dropdown-menu">
+                                            <li class="nav-item">
+                            <a href="https://market.concretecms.com/marketplace/addons" target="_self" class="nav-link">
+                                Add-ons                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://market.concretecms.com/marketplace/themes" target="_self" class="nav-link">
+                                Themes                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://www.concretecms.com/extensions/related-projects" target="_self" class="nav-link">
+                                Related Projects                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://translate.concretecms.org/translate/package/concrete5" target="_self" class="nav-link">
+                                Translations                            </a>
+                        </li>
+                                    </ul>
+            
+        </li>
+            <li class="nav-item">
+            <a href="https://documentation.concretecms.org" class="nav-link">
+                Documentation            </a>
+
+            
+        </li>
+            <li class="nav-item dropdown">
+            <a href="https://www.concretecms.com/community" class="nav-link">
+                Community            </a>
+
+                            <ul class="dropdown-menu">
+                                            <li class="nav-item">
+                            <a href="https://forums.concretecms.org" target="_self" class="nav-link">
+                                Forums                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://www.concretecms.com/extensions/translate" target="_self" class="nav-link">
+                                Translate                            </a>
+                        </li>
+                                            <li class="nav-item">
+                            <a href="https://community.concretecms.com/members/directory" target="_self" class="nav-link">
+                                Search Members                            </a>
+                        </li>
+                                    </ul>
+            
+        </li>
+    
+    <li class="d-none d-lg-block nav-item"><a href="https://www.concretecms.com/search" title="Search" class="nav-link"><i class="fas fa-search"></i></a></li>
+            <li class="nav-item">
+            <a href="/oidc/sso/login?oidcpll=%2Fabout%2Fproject-news%2Fsecurity%2Fsupply-chain-hack-phpass-repo-jacking" class="nav-link">
+                <i class="fa fa-user" title="Login"></i>            </a>
+
+            
+        </li>
+    </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+            </header>
+
+            <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="breadcrumb-navigation">
+                                            </div>
+                </div>
+            </div>
+        </div>
+    
+<main>
+        <div class="page-header">
+        
+
+<div class="container"><div class="row"><div class="col-md-12">    
+
+<div class="ccm-search-block-blog-header d-flex">
+        <h4 class="mb-0 me-auto"><a href="https://www.concretecms.org/about/blog">Blog</a></h4>
+    
+    <div class="ms-auto">
+        <form action="https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking" method="get" class="d-flex ccm-search-block-form">
+        <input name="query" type="text" value="" class="form-control" /> <input name="submit" type="submit" value="Search Blog" class="btn btn-secondary ccm-search-block-submit" />        </form>
+    </div>
+</div>
+
+<hr>
+</div></div></div>    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-sm-4">
+                
+
+    <div class="ccm-block-autonav"><ul class="nav flex-column"><li class="nav-item"><a href="https://www.concretecms.org/about/project-news/security" target="_self" class="nav-link nav-path-selected">Security</a></li><li class="nav-item"><a href="https://www.concretecms.org/about/project-news/town-halls" target="_self" class="nav-link">Town Halls</a></li><li class="nav-item"><a href="https://www.concretecms.org/about/project-news/core-releases" target="_self" class="nav-link">Core Releases</a></li></ul></div>
+
+
+    
+<div class="ccm-block-next-previous">
+            <div class="ccm-block-next-previous-header">
+            <h5>Previous</h5>
+        </div>
+                <p class="ccm-block-next-previous-previous-link">
+            <a href="https://www.concretecms.org/about/project-news/security/security-support-concrete-cms-85x-continues-through-end-2022">Security Support for Concrete CMS 8.5.x continues through end of 2022</a>        </p>
+                <div class="ccm-block-next-previous-header">
+            <h5>Next</h5>
+        </div>
+                <p class="ccm-block-next-previous-next-link">
+            <a href="https://www.concretecms.org/about/project-news/security/new-privacy-policy-concrete-cms-hosting">New Privacy Policy for Concrete CMS Hosting</a>        </p>
+        </div>
+
+
+
+    
+<div class="ccm-block-share-this-page mt-5">
+
+    <hr>
+    
+    <ul class="list-inline">
+        </ul>
+</div>
+
+            </div>
+            <div class="col-lg-8 col-lg-offset-1 col-sm-8 col-content">
+                
+
+    <div class="ccm-block-page-title-byline">
+    <h1 class="page-title">Supply Chain Hack - phpass repo-jacking</h1>
+
+    <span class="page-date">
+    May 25, 2022    </span>
+
+        <span class="page-author">
+                by
+
+                    jessicadunbar            </span>
+    </div>
+
+
+
+    <picture><!--[if IE 9]><video style='display: none;'><![endif]--><!--[if IE 9]></video><![endif]--><img src="/application/files/1416/5350/7967/Security_Announcement.png" alt="Security Announcement with Concrete CMS logo" class="ccm-image-block img-fluid bID-11939" width="1768px" height="980px"></picture>
+
+                
+
+    <p>We are normally informed about supply chain hacks like this one from sources such as US-CERT (Homeland Security), DoD ARCYBER, SANS and the like. Official sources like these are important to follow to stay current, but yesterday we saw one happen more or less in real time.</p>
+
+                
+
+    <p>On May 24th, 2022, we heard about an emerging issue and scrambled to investigate a phpass exploit that was only lurking on <a href="https://twitter.com/seldaek/status/1529027612332335104" target="_blank">Twitter</a> and <a href="https://www.reddit.com/r/Python/comments/uwhzkj/i_think_the_ctx_package_on_pypi_has_been_hacked/" target="_blank">Reddit</a>. This supply chain attack injected malicious code which sends two hardcoded AWS environment variables to a <a href="https://www.heroku.com/" target="_blank">heroku</a> app where the attacker can mine them.</p>
+
+<p>What follows is a quick rundown of what we’ve learned about this exploit as well as how you can determine if you are affected and remediate if necessary.</p>
+
+<p>In August 2021, hautelook's PHPass - a library that implemented portable password hashing - was suddenly deleted from GitHub along with the hautelook organization without any notice or any word from the original developers. Many projects that relied on this functionality were forced to quickly find a replacement - <a href="https://github.com/concretecms/phpass-compat" target="_blank">including </a>Concrete - while other projects that hadn't been updated since August likely still require this library to this day.</p>
+
+<p>Packagist.com is the main repository of libraries that are installable via Composer, a tool for PHP that lets developers automatically include specific versions of dependencies. PHPass was registered in Packagist and set to auto-update any time the GitHub repository changes, even long after the PHPass repository and hautelook organization were deleted.</p>
+
+<p>On May 19th, 2022 a malicious user discovered the hautelook organization name was no longer restricted and available for registration. This user created a new account with the name "hautelook" and created a repository named "phpass". Since this repository had the exact same URL as the original official PHPass that was deleted back in August, Packagist was happy to begin tracking the repository as if it had never been deleted.</p>
+
+<p>On that same day, around 7:00am PST, that malicious user committed a copy of the old official PHPass repository, added some code to collect AWS credentials, and tagged a release that included this malicious code. Almost immediately, Packagist noticed the change and began serving the new release as if it were from the original hautelook PHPass repository deleted months ago.</p>
+
+<p>On May 24th, 2022, administrators of Packagist <a href="https://twitter.com/seldaek/status/1529027612332335104?s=20&t=aiSR2sWunnfwA6MWnpvzgw" target="_blank">were alerted to</a> the malicious release and took steps to resolve the issue by deleting the malicious version and sending people to a different fork of PHPass which had no malicious code. In order to be affected by this, a developer would have had to not update dependencies for the entire time the PHPass package was deleted, then suddenly update dependencies between May 19th and May 24th. Additionally, the malicious code only checked for two hardcoded environment variables "AWS_ACCESS_KEY_ID" and "AWS_SECRET_ACCESS_KEY", so the attack would only be effective against stacks configured with both of these environment variables.</p>
+
+<p>With the web being powered by many different libraries that include one another, you can think of building software as a supply chain of sorts. Very few (if any) developers write their code from absolute scratch. Including the latest versions of libraries required to make their software work is important, and that’s what Packagist and Composer let you easily do.</p>
+
+<p>The challenge with this type of automated build process is, if a library becomes compromised, it can quickly work its way into thousands of different web applications without being noticed which is what happened here. In this specific case, systems are only compromised if they run `composer update` and only if they did NOT run `composer update` at all in the prior 9 months but DID run it in the 5 days the issue was present</p>
+
+<p>We recommend updating your phpass if you've updated this package during the affected 5 days, and consider replacing PHPass with the built in password hashing functionality in PHP.</p>
+
+<p>We believe Packagist and GitHub could both take steps to prevent this sort of attack in the future. If Packagist were to disable auto-update when it detects a repository has been deleted, or if GitHub were to make it more difficult to take over account names and possible to rename accounts without the potential for a third party taking over the account, this sort of incident could have been avoided.</p>
+
+<p>If you happen to find any vulnerabilities in the Concrete CMS core (whether they are being actively exploited or not), please report them to <a href="https://hackerone.com/concretecms?type=team" target="_blank">Concrete CMS’ HackerOne program</a> or, if unable to do so, via <a href="mailto:security@concretecms.org" target="_blank">security@concretecms.org</a>. Concrete’s vulnerability management program triages all reports and remediates them according to the CVSS v 3.1 score the Concrete security team assigns. Since we are an open-source project, you are highly encouraged to submit a pull request to fix any vulnerability you report!   </p>
+
+<p><em>We instituted a CVE program with the release of Concrete CMS 8.5.4 and are committed to obtaining CVEs for each Concrete vulnerability remediated for supported Concrete versions. </em></p>
+
+
+            </div>
+        </div>
+    </div>
+
+    </main>
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg">
+                <nav class="nav footer-nav-utility">
+                    <a class="nav-link" href="https://www.concretecms.org/security">Security</a>
+                    <a class="nav-link" href="https://www.concretecms.com/about/legal/terms-use">Terms of Use</a>
+                    <a class="nav-link" href="https://www.concretecms.com/about/legal/privacy-policy">Privacy Policy</a>
+                    <a class="nav-link" href="https://www.concretecms.com/about/contact-us">Contact</a>
+                </nav>
+            </div>
+
+            <div class="col-lg">
+                <div class="text-center text-lg-end">
+                    <div class="footer-social">
+                        
+
+    
+<div id="ccm-block-social-links30" class="ccm-block-social-links">
+    <ul class="list-inline">
+                <li class="list-inline-item">
+                <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/concrete_cms"
+                    aria-label="X"><svg id="icon-twitter-x" width="16" height="16" viewBox="0 0 300 300" version="1.1" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M178.57 127.15 290.27 0h-26.46l-97.03 110.38L89.34 0H0l117.13 166.93L0 300.25h26.46l102.4-116.59 81.8 116.59h89.34M36.01 19.54H76.66l187.13 262.13h-40.66"/></svg></a>
+            </li>
+                    <li class="list-inline-item">
+                <a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/c/concretecmsofficial/"
+                    aria-label="Youtube"><i class="fab fa-youtube" aria-hidden="true" title="Youtube"></i></a>
+            </li>
+                    <li class="list-inline-item">
+                <a target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/concretecms"
+                    aria-label="Facebook"><i class="fab fa-facebook" aria-hidden="true" title="Facebook"></i></a>
+            </li>
+                    <li class="list-inline-item">
+                <a target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/company/concretecms"
+                    aria-label="LinkedIn"><i class="fab fa-linkedin" aria-hidden="true" title="LinkedIn"></i></a>
+            </li>
+            </ul>
+</div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-lg">
+                <div class="text-center text-lg-start footer-site-title">
+                                            <a href="https://www.concretecms.org">
+                            <img src="/packages/concrete_cms_theme/themes/concrete_cms/images/logo_text_dark_mode.svg" alt=""
+                                 class="img-fluid">
+                        </a>
+                                        </a>
+                </div>
+            </div>
+
+            <div class="col-lg">
+                <div class="text-center text-lg-start">
+                    <div class="footer-language-switcher d-flex">
+
+                                            </div>
+                </div>
+            </div>
+
+            <div class="col-lg">
+                <div class="text-center text-lg-end">
+                    <div class="footer-legal">
+                        <p>
+                            <span class="sign">&copy;</span> PortlandLabs 2008-2026                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</footer>
+
+</div>
+      <script src="/packages/concrete_cms_auth/build/assets/login-CCh9iK8h.js"></script>
+<script async>check_login("https://community.concretecms.com", "https://www.concretecms.org/oidc/sso/login", "https://www.concretecms.org/oidc/sso/logout?oidcpll=%2Fabout%2Fproject-news%2Fsecurity%2Fsupply-chain-hack-phpass-repo-jacking&token=1786492079%3A5f3b939ce2c76e6ac8bf4d9f8b043a3b", window.CCM_USER_REGISTERED)</script>
+<script async>update_logout_links("https://www.concretecms.org/oidc/sso/logout?oidcpll=%2Fabout%2Fproject-news%2Fsecurity%2Fsupply-chain-hack-phpass-repo-jacking&token=1786492079%3A5f3b939ce2c76e6ac8bf4d9f8b043a3b")</script>
+<script defer>$(function() { Concrete.event.bind("PanelOpen", () => update_logout_links("https://www.concretecms.org/oidc/sso/logout?oidcpll=%2Fabout%2Fproject-news%2Fsecurity%2Fsupply-chain-hack-phpass-repo-jacking&token=1786492079%3A5f3b939ce2c76e6ac8bf4d9f8b043a3b")) })</script>
+<script type="text/javascript" src="/concrete/js/vue.js?ccm_nocache=11dd19ce36fe41724d46bec6d428416413353c71"></script>
+<script type="text/javascript" src="/concrete/js/bootstrap.js?ccm_nocache=52ded96a6b1886525e4660b539052064efff4f41"></script>
+<script type="text/javascript" src="/concrete/js/moment.js?ccm_nocache=11dd19ce36fe41724d46bec6d428416413353c71"></script>
+<script type="text/javascript" src="/ccm/assets/localization/moment/js"></script>
+<script src="https://www.concretecms.org/community/js" defer></script>
+<!--suppress HtmlUnknownTarget -->
+<script type="text/javascript" src="/packages/concrete_cms_theme/themes/concrete_cms/js/main.js" defer></script>
+<script>
+    $(window).ready(function () {
+        if (window.self !== window.top) {
+            $(".login-page").addClass("is-popup")
+        }
+    });
+</script>
+</body>
+</html>

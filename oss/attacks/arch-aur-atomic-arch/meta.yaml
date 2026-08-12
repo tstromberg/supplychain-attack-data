@@ -1,0 +1,187 @@
+- id: arch-aur-atomic-arch
+  title: Orphaned AUR packages adopted and rewritten to steal credentials
+  campaigns:
+    - atomic-arch-2026
+  synopsis: >-
+    Starting 2026-06-11 attackers used the AUR's orphaned-package adoption process to take over
+    abandoned packages, then rewrote their PKGBUILDs to npm install atomic-lockfile during the
+    build. The Rust payload harvested credentials and loaded an eBPF rootkit.
+  story: |
+    Sonatype researchers disclosed on June 11, 2026 that attackers had begun taking
+    over abandoned packages in the Arch User Repository and rewriting their build
+    scripts to install a credential stealer. They named the campaign Atomic Arch.
+    Sonatype counted more than 20 hijacked packages that day. Community trackers
+    passed 400 within a day, and later estimates for the combined waves reached
+    roughly 1,500.
+
+    The AUR carries user-contributed build recipes rather than binaries, and it is
+    where Arch users get software that is not in the official repositories. Each
+    package is a `PKGBUILD` shell script that helpers like `yay` and `paru` run on
+    the installing machine. When a maintainer walks away, the package is marked
+    orphaned and any AUR account can adopt it through the site's normal process.
+    That is what the attackers used. No credential theft, no forged commits, no
+    compromised infrastructure. They requested packages that already had years of
+    accumulated trust, and the AUR handed them over.
+
+    The modified `PKGBUILD` files ran `npm install atomic-lockfile minimist chalk`
+    during the build, which kept the payload out of the script a cautious user
+    would actually read. A second wave on June 12 swapped in `js-digest` and
+    `lockfile-js`, the latter delivered through Bun. Sonatype tracked
+    `atomic-lockfile` as Sonatype-2026-003775 at CVSS 8.7 and the second-wave
+    packages as Sonatype-2026-003808.
+
+    The bundled Linux executable was written in Rust. It collected GitHub
+    credentials, SSH keys, HashiCorp Vault tokens, browser cookies, and session
+    material for Slack, Discord, Teams, and Telegram, checked for PTRACE to
+    frustrate debugging, and where it ran with root it installed an eBPF rootkit
+    that hid its processes, files, and network connections at the kernel level.
+    Truesec advised that any AUR package installed or updated after June 11 be
+    treated as suspect, that credentials be rotated, and that machines which built
+    an affected package with elevated privileges be reinstalled rather than
+    cleaned. AUR maintainers reverted the malicious commits, banned the accounts
+    involved, and published a checklist of affected packages. Arch's official
+    `core`, `extra`, and `multilib` repositories were untouched.
+  start_date: 2026-06-11T00:00:00.000Z
+  end_date: 2026-06-12T00:00:00.000Z
+  target:
+    name: Arch User Repository
+    kind: package_repository
+    website: https://aur.archlinux.org/
+  actor:
+    name: Unknown
+    kind: group
+  language: Rust
+  method:
+    cause: orphaned_package_takeover
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+      - credential_theft
+      - data_exfiltration
+      - backdoor
+  locations:
+    - uri: https://aur.archlinux.org/
+      role: distribution
+  indicators:
+    - kind: package
+      value: atomic-lockfile
+    - kind: package
+      value: js-digest
+    - kind: package
+      value: lockfile-js
+    - kind: package
+      value: nextfile-js
+    - kind: advisory
+      value: Sonatype-2026-003775
+    - kind: advisory
+      value: Sonatype-2026-003808
+    - kind: technique
+      value: eBPF rootkit hiding processes, files, and network connections
+    - kind: technique
+      value: PTRACE anti-debugging
+    - kind: technique
+      value: orphaned package adoption through the AUR stewardship process
+  notes:
+    - >-
+      Truesec and StepSecurity both name atomic-lockfile and js-digest as the rogue npm
+      packages the modified build scripts pulled, but neither publishes a hash for the AUR
+      side of the campaign. Only js-digest has a hashed record; atomic-lockfile has no OSV
+      entry, so no digest is recorded for it.
+    - >-
+      Arch published the affected package list as a shared note rather than a signed advisory.
+      The note is downloadable and names 1,924 packages; it is preserved verbatim under this
+      record's context directory with its URL, retrieval time, and digest, because a shared
+      editable note is not a durable citation.
+    - >-
+      The malicious commits themselves were not recoverable. Arch's cleanup force-pushed the
+      affected packages back to their pre-attack state, and a sample of affected repositories
+      cloned from aur.archlinux.org carries no commit from the attack window on any ref. The
+      AUR git server refuses to serve an unreferenced object, answering "not our ref", so a
+      commit cannot be pulled by SHA even if one were published. The archlinux/aur GitHub
+      mirror tracks current state, and Software Heritage holds no snapshot of these
+      repositories, so neither preserves the removed history. No source publishes the hashes.
+    - >-
+      The compromised trust boundary is the AUR package-adoption mechanism, not a maintainer
+      account. The attackers acquired ownership of orphaned but legitimate packages through the
+      site's documented process rather than by stealing credentials.
+    - >-
+      The injected npm and Bun packages atomic-lockfile, js-digest, lockfile-js, and nextfile-js
+      were created by the attackers and are out of scope as compromised projects. They are recorded
+      here as indicators.
+    - >-
+      Package counts vary by source and collection date. Sonatype initially counted more than 20,
+      community trackers exceeded 400 within a day, and estimates for the combined waves reached
+      roughly 1,500, against a community-consolidated list of 1,937 names that aggregates later
+      waves.
+    - >-
+      Reported attacker AUR accounts include krisztinavarga, franziskaweber, tobiaswesterburg,
+      ellenmyklebust, custodiatovar, and veramagalhaes. Published account lists have not been
+      consistent between sources and should be treated as provisional.
+    - >-
+      AUR packages carry upstream version numbers, and the attackers modified PKGBUILD build scripts
+      rather than publishing a versioned artifact. There is no malicious version identifier or
+      package digest to record; the affected unit is a git commit in each package's AUR repository.
+    - >-
+      Arch's official core, extra, and multilib repositories were not affected, as they carry review
+      requirements the AUR does not.
+  artifacts:
+    - id: aur-atomic-arch-packages
+      name: Hijacked AUR packages
+      ecosystem: aur
+      kind: package_build_script
+      start_date: 2026-06-11T00:00:00.000Z
+      end_date: 2026-06-12T00:00:00.000Z
+      locations:
+        - uri: https://aur.archlinux.org/
+          role: distribution
+      notes:
+        - >-
+          The affected unit is the PKGBUILD build script of each adopted package rather than a
+          versioned artifact. AUR packages carry package versions from upstream, so no meaningful
+          malicious version identifiers exist to record.
+        - >-
+          The affected releases were recorded as a wildcard rather than enumerated, so this record
+          asserts no version list.
+    - id: js-digest
+      name: js-digest
+      package: js-digest
+      ecosystem: npm
+      kind: source_archive
+      versions:
+        - 4.2.2
+      locations:
+        - uri: https://www.npmjs.com/package/js-digest/v/4.2.2
+          role: distribution
+      hashes:
+        - sha1:25dc63fac83bcc50520f9584e99fcea38ce538a2
+        - sha512:ee081ace3cf31a347f65e94056f97d06bcb41740cc0c795d67dede17720f94b06e4ba65334eded8e6f142ff7797d7657e53ccc1bf7591766026eb3eb2e07df5c
+      indicators:
+        - kind: file_sha256
+          value: lib/install-deps.mjs 7883bda1ff15425f2dbe622c45a3ae105ddfa6175009bbf0b0cad9bf5c79b316
+        - kind: file_sha256
+          value: package.json 7627d4750cfc64e08b9f1057a1d68cd9fc6e35d07fcf3aa7e456a326413a30c1
+      notes:
+        - >-
+          The malicious npm dependency the hijacked PKGBUILDs pulled during build. The
+          archive digests and the two payload file digests come from the OSSF
+          malicious-packages record MAL-2026-5912.
+  references:
+    - url: https://www.sonatype.com/blog/atomic-arch-npm-campaign-adds-malicious-dependency
+      title: Atomic Arch npm Campaign Adds Malicious Dependency - Sonatype
+    - url: https://www.stepsecurity.io/blog/400-aur-packages-hijacked-atomic-arch-campaign
+      title: >-
+        400+ AUR Packages Hijacked: What the "Atomic Arch" Campaign Means for Supply-Chain Security
+        - StepSecurity
+    - url: >-
+        https://www.truesec.com/hub/blog/supply-chain-attack-compromising-arch-linux-aur-packages-infostealer-rootkit
+      title: >-
+        Supply Chain Attack Compromising Arch Linux AUR Packages with Infostealer and Rootkit -
+        Truesec
+    - url: https://cybersecuritynews.com/arch-linux-aur-packages-compromised/
+      title: >-
+        400+ Arch Linux AUR Packages Compromised in a Supply Chain Attack Deploying Infostealers -
+        Cyber Security News
+    - url: https://safedep.io/ti/campaigns/atomic-arch/
+      title: Atomic Arch campaign - SafeDep Threat Intelligence

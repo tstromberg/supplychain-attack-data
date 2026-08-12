@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IronWorm backdoored Arweave ecosystem npm packages</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>IronWorm backdoored Arweave ecosystem npm packages</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> asteroiddao · <a href="https://www.npmjs.com/~asteroiddao" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-06-03 to 2026-06-05 (2 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> maintainer</div>
+    <div class="meta-item"><strong>Language:</strong> Rust</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, self_propagation, data_exfiltration, cryptocurrency_theft</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">JFrog found a Rust-built npm worm in 36 packages published from the compromised asteroiddao account, carrying an eBPF kernel rootkit and a Tor C2. It backdated commits across nine GitHub organizations and republished via npm trusted publishing.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>JFrog Security Research disclosed in early June 2026 that a self-propagating
+worm it named IronWorm had backdoored 36 npm packages, most of them in the
+Arweave and WeaveDB ecosystem, after compromising the `asteroiddao` publishing
+account. Unlike the JavaScript droppers that dominated npm attacks that year,
+IronWorm was a native Rust implant with a kernel-level rootkit.</p>
+    
+      <p>The delivery was conventional enough. A `preinstall` hook executed a 976 KB
+Linux ELF binary before dependency resolution finished. Everything after that
+was not. The binary was packed with a modified UPX stub carrying altered magic
+values, which defeats signature-based unpackers, and every internal string was
+encrypted with a key unique to its call site, so recovering one string does not
+help with the next. Bundled with it was an eBPF program that hid the malware&#39;s
+processes and network connections from the kernel&#39;s own accounting, and a Tor
+client that wrapped plain HTTP command-and-control traffic in an onion circuit.</p>
+    
+      <p>The collector targeted 86 environment variables and more than 20 credential
+file paths across AWS, GCP, Azure, Kubernetes, Docker, npm, and GitHub,
+together with a sweep for 2026-era AI provider keys covering Anthropic, OpenAI,
+Google Gemini, Cohere, Mistral, Groq, and xAI. Separate modules went after
+cryptocurrency wallets. JFrog noted that the operator had hardcoded his own
+wallet recovery phrase into the malware&#39;s skip list so that it would not rob
+him, which is how researchers came to have it.</p>
+    
+      <p>Propagation ran two ways. The worm committed binaries into victims&#39; GitHub
+repositories as build hooks, attributing the commits to &quot;claude&quot; so they read
+as AI tooling output, and it replaced GitHub Actions workflows with versions
+that exfiltrated `${{ toJSON(secrets) }}`, attributing those to bot identities
+such as `dependabot`. It then abused npm&#39;s trusted publishing through OIDC to
+release poisoned versions under the compromised developers&#39; names. JFrog
+counted 57 backdated commits across nine compromised GitHub organizations and
+said it could not match the implant, the rootkit, or the C2 tooling to any
+known family, indicating a custom-built operation.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>weavedb-lite</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.1.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:e9eb42231aa70d0f57491ce091c3fb7af96d8217</code><br><code>sha512:006c707483fafdc7fd5fe05add0f8171c0f8efa6029c17cb64aa09f3efc0ac963770e0083927abc665e6695d1fa2d78fbaf397e835db7caf92eb7c0efbbc6a0e</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-sdk-base</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.21.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:766facdb5f40c65471274232b9d756049f025ba9</code><br><code>sha512:ecea22f52bd98c48c9bb517ee6f7c6bde2da70c2c7b80cd982373f437b795531e46d2bfe3462931a2343d2c9825dbc9bc479c6fd29d52fcadba41ded22b07d84</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>test-weavedb-sdk</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>1.1.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:f6990792451a6153e343161b96aeb190433535c9</code><br><code>sha512:c5e3fb6229256d01c5c8ec840b51aba0537350e45b1e1257b91a6b63230162808e6d2655c289d1092ae52d3a3b9ca5286a003de15b1467435a01307d19ad9ed2</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-warp-contracts-plugin-deploy</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>1.0.11</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:d15388b7d98a6f0200ecb17a2298dcd873bc2a2c</code><br><code>sha512:f00efe9d048c0f0e9e156fe23a02a7e4418827b512fe8f849bd004a10a463811e1e34648bd3f9072e9a6ba8f9ee5746b95cf7281eb314a01254e8e8bcb4799d0</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>arnext-arkb</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.0.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:27b563ca40225feb4666da2e73d3055c9ade39da</code><br><code>sha512:4900851d9ba7746011303ebbc233654803a1f11af57cce5eba1d1f0c31783624ab135eb0ffe93a2933917fd100642b5b60479a6f17fef76be3106e477f198c5e</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-console</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.2.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:d7208c2353e066d1d2dbd77b375fabfcc463c213</code><br><code>sha512:f8ca8ea22acc92e63926bdfbfc4a0ec63c8bb91534869c3d8b39ad94db239e452ded7c6d5587ae58d8e48cf7ee2ad8f46c8f87b502e3a2f3f5b127821f5e5599</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>arnext</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.1.5</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:78cb8b76d6121346c161667b673a33fa6a63225b</code><br><code>sha512:c5e393a958ebd3ca5f4aacac02761e1166f9e15dbfc2e938615299f905470a9e4c0399f5d0221f57fa54a564f955f57f9bb4bf57771351e349fcbaf3e7c6cd59</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>roidjs</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.1.7</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:c8a1a35d0ba8916b045b311e5f7672bcd2c678b0</code><br><code>sha512:34c91c962dd8db7e218124b9ee97b6bb19834da3f1cba5e03c514465ed8148e266d87d76b5d1d55341e17cb1175e53f2974876ccb16ea16422ff4ebc44f87bc1</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-exm-sdk</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.7.4</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:aae92666ae06382901607ae2fd8bbe60917131ee</code><br><code>sha512:994314701f7baa63825c1c156405f700562cf0bf93e9a008529354f710e203c17389b9cfc5cd3a9c69961271fb2dd663af82760820e90f12e56ec94f2247cc26</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>create-arnext-app</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.0.10</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:c9df3b26b0e9e32780c61e586d26bd012ecee272</code><br><code>sha512:a4d94f043395567b3e01553de2ce8aee5d486dc239633be306f3025576cf7c64544ebde219134c8030f7a432a61621e08192618de593cf115c5113c2e48c4dfe</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-tools</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.45.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:7cce4b6e70f03a6ff203b01c4c01b5e50e79aff3</code><br><code>sha512:91f839b5f6888c25e5b0d7be30625f14501752b634abbae856e5c9a3f80408cb1f0c3e8c567b3199afa138dfcd8de75e328d17cf0dffa0478a8d4569761524ff</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>wdb-core</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.1.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>cwao-tools</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.3.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:266e73bc3a9903dbd58b0eb92aeb5c1fc4b2c1f8</code><br><code>sha512:72c70769336f770f02299f86da21235a98f65a73a274f0a798b2ae1c9cd5c1e40f59d4da41df22d36a22e290c3ae9f2308898b51023e8473ca5e7333c4e515f1</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>test-ajs</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.1.19</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:bb66f6af4d55eaffec7b88baa8a9335dfe234290</code><br><code>sha512:6c7acaee141f8293db1ea04e33914aa445948b076e5eec7d643f33a21381d7a97bf4fd65b1a79dbecada9aceb34efd05b459626fc173e234b7aa455f389e2d92</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>monade</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.0.7</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:24a75c4f932a8f5770058a450c7ef5d3c4bc2107</code><br><code>sha512:f8ab6e2ce6c65c57bde47a7e357e32134ed923b5fdb59529de480f633ecc67a709fc9811754f3310efc0413ea2cb42b3061015a09a2df1a3ae8f535410f225e0</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-exm-sdk-web</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.7.4</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:dfd03cd94d25b2d1dda6cdae469445fb432a91b2</code><br><code>sha512:a6bac08a231f0f08d68161e306f143921765815ff0832fa0e7b35e87ce0bfb0a2d0b28e2846e727394c791d5ed24f2dea8d0045ef078b72d24eb4b6e75aadcd4</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>testnpmnmp</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>1.0.21</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:e5fa91f4b94513e1bda934d32567270e8d27d97e</code><br><code>sha512:6db91529e6ab69ab0d0814aa0fe3a3331d893680b384d58645fae5acd961682cb5debe1208d407318575ce4a2fc957871261339572a92d4bea3ae4eb5e9bd660</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>warp-contracts-plugin-deploy-test</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>3.0.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:363f840495eb1045c5068359f30f2664828e4a32</code><br><code>sha512:f8530e4b0e35bbcec64b1abb28ccaf06853b7ea0011343cab0dd86279b3c9a78edd43216881d87d897c8e4eed727657e3dc802bf8721177e7be57a9a99d5cc7b</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>wdb-cli</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.1.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:d9df2cbb8a203d7f35e4985098b7ed096652c26a</code><br><code>sha512:ff1ed89cd460f68247adec82d3e468a4b0bd7749898294d687e01e139d468bb2ea18effb69e4251699e849236c77f246515aa4d2d03a6d85510da7f2f3afcb85</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>ai3</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.3.5</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:eb3825b7624233514ef934dcf5bf1e59ddd94e60</code><br><code>sha512:d3ab329ae51b64e5554b9aec1e238a2cfbcaee583cbac2fe62de8cef684eff45a757a507eee4c374f8adbfb7bfc43251d1704748713f69f72199242a1fcd4baf</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>cwao-units</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.8.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:535e79c05de7e50c70adba627bc649e8380ad243</code><br><code>sha512:1aca7cf35f898b9259021e9009f61e42f524bf281c18699b3f1fc6a068bbfa88ac5f9527a6e67cdf4a4fbd78d2c6e3279ef828a663686ebeb227543c5cd31d33</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>atomic-notes</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.5.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:39fe3c6cab7278043eff4cce01c75ba0deb48d0f</code><br><code>sha512:5da954d8eb478805edae5bfbe0b6380a176eb6e589decd80bef2a6820661b34d3de7eefc93fc99c1a7d29a9fea03a5e1764ab0569784b206b22576fa10e10071</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>cwao</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.5.6</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:a49a3c1b7ec66a7f5ae1931e889425359cd9ee6b4f5c562a02ba359bc1b0e1f2</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-client</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.45.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:e975e948e7d99f8399a762b0565af33b28e61a47</code><br><code>sha512:092ac7c479661b6422751aea586c66be21bf773e118266cb2a37fdb16fced6f6b73468b73e1702231c40d059b2c661cce025b54d474f455c190da3b47699eee8</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>wdb-sdk</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.1.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:6b42774d5bec9cc585516763c424ebe5fe2ff39b</code><br><code>sha512:499fcf113056df9df3f4c1ae77039776584099803d8894628c383995a75030d1e9d1d97c2143c2ed4d7e8c96a9236cfe295b1ff7a36ebfa117f4d36706f2281d</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-offchain</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.45.4</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:66563c31de0ffbe7ca3673cb0e42aa65fa054d67</code><br><code>sha512:6d726fc3392da9b04a3bc42f75df89f344b9c1d2dafb9e458499de146ceac96a7dd202050776a009270ce8b183fe606f22f5825d5c12a7026f93f3aa8d58ee5c</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>fpjson-lang</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.1.7</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:a3ccfcb005e6f2c8bb2dfe1863097026501727ce</code><br><code>sha512:9a629b49631712427f66137139a345f8fb31c9dee2cc6534b3217dd2a4f2c927a5495a0eeb58473025e03a78368878170eb6cf1a87fa05dfff06359ca2d1dbff</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-contracts</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.45.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:e1d4498e9ba6bb81e5005193276b692eb3f8453c</code><br><code>sha512:e0f0b1e417030bbf2e183b1f3166b6d0190daa95ec4a36d0e97017e29f2e17a61991e62d64c0c30604eb427471779f51d5ce2909e531a3c90493eafcbf7a2ca4</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-node-client</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.45.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:3165e4fc8e975f929832e00c38bf327794a7d3ea</code><br><code>sha512:2f172ee3fb65f7bf3ffa988d534a1c528d008771d734fb7fc50a6cd6d8700d7fc60bac6f873a2059dcfa9cababeb844431e249843163f46e0f6af90ec706a855</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>arjson</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.1.4</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:7afae58a05e930bbeaefda90a11b93e553af398b529c886c102a353f41865930</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>hbsig</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.3.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>zkjson</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.8.5</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:3dcae29780a4658bacb3e220abb7c95d877d627471d8d6799951716d2036c6ab</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>aonote</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.11.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:2ac42d68784d5ffe8978d3ad89677fb23b9ba0e5</code><br><code>sha512:0ae4b3a89562772ccb8dddcea58c15a0d8961e6309cbc53115df0f3b6f5fa9a54fcaf858659b7086863f18fe4d198170f6a39173d7f39d660220ff65a7e57e0f</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-base</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.45.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:6abbf29e0c887bb73f549a017ac697c7fc9c6d17</code><br><code>sha512:0d8b1810522444c95484b3115be1ccd5ad9472bf0a12a6099d0d5769466d7659a584b5bf6b199a45075b8f9df435b198e708e53e8781aaa998b6885e39e910b1</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-sdk-node</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.45.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:22bda32e43978bd4b4a3700530f3d9f331a1ff29</code><br><code>sha512:654a111fe3c7a730e6c0bcfd4e97fce17301ddb1b9b23f2a5377f7d8e4dd1c4bef1fa932355ef66d3fdcfc8eb746b6f66b5c8d09f9f132313b1b05264850b410</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>wao</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.41.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:ef2660abf9dccd9e5baad939c6cebf2e0b1a31b5</code><br><code>sha512:147ce45acaca02e3301fedcf443a9cf56af691af459b7cc86bdcf47bdeb53a223b60448a6749386c25a77b95cbe06a637303eb69a675c46b298899606c23ca36</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>weavedb-sdk</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-03<br>to 2026-06-05</td>
+          <td>
+            
+              <code>0.45.3</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:0c16ee8a8c1f5b51b01bce924e173030f032912d5b66f1a564fd636a67ddbf5f</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/~asteroiddao</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>malware_family:IronWorm</code></li>
+    
+      <li><code>technique:eBPF kernel rootkit hiding processes and network connections</code></li>
+    
+      <li><code>technique:Tor-tunnelled plain HTTP C2</code></li>
+    
+      <li><code>technique:modified UPX stub with altered magic values</code></li>
+    
+      <li><code>technique:GitHub Actions workflow replacement exfiltrating ${{ toJSON(secrets) }}</code></li>
+    
+      <li><code>commit_author:claude</code></li>
+    
+      <li><code>commit_author:dependabot</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://research.jfrog.com/post/iron-worm-shai-hulud-rustier-cousin/" target="_blank">IronWorm: Shai-Hulud&#39;s rustier cousin - JFrog Security Research</a></li>
+    
+      <li><a href="https://thehackernews.com/2026/06/ironworm-and-new-miasma-worm-variant.html" target="_blank">IronWorm and New Miasma Worm Variant Hit npm in Supply Chain Attacks - The Hacker News</a></li>
+    
+      <li><a href="https://www.darkreading.com/cyberattacks-data-breaches/rust-written-ironworm-npm-supply-chain" target="_blank">Rust-Written IronWorm Hits NPM Supply Chain - Dark Reading</a></li>
+    
+      <li><a href="https://safedep.io/ti/campaigns/ironworm/" target="_blank">IronWorm campaign - SafeDep Threat Intelligence</a></li>
+    
+      <li><a href="https://github.com/ossf/malicious-packages" target="_blank">OSSF malicious-packages database</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

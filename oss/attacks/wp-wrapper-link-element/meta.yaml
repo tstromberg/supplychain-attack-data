@@ -1,24 +1,24 @@
 - id: wp-wrapper-link-element
-  title: Wrapper Link Element plugin created backdoors
+  title: Wrapper Link Elementor plugin created backdoors
   campaigns:
   - wordpress-plugin-backdoor-2024
   synopsis: >-
-    Malicious code was injected directly into the Wrapper Link Element plugin repository on
+    Malicious code was injected directly into the Wrapper Link Elementor plugin repository on
     WordPress.org.
   story: |
-    Wrapper Link Element was another official WordPress.org plugin affected in the June 2024 campaign. The malicious code entered the trusted plugin channel, so the package looked like a normal update to site owners.
+    Wrapper Link Elementor was another official WordPress.org plugin affected in the June 2024 campaign. The malicious code entered the trusted plugin channel, so the package looked like a normal update to site owners.
 
     Wordfence listed versions 1.0.2 and 1.0.3 as infected. It noted that malicious code appeared removed later, but the available tag was 1.0.0, lower than the infected versions, making normal upgrade behavior awkward.
 
     The shared payload attempted administrator account creation, sent the new credentials to `94.156.79.8`, and injected SEO-spam JavaScript. That meant a site could be both backdoored and polluted with attacker-controlled footer content after a routine plugin update.
 
-    This record keeps the Wrapper Link Element version range separate from the other plugin artifacts. The version rollback detail matters because cleanup was not a simple upgrade-to-latest workflow at the time Wordfence published.
+    This record keeps the Wrapper Link Elementor version range separate from the other plugin artifacts. The version rollback detail matters because cleanup was not a simple upgrade-to-latest workflow at the time Wordfence published.
   start_date: 2024-06-21
   end_date: 2024-06-24
   target:
-    name: wp-wrapper-link-element
+    name: Wrapper Link Elementor
     kind: plugin
-    repo: https://wordpress.org/plugins/wrapper-link-element/
+    repo: https://wordpress.org/plugins/wrapper-link-elementor/
   actor:
     name: Third Party
     kind: group
@@ -33,20 +33,34 @@
     - account_takeover
     - defacement
     users: 0
+  indicators:
+  - kind: file_sha256
+    value: wrapper-link-elementor-r3106372-wrapper.php 3a1d54c12fb03d67d8143dfe5894dcf10236b288696509fd8e60e22b80bfe883
+  - kind: file_sha256
+    value: wrapper-link-elementor-r3106508-wrapper.php 8808363fd1caa976ee81dae0dc1bcb6b253d11cc355768fa32ef65850f21543c
   artifacts:
   - id: wp-wrapper-link-element
-    name: wp-wrapper-link-element
+    name: wrapper-link-elementor
+    package: wrapper-link-elementor
     ecosystem: wordpress
     kind: extension
-    repo: https://wordpress.org/plugins/wrapper-link-element/
+    repo: https://wordpress.org/plugins/wrapper-link-elementor/
     start_date: 2024-06-21
     end_date: 2024-06-24
     versions:
     - 1.0.2
     - 1.0.3
+    fixed_versions:
+    - 1.0.5
     locations:
-    - uri: https://wordpress.org/plugins/wrapper-link-element/
+    - uri: https://wordpress.org/plugins/wrapper-link-elementor/
       role: distribution
+    - uri: https://plugins.svn.wordpress.org/!svn/rvr/2847672/wrapper-link-elementor/trunk/wrapper.php
+      role: mirror
+    - uri: https://plugins.svn.wordpress.org/!svn/rvr/3106372/wrapper-link-elementor/trunk/wrapper.php
+      role: mirror
+    - uri: https://plugins.svn.wordpress.org/!svn/rvr/3106777/wrapper-link-elementor/trunk/wrapper.php
+      role: mirror
     indicators:
     - kind: ip
       value: 94.156.79.8
@@ -55,6 +69,9 @@
     - kind: user
       value: PluginAuth
     notes:
+    - Immutable SVN revision 3106372 is the first observed malicious source state and
+      declares version 1.0.2. Revision 2847672 is the preceding clean file, revision
+      3106508 is malicious 1.0.3, and revision 3106777 is clean version 1.0.5.
     - Wordfence reported that malicious code appeared removed later, but the latest tag
       was lower than the infected versions, so removal was recommended until a properly
       tagged safe release existed.
@@ -62,3 +79,7 @@
   - url: 
       https://www.wordfence.com/blog/2024/06/supply-chain-attack-on-wordpress-org-plugins-leads-to-5-maliciously-compromised-wordpress-plugins/
     title: Supply Chain Attack on WordPress.org Plugins Leads to 5 Maliciously Compromised WordPress Plugins
+  - url: https://cveawg.mitre.org/api/cve/CVE-2024-6297
+    title: CVE-2024-6297 record
+  - url: https://wpscan.com/vulnerability/2c9eb68a-bf19-42df-9c71-f85c440225bc/
+    title: Various Plugins - Injected Backdoor

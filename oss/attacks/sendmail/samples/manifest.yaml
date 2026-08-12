@@ -1,0 +1,106 @@
+schema_version: 1
+interpretation:
+  - >-
+    The clean 8.12.6 archive is the original same-version state restored by Sendmail; it is the
+    strongest comparator for the mutable FTP replacement.
+samples:
+  - artifact_id: sendmail
+    phase: before
+    classification: clean
+    version: 8.12.6
+    filename: sendmail.8.12.6.tar.gz
+    path: sendmail/before/sendmail.8.12.6.tar.gz
+    sha256: 02701c7cbb1ce5bdbcc6acb699ad562a5e048dd8446010217b327653d78f60be
+    size: 1867436
+    source:
+      url: https://ftp.sendmail.org/past-releases/sendmail.8.12.6.tar.gz
+      retrieved_at: '2026-08-09T12:23:31Z'
+      kind: official_distribution
+    verification:
+      status: exact
+      basis:
+        - contemporary_advisory_md5_73e18ea78b2386b774963c8472cbd309
+        - measured_sha256
+    notes:
+      - The official archive is the clean same-version original, not the trojanized FTP response.
+  - artifact_id: sendmail
+    phase: during
+    classification: malicious
+    version: 8.12.6
+    filename: sendmail-8.12.6-trojan-evidence.txt
+    path: sendmail/during/sendmail-8.12.6-trojan-evidence.txt
+    sha256: d00fcb3026ba7efb75ed2233cb64da2fe3be2706e1d10d0a1c582829c4e2c680
+    size: 12140
+    source:
+      url: https://www.exploit-db.com/raw/21919
+      retrieved_at: '2026-08-09T12:23:31Z'
+      kind: research_archive
+    verification:
+      status: payload_only
+      basis:
+        - securityfocus_incident_record
+        - decoded_payload_preserved
+        - source_diff_preserved
+        - measured_sha256
+    notes:
+      - This evidence preserves the decoded script and libsm/t-shm.c diff, not the original tarball.
+  - artifact_id: sendmail
+    phase: during
+    classification: malicious
+    version: 8.12.6
+    filename: libsm-t-shm-backdoor.patch
+    path: sendmail/during/libsm-t-shm-backdoor.patch
+    sha256: 60d0a8d8bc41bb40d383fb95bf2579c2b0f3c44157c5550bf25838a203a5e5da
+    size: 7525
+    source:
+      url: https://www.exploit-db.com/raw/21919
+      retrieved_at: '2026-08-09T12:23:31Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - exact_diff_section_after_crlf_normalization
+        - measured_sha256
+    notes:
+      - >-
+        Extracted from sendmail-8.12.6-trojan-evidence.txt; line endings were normalized from CRLF
+        to LF.
+  - artifact_id: sendmail
+    phase: during
+    classification: malicious
+    version: 8.12.6
+    filename: sendmail-8.12.6-decoded-payload.sh
+    path: sendmail/during/sendmail-8.12.6-decoded-payload.sh
+    sha256: 4c4f9bf17d2046a77418c75af72f039ca5a160bc436da93a936a9a83599e7fc7
+    size: 2829
+    source:
+      url: https://www.exploit-db.com/raw/21919
+      retrieved_at: '2026-08-09T12:23:31Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - decoded_payload_section_after_crlf_normalization
+        - measured_sha256
+    notes:
+      - >-
+        Extracted from sendmail-8.12.6-trojan-evidence.txt; line endings were normalized and a
+        trailing blank line omitted.
+unresolved:
+  - artifact_id: sendmail
+    phase: during
+    version: 8.12.6
+    hash: md5:9a7cc87790451590c2e9eb1a8c9df102
+    status: original_distribution_unavailable_payload_recovered
+  - artifact_id: sendmail
+    phase: during
+    coordinate: md5:9a7cc87790451590c2e9eb1a8c9df102
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-08-10T13:56:54.384-04:00 level=ERROR msg="command failed"
+        error="hash 9a7cc87790451590c2e9eb1a8c9df102 unavailable from configured sources:
+        malwarebazaar: MalwareBazaar has no sample for 9a7cc87790451590c2e9eb1a8c9df102:
+        hash_not_found; triage: Triage has no file analysis for MD5
+        9a7cc87790451590c2e9eb1a8c9df102; malshare: download returned status 404"
+    last_attempted_at: '2026-08-10T17:56:55.740Z'

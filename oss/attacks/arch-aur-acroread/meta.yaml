@@ -1,20 +1,18 @@
 - id: arch-aur-acroread
   title: AUR acroread PKGBUILD ran remote shell scripts
   synopsis: >-
-    In July 2018, an attacker adopted the orphaned acroread package in the Arch
-    User Repository and added a curl-to-shell install path that fetched remote
-    scripts, installed a systemd timer, and collected host data.
+    In July 2018, an attacker adopted the orphaned acroread package in the Arch User Repository and
+    added a curl-to-shell install path that fetched remote scripts, installed a systemd timer, and
+    collected host data.
   story: |
     The acroread incident was a small compromise, but it is a clean example of how community package metadata becomes a distribution point. Adobe Reader was not backdoored upstream, and Arch's official binary repositories were not compromised. The poisoned layer was the AUR package recipe that Arch users could pull into a normal local build.
 
-    The package was attractive because nobody was actively maintaining it. acroread wrapped an old Linux build of Adobe Reader, a native version no longer supported by Adobe. On July 8, 2018, Arch users noticed that an AUR account named xeactor had adopted the orphaned package and pushed a PKGBUILD change with the classic red flag: a remote script fetched from ptpb.pw and piped into bash.
-
-    That first script was not noisy malware. It staged the rest of the intrusion. The script created xeactor.service and xeactor.timer under systemd paths, set the timer to run every 360 seconds, and downloaded a second script from ptpb.pw. The second script collected system details and posted them to Pastebin through an API key. Public analysis did not find a self-update mechanism or a destructive payload, but the installer path had already crossed the important line: a trusted community build recipe was executing attacker-controlled shell code during installation.
+    The package was attractive because nobody was actively maintaining it. acroread wrapped an old Linux build of Adobe Reader, a native version no longer supported by Adobe. On July 8, 2018, Arch users noticed that an AUR account named xeactor had adopted the orphaned package and pushed a PKGBUILD change with the classic red flag: a remote script fetched from ptpb.pw and piped into bash. That first script was not noisy malware; it staged the rest of the intrusion. It created xeactor.service and xeactor.timer under systemd paths, set the timer to run every 360 seconds, and downloaded a second script from ptpb.pw that collected system details and posted them to Pastebin through an API key. Public analysis found no self-update mechanism and no destructive payload, but the installer path had already crossed the important line: a trusted community build recipe was executing attacker-controlled shell code during installation.
 
     The response was fast. The report hit the aur-general list at 05:48 UTC on July 8. Six minutes later, Trusted User Eli Schwartz said the account had been suspended and the commit reverted. He then found and fixed two other packages that had been modified the same way. Arch later named the affected versions as acroread 9.5.5-8, balz 1.20-3, and minergate 8.1-2.
 
     The important boundary is scope. AUR is user-produced content and has always carried a review burden for the user. That does not make the incident irrelevant to supply-chain history; it makes the trust lesson more precise. The attacker did not need to compromise Adobe, Arch package signing, or pacman. They needed an abandoned AUR package, a plausible maintainer action, and an install script that too many users would let run without reading.
-  start_date: 2018-07-07
+  start_date: 2018-07-07T00:00:00.000Z
   end_date: '2018-07-08T05:54:58Z'
   target:
     name: Arch User Repository acroread package
@@ -32,122 +30,122 @@
     transitive: false
   impact:
     types:
-    - data_exfiltration
-    - persistence
-    - remote_code_execution
+      - data_exfiltration
+      - persistence
+      - remote_code_execution
   artifacts:
-  - id: aur-acroread
-    name: acroread
-    package: acroread
-    ecosystem: aur
-    kind: package_build_script
-    website: https://aur.archlinux.org/packages/acroread
-    repo: https://aur.archlinux.org/acroread.git
-    start_date: 2018-07-07
-    end_date: '2018-07-08T05:54:58Z'
-    versions:
-    - 9.5.5-8
-    locations:
-    - uri: https://aur.archlinux.org/cgit/aur.git/commit/?h=acroread&id=b3fec9f2f16703c2dae9e793f75ad6e0d98509bc
-      role: distribution
-    - uri: https://lists.archlinux.org/pipermail/aur-general/2018-July/034151.html
-      role: advisory
-    indicators:
-    - kind: commit
-      value: b3fec9f2f16703c2dae9e793f75ad6e0d98509bc
-    - kind: account
-      value: xeactor
-    - kind: url
-      value: https://ptpb.pw/~x
-    - kind: url
-      value: https://ptpb.pw/~u
-    - kind: url
-      value: https://pastebin.com/api/api_post.php
-    - kind: file
-      value: xeactor.service
-    - kind: file
-      value: xeactor.timer
-    - kind: command
-      value: curl | bash
-    - kind: observable
-      value: The first-stage script set a systemd timer with OnActiveSec=360
-        and downloaded a second-stage uploader script.
-    notes:
-    - The AUR cgit link now reports a bad commit reference, but the commit ID is
-      preserved in the Arch aur-general report and contemporaneous coverage.
-    - This was an AUR package recipe compromise, not an Adobe Reader upstream
-      compromise and not a compromise of Arch's official binary package
-      repositories.
-  - id: aur-balz
-    name: balz
-    package: balz
-    ecosystem: aur
-    kind: package_build_script
-    start_date: 2018-07-07
-    end_date: '2018-07-08T06:02:08Z'
-    versions:
-    - 1.20-3
-    locations:
-    - uri: https://lists.archlinux.org/pipermail/aur-general/2018-July/034153.html
-      role: advisory
-    - uri: https://lists.archlinux.org/pipermail/aur-general/2018-July/034169.html
-      role: advisory
-    indicators:
-    - kind: account
-      value: xeactor
-    - kind: observable
-      value: Arch Trusted User Eli Schwartz said two other packages had been
-        maliciously modified the same way; Morten Linderud later listed balz
-        1.20-3 as one affected version.
-  - id: aur-minergate
-    name: minergate
-    package: minergate
-    ecosystem: aur
-    kind: package_build_script
-    start_date: 2018-07-07
-    end_date: '2018-07-08T06:02:08Z'
-    versions:
-    - 8.1-2
-    locations:
-    - uri: https://lists.archlinux.org/pipermail/aur-general/2018-July/034153.html
-      role: advisory
-    - uri: https://lists.archlinux.org/pipermail/aur-general/2018-July/034169.html
-      role: advisory
-    indicators:
-    - kind: account
-      value: xeactor
-    - kind: observable
-      value: Arch Trusted User Eli Schwartz said two other packages had been
-        maliciously modified the same way; Morten Linderud later listed
-        minergate 8.1-2 as one affected version.
+    - id: aur-acroread
+      name: acroread
+      package: acroread
+      ecosystem: aur
+      kind: package_build_script
+      website: https://aur.archlinux.org/packages/acroread
+      repo: https://aur.archlinux.org/acroread.git
+      start_date: 2018-07-07T00:00:00.000Z
+      end_date: '2018-07-08T05:54:58Z'
+      versions:
+        - 9.5.5-8
+      hashes:
+        - sha256:c1b24613bc1990220d946c5dd85992a5d015b8adbb33d44b4bc8ed18b8a57b73
+      locations:
+        - uri: >-
+            https://aur.archlinux.org/cgit/aur.git/commit/?h=acroread&id=b3fec9f2f16703c2dae9e793f75ad6e0d98509bc
+          role: distribution
+      indicators:
+        - kind: commit
+          value: b3fec9f2f16703c2dae9e793f75ad6e0d98509bc
+        - kind: account
+          value: xeactor
+        - kind: url
+          value: https://ptpb.pw/~x
+        - kind: url
+          value: https://ptpb.pw/~u
+        - kind: url
+          value: https://pastebin.com/api/api_post.php
+        - kind: file
+          value: xeactor.service
+        - kind: file
+          value: xeactor.timer
+        - kind: command
+          value: curl | bash
+        - kind: observable
+          value: >-
+            The first-stage script set a systemd timer with OnActiveSec=360 and downloaded a
+            second-stage uploader script.
+      notes:
+        - >-
+          The AUR cgit link now reports a bad commit reference, but the commit ID is preserved in
+          the Arch aur-general report and contemporaneous coverage.
+        - >-
+          This was an AUR package recipe compromise, not an Adobe Reader upstream compromise and not
+          a compromise of Arch's official binary package repositories.
+    - id: aur-balz
+      name: balz
+      package: balz
+      ecosystem: aur
+      kind: package_build_script
+      start_date: 2018-07-07T00:00:00.000Z
+      end_date: '2018-07-08T06:02:08Z'
+      versions:
+        - 1.20-3
+      hashes:
+        - sha256:7b66661ca69f8c8506df8dfafae04af14b25d69e77a2577962f2be973feb14a7
+      indicators:
+        - kind: account
+          value: xeactor
+        - kind: observable
+          value: >-
+            Arch Trusted User Eli Schwartz said two other packages had been maliciously modified the
+            same way; Morten Linderud later listed balz 1.20-3 as one affected version.
+    - id: aur-minergate
+      name: minergate
+      package: minergate
+      ecosystem: aur
+      kind: package_build_script
+      start_date: 2018-07-07T00:00:00.000Z
+      end_date: '2018-07-08T06:02:08Z'
+      versions:
+        - 8.1-2
+      hashes:
+        - sha256:52fe612678abc6dace79fab76ed50ae3c03a8be5c824453ed7a548e18d5ee0b9
+      indicators:
+        - kind: account
+          value: xeactor
+        - kind: observable
+          value: >-
+            Arch Trusted User Eli Schwartz said two other packages had been maliciously modified the
+            same way; Morten Linderud later listed minergate 8.1-2 as one affected version.
   references:
-  - url: https://lists.archlinux.org/pipermail/aur-general/2018-July/034151.html
-    title: "aur-general: acroread package compromised"
-  - url: https://lists.archlinux.org/pipermail/aur-general/2018-July/034152.html
-    title: "aur-general: acroread package compromised response"
-  - url: https://lists.archlinux.org/pipermail/aur-general/2018-July/034153.html
-    title: "aur-general: two other packages modified the same way"
-  - url: https://lists.archlinux.org/pipermail/aur-general/2018-July/034162.html
-    title: "aur-general: orphaned packages were adopted"
-  - url: https://lists.archlinux.org/pipermail/aur-general/2018-July/034169.html
-    title: "aur-general: affected package versions"
-  - url: https://lwn.net/Articles/759461/
-    title: Malware found in the Arch Linux AUR repository
-  - url: https://www.bleepingcomputer.com/news/security/malware-found-in-arch-linux-aur-package-repository/
-    title: Malware Found in Arch Linux AUR Package Repository
-  - url: https://www.theregister.com/security/2018/07/11/arch-linux-pdf-reader-package-poisoned/1265885
-    title: Arch Linux PDF reader package poisoned
-  - url: https://gist.github.com/campuscodi/74d0d2e35d8fd9499c76333ce027345a
-    title: Mirrored first-stage ptpb.pw script
-  - url: https://gist.github.com/campuscodi/1b2495399a56efa54d8b5a0f3d4171bb
-    title: Mirrored second-stage ptpb.pw script
-  - url: https://sensorstechforum.com/arch-linux-aur-repository-found-contain-malware/
-    title: Arch Linux AUR Repository Found to Contain Malware
-  - url: https://blog.desdelinux.net/en/malware-found-in-arch-aur-repository/
-    title: Malware found in Arch AUR repository
-  - url: https://linuxiac.com/malware-discovered-in-arch-linux-aur-packages/
-    title: Malware discovered in Arch Linux AUR packages
-  - url: https://linuxiac.com/arch-aur-under-fire-once-more-as-malware-resurfaces/
-    title: Arch AUR under fire once more as malware resurfaces
-  - url: https://fossforce.com/2025/08/archs-aur-battles-ddos-attacks-and-persistent-malware-all-summer-so-far/
-    title: Arch's AUR battles DDoS attacks and persistent malware all summer
+    - url: https://lists.archlinux.org/pipermail/aur-general/2018-July/034151.html
+      title: 'aur-general: acroread package compromised'
+    - url: https://lists.archlinux.org/pipermail/aur-general/2018-July/034152.html
+      title: 'aur-general: acroread package compromised response'
+    - url: https://lists.archlinux.org/pipermail/aur-general/2018-July/034153.html
+      title: 'aur-general: two other packages modified the same way'
+    - url: https://lists.archlinux.org/pipermail/aur-general/2018-July/034162.html
+      title: 'aur-general: orphaned packages were adopted'
+    - url: https://lists.archlinux.org/pipermail/aur-general/2018-July/034169.html
+      title: 'aur-general: affected package versions'
+    - url: https://lwn.net/Articles/759461/
+      title: Malware found in the Arch Linux AUR repository
+    - url: >-
+        https://www.bleepingcomputer.com/news/security/malware-found-in-arch-linux-aur-package-repository/
+      title: Malware Found in Arch Linux AUR Package Repository
+    - url: >-
+        https://www.theregister.com/security/2018/07/11/arch-linux-pdf-reader-package-poisoned/1265885
+      title: Arch Linux PDF reader package poisoned
+    - url: https://gist.github.com/campuscodi/74d0d2e35d8fd9499c76333ce027345a
+      title: Mirrored first-stage ptpb.pw script
+    - url: https://gist.github.com/campuscodi/1b2495399a56efa54d8b5a0f3d4171bb
+      title: Mirrored second-stage ptpb.pw script
+    - url: https://sensorstechforum.com/arch-linux-aur-repository-found-contain-malware/
+      title: Arch Linux AUR Repository Found to Contain Malware
+    - url: https://blog.desdelinux.net/en/malware-found-in-arch-aur-repository/
+      title: Malware found in Arch AUR repository
+    - url: https://linuxiac.com/malware-discovered-in-arch-linux-aur-packages/
+      title: Malware discovered in Arch Linux AUR packages
+    - url: https://linuxiac.com/arch-aur-under-fire-once-more-as-malware-resurfaces/
+      title: Arch AUR under fire once more as malware resurfaces
+    - url: >-
+        https://fossforce.com/2025/08/archs-aur-battles-ddos-attacks-and-persistent-malware-all-summer-so-far/
+      title: Arch's AUR battles DDoS attacks and persistent malware all summer

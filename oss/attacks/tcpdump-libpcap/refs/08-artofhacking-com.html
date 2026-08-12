@@ -1,0 +1,355 @@
+<html>
+<head>
+<title>TUCoPS ::  Linux :: General
+ :: n-014.txt</title>
+</head>
+<body bgcolor="white" text="black" link=#001820 vlink="red" background="/images/bgforblacktext.jpg">
+<font face="Arial">
+<center>
+
+<br>
+<!-- google_ad_section_start -->
+<table border=0 width=900><tr><td align="center"><font face="Arial">
+<font size="4"><center><b><a href="../index.htm">TUCoPS ::  Linux :: General
+ :: n-014.txt</a></b></center></font><br>
+<font size="2"><center><b>Trojan Horse tcpdum and libpcap Distributions (CIAC N-014)  </b></center></font>
+</td></tr>
+</table>
+</center>
+<pre><tt>
+             __________________________________________________________
+
+                       The U.S. Department of Energy
+                   Computer Incident Advisory Capability
+                           ___  __ __    _     ___
+                          /       |     /_\   /
+                          \___  __|__  /   \  \___
+             __________________________________________________________
+
+                             INFORMATION BULLETIN
+
+                 Trojan Horse tcpdump and libpcap Distributions
+                           [CERT Advisory CA-2002-30]
+
+November 13, 2002 21:00 GMT                                       Number N-014
+______________________________________________________________________________
+PROBLEM:       Several of the released source code distributions of the
+               libpcap and tcpdump packages were modified by an intruder and
+               contain a Trojan horse. Early reports state that modified
+               versions began appearing around October 30, 2002.
+AFFECTED       tcpdump and libpcap
+SOFTWARE:      
+DAMAGE:        Intruders operating from the remote address specified in the
+               malicious code could gain unauthorized remote access to any
+               host that compiled a version of tcpdump with this Trojan horse.
+SOLUTION:      Sites using libpcap and tcpdump are encouraged to verify the
+               authenticity of their versions, regardless of where it was
+               obtained. See CERT's Advisory for currently trusted
+               distribution sites.
+______________________________________________________________________________
+VULNERABILITY  The risk is HIGH. Attackers could gain unauthorized remote
+ASSESSMENT:    access and execute arbitrary code of attacker's choice.
+______________________________________________________________________________
+LINKS:
+ CIAC BULLETIN:      http://www.ciac.org/ciac/bulletins/n-014.shtml
+ ORIGINAL BULLETIN:  http://www.cert.org/advisories/CA-2002-30.html
+ ADDITIONAL          The Houston Linux Users Group
+ INFORMATION:        http://hlug.fscker.com
+______________________________________________________________________________
+[***** Start CERT Advisory CA-2002-30 *****]
+
+CERT® Advisory CA-2002-30 Trojan Horse
+tcpdump and libpcap Distributions
+
+Original issue date: November 13, 2002
+Last revised: -- 
+Source: CERT/CC
+
+A complete revision history is at the end of this file.
+
+Overview
+
+The CERT/CC has received reports that several of the released source code 
+distributions of the libpcap and tcpdump packages were modified by an 
+intruder and contain a Trojan horse.
+
+We strongly encourage sites that use, redistribute, or mirror the libpcap 
+or tcpdump packages to immediately verify the integrity of their distribution.
+
+I. Description
+
+The CERT/CC has received reports that some copies of the source code for 
+libpcap, a packet acquisition library, and tcpdump, a network sniffer, 
+have been modified by an intruder and contain a Trojan horse. 
+
+The following distributions were modified to include the malicious code:
+
+tcpdump
+
+md5sum 3a1c2dd3471486f9c7df87029bf2f1e9 tcpdump-3.6.2.tar.gz 
+
+md5sum 3c410d8434e63fb3931fe77328e4dd88 tcpdump-3.7.1.tar.gz
+
+libpcap
+
+md5sum 73ba7af963aff7c9e23fa1308a793dca libpcap-0.7.1.tar.gz
+
+These modified distributions began to appear in downloads from the HTTP 
+server www.tcpdump.org on or around Nov 11 2002 10:14:00 GMT. The tcpdump 
+development team disabled download of the distributions containing the 
+Trojan horse on Nov 13 2002 15:05:19 GMT. However, the availability of 
+these distributions from mirror sites is unknown. At this time, it does not
+appear that related projects such as WinPcap and WinDump contain this 
+Trojan horse.
+
+The Trojan horse version of the tcpdump source code distribution contains 
+malicious code that is run when the software is compiled. This code, 
+executed from the tcpdump configure script, will attempt to connect 
+(via wget, lynx, or fetch) to port 80/tcp on a fixed hostname in order 
+to download a shell script named services. In turn, this downloaded shell 
+script is executed to generate a C file (conftes.c), which is subsequently 
+compiled and run.
+
+When executed, conftes.c makes an outbound connection to a fixed IP 
+address (corresponding to the fixed hostname used in the configure script) 
+on port 1963/tcp and reads a single byte. Three possible values for this 
+downloaded byte are checked, each causing conftes.c to respond in different 
+ways:
+
+'A' will cause the Trojan horse to exit
+	 
+'D' will cause the Trojan to fork itself, spawn a shell, and redirect 
+this shell to the connected IP address (Note that communication to and 
+from this shell is obfuscated by XORing all bytes with the constant 0x89.) 
+	
+'M' will cause the Trojan horse to close the connection and sleep for 3600 seconds 
+
+To mask the activity of this Trojan horse in tcpdump, libpcap, the 
+underlying packet-capture library of tcpdump, has been modified (gencode.c) 
+to explicitly ignore all traffic on port 1963 (i.e., a BPF expression of 
+"not port 1963"). 
+
+II. Impact
+
+An intruder operating from (or able to impersonate) the remote address 
+specified in the malicious code could gain unauthorized remote access to 
+any host that compiled a version of tcpdump with this Trojan horse. The 
+privilege level under which this malicious code would be executed would 
+be that of the user who compiled the source code.
+
+III. Solution
+
+We encourage sites using libpcap and tcpdump to verify the authenticity of 
+their distribution, regardless of where it was obtained. 
+
+Where to get libpcap and tcpdump
+
+While the compromise of these distributions is being investigated, the 
+tcpdump and libpcap maintainers recommend using the following distribution 
+sites:
+
+http://sourceforge.net/projects/tcpdump/ 
+http://sourceforge.net/projects/libpcap/ 
+
+Sites that mirror the source code are encouraged to verify the integrity 
+of their sources. We also encourage users to inspect any and all other 
+software that may have been downloaded from the compromised site. Note 
+that it is not sufficient to rely on the timestamps or sizes of the file 
+when trying to determine whether or not you have a copy of the Trojan horse 
+version.
+
+Verifying checksums
+
+The MD5 hashes of the vendor suggested updates for libpcap and tcpdump 
+are as follows:
+
+tcpdump
+
+md5sum 03e5eac68c65b7e6ce8da03b0b0b225e tcpdump-3.7.1.tar.gz
+
+libpcap
+
+md5sum 0597c23e3496a5c108097b2a0f1bd0c7 libpcap-0.7.1.tar.gz
+
+
+As a matter of good security practice, the CERT/CC encourages users to 
+verify, whenever possible, the integrity of downloaded software. For 
+more information, see 
+
+http://www.cert.org/incident_notes/IN-2001-06.html 
+
+Appendix A. - Vendor Information
+
+This appendix contains information provided by vendors for this advisory. 
+As vendors report new information to the CERT/CC, we will update this 
+section and note the changes in our revision history. If a particular 
+vendor is not listed below, we have not received their comments. 
+
+Conectiva
+
+We have checked all our released libpcap and tcpdump packages and 
+confirmed that they do not contain the trojan code. 
+
+Debian
+
+Problematic packages are only distributed in Debian/unstable. I have 
+examined both source packages and they did not contain the trojan code 
+the HLUG reported on their web page. Hence, I guess that Debian 
+distributes safe source. 
+
+MontaVista Software, Inc.
+
+We have examined our sources, and our software does not contain this 
+trojan. We are not vulnerable to this advisory. 
+
+SuSE
+
+SuSE Linux products are not vulnerable. 
+
+
+
+Feedback can be directed to the author: Roman Danyliw, Chad Dougherty. 
+
+
+This document is available from: 
+http://www.cert.org/advisories/CA-2002-30.html 
+
+
+CERT/CC Contact Information
+
+Email: cert@cert.org
+Phone: +1 412-268-7090 (24-hour hotline)
+Fax: +1 412-268-6989
+Postal address:
+CERT Coordination Center
+Software Engineering Institute
+Carnegie Mellon University
+Pittsburgh PA 15213-3890
+U.S.A.
+
+CERT/CC personnel answer the hotline 08:00-17:00 EST(GMT-5) / EDT(GMT-4) 
+Monday through Friday; they are on call for emergencies during other hours, 
+on U.S. holidays, and on weekends. 
+
+Using encryption
+
+We strongly urge you to encrypt sensitive information sent by email. 
+Our public PGP key is available from 
+
+http://www.cert.org/CERT_PGP.key 
+
+If you prefer to use DES, please call the CERT hotline for more information. 
+
+Getting security information
+
+CERT publications and other security information are available from our 
+web site 
+
+http://www.cert.org/ 
+
+To subscribe to the CERT mailing list for advisories and bulletins, send 
+email to majordomo@cert.org. Please include in the body of your message
+
+subscribe cert-advisory 
+
+* "CERT" and "CERT Coordination Center" are registered in the U.S. 
+Patent and Trademark Office. 
+
+
+NO WARRANTY
+Any material furnished by Carnegie Mellon University and the Software 
+Engineering Institute is furnished on an "as is" basis. Carnegie Mellon 
+University makes no warranties of any kind, either expressed or implied 
+as to any matter including, but not limited to, warranty of fitness for 
+a particular purpose or merchantability, exclusivity or results obtained 
+from use of the material. Carnegie Mellon University does not make any 
+warranty of any kind with respect to freedom from patent, trademark, 
+or copyright infringement. 
+
+
+Conditions for use, disclaimers, and sponsorship information 
+
+Copyright 2002 Carnegie Mellon University.
+
+Revision History 
+
+November 13, 2002: Initial release
+
+[***** End CERT Advisory CA-2002-30 *****]
+_______________________________________________________________________________
+
+CIAC wishes to acknowledge the contributions of CERT Coordination Center and 
+The Houston Linux Users Group for the information contained in this bulletin.
+_______________________________________________________________________________
+
+CIAC, the Computer Incident Advisory Capability, is the computer
+security incident response team for the U.S. Department of Energy
+(DOE) and the emergency backup response team for the National
+Institutes of Health (NIH). CIAC is located at the Lawrence Livermore
+National Laboratory in Livermore, California. CIAC is also a founding
+member of FIRST, the Forum of Incident Response and Security Teams, a
+global organization established to foster cooperation and coordination
+among computer security teams worldwide.
+
+CIAC services are available to DOE, DOE contractors, and the NIH. CIAC
+can be contacted at:
+    Voice:    +1 925-422-8193 (7x24)
+    FAX:      +1 925-423-8002
+    STU-III:  +1 925-423-2604
+    E-mail:   ciac@ciac.org
+
+Previous CIAC notices, anti-virus software, and other information are
+available from the CIAC Computer Security Archive.
+
+   World Wide Web:      http://www.ciac.org/
+   Anonymous FTP:       ftp.ciac.org
+
+PLEASE NOTE: Many users outside of the DOE, ESnet, and NIH computing
+communities receive CIAC bulletins.  If you are not part of these
+communities, please contact your agency's response team to report
+incidents. Your agency's team will coordinate with CIAC. The Forum of
+Incident Response and Security Teams (FIRST) is a world-wide
+organization. A list of FIRST member organizations and their
+constituencies can be obtained via WWW at http://www.first.org/.
+
+This document was prepared as an account of work sponsored by an
+agency of the United States Government. Neither the United States
+Government nor the University of California nor any of their
+employees, makes any warranty, express or implied, or assumes any
+legal liability or responsibility for the accuracy, completeness, or
+usefulness of any information, apparatus, product, or process
+disclosed, or represents that its use would not infringe privately
+owned rights. Reference herein to any specific commercial products,
+process, or service by trade name, trademark, manufacturer, or
+otherwise, does not necessarily constitute or imply its endorsement,
+recommendation or favoring by the United States Government or the
+University of California. The views and opinions of authors expressed
+herein do not necessarily state or reflect those of the United States
+Government or the University of California, and shall not be used for
+advertising or product endorsement purposes.
+
+LAST 10 CIAC BULLETINS ISSUED (Previous bulletins available from CIAC)
+
+N-005: Apache 1.3.27 HTTP Server Release
+N-006: HP pam_authz in LDAP-UX Integration Vulnerabilities
+N-007: Microsoft Outlook Express Unchecked Buffer in S/MIME Vulnerability
+N-008: Microsoft Elevation of Privilege in SQL Server Web Tasks
+N-009: MIT krb5  Buffer Overflow in kadmind4
+CIACTech03-001: Spamming using the Windows Messenger Service
+N-010: Web-Based Enterprise Management on Solaris 8 Installs Insecure Files
+N-011: Cumulative Patch for Internet Information Service
+N-012: Windows 2000 Default Permissions Could Allow Trojan Horse Program
+N-013: ISC Remote Vulnerabilities in BIND4 and BIND8
+
+</tt></pre>
+<!-- google_ad_section_end -->
+<p><center>
+
+<p></center>
+<center><a href="/firefox.htm">TUCoPS is optimized to look best in Firefox&reg; on a widescreen monitor (1440x900 or better).</a></center>
+<font size=1><center>Site design & layout copyright &copy; 1986-2026 AOH</font>
+</center>
+<br><center><IMG SRC="http://artofhacking.com/cgi-bin/sc/sc.cgi?acct=tucops&font=payphone-med"></center>
+<p>
+</body>
+</html>

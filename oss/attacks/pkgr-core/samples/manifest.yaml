@@ -1,0 +1,158 @@
+schema_version: 1
+interpretation:
+  - >-
+    The package coordinate previously recorded as @pkgjs/core was a reporting
+    typo. @pkgjs/core does not exist on npm; CrowdStrike, OSV, Snyk, SafeDep,
+    ReversingLabs, and the npm registry all identify the compromised package as
+    @pkgr/core and the affected version as 0.2.8.
+  - >-
+    npm retains the publication time for removed 0.2.8 between clean 0.2.7 and
+    fixed 0.2.9. jsDelivr's complete 14-file manifest shows that 0.2.8 adds
+    install.cjs and node-gyp.dll and changes package.json. The two added members
+    are preserved exactly, but the modified 1049-byte package.json has not been
+    recovered or derived to its retained SHA-256, so no archive is reconstructed.
+  - >-
+    CrowdStrike identifies the exact install script and first-stage Scavenger loader
+    hashes. Snyk and OSV specifically describe @pkgr/core as installing
+    node-gyp.dll through the install hook. The recovered objects match those published
+    SHA-256 values exactly.
+reported_evidence:
+  - artifact_id: pkgr-core
+    hashes:
+      - sha256: 31204fbbc097677d518e1c01d88cf24b491ef29cc8f56d1ef2b81e5ccc8440e2
+    note: >-
+      SafeDep associates this additional hash with the incident but does not
+      identify which package object it represents. It remains unavailable and
+      is not treated as the original 0.2.8 archive.
+samples:
+  - artifact_id: pkgr-core
+    phase: before
+    classification: clean
+    coordinate: pkg:npm/%40pkgr/core@0.2.7
+    version: 0.2.7
+    filename: '@pkgr-core-0.2.7.tgz'
+    path: pkgr-core/before/@pkgr-core-0.2.7.tgz
+    sha256: a5924157b53d97262a52696d193fa23a6264c3fdecdb653a8850b6cb6ce0e06e
+    size: 2895
+    source:
+      url: https://registry.npmjs.org/@pkgr/core/-/core-0.2.7.tgz
+      retrieved_at: '2026-08-10T12:24:47.600039Z'
+      kind: official_registry
+    verification:
+      status: exact
+      basis:
+        - npm_registry_distribution
+        - npm_publication_time_2025_06_01T17_04_40_497Z
+        - immediately_precedes_removed_0_2_8
+        - embedded_name_and_version
+        - measured_sha256_and_size
+  - artifact_id: pkgr-core
+    phase: during
+    classification: malicious
+    coordinate: pkg:npm/%40pkgr/core@0.2.8
+    version: 0.2.8
+    filename: 32d0dbdfef0e5520ba96a2673244267e204b94a49716ea13bf635fa9af6f66bf.js
+    path: >-
+      pkgr-core/during/32d0dbdfef0e5520ba96a2673244267e204b94a49716ea13bf635fa9af6f66bf.js
+    sha256: 32d0dbdfef0e5520ba96a2673244267e204b94a49716ea13bf635fa9af6f66bf
+    size: 5806
+    source:
+      url: https://mb-api.abuse.ch/api/v1/
+      retrieved_at: '2026-08-10T12:28:02.744608Z'
+      kind: research_corpus
+      chain:
+        collector: forager
+        feed: malwarebazaar
+        signature: Scavenger
+        original_filename: >-
+          32d0dbdfef0e5520ba96a2673244267e204b94a49716ea13bf635fa9af6f66bf.js
+    verification:
+      status: payload_only
+      basis:
+        - crowdstrike_identifies_hash_as_package_install_js
+        - contains_reported_rundll32_node_gyp_dll_invocation
+        - malwarebazaar_content_address
+        - measured_sha256_and_size
+    notes:
+      - >-
+        Exact bytes of the target package/install.cjs member, retained under the original
+        hash-addressed .js capture name; this is not the removed original npm tarball.
+  - artifact_id: pkgr-core
+    phase: during
+    classification: malicious
+    coordinate: pkg:npm/%40pkgr/core@0.2.8
+    version: 0.2.8
+    filename: c68e42f416f482d43653f36cd14384270b54b68d6496a8e34ce887687de5b441.sample
+    path: >-
+      pkgr-core/during/c68e42f416f482d43653f36cd14384270b54b68d6496a8e34ce887687de5b441.sample
+    sha256: c68e42f416f482d43653f36cd14384270b54b68d6496a8e34ce887687de5b441
+    size: 1291776
+    source:
+      url: >-
+        http://10.9.8.5:8081/api/file/c68e42f416f482d43653f36cd14384270b54b68d6496a8e34ce887687de5b441
+      retrieved_at: '2026-08-10T12:26:48.744130Z'
+      kind: research_corpus
+      chain:
+        collector: forager
+        feed: hopper
+    verification:
+      status: payload_only
+      basis:
+        - crowdstrike_identifies_hash_as_first_stage_scavenger_loader
+        - snyk_identifies_hash_as_node_gyp_dll
+        - pe32_plus_x86_64_dll
+        - hopper_content_address
+        - measured_sha256_and_size
+    notes:
+      - Exact malicious node-gyp.dll only; this is not the removed original npm tarball.
+  - artifact_id: pkgr-core
+    phase: after
+    classification: remediated
+    coordinate: pkg:npm/%40pkgr/core@0.2.9
+    version: 0.2.9
+    filename: '@pkgr-core-0.2.9.tgz'
+    path: pkgr-core/after/@pkgr-core-0.2.9.tgz
+    sha256: a8bc1379c7800c0a62901b03cb8f9ebfadd46870f0f8bd7b9c0ace3bd0560342
+    size: 2895
+    source:
+      url: https://registry.npmjs.org/@pkgr/core/-/core-0.2.9.tgz
+      retrieved_at: '2026-08-10T12:24:47.593013Z'
+      kind: official_registry
+    verification:
+      status: exact
+      basis:
+        - npm_registry_distribution
+        - npm_publication_time_2025_07_18T18_51_58_942Z
+        - snyk_and_github_advisory_identify_0_2_9_as_fixed
+        - embedded_name_and_version
+        - install_js_and_node_gyp_dll_absent
+        - measured_sha256_and_size
+unresolved:
+  - artifact_id: pkgr-core
+    phase: during
+    coordinate: pkg:npm/%40pkgr/core@0.2.8
+    status: partial
+    attempts:
+      - npm removed the malicious version record and original tarball.
+      - No original tarball capture was found in Wayback Machine.
+      - jsDelivr retains a complete 14-file listing but no retrievable 0.2.8 file bytes.
+      - unpkg returns 404 for the removed version.
+      - Software Heritage has no archived 0.2.8 package artifact.
+      - Socket exposes no retrievable file list for this version.
+      - >-
+        The exact install.cjs and node-gyp.dll members were recovered by published SHA-256.
+      - >-
+        The remaining modified package.json is known by retained size (1049 bytes) and SHA-256,
+        but its exact bytes could not be recovered or derived; reconstruction was rejected.
+    last_attempted_at: '2026-08-10T12:28:03Z'
+  - artifact_id: pkgr-core
+    phase: during
+    coordinate: >-
+      sha256:31204fbbc097677d518e1c01d88cf24b491ef29cc8f56d1ef2b81e5ccc8440e2
+    status: unavailable
+    attempts:
+      - Hopper returned 404 for the content address.
+      - MalwareBazaar returned hash_not_found.
+      - Triage returned no file analysis for the SHA-256.
+      - Malshare returned 404.
+    last_attempted_at: '2026-08-10T12:26:50.500Z'

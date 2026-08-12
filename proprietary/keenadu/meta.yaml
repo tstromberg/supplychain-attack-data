@@ -1,18 +1,29 @@
 - id: keenadu
   title: Android tablet firmware embedded Keenadu
   synopsis: >-
-    Kaspersky found Keenadu embedded in signed Android tablet firmware, including Alldocube
-    images, after a malicious library entered the firmware build chain.
-  story: |
-    Keenadu is a firmware-level Android backdoor. Kaspersky traced one public example through Alldocube tablet firmware images, including iPlay 50 mini Pro releases, and found validly signed images containing the malicious changes.
+    Kaspersky found Keenadu embedded in signed Android tablet firmware, including Alldocube images,
+    after a malicious library entered the firmware build chain.
+  story: >
+    Keenadu is a firmware-level Android backdoor. Kaspersky traced one public example through
+    Alldocube tablet firmware images, including iPlay 50 mini Pro releases, and found validly signed
+    images containing the malicious changes.
 
-    The insertion point was `libandroid_runtime.so`, a core Android framework library. A malicious static library, `libVndxUtils.a`, was linked during the build and added code that loaded Keenadu inside Zygote, the parent process for Android applications.
 
-    That placement broke the normal app boundary. Keenadu could run in the context of installed apps, collect device metadata, install additional APKs, inject modules into apps such as Chrome and YouTube, hijack search traffic, and simulate ad clicks or app installs.
+    The insertion point was `libandroid_runtime.so`, a core Android framework library. A malicious
+    static library, `libVndxUtils.a`, was linked during the build and added code that loaded Keenadu
+    inside Zygote, the parent process for Android applications.
 
-    Kaspersky concluded that a stage of the firmware supply chain was compromised, not merely an OTA download server. The signed images and build artifacts point to malicious code entering before firmware release, so affected tablets could arrive already compromised.
-  start_date: 2023-08-18
-  end_date: 2026-02-17
+
+    That placement broke the normal app boundary. Keenadu could run in the context of installed
+    apps, collect device metadata, install additional APKs, inject modules into apps such as Chrome
+    and YouTube, hijack search traffic, and simulate ad clicks or app installs.
+
+
+    Kaspersky concluded that a stage of the firmware supply chain was compromised, not merely an OTA
+    download server. The signed images and build artifacts point to malicious code entering before
+    firmware release, so affected tablets could arrive already compromised.
+  start_date: 2023-08-18T00:00:00.000Z
+  end_date: 2026-02-17T00:00:00.000Z
   target:
     name: Android tablet firmware supply chain
     kind: firmware
@@ -27,45 +38,56 @@
     transitive: false
   impact:
     types:
-    - backdoor
-    - malware_distribution
-    - ad_fraud
-    - data_theft
+      - backdoor
+      - malware_distribution
+      - ad_fraud
+      - data_theft
     users: 13000
   artifacts:
-  - id: alldocube-android-firmware
-    name: Alldocube Android tablet firmware
-    kind: firmware
-    website: https://www.alldocube.com
-    start_date: 2023-08-18
-    end_date: 2026-02-17
-    locations:
-    - uri: https://www.alldocube.com/en/firmware/
-      role: distribution
-    - uri: https://securelist.com/keenadu-android-backdoor/118913/
-      role: mirror
-    hashes:
-    - md5:ca98ae7ab25ce144927a46b7fee6bd21
-    indicators:
-    - kind: malware
-      value: 'HEUR:Backdoor.AndroidOS.Keenadu'
-    - kind: file
-      value: libandroid_runtime.so
-    - kind: file
-      value: libVndxUtils.a
-    - kind: file
-      value: vendor/mediatek/proprietary/external/libutils/arm/libVndxUtils.a
-    - kind: file
-      value: vendor/mediatek/proprietary/external/libutils/arm64/libVndxUtils.a
-    - kind: observable
-      value: Malicious code loaded through Android Zygote and could run inside app processes.
-    notes:
-    - Kaspersky identified Alldocube as one investigated example and said telemetry 
-      also showed infected tablet firmware from other manufacturers.
-    - Kaspersky reported more than 13,000 infected endpoints, with firmware-level 
-      Keenadu mostly used for ad fraud but capable of broader device control.
+    - id: alldocube-android-firmware
+      name: Alldocube Android tablet firmware
+      kind: firmware
+      website: https://www.alldocube.com
+      start_date: 2023-08-18T00:00:00.000Z
+      end_date: 2026-02-17T00:00:00.000Z
+      locations:
+        - uri: https://www.alldocube.com/en/firmware/
+          role: distribution
+        - uri: https://securelist.com/keenadu-android-backdoor/118913/
+          role: mirror
+      hashes:
+        - md5:ca98ae7ab25ce144927a46b7fee6bd21
+      indicators:
+        - kind: malware
+          value: HEUR:Backdoor.AndroidOS.Keenadu
+        - kind: file
+          value: libandroid_runtime.so
+        - kind: file
+          value: libVndxUtils.a
+        - kind: file
+          value: vendor/mediatek/proprietary/external/libutils/arm/libVndxUtils.a
+        - kind: file
+          value: vendor/mediatek/proprietary/external/libutils/arm64/libVndxUtils.a
+        - kind: observable
+          value: Malicious code loaded through Android Zygote and could run inside app processes.
+      notes:
+        - >-
+          Kaspersky identified Alldocube as one investigated example and said telemetry also showed
+          infected tablet firmware from other manufacturers.
+        - >-
+          Kaspersky reported more than 13,000 infected endpoints, with firmware-level Keenadu mostly
+          used for ad fraud but capable of broader device control.
+        - >-
+          Affected models: iPlay 50 mini Pro, iPlay 50 mini Pro NFE, iPlay 60 mini Pro, iPlay 60
+          Pro, iPlay 50 Pro. These name hardware or product variants, not releases.
   references:
-  - url: https://securelist.com/keenadu-android-backdoor/118913/
-    title: Keenadu the tablet conqueror and the links between major Android botnets
-  - url: https://www.alldocube.com/en/forums/topic/16907/
-    title: 'Security Alert: Trojan detected on iPlay 50 Mini Pro / NFE'
+    - url: https://securelist.com/keenadu-android-backdoor/118913/
+      title: Keenadu the tablet conqueror and the links between major Android botnets
+    - url: https://www.alldocube.com/en/forums/topic/16907/
+      title: 'Security Alert: Trojan detected on iPlay 50 Mini Pro / NFE'
+    - url: https://thehackernews.com/2026/02/keenadu-firmware-backdoor-infects.html
+      title: Keenadu Firmware Backdoor Hijacks Android Tablets via Supply Chain Attack
+    - url: https://www.androidauthority.com/android-tablets-keenadu-malware-firmware-backdoor-3641651/
+      title: Android tablets infected with Keenadu malware firmware backdoor
+    - url: https://cybersecuritynews.com/keenadu-android-malware/
+      title: Keenadu Android Malware Pre-Installed On Cheap Devices

@@ -11,7 +11,16 @@
 
     The code diff shows the backdoor inserted into `libsm/t-shm.c`. It declared `shm64`, called it from the shared-memory test path, decoded an embedded payload into a temporary `test` script, and executed it with `system("sh ./test 2>/dev/null")`.
 
-    That payload forked a process and connected to `spatula.aclue.com` at 66.37.138.99 on TCP/6667. From there, the attacker could open a shell with the privileges of the build user. Analysts also noted that its one-letter command syntax resembled the OpenSSH backdoor from the same year: `A` killed the exploit, `D` executed a command, and `M` put it to sleep.
+    That payload forked a process and connected to `spatula.aclue.com` at 66.37.138.99 on TCP/6667. From there, the attacker could open a shell with the privileges of the build user. Analysts also noted that its one-letter command syntax resembled the OpenSSH backdoor from the same year: `A` killed the exploit, `D` executed a command, and `M` put it to sleep. Nobody was ever identified, and the analyst who drew the OpenSSH comparison allowed that it could have been a copycat.
+
+    The defense already existed and went unused. The Sendmail Consortium shipped a detached PGP signature alongside the source, `sendmail.8.12.6.tar.sig`, and CERT CA-2002-28 published its MD5 checksum next to those of the two clean archives. Any administrator who verified the signature before building would have caught the substitution at the moment of download.
+  pull_quote:
+    text: >-
+      Eric Allman's first read was that the attacker modified the FTP program
+      serving the files, so about one download in ten carried the backdoor
+      while the archive on the server was never touched.
+    caption: the tarball was clean, the server was not
+    after: 2
   start_date: 2002-09-28
   end_date: 2002-10-06
   target:
@@ -19,8 +28,8 @@
     kind: daemon
     website: https://ftp.sendmail.org
   actor:
-    name: Individual Hacker
-    kind: person
+    name: Unknown attacker
+    kind: unknown
   language: C
   method:
     cause: compromised_infrastructure
@@ -31,6 +40,15 @@
     types:
     - backdoor
     - remote_code_execution
+    users: 200
+  notes:
+  - The impact users figure is The Register's estimate of roughly 200 people who downloaded
+    the backdoored copy from the Sendmail FTP server before it was discovered. It counts
+    downloads, not confirmed compilations or compromises.
+  - No actor was ever identified. Erik Parker of Digital Defense observed that the
+    one-letter command syntax matched the 2002 OpenSSH backdoor and thought the same
+    hacker was responsible, but conceded the code could have been copied or reused by
+    someone else. The record therefore carries no attribution.
   artifacts:
   - id: sendmail
     name: sendmail
@@ -77,10 +95,10 @@
       value: M
     evidence:
     - kind: patch
-      path: impacted/backdoor.patch
+      path: samples/sendmail/during/libsm-t-shm-backdoor.patch
       role: impacted_code_diff
     - kind: script
-      path: impacted/infect.sh
+      path: samples/sendmail/during/sendmail-8.12.6-decoded-payload.sh
       role: decoded_payload
   references:
   - url: 

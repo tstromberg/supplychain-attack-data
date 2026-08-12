@@ -1,0 +1,194 @@
+- id: shapedplugin
+  title: ShapedPlugin Pro builds backdoored in the vendor pipeline
+  synopsis: >-
+    Attackers injected a self-deleting loader into ShapedPlugin's commercial Pro plugin builds
+    distributed through the vendor's Easy Digital Downloads update endpoint. The dropped payload
+    installed a fake WooCommerce plugin with webshells, Adminer, and a 2FA stealer.
+  story: |
+    Wordfence disclosed in June 2026 that attackers had compromised the build and
+    distribution pipeline of ShapedPlugin, LLC, a WordPress plugin vendor with more
+    than 400,000 active installations of its free products, and had been shipping
+    backdoored commercial builds to paying customers since late May.
+
+    ShapedPlugin sells Pro versions of carousel, slider, and testimonial plugins
+    through Easy Digital Downloads at account.shapedplugin.com, while the free
+    versions live on WordPress.org. Only the Pro builds were poisoned. Wordfence
+    called that selectivity notable: the attacker could deploy to both channels but
+    chose the one without WordPress.org's malware scanning, and the one whose users
+    had paid. Site owners who followed every piece of standard advice, buying a
+    license and updating through the official vendor channel, were the ones who got
+    the backdoor.
+
+    Wordfence obtained a backdoored copy of Real Testimonials Pro 3.2.5 directly
+    from the vendor's update endpoint on June 12, 2026. It contained a file named
+    `src/Includes/LicenseLoader.php`, loaded on every admin page by a modified
+    `TestimonialPRO.php`. The loader pulled a payload from a command-and-control
+    server at `194.76.217.28:2871`, installed it with WordPress's own
+    `Plugin_Upgrader` class, reported the victim domain, then deleted itself and
+    stripped its hook from `TestimonialPRO.php`. The dropped plugin installed as
+    `woocommerce-subscription`, singular, a near-match for the legitimate
+    WooCommerce Subscriptions, and hid itself from the plugin list through the
+    `all_plugins` filter. Inside were Tiny File Manager 2.6, Adminer 5.2.1, a URL
+    parameter webshell, a REST backdoor at `/wp-json/wc/v3/settings/apply` that
+    accepted arbitrary file writes, and a login bypass keyed to a hardcoded MD5
+    hash.
+
+    The credential module was the part that made cleanup hard. It hooked
+    `wp_authenticate` and `wp_login` to capture plaintext passwords, session
+    cookies, and roles, and then went looking for TOTP seeds belonging to four
+    specific two-factor plugins: WP 2FA, Wordfence Login Security, Really Simple
+    SSL 2FA, and the Two-Factor plugin. Everything went to
+    `generate.2faplugin.org`, a domain registered to blend into legitimate 2FA
+    traffic. With both a password and a TOTP seed, an attacker keeps access after
+    the victim rotates the password. Timestamps inside the compromised ZIP pointed
+    at an automated build step rather than hand tampering, with four files changed
+    on May 21 inside a two-hour window against a baseline of 366 files from April
+    2025 and 100 from February 2026. Wordfence contacted ShapedPlugin on June 15,
+    and the vendor said the following day that it had begun an investigation, was
+    reviewing its distribution and release processes, and would publish verified
+    rebuilds. A related backdoor in Product Slider Pro had already been assigned
+    CVE-2026-49777 and patched in 3.5.4, but Wordfence found compromised packages
+    still being served for other Pro products at the time of writing.
+  start_date: 2026-05-18T00:00:00.000Z
+  end_date: 2026-06-16T00:00:00.000Z
+  target:
+    name: ShapedPlugin
+    kind: organization
+    website: https://shapedplugin.com/
+  actor:
+    name: Unknown
+    kind: group
+  language: PHP
+  method:
+    cause: compromised_infrastructure
+    phase: ci_cd
+    motive: unauthorized_access_control
+    transitive: false
+  impact:
+    types:
+      - backdoor
+      - credential_theft
+      - remote_code_execution
+      - data_exfiltration
+  locations:
+    - uri: https://account.shapedplugin.com/
+      role: distribution
+  indicators:
+    - kind: advisory
+      value: CVE-2026-10735
+    - kind: advisory
+      value: CVE-2026-49777
+    - kind: file
+      value: src/Includes/LicenseLoader.php
+    - kind: file
+      value: wp-content/plugins/woocommerce-subscription/
+    - kind: file
+      value: wp-content/plugins/woocommerce-notification/
+    - kind: file
+      value: install-persistent.php
+    - kind: file
+      value: class-wc-subscription-trace-dispatch.php
+    - kind: file
+      value: class-wc-subscription-diagnostics.php
+    - kind: file
+      value: class-wc-subscription-scheduler.php
+    - kind: domain
+      value: generate.2faplugin.org
+    - kind: ipv4
+      value: 194.76.217.28
+    - kind: port
+      value: '2871'
+    - kind: endpoint
+      value: /wp-json/wc/v3/settings/apply
+    - kind: md5
+      value: e268c35a06d85f672e70c9beecb4e5d1
+  notes:
+    - >-
+      Only Pro builds distributed through the vendor's Easy Digital Downloads endpoint were
+      affected. Wordfence confirmed the free plugins on WordPress.org were not compromised, despite
+      the attacker having deploy access to both channels.
+    - >-
+      Wordfence read file timestamps inside the compromised ZIP as evidence of an automated
+      build-step injection. 4 files were modified on 2026-05-21 within a two-hour window, against
+      366 files from 2025-04-22 and 100 from 2026-02-25. A composer `installed.php` git reference of
+      d0f349c04c2a3578a65b7e17bcabc84152a61b12 indicates the package was built from a private
+      repository.
+    - >-
+      CVE-2026-49777 was assigned to a related Product Slider Pro backdoor and reported as patched
+      in 3.5.4. Wordfence describes CVE-2026-49777 as a duplicate of CVE-2026-10735.
+    - >-
+      Wordfence examined all other ShapedPlugin Pro plugins available as of 2026-06-15 and found no
+      LicenseLoader.php or associated C2 indicators, but could not rule out earlier compromised
+      versions since replaced. Bundle packages may also be affected.
+    - >-
+      Both C2 hosts are registered to AEZA GROUP LLC. The domain 2faplugin.org was updated on
+      2026-05-10, shortly before the backdoor injection timestamps.
+  artifacts:
+    - id: real-testimonials-pro
+      name: Real Testimonials Pro
+      package: testimonial-pro
+      ecosystem: wordpress
+      kind: plugin
+      start_date: 2026-05-21T00:00:00.000Z
+      end_date: 2026-06-12T00:00:00.000Z
+      versions:
+        - 3.2.5
+      fixed_versions:
+        - 3.2.6
+      locations:
+        - uri: https://account.shapedplugin.com/
+          role: distribution
+      notes:
+        - >-
+          Wordfence obtained a backdoored copy of 3.2.5 directly from the official vendor update
+          endpoint on 2026-06-12. 3.2.6 is the clean rebuild.
+    - id: product-slider-pro
+      name: Product Slider Pro for WooCommerce
+      package: woo-product-slider-pro
+      ecosystem: wordpress
+      kind: plugin
+      start_date: 2026-05-21T00:00:00.000Z
+      end_date: 2026-06-04T00:00:00.000Z
+      fixed_versions:
+        - 3.5.4
+      locations:
+        - uri: https://account.shapedplugin.com/
+          role: distribution
+      notes:
+        - >-
+          Versions before 3.5.4 were reported compromised under CVE-2026-49777, disclosed
+          2026-06-04.
+        - >-
+          Reporting described the affected range as < 3.5.4 rather than naming the releases, so the
+          individual versions are not enumerated here.
+    - id: smart-post-show-pro
+      name: Smart Post Show Pro
+      package: smart-show-post-pro
+      ecosystem: wordpress
+      kind: plugin
+      start_date: 2026-05-21T00:00:00.000Z
+      end_date: 2026-06-16T00:00:00.000Z
+      fixed_versions:
+        - 4.0.2
+      locations:
+        - uri: https://account.shapedplugin.com/
+          role: distribution
+      notes:
+        - Versions before 4.0.2 were reported compromised under CVE-2026-10735.
+        - >-
+          Reporting described the affected range as < 4.0.2 rather than naming the releases, so the
+          individual versions are not enumerated here.
+  references:
+    - url: >-
+        https://www.wordfence.com/blog/2026/06/psa-supply-chain-compromise-targets-shapedplugin-backdoored-pro-plugins-distributed-via-official-channels/
+      title: >-
+        PSA: Supply Chain Compromise Targets ShapedPlugin, Backdoored Pro Plugins Distributed via
+        Official Channels - Wordfence
+    - url: https://thehackernews.com/2026/06/shapedplugin-wordpress-pro-plugins.html
+      title: ShapedPlugin WordPress Pro Plugins Backdoored in Supply Chain Attack - The Hacker News
+    - url: >-
+        https://www.bleepingcomputer.com/news/security/shapedplugin-update-flow-hacked-to-infect-wordpress-sites/
+      title: ShapedPlugin update flow hacked to infect WordPress sites - BleepingComputer
+    - url: >-
+        https://securityaffairs.com/194059/hacking/shapedplugin-supply-chain-attack-backdoors-pro-plugin-updates.html
+      title: ShapedPlugin Supply Chain Attack Backdoors Pro Plugin Updates - Security Affairs

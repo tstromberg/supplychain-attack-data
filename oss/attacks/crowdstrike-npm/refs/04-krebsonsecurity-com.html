@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<!--[if IE 7]>
+<html class="ie ie7" lang="en-US">
+<![endif]-->
+<!--[if IE 8]>
+<html class="ie ie8" lang="en-US">
+<![endif]-->
+<!--[if !(IE 7) | !(IE 8)  ]><!-->
+<html lang="en-US">
+<!--<![endif]-->
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width" />
+<link rel="profile" href="http://gmpg.org/xfn/11" />
+<!--[if lt IE 9]>
+<script src="https://krebsonsecurity.com/wp-content/themes/kos-mar2021/js/html5.js" type="text/javascript"></script>
+<![endif]-->
+<title>Self-Replicating Worm Hits 180+ Software Packages &#8211; Krebs on Security</title>
+<meta name='robots' content='max-image-preview:large' />
+<link rel='dns-prefetch' href='//fonts.googleapis.com' />
+<link rel="alternate" type="application/rss+xml" title="Krebs on Security &raquo; Feed" href="https://krebsonsecurity.com/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Krebs on Security &raquo; Comments Feed" href="https://krebsonsecurity.com/comments/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Krebs on Security &raquo; Self-Replicating Worm Hits 180+ Software Packages Comments Feed" href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/feed/" />
+<script type="text/javascript">
+window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/14.0.0\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/14.0.0\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/krebsonsecurity.com\/wp-includes\/js\/wp-emoji-release.min.js?ver=6.2.2"}};
+/*! This file is auto-generated */
+!function(e,a,t){var n,r,o,i=a.createElement("canvas"),p=i.getContext&&i.getContext("2d");function s(e,t){p.clearRect(0,0,i.width,i.height),p.fillText(e,0,0);e=i.toDataURL();return p.clearRect(0,0,i.width,i.height),p.fillText(t,0,0),e===i.toDataURL()}function c(e){var t=a.createElement("script");t.src=e,t.defer=t.type="text/javascript",a.getElementsByTagName("head")[0].appendChild(t)}for(o=Array("flag","emoji"),t.supports={everything:!0,everythingExceptFlag:!0},r=0;r<o.length;r++)t.supports[o[r]]=function(e){if(p&&p.fillText)switch(p.textBaseline="top",p.font="600 32px Arial",e){case"flag":return s("\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!s("\ud83c\uddfa\ud83c\uddf3","\ud83c\uddfa\u200b\ud83c\uddf3")&&!s("\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!s("\ud83e\udef1\ud83c\udffb\u200d\ud83e\udef2\ud83c\udfff","\ud83e\udef1\ud83c\udffb\u200b\ud83e\udef2\ud83c\udfff")}return!1}(o[r]),t.supports.everything=t.supports.everything&&t.supports[o[r]],"flag"!==o[r]&&(t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&t.supports[o[r]]);t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&!t.supports.flag,t.DOMReady=!1,t.readyCallback=function(){t.DOMReady=!0},t.supports.everything||(n=function(){t.readyCallback()},a.addEventListener?(a.addEventListener("DOMContentLoaded",n,!1),e.addEventListener("load",n,!1)):(e.attachEvent("onload",n),a.attachEvent("onreadystatechange",function(){"complete"===a.readyState&&t.readyCallback()})),(e=t.source||{}).concatemoji?c(e.concatemoji):e.wpemoji&&e.twemoji&&(c(e.twemoji),c(e.wpemoji)))}(window,document,window._wpemojiSettings);
+</script>
+<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 0.07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+	<link rel='stylesheet' id='colorbox-theme1-css' href='https://krebsonsecurity.com/wp-content/plugins/jquery-lightbox-for-native-galleries/colorbox/theme1/colorbox.css?ver=1.3.14' type='text/css' media='screen' />
+<link rel='stylesheet' id='wp-block-library-css' href='https://krebsonsecurity.com/wp-includes/css/dist/block-library/style.min.css?ver=6.2.2' type='text/css' media='all' />
+<link rel='stylesheet' id='classic-theme-styles-css' href='https://krebsonsecurity.com/wp-includes/css/classic-themes.min.css?ver=6.2.2' type='text/css' media='all' />
+<style id='global-styles-inline-css' type='text/css'>
+body{--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgba(252,185,0,1) 0%,rgba(255,105,0,1) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgba(255,105,0,1) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--duotone--dark-grayscale: url('#wp-duotone-dark-grayscale');--wp--preset--duotone--grayscale: url('#wp-duotone-grayscale');--wp--preset--duotone--purple-yellow: url('#wp-duotone-purple-yellow');--wp--preset--duotone--blue-red: url('#wp-duotone-blue-red');--wp--preset--duotone--midnight: url('#wp-duotone-midnight');--wp--preset--duotone--magenta-yellow: url('#wp-duotone-magenta-yellow');--wp--preset--duotone--purple-green: url('#wp-duotone-purple-green');--wp--preset--duotone--blue-orange: url('#wp-duotone-blue-orange');--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgba(255, 255, 255, 1), 6px 6px rgba(0, 0, 0, 1);--wp--preset--shadow--crisp: 6px 6px 0px rgba(0, 0, 0, 1);}:where(.is-layout-flex){gap: 0.5em;}body .is-layout-flow > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}body .is-layout-flow > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}body .is-layout-flow > .aligncenter{margin-left: auto !important;margin-right: auto !important;}body .is-layout-constrained > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}body .is-layout-constrained > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}body .is-layout-constrained > .aligncenter{margin-left: auto !important;margin-right: auto !important;}body .is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)){max-width: var(--wp--style--global--content-size);margin-left: auto !important;margin-right: auto !important;}body .is-layout-constrained > .alignwide{max-width: var(--wp--style--global--wide-size);}body .is-layout-flex{display: flex;}body .is-layout-flex{flex-wrap: wrap;align-items: center;}body .is-layout-flex > *{margin: 0;}:where(.wp-block-columns.is-layout-flex){gap: 2em;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+.wp-block-navigation a:where(:not(.wp-element-button)){color: inherit;}
+:where(.wp-block-columns.is-layout-flex){gap: 2em;}
+.wp-block-pullquote{font-size: 1.5em;line-height: 1.6;}
+</style>
+<link rel='stylesheet' id='contact-form-7-css' href='https://krebsonsecurity.com/wp-content/plugins/contact-form-7/includes/css/styles.css?ver=5.8.2' type='text/css' media='all' />
+<link rel='stylesheet' id='publisho-style-css' href='https://krebsonsecurity.com/wp-content/themes/kos-mar2021/style.css?subver=1.2&#038;ver=6.2.2' type='text/css' media='all' />
+<style id='publisho-style-inline-css' type='text/css'>
+
+	.themonic-nav .current-menu-item > a, .themonic-nav .current-menu-ancestor > a, .themonic-nav .current_page_item > a, .themonic-nav .current_page_ancestor > a {
+		background: #cc6600;
+	}
+	.themonic-nav ul.nav-menu, .themonic-nav div.nav-menu > ul {
+		border-bottom: 5px solid #cc6600;
+	}
+	#site-navigation .topheadmenu a {
+    background: rgba(0, 0, 0, 0);
+	}
+	.themonic-nav li a:hover {
+		background: #cc6600;
+	}
+	.themonic-nav li:hover {
+		background: #cc6600;
+	}.wrapper .flexslider {margin: 0 0 30px;}.frontp .btm-wrap {
+    border-top: 1px solid #e9e9e9;
+	}
+	.entry-summary {
+    border-top: none;
+	}.frontp .btm-wrap { margin-bottom: 30px;}.site { font-size:14px;}.site { font-family:'Roboto', arial ;}
+</style>
+<link rel='stylesheet' id='publisho-custom-style-css' href='https://krebsonsecurity.com/wp-content/themes/kos-mar2021/custom.css?subver=1.2&#038;ver=6.2.2' type='text/css' media='all' />
+<!--[if lt IE 9]>
+<link rel='stylesheet' id='publisho-ie-css' href='https://krebsonsecurity.com/wp-content/themes/kos-mar2021/css/ie.css?ver=20160606' type='text/css' media='all' />
+<![endif]-->
+<link rel='stylesheet' id='fontawesome-css-css' href='https://krebsonsecurity.com/wp-content/themes/kos-mar2021/fonts/font-awesome.min.css?ver=6.2.2' type='text/css' media='all' />
+<link rel='stylesheet' id='publisho_custom_fonts-css' href='//fonts.googleapis.com/css?family=Roboto%3Aregular%2Citalic%2C500%26subset%3Dlatin%2C' type='text/css' media='screen' />
+<script type='text/javascript' src='https://krebsonsecurity.com/wp-includes/js/jquery/jquery.min.js?ver=3.6.4' id='jquery-core-js'></script>
+<script type='text/javascript' src='https://krebsonsecurity.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.0' id='jquery-migrate-js'></script>
+<script type='text/javascript' src='https://krebsonsecurity.com/wp-content/plugins/jquery-lightbox-for-native-galleries/colorbox/jquery.colorbox-min.js?ver=1.3.14' id='colorbox-js'></script>
+<link rel="https://api.w.org/" href="https://krebsonsecurity.com/wp-json/" /><link rel="alternate" type="application/json" href="https://krebsonsecurity.com/wp-json/wp/v2/posts/72190" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://krebsonsecurity.com/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://krebsonsecurity.com/wp-includes/wlwmanifest.xml" />
+<meta name="generator" content="WordPress 6.2.2" />
+<link rel="canonical" href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/" />
+<link rel='shortlink' href='https://krebsonsecurity.com/?p=72190' />
+<link rel="alternate" type="application/json+oembed" href="https://krebsonsecurity.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fkrebsonsecurity.com%2F2025%2F09%2Fself-replicating-worm-hits-180-software-packages%2F" />
+<link rel="alternate" type="text/xml+oembed" href="https://krebsonsecurity.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fkrebsonsecurity.com%2F2025%2F09%2Fself-replicating-worm-hits-180-software-packages%2F&#038;format=xml" />
+<!-- JavaScript Pull-Quotes plugin v2.2 -->
+	<link rel="stylesheet" href="https://krebsonsecurity.com/wp-content/plugins/jspullquotes/resources/jspullquotes-core.css" type="text/css" />
+	<link rel="stylesheet" href="https://krebsonsecurity.com/wp-content/plugins/jspullquotes/resources/jspullquotes-default.css" type="text/css" />
+	<script type="text/javascript" src="https://krebsonsecurity.com/wp-content/plugins/jspullquotes/resources/jspullquotes.js"></script>
+	<script type="text/javascript">
+		var arrOptions = new Array("1", "1", "right", "1", "1", "blockquote", "pullquote", "pullquote pqRight");
+		pullQuoteOpts(arrOptions);
+	</script>
+<!-- end pull-quote additions -->
+<!-- jQuery Lightbox For Native Galleries v3.1.3 | http://www.viper007bond.com/wordpress-plugins/jquery-lightbox-for-native-galleries/ -->
+<script type="text/javascript">
+// <![CDATA[
+	jQuery(document).ready(function($){
+		$(".gallery").each(function(index, obj){
+			var galleryid = Math.floor(Math.random()*10000);
+			$(obj).find("a").colorbox({rel:galleryid, maxWidth:"95%", maxHeight:"95%"});
+		});
+		$("a.lightbox").colorbox({maxWidth:"95%", maxHeight:"95%"});
+	});
+// ]]>
+</script>
+<style type="text/css" id="custom-background-css">
+body.custom-background { background-color: #ffffff; }
+</style>
+	<meta name="twitter:widgets:link-color" content="#000000" /><meta name="twitter:widgets:border-color" content="#000000" /><meta name="twitter:partner" content="tfwp" />
+<meta name="twitter:card" content="summary" /><meta name="twitter:title" content="Self-Replicating Worm Hits 180+ Software Packages" /><meta name="twitter:site" content="@briankrebs" /><meta name="twitter:description" content="At least 187 code packages made available through the JavaScript repository NPM have been infected with a self-replicating worm that steals credentials from developers and publishes those secrets on GitHub, experts warn. The malware, which briefly infected multiple code packages from&hellip;" /><meta name="twitter:image" content="https://krebsonsecurity.com/wp-content/uploads/2025/09/shai-hulud.png" />
+</head>
+<body class="post-template-default single single-post postid-72190 single-format-standard custom-background custom-background-white single-author">
+<div id="page" class="site">
+	<!-- <div class="publisho-top-mobile-nav clear"></div> -->
+	<div class="themonic-logo themonic-ad3"><div class="a-statement">Advertisement</div><a href="https://www.cape.co/?utm_source=Krebs&amp;utm_medium=Banner&amp;utm_campaign=Krebs_Display_Footer_Desktop">
+<img src="/b-cape/1.jpg">
+</a></div>
+	<div class="themonic-logo themonic-ad6"><div class="a-statement">Advertisement</div><a href="https://www.cape.co/?utm_source=Krebs&amp;utm_medium=Banner&amp;utm_campaign=Krebs_Display_Footer_Mobile">
+<img src="/b-cape/2.jpg">
+</a></div>
+	<nav id="site-navigation" class="themonic-nav" role="navigation">
+	</nav><!-- #site-navigation -->
+	<div class="clear"></div>
+	<header id="masthead" class="site-header" role="banner">
+ 					<div class="desktop-social">
+						<div class="socialmedia">
+							<a href="http://twitter.com/briankrebs" target="_blank"><i class="fa fa-twitter"></i></a> 
+															<a class="rss" href="https://krebsonsecurity.com/feed/" target="_blank"><i class="fa fa-rss"></i></a>	
+									<a class="rss" href="https://www.linkedin.com/in/bkrebs/" target="_blank"><i class="fa fa-linkedin"></i></a>	
+								</div>
+				 	</div>
+																						   
+		
+		<div class="themonic-logo responsive-img-container">
+			<a href="https://krebsonsecurity.com/" title="Krebs on Security" rel="home"><img src="https://krebsonsecurity.com/wp-content/uploads/2021/03/kos-27-03-2021.jpg" alt="Krebs on Security"></a>
+		</div>
+
+					<div class="mobile-social">
+						<div class="socialmedia">
+							<a href="http://twitter.com/briankrebs" target="_blank"><i class="fa fa-twitter"></i></a> 
+															<a class="rss" href="https://krebsonsecurity.com/feed/" target="_blank"><i class="fa fa-rss"></i></a>	
+									<a class="rss" href="https://www.linkedin.com/in/bkrebs/" target="_blank"><i class="fa fa-linkedin"></i></a>	
+								</div>
+					</div>
+		
+				<!-- <div class="publisho-mobile-nav clear"></div> -->
+		<nav id="site-navigation" class="themonic-nav" role="navigation">
+			<a class="assistive-text" href="#content" title="Skip to content">Skip to content</a>
+			<div id="menu-top" class="nav-menu"><ul>
+<li ><a href="https://krebsonsecurity.com/">Home</a></li><li class="page_item page-item-2"><a href="https://krebsonsecurity.com/about/">About the Author</a></li>
+<li class="page_item page-item-645"><a href="https://krebsonsecurity.com/cpm/">Advertising/Speaking</a></li>
+</ul></div>
+		</nav><!-- #site-navigation -->
+		<div class="clear"></div>
+	</header><!-- #masthead -->
+	<div id="main" class="wrapper">
+	<header class="entry-header">
+							<div class="singleentry">
+					<h1 class="entry-title">Self-Replicating Worm Hits 180+ Software Packages</h1>
+				</div>
+							
+			
+			</header><!-- .entry-header -->
+
+	<div id="primary" class="site-content">
+		<div id="content" role="main">
+
+			
+					<article id="post-72190" class="post-72190 post type-post status-publish format-standard has-post-thumbnail hentry category-latest-warnings category-comingstorm category-patches category-web-fraud-2-0 tag-aikido tag-ashish-kurmi tag-charlie-eriksen tag-github tag-international-computer-science-institute tag-nicholas-weaver tag-npm tag-shai-hulud-worm tag-stepsecurity">
+				<header class="entry-header">
+					<div class="clear"></div>
+	<div class="btm-wrap">
+	<div class="below-title-meta">
+		<div class="adt">
+			
+			
+				
+				<span class="date updated">September 16, 2025</span>
+					
+        </div>
+		<div class="adt-comment">
+		<span><a class="link-comments" href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comments">36 Comments</a></span> 
+        </div>    <div class="clear"></div>	   
+    </div><!-- below title meta end -->
+	</div>
+		
+						</header><!-- .entry-header -->
+		
+		
+							<div class="entry-content">
+												<p>At least 187 code packages made available through the JavaScript repository <strong>NPM</strong> have been infected with a self-replicating worm that steals credentials from developers and publishes those secrets on <strong>GitHub</strong>, experts warn. The malware, which briefly infected multiple code packages from the security vendor <strong>CrowdStrike</strong>, steals and publishes even more credentials every time an infected package is installed.</p>
+<div id="attachment_72194" style="width: 714px" class="wp-caption aligncenter"><img aria-describedby="caption-attachment-72194" decoding="async" class=" wp-image-72194" src="https://krebsonsecurity.com/wp-content/uploads/2025/09/shai-hulud.png" alt="" width="704" height="619" /><p id="caption-attachment-72194" class="wp-caption-text">Image: https://en.wikipedia.org/wiki/Sandworm_(Dune)</p></div>
+<p>The novel malware strain is being dubbed <strong>Shai-Hulud</strong> &#8212; after the name for the giant sandworms in Frank Herbert&#8217;s <em>Dune</em> novel series &#8212; because it publishes any stolen credentials in a new public GitHub repository that includes the name &#8220;Shai-Hulud.&#8221;</p>
+<p>&#8220;When a developer installs a compromised package, the malware will look for a npm token in the environment,&#8221; said <strong>Charlie Eriksen</strong>, a researcher for the Belgian security firm <a href="https://www.aikido.dev/blog/s1ngularity-nx-attackers-strike-again" target="_blank" rel="noopener">Aikido</a>. &#8220;If it finds it, it will modify the 20 most popular packages that the npm token has access to, copying itself into the package, and publishing a new version.&#8221;</p>
+<p>At the center of this developing maelstrom are code libraries available on <a href="https://www.npmjs.com/" target="_blank" rel="noopener"><strong>NPM</strong></a> (short for “Node Package Manager”), which acts as a central hub for JavaScript development and provides the latest updates to widely-used JavaScript components.</p>
+<p>The Shai-Hulud worm emerged just days after unknown attackers <a href="https://krebsonsecurity.com/2025/09/18-popular-code-packages-hacked-rigged-to-steal-crypto/" target="_blank" rel="noopener">launched a broad phishing campaign</a> that spoofed NPM and asked developers to &#8220;update&#8221; their multi-factor authentication login options. That attack led to malware being inserted into at least two-dozen NPM code packages, but the outbreak was quickly contained and was narrowly focused on siphoning cryptocurrency payments.</p>
+<div id="attachment_72195" style="width: 759px" class="wp-caption aligncenter"><img aria-describedby="caption-attachment-72195" decoding="async" loading="lazy" class=" wp-image-72195" src="https://krebsonsecurity.com/wp-content/uploads/2025/09/shai-hulud-packages.png" alt="" width="749" height="440" srcset="https://krebsonsecurity.com/wp-content/uploads/2025/09/shai-hulud-packages.png 961w, https://krebsonsecurity.com/wp-content/uploads/2025/09/shai-hulud-packages-768x451.png 768w, https://krebsonsecurity.com/wp-content/uploads/2025/09/shai-hulud-packages-782x459.png 782w" sizes="(max-width: 749px) 100vw, 749px" /><p id="caption-attachment-72195" class="wp-caption-text">Image: aikido.dev</p></div>
+<p>In late August, another compromise of an NPM developer resulted in malware being added to &#8220;<strong>nx</strong>,&#8221; an open-source code development toolkit with as many as six million weekly downloads. In the nx compromise, the attackers introduced code that scoured the user’s device for authentication tokens from programmer destinations like GitHub and NPM, as well as SSH and API keys. But instead of sending those stolen credentials to a central server controlled by the attackers, the malicious nx code created a new public repository in the victim’s GitHub account, and published the stolen data there for all the world to see and download.</p>
+<p>Last month&#8217;s attack on nx did not self-propagate like a worm, but this Shai-Hulud malware does and bundles reconnaissance tools to assist in its spread. Namely, it uses the open-source tool <a href="https://github.com/trufflesecurity/trufflehog" target="_blank" rel="noopener">TruffleHog</a> to search for exposed credentials and access tokens on the developer&#8217;s machine. It then attempts to create new GitHub actions and publish any stolen secrets.</p>
+<p>&#8220;Once the first person got compromised, there was no stopping it,&#8221; Aikido&#8217;s Eriksen told KrebsOnSecurity. He said the first NPM package compromised by this worm appears to have been altered on Sept. 14, around 17:58 UTC.</p>
+<p>The security-focused code development platform <strong>socket.dev</strong> <a href="https://socket.dev/blog/ongoing-supply-chain-attack-targets-crowdstrike-npm-packages" target="_blank" rel="noopener">reports</a> the Shai-Halud attack briefly compromised at least 25 NPM code packages managed by CrowdStrike. Socket.dev said the affected packages were quickly removed by the NPM registry.</p>
+<p>In a written statement shared with KrebsOnSecurity, CrowdStrike said that after detecting several malicious packages in the public NPM registry, the company swiftly removed them and rotated its keys in public registries.</p>
+<p>&#8220;These packages are not used in the Falcon sensor, the platform is not impacted and customers remain protected,&#8221; the statement reads, referring to the company&#8217;s widely-used endpoint threat detection service. &#8220;We are working with NPM and conducting a thorough investigation.&#8221;<span id="more-72190"></span></p>
+<p>A <a href="https://www.stepsecurity.io/blog/ctrl-tinycolor-and-40-npm-packages-compromised" target="_blank" rel="noopener">writeup on the attack</a> from <strong>StepSecurity</strong> found that for cloud-specific operations, the malware enumerates AWS, Azure and Google Cloud Platform secrets. It also found the entire attack design assumes the victim is working in a Linux or macOS environment, and that it deliberately skips Windows systems.</p>
+<p>StepSecurity said Shai-Hulud spreads by using stolen NPM authentication tokens, adding its code to the top 20 packages in the victim&#8217;s account.</p>
+<p>&#8220;This creates a cascading effect where an infected package leads to compromised maintainer credentials, which in turn infects all other packages maintained by that user,&#8221; StepSecurity&#8217;s <strong>Ashish Kurmi</strong> wrote.</p>
+<p>Eriksen said Shai-Hulud is still propagating, although its spread seems to have waned in recent hours.</p>
+<p>&#8220;I still see package versions popping up once in a while, but no new packages have been compromised in the last ~6 hours,&#8221; Eriksen said. &#8220;But that could change now as the east coast starts working. I would think of this attack as a &#8216;living&#8217; thing almost, like a virus. Because it can lay dormant for a while, and if just one person is suddenly infected by accident, they could restart the spread. Especially if there&#8217;s a super-spreader attack.&#8221;</p>
+<p>For now, it appears that the web address the attackers were using to exfiltrate collected data was disabled due to rate limits, Eriksen said.</p>
+<p><strong>Nicholas Weaver</strong> is a researcher with the <strong>International Computer Science Institute</strong>, a nonprofit in Berkeley, Calif. Weaver called the Shai-Hulud worm &#8220;a supply chain attack that conducts a supply chain attack.&#8221; Weaver said NPM (and all other similar package repositories) need to immediately switch to a publication model that requires explicit human consent for every publication request using a phish-proof 2FA method.</p>
+<p>&#8220;Anything less means attacks like this are going to continue and become far more common, but switching to a 2FA method would effectively throttle these attacks before they can spread,&#8221; Weaver said. &#8220;Allowing purely automated processes to update the published packages is now a proven recipe for disaster.&#8221;</p>
+											</div><!-- .entry-content -->
+		
+			
+	
+	<footer class="entry-meta">
+			
+		<p><i>
+         This entry was posted on Tuesday 16th of September 2025 10:08 AM 
+         </i></p>
+		 
+					<div class="categories"><a href="https://krebsonsecurity.com/category/latest-warnings/" rel="category tag">Latest Warnings</a> <a href="https://krebsonsecurity.com/category/comingstorm/" rel="category tag">The Coming Storm</a> <a href="https://krebsonsecurity.com/category/patches/" rel="category tag">Time to Patch</a> <a href="https://krebsonsecurity.com/category/web-fraud-2-0/" rel="category tag">Web Fraud 2.0</a></div>
+								<div class="tags"><a href="https://krebsonsecurity.com/tag/aikido/" rel="tag">Aikido</a> <a href="https://krebsonsecurity.com/tag/ashish-kurmi/" rel="tag">Ashish Kurmi</a> <a href="https://krebsonsecurity.com/tag/charlie-eriksen/" rel="tag">Charlie Eriksen</a> <a href="https://krebsonsecurity.com/tag/github/" rel="tag">GitHub</a> <a href="https://krebsonsecurity.com/tag/international-computer-science-institute/" rel="tag">International Computer Science Institute</a> <a href="https://krebsonsecurity.com/tag/nicholas-weaver/" rel="tag">Nicholas Weaver</a> <a href="https://krebsonsecurity.com/tag/npm/" rel="tag">NPM</a> <a href="https://krebsonsecurity.com/tag/shai-hulud-worm/" rel="tag">Shai-Hulud worm</a> <a href="https://krebsonsecurity.com/tag/stepsecurity/" rel="tag">StepSecurity</a></div>
+			
+	</footer>
+
+	</article><!-- #post -->
+		
+			<br><div class="themonic-ad4"></div>
+					<nav class="nav-single">
+					<div class="assistive-text">Post navigation</div>
+					<span class="nav-previous"><a href="https://krebsonsecurity.com/2025/09/bulletproof-host-stark-industries-evades-eu-sanctions/" rel="prev"><span class="meta-nav">&larr;</span> Bulletproof Host Stark Industries Evades EU Sanctions</a></span>
+					<span class="nav-next"><a href="https://krebsonsecurity.com/2025/09/feds-tie-scattered-spider-duo-to-115m-in-ransoms/" rel="next">Feds Tie &#8216;Scattered Spider&#8217; Duo to $115M in Ransoms <span class="meta-nav">&rarr;</span></a></span>
+				</nav><!-- .nav-single -->
+
+				
+<div id="comments" class="comments-area">
+
+	
+			<h2 class="comments-title">
+			36 thoughts on &ldquo;<span>Self-Replicating Worm Hits 180+ Software Packages</span>&rdquo;		</h2>
+
+		<ol class="commentlist">
+				<li class="comment even thread-even depth-1" id="li-comment-630364">
+		<article id="comment-630364" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">D </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630364"><time datetime="2025-09-16T10:35:53-04:00">September 16, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>ts so fye</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment odd alt depth-2" id="li-comment-630717">
+		<article id="comment-630717" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Matt C. </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630717"><time datetime="2025-09-30T12:02:33-04:00">September 30, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Dude, I found the actual SIM swappers and it&#8217;s clearly the media. FYI but you knew that.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+	<li class="comment even thread-odd thread-alt depth-1" id="li-comment-630365">
+		<article id="comment-630365" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Wannabe Techguy </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630365"><time datetime="2025-09-16T11:37:51-04:00">September 16, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>&#8220;“Allowing purely automated processes to update the published packages is now a proven recipe for disaster.”<br />
+Even a dummy like me could&#8217;ve figured that out.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment odd alt depth-2" id="li-comment-630371">
+		<article id="comment-630371" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Actual_Tech_Guy </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630371"><time datetime="2025-09-16T12:56:33-04:00">September 16, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>I would expect such stupid comment from a &#8220;Wannabe Techguy&#8221;<br />
+Good luck ever get past the &#8220;Wannabe&#8221; stage chief&#8230;.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment even depth-3" id="li-comment-630373">
+		<article id="comment-630373" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Regulator_C </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630373"><time datetime="2025-09-16T13:49:34-04:00">September 16, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>To Actual_Tech_Guy: Rude comment, why so rude? Lack of coffee? @$$hole?<br />
+Wannabe Techguy has a point, it all depends on your organization&#8217;s risk tolerance.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+	<li class="comment odd alt depth-3" id="li-comment-630385">
+		<article id="comment-630385" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">austin </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630385"><time datetime="2025-09-16T17:16:45-04:00">September 16, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>I bet OP is a CTO with a good sense of humor, and you have merely dunked on yourself with your rudeness.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment even depth-4" id="li-comment-630395">
+		<article id="comment-630395" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Raza </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630395"><time datetime="2025-09-17T04:51:36-04:00">September 17, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Having never been a CTO, but having been a consultant for decades, it&#8217;s difficult to hypothesize why you believe that this comment is a good idea, but regardless&#8230;</p>
+<p>This guy posts here a lot. Doesn&#8217;t make him a friend. He may as well be a defunct programming language from the frigging 90s, for all the good it&#8217;d do. Though I guess people still use that language to do &#8216;trampolines&#8217; (somewhat illegitimate if you ask me)&#8230; The other place I&#8217;ve seen bugs like this proliferate.</p>
+<p>Whatever. A lot of places do still use some form of encryption-based infrastructure to automate things.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment odd alt depth-5" id="li-comment-630527">
+		<article id="comment-630527" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">CyGuy </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630527"><time datetime="2025-09-23T07:30:29-04:00">September 23, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Welcome to the new world of IT where the server guy isn&#8217;t the most arrogant guy in the room anymore bud</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment even depth-6" id="li-comment-630718">
+		<article id="comment-630718" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Matt C </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630718"><time datetime="2025-09-30T12:03:32-04:00">September 30, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Selling every last &#8216;share&#8217; of the fake PENSKE stock we have made up I own. Since I have none, I am definitely no better off.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+	<li class="comment odd alt depth-4" id="li-comment-630637">
+		<article id="comment-630637" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Aaron </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630637"><time datetime="2025-09-28T02:27:57-04:00">September 28, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Do CTOs generally really know that much about tech though? I know CIOs don&#8217;t.</p>
+<p>Anyway, terrific article Brian. Huge fan.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+	<li class="comment even depth-2" id="li-comment-630379">
+		<article id="comment-630379" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">austin </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630379"><time datetime="2025-09-16T15:31:18-04:00">September 16, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Your username brought me joy</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+	<li class="comment odd alt thread-even depth-1" id="li-comment-630366">
+		<article id="comment-630366" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Paul Becker </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630366"><time datetime="2025-09-16T11:37:52-04:00">September 16, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>What is the scope of the infection. For example, does this malware affect end users, just the developers, or both?</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+	<li class="comment even thread-odd thread-alt depth-1" id="li-comment-630370">
+		<article id="comment-630370" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">santa </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630370"><time datetime="2025-09-16T12:42:09-04:00">September 16, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>the title is redundant &#8211; worms are, by definition, self-replicating&#8230;</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment odd alt depth-2" id="li-comment-630374">
+		<article id="comment-630374" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">bruh </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630374"><time datetime="2025-09-16T13:58:39-04:00">September 16, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>hohoho</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+	<li class="comment even thread-even depth-1" id="li-comment-630375">
+		<article id="comment-630375" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Tom </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630375"><time datetime="2025-09-16T14:16:33-04:00">September 16, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>If developers are getting phished and spoofed, what hope for normal end users?</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment odd alt depth-2" id="li-comment-630401">
+		<article id="comment-630401" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">developer </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630401"><time datetime="2025-09-17T06:32:50-04:00">September 17, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>developers are idiots tbh desu</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+	<li class="comment even thread-odd thread-alt depth-1" id="li-comment-630383">
+		<article id="comment-630383" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">td </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630383"><time datetime="2025-09-16T16:45:33-04:00">September 16, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>&#8220;No way to prevent this&#8221; says users of only package ecosystem where this regularly happens.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+	<li class="comment odd alt thread-even depth-1" id="li-comment-630396">
+		<article id="comment-630396" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Matt C. </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630396"><time datetime="2025-09-17T04:59:20-04:00">September 17, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Hey Brian,</p>
+<p>I&#8217;ve been wondering, what are the legal obligations on the part of, eg, GitHub, GitLab, Reddit, etc? Can publicly traded companies being used to propagate worm-like (this is worm-like, not precisely a worm, if I am reading correctly; doesn&#8217;t really matter, though, I guess) be legally pursued/sued by &#8216;victim companies&#8217; for supporting this? I mean, moreso than the pastebin type stuff being used a decade or two ago to grab configurations for crappy little bots and stuff (afaik, not public)? Clearly there is profit being made by actors other than the promulgators of this worm, even if they don&#8217;t necessary want that activity on their servers.</p>
+<p>Thanks.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment even depth-2" id="li-comment-630919">
+		<article id="comment-630919" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Matt Cu </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630919"><time datetime="2025-10-10T02:38:40-04:00">October 10, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>What a dumb question</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+	<li class="comment odd alt thread-odd thread-alt depth-1" id="li-comment-630398">
+		<article id="comment-630398" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn"><a href="https://www.crowdstrike.com" class="url" rel="ugc external nofollow">passerby</a> </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630398"><time datetime="2025-09-17T05:13:18-04:00">September 17, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>&gt;CrowdStrike<br />
+Isn&#8217;t this the same vendor with connections in three-letter agencies that bricked millions of Windows-based computers worldwide about a year ago due to a bug in its &#8220;anti-virus&#8221; software? The hillarious case when banks and airports went offline for a day or so?</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment even depth-2" id="li-comment-630405">
+		<article id="comment-630405" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Anon404 </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630405"><time datetime="2025-09-17T10:26:29-04:00">September 17, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>They werent bricked, they needed a reboot, thats it.  Still a major pain, but theres a reason the criminals are targeting Crowdstrike, because Crowdstrike is a major thorn in their side.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment odd alt depth-3" id="li-comment-630406">
+		<article id="comment-630406" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">passerby </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630406"><time datetime="2025-09-17T11:05:28-04:00">September 17, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Effectively they were bricked. A reboot wasn&#8217;t enough; they had to reboot the computer in Safe Mode as administrator to fix the broken driver. But many people around the world work on computers with blocked administrator access due to security policies, and if they work remotely, they&#8217;re out of luck, as administrators would need to be on-site to fix the problem.<br />
+I can only imagine the kind of housewife-level circus going on at CrowdStrike if they allow such incidents to occur. I&#8217;m willing to bet that with such incompetence, their software won&#8217;t work against real threats.</p>
+<p>What do you think about this? Let me know your opinion via mail to <a href="mailto:assad-mossad@crowdstrike.com">assad-mossad@crowdstrike.com</a></p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment even depth-4" id="li-comment-630413">
+		<article id="comment-630413" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">mealy </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630413"><time datetime="2025-09-18T05:11:46-04:00">September 18, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>&#8220;they had to reboot the computer in Safe Mode as administrator to fix the broken driver&#8221;<br />
+perhaps we have different definitions of &#8220;bricked&#8221; really</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment odd alt depth-5" id="li-comment-630415">
+		<article id="comment-630415" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Dmitry Buttholovich </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630415"><time datetime="2025-09-18T08:37:59-04:00">September 18, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Did banks, hospitals and airports go offline for a day (in some cases for a few days) or no?<br />
+Okay, let&#8217;s say they were not &#8220;bricked&#8221;, FartStrike just accidentally committed attack on US critical infrastructure. I hope it sounds more plausible to you.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment even depth-6" id="li-comment-630435">
+		<article id="comment-630435" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">mealy </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630435"><time datetime="2025-09-19T03:53:21-04:00">September 19, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>I&#8217;m just saying bricked means something else.</p>
+<p>You do not fix bricked by pressing f8.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment odd alt depth-7" id="li-comment-630764">
+		<article id="comment-630764" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Matt C. </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630764"><time datetime="2025-10-02T10:40:25-04:00">October 2, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Correct. &#8216;Bricked&#8217; hardware, to my understanding going back to I guess the 1980s, means it can never work again, generally (at least without some sort of hardware repair). Anyone who&#8217;s messed around with flashing hardware all that much has lost at least a device or two to this, permanently. I still miss the old Nexus I used to have. 🙁</p>
+<p>Didn&#8217;t come here to say this, but going through this &#8216;TrufflePig&#8217; git repo and this comment is still annoying me a month later, almost.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+	<li class="comment even depth-7" id="li-comment-630765">
+		<article id="comment-630765" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Matt C. </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630765"><time datetime="2025-10-02T10:45:12-04:00">October 2, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Indeed. &#8216;Bricked&#8217; hardware means that it is completely inoperable, and will likely never be fixable &#8212; permanently &#8212; unless some hardware replacement is done. Anyone who has flashed or worked with devices low-level will have lost at least one or two devices to the actual definition of &#8216;bricked&#8217;. I still miss my old Nexus. 🙁</p>
+<p>Didn&#8217;t come here to post, but this is irritating me still, a month later. Just here while getting a look at this TrufflePig repo.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+	<li class="comment odd alt thread-even depth-1" id="li-comment-630422">
+		<article id="comment-630422" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn"><a href="http://www.reversinglabs.com" class="url" rel="ugc external nofollow">Chad Loeven</a> </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630422"><time datetime="2025-09-18T12:24:46-04:00">September 18, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Our researchers at ReversingLabs did their own post on this: <a href="https://www.reversinglabs.com/blog/shai-hulud-worm-npm" rel="nofollow ugc">https://www.reversinglabs.com/blog/shai-hulud-worm-npm</a></p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+	<li class="comment even thread-odd thread-alt depth-1" id="li-comment-630443">
+		<article id="comment-630443" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">MARIO LAUANDE LACROIX </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630443"><time datetime="2025-09-19T12:25:20-04:00">September 19, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Regarding the worry of doing auto-update, there are a few considerations to add to the balance:<br />
+1- We are talking about NPN packages, that usually require a pipeline to: (a) download the last version, (b) re-package or re-compile the code, (c) re-test, (d) Run the AppSec SAST/SCA tools, (e) create tickets to fix new H/C vulnerabilities, (f) deploy in nightly releases,  (g) get feedback, (h) and sign-of before pushing to (i) production. Infected systems are the ones NOT following the process (that can be partially automated, but not sign-of part!!!). So think of this worm as a &#8220;thermometer&#8221; for bad SDLC practices, in case you are afraid of it, go check your SDLC first&#8230;<br />
+2- Long ago, running auto-update could break a lot of things&#8230; back on the 90&#8217;s era, when we had too many custom drivers installed on either OS&#8217;s (Win and Linux), and updates used to break lots of integrations, (and printers stop working again!?!).nowadays integrations are much more controlled, and running updates ASAP is recommended. Remember there are also day-1 exploits (created by reverse engineering the vulnerable code, compared to the fixed version) that makes it risky to keep using vulnerable versions of libraries and software.<br />
+3- Please Implement MFA everywhere. I know people don&#8217;t like it, that&#8217;s why you should mandate it by policy and system controls! Seriously, you may trust a person, but never that person machine! MFA can stop automations to run wild and improve a lot the security. And if you need a fully automation, create a system-to-system account, limit it&#8217;s use and monitor it. Integrations with MFA using phones as something you have are so easy and seamless to implement. No excuses. Seriously!</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment odd alt depth-2" id="li-comment-630450">
+		<article id="comment-630450" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Fr00tL00ps </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630450"><time datetime="2025-09-19T18:29:06-04:00">September 19, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>This is one of the most sensible comments I have read on this site for awhile. Thank you.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+	<li class="comment even depth-2" id="li-comment-630469">
+		<article id="comment-630469" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">sighup </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630469"><time datetime="2025-09-20T22:01:58-04:00">September 20, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>I generally agree but the problem is that even in your scenario of a proper SDLC the SCA/SAST check will likely pass without raising any errors for a worm infected package—until the attack is discovered. Then I would expect SCA etc to alert on it.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+	<li class="comment odd alt thread-even depth-1" id="li-comment-630525">
+		<article id="comment-630525" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn"><a href="https://nanobytetechnologies.com/" class="url" rel="ugc external nofollow">NanoByte Technologies</a> </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630525"><time datetime="2025-09-23T07:02:47-04:00">September 23, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>The Shai-Hulud worm&#8217;s self-replicating nature underscores a critical vulnerability in our development ecosystems. At NanoByte Technologies, we emphasize the importance of securing developer environments and implementing robust CI/CD pipeline security measures. It&#8217;s imperative that organizations not only focus on runtime security but also ensure their development processes are fortified against such sophisticated threats.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+	<li class="comment even thread-odd thread-alt depth-1" id="li-comment-630577">
+		<article id="comment-630577" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Rosa Dakin </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630577"><time datetime="2025-09-25T00:24:35-04:00">September 25, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>I may have missed it, is a list being maintained of known infected package versions? I&#8217;m loathe to update any NPM packages right now. Perhaps one strategy might be to only update to versions that have been published long enough for the big to be detected (e.g. at least a week old) &#8212; how are others thinking about mitigation?</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment byuser comment-author-briankrebs bypostauthor odd alt depth-2" id="li-comment-630591">
+		<article id="comment-630591" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn"><a href="http://www.krebsonsecurity.com" class="url" rel="ugc external nofollow">BrianKrebs</a> <span> Post author</span></cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630591"><time datetime="2025-09-25T07:44:52-04:00">September 25, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>There is a list in the Aikido blog post I linked to</p>
+<p><a href="https://www.aikido.dev/blog/s1ngularity-nx-attackers-strike-again" rel="nofollow ugc">https://www.aikido.dev/blog/s1ngularity-nx-attackers-strike-again</a></p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+	<li class="comment even thread-even depth-1" id="li-comment-630627">
+		<article id="comment-630627" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Conrad </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630627"><time datetime="2025-09-27T11:07:50-04:00">September 27, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Is there any relation to this NPM compromise and the postmark mcp hack that bcc’s everyone’s emails?</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	<ol class="children">
+	<li class="comment odd alt depth-2" id="li-comment-630640">
+		<article id="comment-630640" class="comment">
+			<header class="comment-meta comment-author vcard">
+				<cite class="fn">Shao </cite><a href="https://krebsonsecurity.com/2025/09/self-replicating-worm-hits-180-software-packages/#comment-630640"><time datetime="2025-09-28T12:09:42-04:00">September 28, 2025</time></a>			</header><!-- .comment-meta -->
+
+			
+			<section class="comment-content comment">
+				<p>Not that I am aware of.</p>
+							</section><!-- .comment-content -->
+
+			<div class="reply">
+							</div><!-- .reply -->
+		</article><!-- #comment-## -->
+	</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+		</ol><!-- .commentlist -->
+
+		
+				<p class="nocomments">Comments are closed.</p>
+		
+	
+	
+</div><!-- #comments .comments-area -->
+			
+		</div><!-- #content -->
+	</div><!-- #primary -->
+
+
+			<div id="secondary" class="widget-area" role="complementary">
+
+        <div id="sidebar_ad" class="widget themonic-ad5"><div class="a-statement">Advertisement</div><a href="https://www.doppel.com/?utm_source=krebsonsecurity&amp;utm_medium=display&amp;utm_campaign=fy27brandcampaign&amp;utm_content=detectdisrupt">
+<img src="/b-doppel/19.png">
+</a></div>
+
+                        <br><div class="widget themonic-ad1"><div class="a-statement">Advertisement</div></div><br>
+
+			<aside id="custom_html-2" class="widget_text widget widget_custom_html"><p class="widget-title">Mailing List</p><div class="textwidget custom-html-widget"><a href="/subscribe/">Subscribe here</a></div></aside><aside id="search-2" class="widget widget_search"><p class="widget-title">Search KrebsOnSecurity</p><form role="search" method="get" id="searchform" class="searchform" action="https://krebsonsecurity.com/">
+				<div>
+					<label class="screen-reader-text" for="s">Search for:</label>
+					<input type="text" value="" name="s" id="s" />
+					<input type="submit" id="searchsubmit" value="Search" />
+				</div>
+			</form></aside>
+		<aside id="recent-posts-3" class="widget widget_recent_entries">
+		<p class="widget-title">Recent Posts</p>
+		<ul>
+											<li>
+					<a href="https://krebsonsecurity.com/2026/08/microsoft-plugs-nearly-400-security-holes/">Microsoft Plugs Nearly 400 Security Holes</a>
+									</li>
+											<li>
+					<a href="https://krebsonsecurity.com/2026/08/canadian-man-pleads-guilty-in-snowflake-extortions/">Canadian Man Pleads Guilty in Snowflake Extortions</a>
+									</li>
+											<li>
+					<a href="https://krebsonsecurity.com/2026/07/read-this-before-you-buy-that-tv-streaming-stick/">Read This Before You Buy That TV Streaming Stick</a>
+									</li>
+											<li>
+					<a href="https://krebsonsecurity.com/2026/07/lg-to-ban-residential-proxies-from-smart-tv-apps/">LG to Ban Residential Proxies from Smart TV Apps</a>
+									</li>
+											<li>
+					<a href="https://krebsonsecurity.com/2026/07/microsoft-patches-a-record-570-security-flaws/">Microsoft Patches a Record 570 Security Flaws</a>
+									</li>
+					</ul>
+
+		</aside><aside id="text-2" class="widget widget_text">			<div class="textwidget"><a name="subscribe2"></a></div>
+		</aside><aside id="categories-2" class="widget widget_categories"><p class="widget-title">Story Categories</p>
+			<ul>
+					<li class="cat-item cat-item-5"><a href="https://krebsonsecurity.com/category/sunshine/">A Little Sunshine</a>
+</li>
+	<li class="cat-item cat-item-2240"><a href="https://krebsonsecurity.com/category/all-about-skimmers/">All About Skimmers</a>
+</li>
+	<li class="cat-item cat-item-9085"><a href="https://krebsonsecurity.com/category/ashley-madison-breach/">Ashley Madison breach</a>
+</li>
+	<li class="cat-item cat-item-3191"><a href="https://krebsonsecurity.com/category/breadcrumbs/">Breadcrumbs</a>
+</li>
+	<li class="cat-item cat-item-3771"><a href="https://krebsonsecurity.com/category/data-breaches/">Data Breaches</a>
+</li>
+	<li class="cat-item cat-item-4624"><a href="https://krebsonsecurity.com/category/ddos-for-hire/">DDoS-for-Hire</a>
+</li>
+	<li class="cat-item cat-item-11540"><a href="https://krebsonsecurity.com/category/doge/">DOGE</a>
+</li>
+	<li class="cat-item cat-item-9173"><a href="https://krebsonsecurity.com/category/employment-fraud/">Employment Fraud</a>
+</li>
+	<li class="cat-item cat-item-2151"><a href="https://krebsonsecurity.com/category/how-to-break-into-security/">How to Break Into Security</a>
+</li>
+	<li class="cat-item cat-item-10357"><a href="https://krebsonsecurity.com/category/internet-of-things-iot/">Internet of Things (IoT)</a>
+</li>
+	<li class="cat-item cat-item-87"><a href="https://krebsonsecurity.com/category/latest-warnings/">Latest Warnings</a>
+</li>
+	<li class="cat-item cat-item-4071"><a href="https://krebsonsecurity.com/category/neer-do-well-news/">Ne&#039;er-Do-Well News</a>
+</li>
+	<li class="cat-item cat-item-9"><a href="https://krebsonsecurity.com/category/other/">Other</a>
+</li>
+	<li class="cat-item cat-item-1306"><a href="https://krebsonsecurity.com/category/pharma-wars/">Pharma Wars</a>
+</li>
+	<li class="cat-item cat-item-8240"><a href="https://krebsonsecurity.com/category/ransomware/">Ransomware</a>
+</li>
+	<li class="cat-item cat-item-9635"><a href="https://krebsonsecurity.com/category/russias-war-on-ukraine/">Russia&#039;s War on Ukraine</a>
+</li>
+	<li class="cat-item cat-item-599"><a href="https://krebsonsecurity.com/category/security-tools/">Security Tools</a>
+</li>
+	<li class="cat-item cat-item-8298"><a href="https://krebsonsecurity.com/category/sim-swapping/">SIM Swapping</a>
+</li>
+	<li class="cat-item cat-item-4079"><a href="https://krebsonsecurity.com/category/spam-nation/">Spam Nation</a>
+</li>
+	<li class="cat-item cat-item-1"><a href="https://krebsonsecurity.com/category/smallbizvictims/">Target: Small Businesses</a>
+</li>
+	<li class="cat-item cat-item-5167"><a href="https://krebsonsecurity.com/category/tax-refund-fraud/">Tax Refund Fraud</a>
+</li>
+	<li class="cat-item cat-item-3"><a href="https://krebsonsecurity.com/category/comingstorm/">The Coming Storm</a>
+</li>
+	<li class="cat-item cat-item-4"><a href="https://krebsonsecurity.com/category/patches/">Time to Patch</a>
+</li>
+	<li class="cat-item cat-item-21"><a href="https://krebsonsecurity.com/category/web-fraud-2-0/">Web Fraud 2.0</a>
+</li>
+			</ul>
+
+			</aside><aside id="media_image-2" class="widget widget_media_image"><p class="widget-title">Why So Many Top Hackers Hail from Russia</p><a href="https://krebsonsecurity.com/2017/06/why-so-many-top-hackers-hail-from-russia/"><img width="580" height="389" src="https://krebsonsecurity.com/wp-content/uploads/2017/06/computered-580x389.png" class="image wp-image-39684  attachment-medium size-medium" alt="" decoding="async" loading="lazy" style="max-width: 100%; height: auto;" srcset="https://krebsonsecurity.com/wp-content/uploads/2017/06/computered-580x389.png 580w, https://krebsonsecurity.com/wp-content/uploads/2017/06/computered-768x514.png 768w, https://krebsonsecurity.com/wp-content/uploads/2017/06/computered-940x630.png 940w, https://krebsonsecurity.com/wp-content/uploads/2017/06/computered.png 1551w" sizes="(max-width: 580px) 100vw, 580px" /></a></aside>		</div><!-- #secondary -->
+		</div><!-- #main .wrapper -->
+	
+	<div id="publisho-footer" class="widget-area">
+				<div class="footer-widget">
+                				</div>
+				<div class="footer-widget">
+								</div>
+				<div class="footer-widget">
+								</div>
+	</div>
+
+	<div class="site-wordpress">
+					&copy; Krebs on Security - <a rel="me" href="https://infosec.exchange/@briankrebs">Mastodon</a> <br />
+  </div>
+	<!-- .site-info --><div class="clear"></div>
+</div><!-- #page -->
+
+<script type='text/javascript' src='https://krebsonsecurity.com/wp-content/themes/kos-mar2021/js/slicknav.js?ver=6.2.2' id='publisho-mobile-navigation-js'></script>
+</body>
+</html>
+
+<!--
+Performance optimized by W3 Total Cache. Learn more: https://www.boldgrid.com/w3-total-cache/
+
+Object Caching 140/183 objects using memcached
+Page Caching using memcached 
+Database Caching using memcached
+
+Served from: krebsonsecurity.com @ 2026-08-11 19:44:14 by W3 Total Cache
+-->

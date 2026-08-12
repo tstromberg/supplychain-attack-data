@@ -1,0 +1,150 @@
+- id: joyfill
+  title: Joyfill npm beta releases carried a DEV#POPPER RAT
+  synopsis: >-
+    Two Joyfill beta releases published on 2026-07-28 appended an obfuscated implant after the
+    legitimate package code. It resolved its C2 through blockchain transactions, opened a
+    Socket.IO remote access channel, and staged a Python credential stealer.
+  story: |
+    Two prerelease versions of Joyfill's npm packages shipped a remote access
+    trojan on July 28, 2026. Joyfill sells document and form tooling, and its
+    `@joyfill/components` and `@joyfill/layouts` packages are used for forms and
+    layout work in web applications.
+
+    Socket, which analyzed the releases, identified
+    `@joyfill/layouts@0.1.2-2773.beta.0`, published at 10:54:57 UTC, and
+    `@joyfill/components@4.0.0-rc24-2773-beta.4`, published nine minutes later at
+    11:03:59. In both, the implant was appended after the legitimate package code
+    and hidden under several layers of JavaScript obfuscation, including seeded
+    character shuffling and dynamically constructed functions.
+
+    Execution happened at import time. That detail mattered more than the payload
+    itself, because it means `npm install --ignore-scripts`, the mitigation most
+    organizations adopted after two years of postinstall worms, offered nothing.
+    The code exposed Node's `require` and `module` on the global object, then
+    resolved its command-and-control address by querying Tron and Aptos addresses
+    and retrieving encrypted code through BSC transactions, which it XOR-decrypted
+    and evaluated. Using a public blockchain as the address book means the
+    operators can rotate infrastructure without shipping a new package.
+
+    What arrived was a 77 KB remote access trojan associated with the DEV#POPPER
+    family, supporting JavaScript evaluation, shell execution, file management, and
+    clipboard theft, followed by an 82,457-byte Python credential harvester that
+    collected browser data, wallet extensions, and Git credentials. The malware
+    also injected itself into developer tooling, including VS Code and npm, to
+    survive removal of the package. Socket advised treating affected machines as
+    compromised rather than merely at risk, and pinning back to `@joyfill/layouts`
+    0.1.1 and `@joyfill/components` 4.0.0-rc24.
+  pull_quote:
+    text: >-
+      The implant read its command-and-control address off Tron and Aptos, so
+      the operators could rotate infrastructure without ever shipping a new
+      package.
+    caption: a public blockchain as the address book
+    after: 3
+  start_date: 2026-07-28
+  end_date: 2026-07-28
+  target:
+    name: Joyfill
+    kind: library
+    website: https://www.npmjs.com/org/joyfill
+  actor:
+    name: Unknown
+    kind: group
+  language: JavaScript
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - remote_access
+    - credential_theft
+    - data_exfiltration
+    - backdoor
+  locations:
+  - uri: https://www.npmjs.com/package/@joyfill/components
+    role: distribution
+  - uri: https://www.npmjs.com/package/@joyfill/layouts
+    role: distribution
+  indicators:
+  - kind: malware_family
+    value: DEV#POPPER
+  - kind: technique
+    value: execution on module import rather than install hook
+  - kind: technique
+    value: C2 address resolved through Tron and Aptos addresses and BSC transactions
+  - kind: technique
+    value: Socket.IO remote access channel
+  - kind: technique
+    value: persistence by injection into VS Code and npm
+  notes:
+  - Both malicious releases are prerelease versions. Consumers pinning to a stable range
+    would not have received them, but anyone tracking beta or release-candidate channels
+    would.
+  - Execution occurs at module import, so `npm install --ignore-scripts` does not prevent
+    it. The implant is appended after the legitimate package code rather than replacing it.
+  - Socket reported the RAT stage at 77 KB and the Python credential stealer at 82,457
+    bytes. No install or download count for the malicious versions has been published.
+  - The npm registry records four further prereleases on the same day that no source
+    classifies. On layouts, 0.1.2-2773.beta.1 at 13:57:01Z and 0.1.2-2773.beta.2 at
+    15:16:43Z. On components, 4.0.0-rc24-2773-beta.5 at 14:01:19Z and
+    4.0.0-rc24-2773-beta.6 at 15:21:29Z. Socket named only beta.0 and beta.4 as malicious,
+    so the later prereleases are left unrecorded rather than assumed either way.
+  - Both malicious prereleases were removed from npm and now return 404, so no sample of
+    the published tarballs could be acquired.
+  - SafeDep tracks the blockchain dead-drop loader carried in the production bundles as
+    PolinRider.
+  artifacts:
+  - id: joyfill-layouts
+    name: '@joyfill/layouts'
+    package: '@joyfill/layouts'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-07-28
+    end_date: 2026-07-28
+    versions:
+    - 0.1.2-2773.beta.0
+    fixed_versions:
+    - 0.1.1
+    locations:
+    - uri: https://www.npmjs.com/package/@joyfill/layouts
+      role: distribution
+    hashes:
+    - sha256:adc4af90540d33cd1e98f44b51482ae9250fbeb97d6f8d7841c81b618cb2c6e6
+    notes:
+    - Published 2026-07-28 at 10:54:57 UTC.
+    - Socket identifies this SHA-256 as the complete npm archive for
+      `@joyfill/layouts@0.1.2-2773.beta.0`.
+  - id: joyfill-components
+    name: '@joyfill/components'
+    package: '@joyfill/components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-07-28
+    end_date: 2026-07-28
+    versions:
+    - 4.0.0-rc24-2773-beta.4
+    fixed_versions:
+    - 4.0.0-rc24
+    locations:
+    - uri: https://www.npmjs.com/package/@joyfill/components
+      role: distribution
+    hashes:
+    - sha256:bcc93dc55bc7daedf4ca57254f0e7a7f1c40e09851eab98fe10cde801982db17
+    notes:
+    - Published 2026-07-28 at 11:03:59 UTC.
+    - Socket identifies this SHA-256 as the complete npm archive for
+      `@joyfill/components@4.0.0-rc24-2773-beta.4`.
+  references:
+  - url: https://socket.dev/blog/joyfill-npm-beta-releases-compromised
+    title: Two Joyfill npm Beta Releases Compromised to Deliver DEV#POPPER Remote Access
+      Trojan - Socket
+  - url: https://www.stepsecurity.io/blog/joyfill-npm-supply-chain-compromise
+    title: 'Compromised npm Packages: @joyfill/components and @joyfill/layouts Ship an
+      Obfuscated Remote Access Trojan - StepSecurity'
+  - url: https://thehackernews.com/2026/07/two-compromised-joyfill-npm-packages.html
+    title: Two Compromised joyfill npm Packages Run RAT When Imported Into Node.js - The
+      Hacker News
+  - url: https://safedep.io/joyfill-npm-blockchain-c2-supply-chain/
+    title: Joyfill npm Packages Compromised with Blockchain C2 Loader - SafeDep

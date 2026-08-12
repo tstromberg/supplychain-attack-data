@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OpenSSH Backdoors</title>
+    <link rel="stylesheet" href="https://blog.isosceles.com/assets/built/screen.css?v=nwYmrIl3brQrtrA_">
+
+
+    <style>
+        :root {
+            --background-color: #ffffff
+        }
+    </style>
+
+    <script>
+        /* The script for calculating the color contrast was taken from
+        https://gomakethings.com/dynamically-changing-the-text-color-based-on-background-color-contrast-with-vanilla-js/ */
+        var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--background-color');
+        accentColor = accentColor.trim().slice(1);
+        var r = parseInt(accentColor.substr(0, 2), 16);
+        var g = parseInt(accentColor.substr(2, 2), 16);
+        var b = parseInt(accentColor.substr(4, 2), 16);
+        var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+        var textColor = (yiq >= 128) ? 'dark' : 'light';
+
+        document.documentElement.className = `has-${textColor}-text`;
+    </script>
+
+    <link rel="icon" href="https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/size/w256h256/2023/07/favicon_512.png" type="image/png">
+    <link rel="canonical" href="https://blog.isosceles.com/openssh-backdoors/">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+    <meta property="og:site_name" content="Isosceles Blog">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="OpenSSH Backdoors">
+    <meta property="og:description" content="Imagine this: an OpenSSH backdoor is discovered, maintainers rush to push out a fixed release package, security researchers trade technical details on mailing lists to analyze the backdoor code. Speculation abounds on the attribution and motives of the attacker, and the tech media pounces on the story. A near miss">
+    <meta property="og:url" content="https://blog.isosceles.com/openssh-backdoors/">
+    <meta property="og:image" content="https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/2024/08/backdoor2.png">
+    <meta property="article:published_time" content="2024-08-23T16:10:46.000Z">
+    <meta property="article:modified_time" content="2024-08-23T16:10:46.000Z">
+    <meta property="article:publisher" content="https://www.facebook.com/ghost">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="OpenSSH Backdoors">
+    <meta name="twitter:description" content="Imagine this: an OpenSSH backdoor is discovered, maintainers rush to push out a fixed release package, security researchers trade technical details on mailing lists to analyze the backdoor code. Speculation abounds on the attribution and motives of the attacker, and the tech media pounces on the story. A near miss">
+    <meta name="twitter:url" content="https://blog.isosceles.com/openssh-backdoors/">
+    <meta name="twitter:image" content="https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/2024/08/backdoor2.png">
+    <meta name="twitter:label1" content="Written by">
+    <meta name="twitter:data1" content="Ben Hawkes">
+    <meta name="twitter:site" content="@ghost">
+    <meta property="og:image:width" content="641">
+    <meta property="og:image:height" content="406">
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Isosceles Blog",
+        "url": "https://blog.isosceles.com/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/2023/07/logo001-3.png"
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Ben Hawkes",
+        "url": "https://blog.isosceles.com/author/ben/",
+        "sameAs": []
+    },
+    "headline": "OpenSSH Backdoors",
+    "url": "https://blog.isosceles.com/openssh-backdoors/",
+    "datePublished": "2024-08-23T16:10:46.000Z",
+    "dateModified": "2024-08-23T16:10:46.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/2024/08/backdoor2.png",
+        "width": 641,
+        "height": 406
+    },
+    "description": "Imagine this: an OpenSSH backdoor is discovered, maintainers rush to push out a fixed release package, security researchers trade technical details on mailing lists to analyze the backdoor code. Speculation abounds on the attribution and motives of the attacker, and the tech media pounces on the story. A near miss of epic proportions, a blow to the fabric of trust underlying open source development, a stark reminder of the risks of supply-chain attacks. Equal measures brilliant and devious.\n\nIf ",
+    "mainEntityOfPage": "https://blog.isosceles.com/openssh-backdoors/"
+}
+    </script>
+
+    <meta name="generator" content="Ghost 6.57">
+    <link rel="alternate" type="application/rss+xml" title="Isosceles Blog" href="https://blog.isosceles.com/rss/">
+    <script defer src="https://cdn.jsdelivr.net/ghost/portal@~2.69/umd/portal.min.js" data-i18n="true" data-ghost="https://blog.isosceles.com/" data-key="08816f844de0d14d1d49cce3c2" data-api="https://isosceles.ghost.io/ghost/api/content/" data-locale="en" crossorigin="anonymous"></script><style id="gh-members-styles">.gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style>
+    <script defer src="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/sodo-search.min.js" data-key="08816f844de0d14d1d49cce3c2" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~1.8/umd/main.css" data-sodo-search="https://isosceles.ghost.io/" data-locale="en" crossorigin="anonymous"></script>
+    
+    <link href="https://blog.isosceles.com/webmentions/receive/" rel="webmention">
+    <script defer src="/public/cards.min.js?v=D6OJpxckK_6QDJ1o"></script>
+    <link rel="stylesheet" type="text/css" href="/public/cards.min.css?v=zbOBSN8qHrr3rC6Y">
+    <script defer src="/public/member-attribution.min.js?v=fGWxp7cZ6mmurhvN"></script><style>:root {--ghost-accent-color: #102020;}</style>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5068DYZCTL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5068DYZCTL');
+</script>
+
+<style>
+.gh-head-logo img {
+    max-height: 95px;
+}
+</style>
+</head>
+
+<body class="post-template is-head-left-logo has-typographic-feed">
+<div class="gh-site">
+
+    <header id="gh-head" class="gh-head gh-outer">
+        <div class="gh-head-inner gh-inner">
+            <div class="gh-head-brand">
+                <div class="gh-head-brand-wrapper">
+                    <a class="gh-head-logo" href="https://blog.isosceles.com">
+                            <img src="https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/2023/07/logo001-3.png" alt="Isosceles Blog">
+                    </a>
+                </div>
+                <button class="gh-search gh-icon-btn" aria-label="Search this site" data-ghost-search><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17.5 17.5L12.5 12.5L17.5 17.5ZM14.1667 8.33333C14.1667 9.09938 14.0158 9.85792 13.7226 10.5657C13.4295 11.2734 12.9998 11.9164 12.4581 12.4581C11.9164 12.9998 11.2734 13.4295 10.5657 13.7226C9.85792 14.0158 9.09938 14.1667 8.33333 14.1667C7.56729 14.1667 6.80875 14.0158 6.10101 13.7226C5.39328 13.4295 4.75022 12.9998 4.20854 12.4581C3.66687 11.9164 3.23719 11.2734 2.94404 10.5657C2.65088 9.85792 2.5 9.09938 2.5 8.33333C2.5 6.78624 3.11458 5.30251 4.20854 4.20854C5.30251 3.11458 6.78624 2.5 8.33333 2.5C9.88043 2.5 11.3642 3.11458 12.4581 4.20854C13.5521 5.30251 14.1667 6.78624 14.1667 8.33333Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</button>
+                <button class="gh-burger"></button>
+            </div>
+
+            <nav class="gh-head-menu">
+                <ul class="nav">
+    <li class="nav-contact"><a href="https://isosceles.com/">Contact</a></li>
+</ul>
+
+            </nav>
+
+            <div class="gh-head-actions">
+                    <button class="gh-search gh-icon-btn" aria-label="Search this site" data-ghost-search><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17.5 17.5L12.5 12.5L17.5 17.5ZM14.1667 8.33333C14.1667 9.09938 14.0158 9.85792 13.7226 10.5657C13.4295 11.2734 12.9998 11.9164 12.4581 12.4581C11.9164 12.9998 11.2734 13.4295 10.5657 13.7226C9.85792 14.0158 9.09938 14.1667 8.33333 14.1667C7.56729 14.1667 6.80875 14.0158 6.10101 13.7226C5.39328 13.4295 4.75022 12.9998 4.20854 12.4581C3.66687 11.9164 3.23719 11.2734 2.94404 10.5657C2.65088 9.85792 2.5 9.09938 2.5 8.33333C2.5 6.78624 3.11458 5.30251 4.20854 4.20854C5.30251 3.11458 6.78624 2.5 8.33333 2.5C9.88043 2.5 11.3642 3.11458 12.4581 4.20854C13.5521 5.30251 14.1667 6.78624 14.1667 8.33333Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</button>
+                    <div class="gh-head-members">
+                                <a class="gh-head-link" href="#/portal/signin" data-portal="signin">Sign in</a>
+                                <a class="gh-head-btn gh-btn gh-primary-btn" href="#/portal/signup" data-portal="signup">Subscribe</a>
+                    </div>
+            </div>
+        </div>
+    </header>
+
+    
+<main class="gh-main gh-outer">
+    <div class="gh-inner">
+            <article class="gh-article post">
+                    <header class="gh-article-header gh-canvas">
+                        <h1 class="gh-article-title">OpenSSH Backdoors</h1>
+                            <figure class="gh-article-image">
+        <img
+            srcset="https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/size/w300/2024/08/backdoor2.png 300w,
+                    https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/size/w720/2024/08/backdoor2.png 720w,
+                    https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/size/w960/2024/08/backdoor2.png 960w,
+                    https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/size/w1200/2024/08/backdoor2.png 1200w,
+                    https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/size/w2000/2024/08/backdoor2.png 2000w,
+                    https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/2024/08/backdoor2.png"
+            sizes="(max-width: 1200px) 100vw, 1200px"
+            src="https://storage.ghost.io/c/af/a9/afa96610-1577-4df9-b5de-bad1d02af71c/content/images/size/w1200/2024/08/backdoor2.png"
+            alt="OpenSSH Backdoors"
+        >
+    </figure>
+                    </header>
+
+                <section class="gh-content gh-canvas">
+                    <p>Imagine this: an OpenSSH backdoor is discovered, maintainers rush to push out a fixed release package, security researchers trade technical details on mailing lists to analyze the backdoor code. Speculation abounds on the attribution and motives of the attacker, and the tech media pounces on the story. A near miss of epic proportions, a blow to the fabric of trust underlying open source development, a stark reminder of the risks of supply-chain attacks. Equal measures brilliant and devious.</p><p>If you've been paying attention to the security news recently, your mind probably went straight to the <a href="https://arstechnica.com/security/2024/03/backdoor-found-in-widely-used-linux-utility-breaks-encrypted-ssh-connections/?ref=blog.isosceles.com"><u>attack on the liblzma/xz-utils repository</u></a> earlier this year, the ultimate aim of which was an OpenSSH backdoor. However the event described above isn't the xz-utils backdoor. It's a little-remembered fact that the xz-utils backdoor was actually the <em>second</em> time OpenSSH had a "near miss" with a backdoor attack. The first time was over 22 years ago, all the way back in 2002. This blog post shares the story of that backdoor, and what we can learn from an attack that happened over two decades ago.</p><p><strong>Background</strong></p><p>The 2002 attack was quite straightforward. Here's the original announcement: <a href="https://marc.info/?l=bugtraq&m=102821663814127&w=2&ref=blog.isosceles.com"><u>OpenSSH Security Advisory: Trojaned Distribution Files</u></a>.&nbsp;</p><p>The OpenSSH source code was hosted on ftp.openbsd.org, and somehow it was replaced with a backdoored version. Nobody knows exactly how this happened, but the attacker managed to switch out the .tar.gz files for a few versions. There were some really good server exploits going around the hacking scene at that time though, so there's nothing particularly surprising about this. Fortunately though, the backdoor didn't last long because a developer noticed an unexpected difference in checksums. Specifically when trying to build the backdoor on FreeBSD, the "ports" package system ran the checksums automatically, and since ports already had a checksum stored when the backdoor was inserted, a mismatch occurred. If the attackers had waited until a new version was released and immediately replaced the .tar.gz and the checksum files at the same time, they would have had a lot more success.</p><p>In any case, it was a simple backdoor, essentially the simplest that you could imagine. Step one, hook the build system so that an attacker-controlled source file would be compiled and executed when the "configure" command was run by the victim. Step two, have the payload connect back to a hardcoded IP address in Australia and wait for commands to execute on the compromised machine.</p><p>We still don't know for sure who was behind the backdoor, but the prevailing opinion (at least among the OpenBSD developers I talked to) seems to be that it was just some old fashioned shenanigans. Punk kids doing punk kid things, as was perfectly normal in 2002, and then life goes on. It certainly wasn't the first time something like this had happened -- Wu-FTPd, which was the most popular ftpd in the 90s, had a very similar thing happen back in 1993 -- but it was a good indication of what was to come. It's an interesting historical event, because it shares both some similarities and differences with the modern xz-utils OpenSSH backdoor attempt, and by prying those apart we can hopefully find some useful insights.&nbsp;</p><p><strong>Similarities</strong></p><p>The obvious similarity is that both the historical and modern events targeted OpenSSH. That's for good reason. OpenSSH is clearly in the upper echelon of targets for vulnerability research because if you get a pre-authentication remote exploit working for OpenSSH you essentially have a skeleton key for the Internet and everything else comes tumbling down from that initial access. It turns out that there aren't many remote OpenSSH exploits left though, it's been about 20 years since the last really good one. So in lieu of finding a good bug, the next best thing is to insert one.&nbsp;</p><p>Inserting an exploitable bug (a "bugdoor"), one that's subtle enough that developers might not even notice during code review, is probably the winning move. However, it's interesting to note that in both 2002 and 2024 we got a backdoor rather than a bugdoor. That's probably because exploits are hard, and server-side exploits are really hard. Given how much work it is to be in a position to change the source code in the first place, it's not entirely surprising that attackers want to go with a reliable option. The counter-argument is that we may just never get to see any bugdoors because they never get caught (or if they do, they don't get flagged as subterfuge), so we're biased towards the events that we can actually detect.</p><p>There are other similarities. Both the 2002 and 2024 events targeted the build system, for example. This also makes sense, because build systems are a perfect mix of inscrutability and expressiveness. There's really no constraints on what you can do with most build systems. They have to be like this in order to make everything work everywhere that it's supposed to. Making something compile on Linux, MacOS, and Windows simultaneously is no easy feat. Add in support for multiple architectures and legacy versions, and well... you see where I'm going with this. The guiding design principle for build systems has been "just make it work", and so they end up being a complicated mess of directives, rules, variables, and command invocations. As long as they're working correctly, I suspect very few people are paying close attention to the contents of their build scripts, and that includes the developers/maintainers themselves. It's the ideal place to insert the first hook for a backdoor, hiding in plain sight.</p><p>The same attributes that make OpenSSH a very attractive target also make it a very difficult target, however. Everyone uses it, and so the chances that someone notices that something fishy is going on is quite high. Indeed, both attacks were found relatively soon after they were attempted. The 2002 attack was found by a developer noticing that the checksums provided didn't match the source code they had downloaded, and the 2024 attack was found by a developer after diligent exploration of a performance issue. The "many eyes" theory of open source security isn't popular right now, but it certainly seems like bigger targets have smaller margins for error.</p><p>The last similarity is that both events were perpetrated by unknown attackers, e.g. they were caught in the act, but never attributed to any specific threat actor or country. This might not seem like much, but I suspect the key observation is that our usual approaches to attribution don't work very well for supply chain attacks. The sample size is tiny, the attacker's targeting is opaque, and each event sees a high degree of customization. For an attacker this is quite appealing, since either the attack succeeds or it fails in such a way that nobody can figure out exactly who was responsible.</p><p><strong>Differences</strong></p><p>Despite the similarities, these two attacks are fundamentally on a different level in terms of their intent and execution. It's interesting to see how things have evolved. If you want an attack like this to be successful, everything has to go perfectly. Clearly then the xz-utils backdoor wasn't perfect, but it did do a lot of things right, and came a lot closer to succeeding than the 2002 attack. The main difference that explains this seems to be in the motivation and intent of the perpetrators.</p><p>The consensus is that the attackers in 2002 were motivated by having fun and causing mayhem, and they probably didn't mind getting caught all that much. If you're thinking in terms of bragging rights, getting caught might actually be a feature rather than a bug. In contrast, the attackers in 2024 seem to have been given a very specific task, and clearly intended to actually use the backdoor to achieve their goals. In other words, the xz-utils backdoor was designed to be an intelligence capability, whereas the 2002 attack was more "performance art" than "persistent threat".</p><p>One of the key technical differences is that the xz-utils backdoor was targeting the build <em>artifact</em> rather than the build <em>system</em>. The worst-case outcome of the 2002 attack was compromising whichever systems happened to compile OpenSSH. If the xz backdoor had been successful however, then eventually every single machine running OpenSSH on a systemd-based Linux distribution could have been compromised at any time or place of the attacker's choosing.</p><p>That word "choice" is important here. The xz-utils backdoor gave attackers optionality: they could choose to deploy the backdoor's hidden features in a targeted manner. When compared to triggering a reverse shell automatically, this greatly reduces the risk that the backdoor is detected, and allows the backdoor to be used in a surgical manner. This is a conscious decision that the attackers made, because the alternative of compromising <em>every</em> system that their code was run on was also certainly an option here.</p><p>It's also interesting how indirect the 2024 attack was. Instead of targeting OpenSSH itself, they noticed that modern Linux distributions inserted an unexpected dependency on liblzma into OpenSSH. This was the path to victory – instead of targeting a mature and well-funded project that's maintained by world renowned security experts, go for the underfunded and understaffed utility library that no one even realized was in the critical path. <a href="https://github.com/JohnLaTwC/Shared/blob/master/Defenders%20think%20in%20lists.%20Attackers%20think%20in%20graphs.%20As%20long%20as%20this%20is%20true%2C%20attackers%20win.md?ref=blog.isosceles.com"><u>Defenders think in lists, attackers think in graphs</u></a>.</p><p>Aside from this, another small innovation stood out to me. Rather than inserting obfuscated shell scripts, hiding in a C file (like the 2002 attack did), or fetching a payload over the network, the xz backdoor's payload was pre-staged in a binary-only test file. I think this was demonstrated to be an effective approach given that nobody noticed the payload in the xz-utils source code repository until after the backdoor had been detected at runtime using performance analysis. If there hadn't been a performance regression, and if the attacker's had been slightly less aggressive in their social maneuvering, I suspect both the "hook" and the payload may have gone undetected for a long time.</p><p>The final big difference is in the attacker's methodology. In the 2002 attack, we saw the attackers go straight for the infrastructure that was hosting OpenSSH. In contrast, the xz backdoor was the culmination of an extended social engineering campaign that led to the attacker becoming a trusted part of the core development team. Any way you look at it, that's an impressive effort.&nbsp;</p><p><strong>Analysis</strong></p><p>There's a lot to unpack here. Supply chain attacks have certainly evolved, but... not by as much as expected? For a moment, let's put aside the "malicious insider" approach used by the xz-utils attackers and focus on the "attack the infrastructure" approach instead. If you look at the details of the 2002 attack, at a very fundamental level there's nothing that would stop this attack from succeeding today. With a little bit more finesse and patience, an infrastructure-focused attack that aims to subvert a source code distribution is still certainly plausible.</p><p>My favorite example of this is zlib. Just like xz-utils, it's a compression library. Arguably it's <em>the</em> compression library, because zlib is absolutely everywhere – including in OpenSSH. New versions of their source code are distributed from zlib.net, and the server running zlib.net is hosted by a small company in Michigan called <a href="https://www.a2hosting.com/?ref=blog.isosceles.com" rel="noreferrer">a2hosting.com</a> where a managed VPS starts at $26.95/month. This hosting company is particularly fond of using CPanel and exim, both of which are enabled for zlib.net.</p><p>That means the supply chain integrity for <em>practically everything</em> relies on the integrity of a2hosting.com and the absence of any remote exploits in CPanel or exim. The <a href="https://blog.qualys.com/vulnerabilities-threat-research/2021/05/04/21nails-multiple-vulnerabilities-in-exim-mail-server?ref=blog.isosceles.com"><u>track record</u></a> here isn't exactly encouraging, and I haven't even got to Pure-FTPD, Apache httpd, or Dovecot (and this is just the stuff that's directly on zlib.net, we're not even considering how a2hosting.com itself might be attacked). Find a good vulnerability in any one of these projects, or a way to backdoor them for that matter, and you have a good shot at backdooring the zlib source code distribution.</p><p>Things have improved for zlib in recent years, because at least they have a dedicated host or VPS now. For a long time zlib.net was backed by PHP shared hosting (e.g. the site was shared with many other websites and anyone could pay to be resident on the same machine). This was a bit of a running joke among vulnerability researchers: since finding a real bug in zlib is extraordinarily difficult, inserting one in the code base when the maintainer announced a new release was probably the path of least resistance.</p><p>The point of this isn't to pick on zlib. Their maintainer is world class (I had the privilege of reading their Huffman table code during <a href="https://blog.isosceles.com/the-webp-0day/"><u>this</u></a> analysis), and they're doing a great job overall. The problem here isn't unique to zlib, or xz-utils, or OpenSSH. Everyone is exposed in fairly similar ways. The point is that when you look at the cumulative risk, we're in really bad shape. I'm not usually prone to exaggeration, but our current exposure to supply chain attacks is somewhat alarmingly high.</p><p>Let's think about this. If you compile OpenSSH from source, you end up with code (libraries and executables) from about 5 different distro packages running in your address space. Not too bad. In practice though, everyone runs a systemd-based Linux distribution of some sort – in which case you end up running code from around 30 different packages in your OpenSSH address space (including our friends xz and zlib of course). That's already starting to get uncomfortable.</p><p>But it doesn't stop there. While both the historical attack and the xz-utils attackers tried to go straight for OpenSSH, there's really no need. If you can get your backdoor running as root <em>somewhere</em> on the system, then you can inject yourself into the sshd process. It's one extra step, but not a very difficult one. On a stock Ubuntu Server 22.04 system after boot, there is code from 97 packages running as root (that's 16% of all the packages installed by default). On my daily driver Linux desktop (where I use remote access via OpenSSH almost every day), there's code from a remarkable 384 packages running as root.</p><p>Is this really a defensible security boundary? Hundreds of projects with distinct cultures, motivations, funding, expertise, and resources? Whether it's an infrastructure-focused attack like 2002, or a social engineering attack like 2024, it doesn't really matter. Throw in the angle of targeting and compromising individual developers for that matter. Regardless, I'm not convinced we can defend against this with the way we're currently thinking about operating system design.</p><p><strong>Final Thoughts</strong></p><p>The supply chain attacks from 20 years ago still look like they're viable today, and we're further behind in our defensive posture than we'd all like. Truthfully we've mostly gotten away with it up until now because there's been a steady supply of exploitable vulnerabilities that have enabled the attacker's to achieve their goals in other ways. However in a world where exploitable vulnerabilities become sparse (and there are some initial signs that this is happening), it's not unreasonable to think that attackers will pursue supply chain attacks at a much higher level. If that's the case, we're not prepared for it yet.</p><p>The answer will inevitably involve attack surface reduction and compartmentalization. That means making a conscious effort to reduce the amount of code we have running in remotely exposed processes or at high privilege levels like root. This means accelerating our deployment of sandboxing. We used to think of sandboxing as only applicable to the parts of the codebase that handled untrusted data – image parsers, video decoders, JavaScript engines, and so on. In a world where it's the code rather than the data that's untrusted, the goal should be to reorient toward system designs where all code is constrained to least privilege, and where there are technical controls in place that enforce that.</p><p>Fortunately there's some positive steps in this direction, at least for Linux. On Ubuntu 24.04 you can no longer find liblzma in the OpenSSH address space, on Android almost every process is constrained by a mix of SELinux and seccomp-bpf, and on recent Linux kernels we now have support for a promising technology called <a href="https://docs.kernel.org/security/landlock.html?ref=blog.isosceles.com"><u>landlock</u></a> that will allow even unprivileged apps to run in a sandbox. It takes about 250 lines of code to write a landlock sandbox for "make" that would prevent the 2002 attack.</p><p>With the xz-utils backdoor we learnt that there is an extraordinary willingness to invest time, money, and other resources into supply chain attacks. This feels <em>different</em> now. The stakes have changed. There's lots of work to do, and it's going to be a long road to get to where we really need to be. I suspect that there may need to be some fairly radical changes around how we think about operating system design and application development along the way. </p><p>The good news is that there seems to be a lot of interest in matching the attacker's enthusiasm on the defensive side of supply-chain security. It may not seem like much, but interest and enthusiasm is a great start – and it's more than we had 20 years ago.</p>
+                    <aside class="gh-article-meta">
+                        <div class="gh-article-meta-inner">
+                                <div class="gh-article-meta-wrapper">
+                                <h4 class="gh-author-name">
+                                    <a href="/author/ben/">Ben Hawkes</a>
+                                </h4>
+                            <time class="gh-article-date" datetime="2024-08-23">Aug 23, 2024</time></div>
+                        </div>
+                    </aside>
+                </section>
+
+
+                <footer class="gh-article-footer gh-canvas">
+                    <nav class="gh-navigation">
+                        <div class="gh-navigation-previous">
+                                <a class="gh-navigation-link" href="/robots-dream-of-root-shells/">← Previous</a>
+                        </div>
+
+                        <div class="gh-navigation-middle"></div>
+
+                        <div class="gh-navigation-next">
+                        </div>
+                    </nav>
+                </footer>
+            </article>
+    </div>
+</main>
+
+    <footer class="gh-foot gh-outer">
+        <div class="gh-foot-inner gh-inner">
+            <nav class="gh-foot-menu">
+                
+            </nav>
+
+            <div class="gh-copyright">
+                    Isosceles Blog © 2026. Powered by <a href="https://ghost.org/" target="_blank" rel="noopener">Ghost</a>
+            </div>
+        </div>
+    </footer>
+
+</div>
+
+    <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="pswp__bg"></div>
+
+    <div class="pswp__scroll-wrap">
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://blog.isosceles.com/assets/built/main.min.js?v=YcWtLhGZtWXtNFjD"></script>
+
+
+
+</body>
+
+</html>

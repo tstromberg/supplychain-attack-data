@@ -1,0 +1,77 @@
+- id: atomic-arch-2026
+  title: Atomic Arch turned orphaned AUR packages into infostealers
+  synopsis: >-
+    Attackers adopted abandoned Arch User Repository packages through AUR's own stewardship
+    process and rewrote their PKGBUILDs to pull malicious dependencies. Waves in June and
+    late July 2026 led Arch to disable package adoption and then pause all AUR pushes.
+  story: |
+    Beginning on June 11, 2026, attackers worked their way through the Arch User
+    Repository by taking ownership of packages nobody was maintaining. Sonatype,
+    which named the campaign Atomic Arch, counted more than 20 hijacked packages
+    on the first day. Community trackers had catalogued more than 400 within
+    twenty-four hours, and the consolidated list eventually named close to 2,000
+    AUR packages across the campaign's waves.
+
+    The AUR is not Arch's official repository. It is a collection of build recipes
+    contributed by users, where each package is a `PKGBUILD` script that AUR
+    helpers such as `yay` and `paru` execute on the installing machine. Packages
+    whose maintainers move on are marked orphaned, and any AUR user can adopt them
+    through the site's normal stewardship process. That process was the attack.
+    Nobody had to steal a credential or forge a commit. They asked for the
+    packages, and the trust attached to a package name with years of history came
+    with them.
+
+    The June waves modified PKGBUILDs to run `npm install atomic-lockfile minimist
+    chalk` during the build, which kept the malicious code one step removed from
+    the file a suspicious user would read. Sonatype tracked `atomic-lockfile` as
+    Sonatype-2026-003775 and the second wave's `js-digest` and `lockfile-js` as
+    Sonatype-2026-003808. The bundled Linux executable was written in Rust and
+    combined credential harvesting across GitHub, SSH keys, Vault tokens, browser
+    cookies, Slack, Discord, Teams, and Telegram with PTRACE anti-debugging and an
+    eBPF rootkit that hid its processes, files, and network connections where it
+    obtained root.
+
+    A further wave arrived in late July. On July 30 the Arch Linux DevOps team,
+    through Robin Candau, announced that attackers were again adopting neglected
+    packages and pushing malicious commits, and disabled AUR package adoption. On
+    August 1 the project paused AUR pushes entirely while it investigated.
+    Researchers corroborated at least 89 package names in that wave, delivered
+    through a `validator` binary that ran with sudo during the build and reused the
+    Tor-backed second stage from the June activity. Arch's official `core`, `extra`,
+    and `multilib` repositories, which carry review requirements the AUR does not,
+    were unaffected throughout.
+  start_date: 2026-06-11
+  end_date: 2026-08-01
+  actor:
+    name: Unknown
+    kind: group
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+    - backdoor
+  references:
+  - url: https://www.sonatype.com/blog/atomic-arch-npm-campaign-adds-malicious-dependency
+    title: Atomic Arch npm Campaign Adds Malicious Dependency - Sonatype
+  - url: https://www.stepsecurity.io/blog/400-aur-packages-hijacked-atomic-arch-campaign
+    title: '400+ AUR Packages Hijacked: What the "Atomic Arch" Campaign Means for
+      Supply-Chain Security - StepSecurity'
+  - url: https://www.truesec.com/hub/blog/supply-chain-attack-compromising-arch-linux-aur-packages-infostealer-rootkit
+    title: Supply Chain Attack Compromising Arch Linux AUR Packages with Infostealer and
+      Rootkit - Truesec
+  - url: https://corgea.com/research/arch-aur-openconnect-sso-malware-wave-august-2026
+    title: 'Arch AUR''s August malware wave: openconnect-sso and 89 named packages - Corgea'
+  - url: https://www.phoronix.com/news/Arch-Linux-AUR-Adoptions-Halted
+    title: Arch Linux AUR Under Another Wave Of Malicious Packages, Package Adoptions Halted
+      - Phoronix
+  notes:
+  - The June waves are recorded at [[arch-aur-atomic-arch]] and the late-July wave at
+    [[arch-aur-august-2026]].
+  - Package counts differ widely by source and collection date, from Sonatype's initial 20+
+    through 400+, roughly 1,500, and a community-consolidated list of 1,937 names. The
+    higher figures aggregate multiple waves and include packages later cleared.
+  - The malicious npm packages atomic-lockfile, js-digest, lockfile-js, and nextfile-js
+    were created by the attackers and are not recorded as compromised projects. They are
+    the injected dependency, not a hijacked trust boundary.
+  - Arch's official core, extra, and multilib repositories were not affected. Only the
+    user-contributed AUR was.

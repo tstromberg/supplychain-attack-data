@@ -1,0 +1,2097 @@
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><title>An attempt to backdoor the kernel [LWN.net]</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="An attempt to backdoor the kernel">
+<meta property="og:site_name" content="LWN.net">
+<meta property="og:type" content="article">
+<meta property="og:description" content="As has been widely reported elsewhere, an attempt was recently made to slip a back door into th [...]">
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="robots" CONTENT="noai, noimageai">
+        <link rel="icon" href="https://static.lwn.net/images/favicon.png"
+              type="image/png">
+        <link rel="alternate" type="application/rss+xml" title="LWN.net headlines" href="https://lwn.net/headlines/rss">
+        <link rel="stylesheet" href="/CSS/lwn-v1">
+<style>div.MakeALink { display: none }</style>
+
+        
+        </head>
+        <body>
+        <a name="t"></a>
+<div id="menu"><a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/logo/barepenguin-70.webp" class="logo"
+                 border="0" alt="LWN.net Logo">
+            <span class="logo">LWN<br>.net</span>
+            <span class="logobl">News from the source</span></a>
+            <a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/lcorner-ss.png" class="sslogo"
+                 border="0" alt="LWN"></a><div class="navmenu-container">
+           <ul class="navmenu">
+        <li><a class="navmenu" href="#t"><b>Content</b></a><ul><li><a href="/current/">Weekly Edition</a></li><li><a href="/Archives/">Archives</a></li><li><a href="/Search/">Search</a></li><li><a href="/Kernel/">Kernel</a></li><li><a href="/Security/">Security</a></li><li><a href="/Calendar/">Events calendar</a></li><li><a href="/Comments/unread">Unread comments</a></li><li><hr></li><li><a href="/op/FAQ.lwn">LWN FAQ</a></li><li><a href="/op/AuthorGuide.lwn">Write for us</a></li></ul></li>
+<li><a class="navmenu" href="#t"><b>Edition</b></a><ul><li><a href="/Articles/57154/">Return to the Front page</a></li></ul></li>
+</ul></div>
+</div> <!-- menu -->
+<div class="topnav-spacer"></div>
+<div class="top-banner not-print"><ins data-revive-zoneid="12072" 
+data-revive-id="fa8c6c9da7f33852f7097c4a94da1070"></ins>
+<script async src="//servedby.aqua-adserver.com/asyncjs.php"></script></div>
+<div class="topnav-container">
+<div class="not-handset"><form action="https://lwn.net/Login/" method="post" name="loginform"
+                 class="loginform">
+        <label><b>User:</b> <input type="text" name="uname" value="" size="8" id="uc" /></label> 
+		<label><b>Password:</b> <input type="password" name="pword" size="8" id="pc" /></label> <input type="hidden" name="target" value="/Articles/57135/" /> <input type="submit" name="submit" value="Log in" /></form> |
+           <form action="https://lwn.net/subscribe/" method="post" class="loginform">
+           <input type="submit" name="submit" value="Subscribe" />
+           </form> |
+           <form action="https://lwn.net/Login/newaccount" method="post" class="loginform">
+           <input type="submit" name="submit" value="Register" />
+           </form>
+        </div>
+               <div class="handset-only">
+               <a href="/Login/"><b>Log in</b></a> /
+               <a href="/subscribe/"><b>Subscribe</b></a> /
+               <a href="/Login/newaccount"><b>Register</b></a>
+               </div>
+               </div><div class="maincolumn flexcol">
+<div class="middlecolumn">
+<div class="PageHeadline">
+<h1>An attempt to backdoor the kernel</h1>
+<div class="Byline">[Posted November 6, 2003 by corbet]
+               <p>
+               </div>
+</div>
+<div class="ArticleText"><main>
+The mainline 2.4 and 2.6.0-test kernels are both currently maintained in
+BitKeeper repositories.  As a service for those who, for whatever reason,
+are unable or unwilling to use BitKeeper, however, the folks at BitMover
+have set up a separate CVS repository.  That repository contains the
+current code and the full revision history.  It is not, however, the
+place where new changes are committed.  So, when somebody managed to push
+some changes directly into CVS, Larry McVoy <a
+href="/Articles/57137/">noticed</a> quickly.
+<p>
+Over the years, people have had numerous things to say about BitKeeper and
+the people behind it.  Nobody, however, has accused them of being
+insufficiently careful.  Every change in the CVS repository includes
+backlink information tying it to the equivalent BitKeeper changesets.  The
+changes in question lacked that information, and thus stood out
+immediately. 
+<p>
+An attempt to make a change in this way is suspicious, to say the least, so
+there was a lot of interest in what the attempted change was.  <a
+href="/Articles/57143/">The actual patch</a> confirmed all suspicions; the
+relevant code was:
+<p>
+<pre>
++       if ((options == (__WCLONE|__WALL)) &amp;&amp; (current-&gt;uid = 0))
++                       retval = -EINVAL;
+</pre>
+<p>
+It looks much like a standard error check, until you notice that the code
+is not testing <tt>current-&gt;uid</tt> - it is, instead setting it to
+zero.  A program which called <tt>wait4()</tt> with the given flags set
+would, thereafter, be running as root.  This is, in other words, a classic
+back door.
+<p>
+The resulting vulnerability, had it ever made it to a deployed system,
+would have been a locally-exploitable hole.  Some sites have said that the
+hole would have been susceptible to remote exploits, but that is not the
+case.  An attacker would need to be able to run a program on the target
+system first.
+<p>
+But this attack never had any chance of corrupting the mainline kernel.
+The CVS repository is generated from BitKeeper, it is not a path for
+patches to get into the BitKeeper repositories.  So the code in question
+could only affect users who were working from the CVS repository.  Kernels
+used by distributors probably do not come from that repository, and, as
+this incident has shown, illicit code can only remain there for so long
+before being detected.
+<p>
+As it turns out, a successful attack on the public BitKeeper repositories
+would not be a whole lot more effective.  By its nature, BitKeeper works
+with many copies of the repository; it is good for BitKeeper users that
+disk space is cheap.  The public 2.6 repository reflects all of Linus's
+work, but it is not <i>his</i> repository.  When Linus applies a set of
+patches, he has to explicitly "push" his private repository to the public
+server before the rest of the world sees it.
+<p>
+BitKeeper takes a very paranoid view of its data.  Checksums are applied
+all over the place, and a push from one repository to another can't be done if
+the receiving repository has unknown changesets in it.  So, if somebody
+were to sneak something into the public repository, Linus would notice it
+the next time he attempted a push of his own.  At that point the red alert
+could be sounded, and the only people affected would be those who
+had pulled development kernels directly from the repository.
+<p>
+So the only way to get a back door into the kernel source - and to have it
+be widely distributed - would be to get Linus or one of his top-tier
+lieutenants to accept it directly.  That would be a challenge, since these
+people do actually look over code before accepting it.  It is not entirely
+impossible, however; a forged message to Linus appearing to contain a patch
+from a trusted contributor might just be accepted.  The development process
+is reasonably secure, but not perfect.
+<p>
+For this reason, this episode has renewed a push to incorporate digital
+signature checking into BitKeeper.  If the source management system checked
+such signatures automatically, the most obvious forgeries would be detected
+before they were merged.  Larry McVoy has <a
+href="/Articles/57151/">indicated</a> that he is willing to build such a
+feature into the free (beer) version of BitKeeper.  Whether the key kernel
+hackers would be willing to start signing all of their patches is another
+question.  The pain of having to sign patches could well be far
+less than the pain of dealing with a widely distributed backdoor in the
+kernel, however.<br clear="all"><hr width="60%%" align="left">
+            <form action="/Login/" method="post">
+            <input type="hidden" name="target" value="/Articles/57135/" />
+            <input type="submit" name="login" value="Log in" /> to post comments
+            <p>
+        <p><a name="Comments"></a>
+<a name="CommAnchor57163"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 18:49 UTC (Thu)
+                               by <b>TheOneKEA</b> (guest, #615)
+                              [<a href="/Articles/57163/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      What I think stands out the most was not that the CVS gateway was hacked and questionable code inserted -- it was the speed and cooperation that allowed it to be quickly detected, removed and preventive measures taken to make it more difficult for such a compromise to take place.<p>This is an EXCELLENT example of one of the strengths of Open Source Development -- hundreds of eyes looking at the same thing. Kudos to Larry McVoy and everyone else at BitMover.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57163/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57237"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Almost right</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 0:50 UTC (Fri)
+                               by <b>rjamestaylor</b> (guest, #339)
+                              [<a href="/Articles/57237/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <i>This is an EXCELLENT example of one of the strengths of Open Source Development </i><p>
+
+Funnily enough it was the non-free-as-in-religion<sup>*</sup> tool which some Open Source developers use that allowed for such a quick discovery of the attack. <p>Kudos to Larry and his justifiably paranoid cross checks.<p><br><p><br><p><sup>*</sup>Or, free as in assembly<sub>+</sub>, free as in association, free as in bearing arms, etc. There are more freedoms than speech.<p><br><p><br><p><sub>+</sub>Assembly may be free, but the Assembler's not... (baaa dumm)
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57237/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor57167"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 19:16 UTC (Thu)
+                               by <b>jonabbey</b> (guest, #2736)
+                              [<a href="/Articles/57167/">Link</a>] (45 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Interestingly, Graydon Hoare's <a href="http://www.venge.net/monotone/">Monotone</a> is built entirely around cryptographic protocols.. files are identified in the archive by SHA1 hashes, not by filename, and all changesets and relationship between file versions are expressed through digitally signed assertions.
+
+It's a neat re-thinking of one of the premises of revision control systems, even though some folks (Tom Lord of Arch, for one) have expressed the opinion that Monotone is not perhaps as well thought out over the totality of the revision control problem space as it might be.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57167/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57211"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 22:37 UTC (Thu)
+                               by <b>lm</b> (guest, #6402)
+                              [<a href="/Articles/57211/">Link</a>] (44 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Re: the monotone SHA1 hashes...<p>Val Henson has written a paper recently about the fact that using a hash as a way to identify files isn't such a good idea.  The paper basically says that just because you can use a hash + linked list search to find an item does not mean that you should use a hash without the linked list backup; hashes get proven to not be unique all the time.<p>http://www.usenix.org/events/hotos03/tech/full_papers/henson/henson_html/<p>Using hashes in a version control system is appealing from the point of view of implementation but as I'm fond of saying to my engineers &quot;we're not in the get-it-almost-right business&quot;.  An open source system which uses this technique is probably fine, the chance of hash collisions is small and you didn't pay for the product.  On the other hand, a commercial system that used hashes the same way as monotone does or opencm does, that's a lawsuit waiting to happen.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57211/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57213"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 22:55 UTC (Thu)
+                               by <b>jonabbey</b> (guest, #2736)
+                              [<a href="/Articles/57213/">Link</a>] (8 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Yeah, I had the same concern, honestly.  It's nice that you've got 20 bytes of SHA1 hash.. in theory, the odds against a single pair-wise collision should be a perfectly even 1 in 2^160 (or 1.46xe48), but that's still not zero, and the semantics of the thing really do call for perfect differentiability.<p>We'll see.. whether Monotone succeeds or fails, I doubt that it'll founder on the difference between 1/(2^160) and 0.  There's so much else in a revision control system to get right.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57213/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57249"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 3:55 UTC (Fri)
+                               by <b>lm</b> (guest, #6402)
+                              [<a href="/Articles/57249/">Link</a>] (7 responses)
+      </p>
+      
+      </div>
+      </summary>
+      &gt; in theory, the odds against a single pair-wise collision should be a<br>&gt; perfectly even 1 in 2^160 (or 1.46xe48), but that's still not zero,<p>As I've said in the past &quot;In theory, practice and theory are the same, but in practice they are different&quot; :)<p>Your 1 in 2^160 assumes a perfectly random distribution of inputs.  Math people love to assume Gaussian (or some other equally pleasant to math) distribution but those nasty programmers have a bad habit of not being that random.  <p>What does that mean?  It means that all your math is meaningless.  You are doing the math over the wrong set of data, data which doesn't exist, so you get a slanted (and incorrect) view of the world.<p>If a file system or a SCM system is using hashes for their names of objects, be afraid.  99% of the time or more it will work but it will not work all of the time.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57249/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57262"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 7:14 UTC (Fri)
+                               by <b>hingo</b> (guest, #14792)
+                              [<a href="/Articles/57262/">Link</a>] (5 responses)
+      </p>
+      
+      </div>
+      </summary>
+      In a general sense, the above is right, but... <br> <br>A prime design criteria for a good hash function is that the resulting checksums should be evenly spread <br>out over the output space, even if the inputs are very similar. Thus, assuming an even distribution is <br>correct, if the hash function is &quot;good&quot;. <br> <br>henrik 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57262/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57276"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Hashes and collisions</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 10:54 UTC (Fri)
+                               by <b>nowster</b> (subscriber, #67)
+                              [<a href="/Articles/57276/">Link</a>] (4 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <p>Even with a good hash function, you need to build in the ability to handle collisions. Consider the following problem:</p>
+<blockquote><em>How many people do you have to have in a room before you have a better than 50% chance that two of them share the same birthday (ignoring the year)?</em></blockquote>
+<p>The answer is surprisingly low (23). This is known as the <em>Birthday Paradox</em>. The probability of a collision approaches "evens" when (very) approximately <em>sqrt(total_number_of_slots)</em> hash slots have been used. Collisions are possible (but very rare) even with just two hash entries.</p>
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57276/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57557"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Hashes and collisions</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 10, 2003 16:49 UTC (Mon)
+                               by <b>dd9jn</b> (<b>&#x272D; supporter &#x272D;</b>, #4459)
+                              [<a href="/Articles/57557/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      You are mixing up simple hash fucntions (e.g. CRC-32) with cryptographic hash functions (e.g. SHA-1).  The latter have a couple of important design criteria and thus you won't ever see a duplicated hash value.  If you ever find or can construct a different second file hashing to the same value you have broken that hash function with <strong>huge</strong> consequences for about all cryptographic protocols.  Even for the old MD5 algorithms, no collision has ever been found (the often reported weakness found by Hans Dobbertin is on a reduced MD5 variant).
+
+Using MD5 or SHA-1 is a perfectly good choice to identify a text.
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57557/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor58136"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Hashes and collisions</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 13, 2003 10:47 UTC (Thu)
+                               by <b>rjw</b> (guest, #10415)
+                              [<a href="/Articles/58136/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      Erm. <p>A hash function produces a small fixed number of bits from a large, potentially limitless number of bits. <p>Just think for one second about that. <br>Lets take a file on a crappy 32-bit operating system as a limit. And hash it to 160 bits. <p>How the hell do you think that every one of 2^(2^32) combinations can map to 2^160 combinations uniquely? <p>Cryptographic hash functions merely make it computationally hard to find a match, and even harder to find a match which contains what you want it to. 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58136/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor58116"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Hashes and collisions</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 13, 2003 9:01 UTC (Thu)
+                               by <b>hingo</b> (guest, #14792)
+                              [<a href="/Articles/58116/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      The Birthday Paradox is a different problem. In that, you are asking for the probability of any 
+two persons "to collide". The cracker who wants to inject code into a BK repository, faces the 
+task of constructing a collision for a given file (somewhat equivalent to finding a person with 
+the same birthday as mine). The probability of finding a collision there is much lower 
+(practically impossible with current hashes, with birthdays of course, you only have 365 days 
+to pick from). 
+<br><br> 
+henrik 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58116/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor71294"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Hashes and collisions</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Feb 16, 2004 14:37 UTC (Mon)
+                               by <b>Omnifarious</b> (guest, #19508)
+                              [<a href="/Articles/71294/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <p>The birthday paradox, applied to SHA-1, means that you must have approximately 1/2**75 separately hashed entities before you start seeing a significant chance of collision.</p>
+<p>This is still pretty tiny.  So, in theory, hash by value should actually be pretty good.  The paper is making the point that, while hash functions are designed to have certain properties, there is no guarantee that they do, and any lapse is catastrophic for algorithms that rely on them that heavily.</p>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/71294/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+<a name="CommAnchor58129"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 13, 2003 9:43 UTC (Thu)
+                               by <b>ekj</b> (guest, #1524)
+                              [<a href="/Articles/58129/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      Actually no. You're wrong.<p> 
+ 
+A Cryptographically strong hash-function (such as sha1) does *not* assume that the inputs 
+are random. On the contrary, it is made under the assumption not only that the inputs are 
+non-random (as changesets are), but even that the inputs may be deliberately choosen so 
+as to provoke a collision.<p> 
+ 
+A hash-function is cryptographically strong even if in this scenario, the chanse of collisions 
+still is no bigger than the mathemathical minimum 1 in 2^num_bits. That is, there is no 
+(known) way of generating different strings such that the probability that the strings have 
+identical sha1sum is higher than 2^num_bits.<p> 
+ 
+It's still true that two changesets (or files or whatever) migth be identical trough pure dumb 
+luck, but if I where you, I'd find something else to worry about, the chanse that a comsic ray 
+will flip a bit in your ram and cause the program to give the wrong result is probably much 
+much higher. 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58129/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+<a name="CommAnchor57215"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 23:03 UTC (Thu)
+                               by <b>coriordan</b> (guest, #7544)
+                              [<a href="/Articles/57215/">Link</a>] (29 responses)
+      </p>
+      
+      </div>
+      </summary>
+      &gt; On the other hand, a commercial system that used hashes<p>I assume you mean a proprietary system, but I don't see why peoples standards should be raised or lowered based on whether the software comes with freedom or not.<p>If the software is bad, don't use it.  The only difference I see, is that with Free Software, you don't have to deal with secret file formats, so migrating to new software is easier.  Or if you want to use the bad software, you can fix it.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57215/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57242"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 1:16 UTC (Fri)
+                               by <b>proski</b> (guest, #104)
+                              [<a href="/Articles/57242/">Link</a>] (8 responses)
+      </p>
+      
+      </div>
+      </summary>
+      I wonder if you are Richard Stallman.  Your style of writing is very similar. First you "translate" words into your own vocabulary, and then you "don't see" :-)
+<p>
+I think lm meant "commercial".  If you sell software with known defects like this, you may be held responsible, whether the software is free (as in speech) or not.  I know, GPL disclaims any warranty, but this disclaimer is not valid in some jurisdictions.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57242/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57243"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 1:55 UTC (Fri)
+                               by <b>coriordan</b> (guest, #7544)
+                              [<a href="/Articles/57243/">Link</a>] (7 responses)
+      </p>
+      
+      </div>
+      </summary>
+      This is a mistake.  My name is Drahcir Namllats, anybody that says otherwise is trying to mislead you.  They want you to pre-judge whatever I am talking about, before reading my whole comment.  This is not conducive to clear and open minded thinking.<p>On translating words; I do Free Software, so I cannot comment in the name of Open Source.<p>I have yet to see a jurisdiction where my^H^HFSF's GPL warranty disclaimer is not valid.<p>Drahcir Namllats
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57243/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57260"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 6:35 UTC (Fri)
+                               by <b>bajw</b> (guest, #11712)
+                              [<a href="/Articles/57260/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      I, for one, am very often impressed with your comments. Much like those of some guy with a weird name that is similar to, but backwards from, yours.<br>I too fail to see why the standards should be raised or lowered by the level of freedom associated with the software.<br>
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57260/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor57263"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 7:33 UTC (Fri)
+                               by <b>hingo</b> (guest, #14792)
+                              [<a href="/Articles/57263/">Link</a>] (5 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Yeah, hat's of to coriordan (the rms of Europe? :-). We are especially thankful for your recent (and <br>ongoing I hope) work with the software patents directive. And also for your reporting of it here. <br> <br>As for the warranty disclaimer, I'm too under the impression that it's not valid in most of Europe. Wasn't <br>that what a German law professor something pointed out in a study recently? (The story was reported in <br>press with headlines like &quot;GPL invalid in Europe&quot;, which was perhaps a bit too much.) <br> <br>I'm sure in Finland you couldn't get away with  <br> - sell a piece of (free/whatever) software for purpose X <br> - software deletes all files on harddisk <br> - &quot;Not my fault, it says there is no warranty!&quot; <br> <br>In Europe things are a bit different than in the US, from where we have learned to insert disclaimers <br>everywhere. (McDonalds is not responsible for the fact that their coffee is hot, etc... Isn't it the point of <br>coffee that it should be hot? I could understand if somebody sued them for the coffee being too cold :-) <br> <br>henrik 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57263/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57277"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">warranty disclaimer</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 10:55 UTC (Fri)
+                               by <b>ber</b> (subscriber, #2142)
+                              [<a href="/Articles/57277/">Link</a>] (3 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <cite>
+As for the warranty disclaimer, I'm too under the impression that it's not valid in most of Europe. 
+Wasn't that what a German law professor something pointed out in a study recently?
+</cite>
+
+<p>
+The study you are refering to, was funded by a huge business
+association where major proprietary software vendors pay member fees.
+The result was used to create bad press about the legal situation
+around Free Software and a lot of people bought into it.
+Read ifross news on it if you want to know the details:
+<a href="http://www.ifross.de/ifross_html/home2_2003.html#ARTIKEL28a"
+>Dispute on Legal Issues Surrounding Free Software Intensifies</a>.
+It concludes with:
+<p>
+<cite>VSI's announcement about the legal risks in developing and using Free Software was premature. </cite>[..]<cite> The new study contains mostly long-known findings.
+</cite>
+
+<p>
+At least in Germany strapping on a Free Software license
+is like giving something away like a gift.
+For gifts you are only responsible if you 
+(a) on purpose try to do something nasty
+or (b) act very unreasonable. (b) translates into 
+actions that almost everybody would have known to cause serious problems.
+So you do not necessarily need the warranty disclaimers as the 
+legal situation is already okay.
+<p>
+We should start point out that the legal risks around proprietary
+software is a lot higher compared to Free Software.
+
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57277/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor58126"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">warranty disclaimer</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 13, 2003 9:34 UTC (Thu)
+                               by <b>hingo</b> (guest, #14792)
+                              [<a href="/Articles/58126/">Link</a>] (2 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Hashes aside, I see that Larry of BitMover has collided with The RMS of Europe. Ouch, didn't 
+see that happening, especially since this is not slashdot. Anyway, too late now. 
+<br><br> 
+I completely agree with the above clarifications. In summary: 
+<br><br> 
+1. A warranty disclaimer in Europe is meaningless. You are responsible for some of your 
+actions wether you want it or not. For Free Software (as in beer, even) a warranty disclaimer 
+might even be an empty statement. 
+<br><br> 
+2. This was nothing new, however some rich and twisted people decided to make a fuzz 
+about it. The headlines "GPL is invalid in Europe" were of course only humorous at best. 
+<br><br> 
+As for the coffee thing, if I spillt coffee on myself because I was "drinking and driving" and 
+burned myself, I would not want to announce it to the world in a lawsuit that I'm that stupid. 
+This is the difference with US citizens and the rest of the world. I have no need to defend 
+McDonalds however. 
+<br><br> 
+henrik 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58126/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor58367"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">McDonald's coffee suit</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 14, 2003 14:40 UTC (Fri)
+                               by <b>Max.Hyre</b> (subscriber, #1054)
+                              [<a href="/Articles/58367/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <a href="http://www.lectlaw.com/files/cur78.htm">Details of the
+case</a>.  Read before discussing. 'Nuff said.
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58367/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor58418"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">warranty disclaimer</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 14, 2003 21:56 UTC (Fri)
+                               by <b>giraffedata</b> (guest, #1954)
+                              [<a href="/Articles/58418/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <i>1. A warranty disclaimer in Europe is meaningless. You are responsible for some of your actions wether you want it or not. </i>
+
+<p>
+The second part, "You are responsible..." is also true in the US, and probably everywhere else.  The first part, "A warranty disclaimer is meaningless" is not true in the US, and I kind of doubt it is anywhere else either.
+<p>
+In the US, I am responsible for my actions under laws that have nothing to do with warranty:  tort law.  However, I am responsible for additional things because I gave a someone a warranty.  In some cases the law says I give that warranty implicitly, and in some of those cases, the law says I can override that implied warrantee by explicitly disclaiming it.
+<p>
+Here's where freely distributed software comes in:  For some of those actions for which I am responsible under tort law, a person may assume the risk from me, in exchange for valuable compensation from me.  So in return for my valuable software I may demand from you, instead of cash, indemnity against the risks inherent in distributing software (the risk that through some fault of mine, the software hurts you).  Exactly how free we are to make that trade varies a lot from one jurisdiction to another.
+<p>
+And finally, most of the "disclaimers" we see all the time are not <i>warranty</i> disclaimers.  They are merely notice that the person does not intend to assume a certain risk, and they serve to defeat ridiculous claims such as, "I would not have parked my car there except that the owner of the building led me to believe he would protect my car."
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58418/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+<a name="CommAnchor57408"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 8, 2003 2:03 UTC (Sat)
+                               by <b>coriordan</b> (guest, #7544)
+                              [<a href="/Articles/57408/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      Thanks for the comments, and to bajw too.<br>
+<br>
+Georg Greve (president of FSFeurope) might be the closest thing Europe has to an RMS, but I'm sure most people haven't heard of him.  Digital freedom needs so much work, that people working on these issues usually don't have time to contribute to public fora like LWN.  So this leave such fora filled with a high percentage of contribution by armchair generals etc., and I think this sucks, so I make time for LWN, and sometimes lesser fora such as slashdot.<br>
+<br>
+Regarding the enforceability of the GPL in europe, I second ber's info, as for McDonalds coffee, RMS mentions it in <a href="http://stallman.org/articles/blamerms.html">this article</a>.<br>
+<br>
+It's interesting that ber mentions FS being a gift in Germany.  Last year a law professor proposed a law to forbid the gift transfer of copyrighted material without reasonable compensation.  His aim was to prevent musicians being ripped off by the recording industry, but he hadn't realised that this put distribution of FS in jeopardy.  Georg Greve, and the others in FSFeurope and another org called iFROSS, got an FS exception added to the law, and FS was safe again.  But since he deosn't post to LWN, most people didn't hear of this ;-)<br>
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57408/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+</details>
+<a name="CommAnchor57248"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 3:47 UTC (Fri)
+                               by <b>lm</b> (guest, #6402)
+                              [<a href="/Articles/57248/">Link</a>] (19 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Re: free vs not<p>Lots of free software is &quot;good enough&quot;.  Using hashes as a way to name files is &quot;good enough&quot; in the opinion of some free software SCM systems.  It's not good enough for a commercial system because if it fails the customer can, and probably will, sue the vendor.<p>Like I said, we aren't in the &quot;almost got it right&quot; business, that may be fine for lots of people, look at CVS, it's heavily used and it has no integrity checks at all.  If a disk goes bad, memory goes bad, the network file system goes bad, a malicious or naive user goes bad, none of that is detected in CVS and all of that would be detected in BitKeeper.<p>Commercial software has to be paranoid, it's part of the deal.  That's one of the reasons why you pay money, we worry about the extremely unlikely cases that have a nasty habit of happening at the absolute worse time. The argument against our paranoia is that &quot;things don't go wrong that often so it's OK to let it slide&quot;.  That's a fine argument for software that you don't pay for but how would you feel if you'd paid a pile of money and I said that to you about the software you just bought?  
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57248/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57256"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 5:58 UTC (Fri)
+                               by <b>coriordan</b> (guest, #7544)
+                              [<a href="/Articles/57256/">Link</a>] (16 responses)
+      </p>
+      
+      </div>
+      </summary>
+      lm, you're confusing the issue, which makes it hard to respond to, but I'll try anyway because this issue is important.<br>
+<br>
+You compare Free Software to commercial software, but these things are not exclusive, there is a lot of commercial Free Software.  The MySQL database is one great example.  The <a href="http://www.gnu.org/software/gnu-arch/">GNU Arch</a> revision control system is another.  If people want support or new features in GNU Arch, they can pay the highly talented Tom Lord for these things:<br>
+<a href="http://regexps.srparish.net/www/commerce.html">The GNU Arch Commercial offerings page</a><br>
+<br>
+<i>If you are trying to copy BK, give it up.  We'll simply follow in the
+footsteps of every other company faced with this sort of thing and change
+the protocol every 6 months.  Since you would be chasing us you can never
+catch up.  If you managed to stay close then we'd put digital signatures
+into the protocol to prevent your clone from interoperating with BK.</i> -- Larry McVoy, LKML<br>
+<br>
+I wouldn't use software that is afraid of competition, specifically I would steer well clear of software that uses file-format lock-in to keep it's userbase.  GNU Arch obviously doesn't create this problem, and it has a <a href="http://gnuarch.org/">user community</a> and plenty of Free documentation as a bonus.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57256/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57267"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 8:34 UTC (Fri)
+                               by <b>jamesh</b> (guest, #1159)
+                              [<a href="/Articles/57267/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <p>You seem to be confusing the issue yourself.</p>
+
+<p>Would you be willing to sell/support a piece of software (proprietary or free software) and provide a warranty if you knew it had defects that might affect your clients?  It sounds like a great way to get sued.  You would want to minimise the risk as much as possible.</p>
+
+<p>Larry is essentially saying that the chance of data loss with some other source code management systems is too high to make supporting them profitable. ie:</p>
+
+<blockquote>[amount of money lost in lawsuit] * [probability of lawsuit] &gt; [profit from selling support/warranty]</blockquote>
+
+<p>Providing a warranty like this is a commercial activity -- you would be stupid to take on a liability like that without getting something in return.  So it seems to be the right term to use here.</p>
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57267/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor57271"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Arch documentation</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 9:19 UTC (Fri)
+                               by <b>lolando</b> (guest, #7139)
+                              [<a href="/Articles/57271/">Link</a>] (14 responses)
+      </p>
+      
+      </div>
+      </summary>
+      &gt; GNU Arch obviously doesn't create this problem, and it has a user<br>&gt; community and plenty of Free documentation as a bonus.<p>Quick reminder: the documentation is Free-for-the-FSF, but not Free-for-everyone.  Specifically, it is, as far as I know, released under the GNU Free Documentation License, the Freedom of which is not recognised by everyone (see the mighty dispute between the FSF and Debian) for a start, and it even includes Invariant Sections, which should make it clear that it is not quite Free.  *And* at least one of the invariant sections contains text that is controversial.<p>As for the &quot;plenty&quot;...  No man page, no info page, just the one tutorial (which was outdated last time I tried it).<p>This is not a troll.  I'd love to use TLA / GNU Arch, which seems to have the features I want.  But I found it easier to get started with Subversion, even though it doesn't have all of them.  The Subversion documentation is just much more polished.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57271/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57274"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Arch documentation</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 10:47 UTC (Fri)
+                               by <b>coriordan</b> (guest, #7544)
+                              [<a href="/Articles/57274/">Link</a>] (13 responses)
+      </p>
+      
+      </div>
+      </summary>
+      to lolando:<br>
+I accept your point about the GFDL, indeed I'm <a href="http://www.compsoc.com/~coriordan/faq.html#gfdl">not a fan of the GFDL</a> myself.<br>
+<br>
+I hadn't noticed the lack of infopages.  I'll see if I can find someone to fix this, or stick it on my todo list for early 2004.  There is a more than just a tutorial though: <a href="http://gnuarch.org/bin/view/Main/QuickIntroduction">Quick Introduction</a>, <a href="http://gnuarch.org/bin/view/Main/QuickReference">Quick Reference</a>, <a href="http://gnuarch.org/bin/view/Main/ReferenceManual">Reference Manual</a>, <a href="http://regexps.srparish.net/tutorial-tla/arch.html" target="_top">Tutorial</a>, <a href="http://gnuarch.org/bin/view/Main/FAQ">FAQ</a>.<br>
+<br>
+to jamesh:<br>
+> Would you be willing to sell/support a piece of<br>
+> software (proprietary or free software)<br>
+<br>
+It seems Tom Lord is happy to do this. If you read my previous comment again, you'll notice that I linked to a page offering support for GNU Arch for a fee.<br>
+<br>
+> and provide a warranty if you knew it had defects that might<br>
+> affect your clients? It sounds like a great way to get sued.<br>
+> You would want to minimise the risk as much as possible.<br>
+<br>
+Well, I'd provide a warrany, if you don't specify how good it has to be.  How about "I'll fix all problems you have with GNU Arch, if they occur on Mars".  Any good? no.  So lets look at the BK warranty:<br>
+<br>
+Where's BitKeepers warrany? <a href="http://www.bitmover.com/cgi-bin/license.cgi">here it is</a>:<br>
+<i>BitMover represents and warrants for a period of ninety (90) days ("Warranty Period") that it will make a  reasonable  effort  to ensure the Software operates substantially in accordance with the applicable Documentation</i><br>
+<br>
+...it then goes on to list 8 things that could invalidate your license, and then:<br>
+<br>
+<i>NEITHER BITMOVER NOR ITS LICENSORS MAKE ANY OTHER  WARRANTIES,  EXPRESS  OR IMPLIED,  WITH  RESPECT TO THE SOFTWARE.  BITMOVER DOES NOT WARRANT THAT THE FUNCTIONS CONTAINED IN THE SOFTWARE WILL MEET YOUR  REQUIREMENTS  OR THAT  OPERATION  OF  THE  SOFTWARE  WILL BE UNINTERRUPTED OR ERROR-FREE.</i><br>
+<br>
+...only mildly better than my mars warranty.  They're not exactly liable for much, are they?
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57274/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57300"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Arch documentation</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 14:41 UTC (Fri)
+                               by <b>jamesh</b> (guest, #1159)
+                              [<a href="/Articles/57300/">Link</a>] (12 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <blockquote>
+<em>It seems Tom Lord is happy to do this. If you read my previous
+comment again, you'll notice that I linked to a page offering
+support for GNU Arch for a fee.</em>
+</blockquote>
+<p>That is consistent with what Larry said earlier.  He said that it would be difficult/unproffitable to support an SCM system that relied on hashes alone to identify files.  IIRC, Arch doesn't fall into this category.</p>
+<p>As for the BK license you link to, it states that when you buy the software, you aren't getting support.  Section 7 seems to indicate that you can buy support separately.  The support contract is most likely separate.</p>
+<p>You might not like the BK licensing (I wouldn't feel too comfortable relying on it for my own software either), but Larry hasn't really said anything controversial here.</p>
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57300/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57363"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Arch documentation</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 21:50 UTC (Fri)
+                               by <b>coriordan</b> (guest, #7544)
+                              [<a href="/Articles/57363/">Link</a>] (11 responses)
+      </p>
+      
+      </div>
+      </summary>
+      &gt; That is consistent with what Larry said earlier.<br>
+<br>
+Larry said a lot of things.  Some were quite confused.<br>
+He compared Free Software to commercial software, so I gave an example that is both.<br>
+<br>
+and he said that "Commercial software has to be paranoid, it's part of the deal", so I pointed out that his company disclaim virtually all warranty, and that GNU Arch support is available.<br>
+<br>
+So, with commerce, support, and warranty out of the way, I think the only thing that no one addressed was my LKML quote about competition and proprietary file/protocol-format lock-in tactics:<br>
+<i>If you are trying to copy BK, give it up. We'll simply follow in the footsteps of every other company faced with this sort of thing and change the protocol every 6 months. Since you would be chasing us you can never catch up. If you managed to stay close then we'd put digital signatures into the protocol to prevent your clone from interoperating with BK.</i> -- <a href="http://lkml.org/lkml/2003/7/18/260">Larry McVoy, LKML</a><br>
+<br>
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57363/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57410"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Arch documentation</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 8, 2003 2:58 UTC (Sat)
+                               by <b>lm</b> (guest, #6402)
+                              [<a href="/Articles/57410/">Link</a>] (10 responses)
+      </p>
+      
+      </div>
+      </summary>
+      &gt; Larry said a lot of things. Some were quite confused.<p>Funny, I don't feel confused.  I must be so confused that I don't realize I'm confused :)<p>Our license is standard boilerplate, it's no different than other license and  that's with good reason.  The boilerplate exists because of previous lawsuits  and changing it is not a good idea.<p>I'll tell you a story about that.  Our original commercial license was written by me and it was a license you would have loved.  It had a clause in there that said if you hit a severe bug and we wouldn't or couldn't fix it promptly, we'd come to your site and pull your data out of BK and put it into the source management system of your choice, retaining all revision history such as dates, user names, etc.  A large two letter company that builds chips took offense at this clause.  How could that be possible?  The clause was designed to make the customer feel good, we were standing behind our software to the extent that we'd drop everything and help the customer if something went wrong (a policy which we have to this day even if it isn't in our contract, ask any BK user).<p>The company pointed out that it was just fine if we did that for them, but suppose we had sold a pile of seats to Sony Japan.  And Sony had some problem and half our engineering team had to fly to Japan to extract the data and put it in Arch which was just not done yet so we had to sit there and fix Arch as part of the contract.  Where does that leave our two letter company?  They are getting crappy support because we are off honoring a contract clause that put us at too much risk.<p>Think about that.  It's really smart.  They were looking ahead and they educated us as to why it is bad to be different.  It's certainly OK to be a little different but in general you want to do things the way other people do them because those ways have withstood the test of time.<p>Beating us up about our boilerplate is just silly and naive.  You might as well attack 100% of the companies which ship commercial software.  You haven't found anything that is different in our license from theirs, it's all the same.  So why pick on us?  Especially given that we are a company who has given away their technology to help your cause, given away hardware and bandwidth to help your cause, given away salaries to help your cause, and this whole thread is about how we prevented a trojan horse from getting into Linux.<p>And you're attacking us?  It's hard to see how that makes sense for anyone other than a zealot and that doesn't help your cause, it hurts it.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57410/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57412"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Arch documentation</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 8, 2003 5:28 UTC (Sat)
+                               by <b>coriordan</b> (guest, #7544)
+                              [<a href="/Articles/57412/">Link</a>] (9 responses)
+      </p>
+      
+      </div>
+      </summary>
+      So you legaly promise crappy support, but you actually give very good support whenever possible. ok.<br>
+<br>
+"<i>So why pick on us?</i>" - It's nothing personal, I reject all proprietary software.<br>
+<br>
+"<i>we are a company who has given away their technology to help your cause</i>"<br>
+You have developed software, but you have decided to use copyright law to prevent users from helping themselves or eachother.  This decision to exert power over your users completely contradicts my cause.<br>
+<br>
+Your decision to <a href="http://lkml.org/lkml/2003/7/18/260">use secret file format/protocols to prevent competition</a> reminds me of why proprietary software must be rejected.  Your business model relys on control, and to this end it compels you to do whatever's neccessary to maintain this control.  Like when Pavel Machek started to write a BKclone at home on his own time, you <a href="http://marc.free.net.ph/message/20030427.165959.28fb8474.html">contacted Pavels boss</a>, asking him to pressure Pavel into not writing the software, you even complained that Pavels boss should have made him choose between that home project and keeping his job.<br>
+<br>
+No level of warranty can makes it okay to treat people this way.  People deserve freedom.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57412/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57415"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Arch documentation</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 8, 2003 5:52 UTC (Sat)
+                               by <b>lm</b> (guest, #6402)
+                              [<a href="/Articles/57415/">Link</a>] (8 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Just out of curiousity, how do you reconcile your obviously negative view of our company with the undisputed point that we just did the free software world a pile of good?  If your precious open source tool was the one that was used this security flaw would likely be in the kernel right now.<p>While you are at it, how do you reconcile your obviously negative view with the fact that we produced a BK-&gt;CVS gateway so you can have the source you want in a 100% God fearing politically correct form?  You're quick to jump on anything that supports your point of view, but isn't it interesting that this evil company is the one that is actually _doing_ the work that needs to be done?  Pavel &amp; Co are great at making noise but have you looked at the code?  There isn't any.<p>If you were to stop and think for a minute you'd realize that we have to have a profitable business if we are going to keep on giving out the support that we do to open source world.  It costs us more than $100K a year to do what we do for you, actually, a lot more than that now that I think of it, it's probably more like $250K or so.  You're oh so eager to beat us up when we protect the very money it is that we use to help you but I don't see you coughing up that cash, that time, that software, or that support.  I'm open to a better way to do things but in case you haven't noticed, nobody else has stepped forward with anything except a lot of talk.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57415/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57417"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Arch documentation</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 8, 2003 7:44 UTC (Sat)
+                               by <b>coriordan</b> (guest, #7544)
+                              [<a href="/Articles/57417/">Link</a>] (7 responses)
+      </p>
+      
+      </div>
+      </summary>
+      You only solved a problem you created.  If it was Arch and Arch2CVS, anyone and everyone could be running integrity checks, but you've created central control.<p>BK bashing on lkml was bad advertising, so you made a gateway to hush the protestors.  Yes you are putting effort into your plan, it's a pity Pavel didn't finish his clone, and it's unfortunate that Linus trades away his freedom.<p>&quot;more than $100K a year to do what we do for you&quot;<br>You don't do anything good for me, you just make my job harder.  Your free hosting for open source projects is just part of your marketing plan.<br>You &quot;have to have a profitable business&quot;? so do microsoft.  You've chosen the same business method as them, but you target a harder userbase so you have to make a few more concessions.  Don't think that people will call you a samaritan for these concessions.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57417/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57447"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Silly zealots</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 8, 2003 15:37 UTC (Sat)
+                               by <b>lm</b> (guest, #6402)
+                              [<a href="/Articles/57447/">Link</a>] (6 responses)
+      </p>
+      
+      </div>
+      </summary>
+      You're right, you figured me out.  I joined the kernel development 10 years ago, worked with Linus for years, all the while carefully planning to use them to make money.<p>And even though I was the 4th person at Google, and even though it was obvious that I could make tons of money at Google, I choose to leave that place and start a source management company because I thought that would make *more* money than Google.  And you, with your incredible insight, have seen through my dastardly plan.  Rats!  Foiled again!
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57447/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57477"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Sounds like the Spanish civil war</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 9, 2003 17:58 UTC (Sun)
+                               by <b>vblum</b> (guest, #1151)
+                              [<a href="/Articles/57477/">Link</a>] (5 responses)
+      </p>
+      
+      </div>
+      </summary>
+      IMO, one of the saddest spectacles in history is the Spanish civil war. It was lost not <br>necessarily because the republican forces were weaker than their fascist opponents. It was <br>lost because different factions among the antifascists attempted to eat one another at a <br>time when they should have stood together.<p>Not that Free Software vs Big Money is even remotely similar to that - for all their market <br>dominance and strategies, Microsoft et al. have a many good people and have nothing to do <br>whatsoever with people the likes of Franco - this here is software, not crimes against <br>humanity!<p>But the lesson is an important one - in Spain, the idealists failed miserably because they <br>refused to distinguish between their friends and their true enemies. It's a history well worth <br>a read - it makes you want to cry.<p>Ciaran: I respect your stance for free software (and usually appreciate your comments; I only <br>respond because I think this thread is over the top). However, is it really a good idea to <br>alienate those who are actually on our side? For all the &quot;proprietary or not,&quot; Larry has done <br>the FLOSS community a rather material favor. He could have chosen otherwise.<p>Larry: I read many of your posts on why you keep BK licensed as it is; and, I see your need to <br>run a business carefully to keep it stable. But: How certain are you that you could not (in the <br>longer-term future) get away with a service + dual licensing model (such as Qt et al)? I <br>realize that your customer base are developers, and that makes it difficult - these people <br>are the very people that know how to clone and run a development-oriented system.<p>On the other hand, your customers also face deadlines (at least if they're in big companies) <br>- they might just pay for service from the source. Dual licensing would likely appease this <br>unfortunate noise that keeps surrounding your substantial and, presumably, widely <br>appreciated contributions. That noise must be exasperating, too - any thoughts?<p>cheers, V.<br>(Armchair General)<br>[my content management is reiserfs; my IDE is emacs]
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57477/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57478"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">war</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 9, 2003 19:28 UTC (Sun)
+                               by <b>coriordan</b> (guest, #7544)
+                              [<a href="/Articles/57478/">Link</a>] (2 responses)
+      </p>
+      
+      </div>
+      </summary>
+      BitKeeper offers an immediate practical convenience on condition that we ignore the issue of freedom.  If we accept this deal, will we ever have a Free Software SCM that rivals BitKeeper?<br>
+We didn't all accept the proprietary Qt. Now we have GNOME, and Qt has been GPL'd.<br>
+<br>
+If Linus chose Arch, the whole community would have benefitted from increased developer interest in Arch. Maybe it would now have the features it lacks compared to BitKeeper.<br>
+<br>
+BitKeeper is not a friend of the Free Software community.  It's a friend to Linus, but Linus is not fighting for our freedom.<br>
+<br>
+<i>this here is software, not crimes against humanity!</i><br>
+The software divide between 1st & 3rd world countries is a humanitarian problem.  Free Software is a solution.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57478/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57482"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">re:war</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 9, 2003 20:30 UTC (Sun)
+                               by <b>vblum</b> (guest, #1151)
+                              [<a href="/Articles/57482/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      errm ... just to explain my wording (crimes against humanity) - I wanted to put my own <br>example back into perspective, and only my own -  nobody else had implied anything <br>remotely similar to Franco et al here, and I just wanted to make sure I could not be misread. <br>If my implication was that anyone else had - sorry about that. <p>I do see the freedom-related issues, but there must also be a path to get there; BK seems to <br>me a reasonable part of that path. Look at Qt vs. Gtk - yes, Qt is now GPL'd thanks to the <br>tireless pointing to the issue, and the world is now a better place for that. But - without <br>KDE, I highly doubt that Gnome would have taken off anywhere near the way it did - this <br>was a beautiful example of how creative competition can work. <p>If Larry's contribution ultimately ends up making Arch (or whatever else) a stronger system - <br>great. And if this can be done without hurting Larry's business in the long run (cause he <br>doesn't seem like a bad guy, and I'm sure he'll be happy to adapt if he can) - all the better. 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57482/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57492"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">re:war</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 10, 2003 11:11 UTC (Mon)
+                               by <b>coriordan</b> (guest, #7544)
+                              [<a href="/Articles/57492/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      Software was going proprietary, so RMS started GNU, Qt was proprietary, so he started GNOME, BitKeeper is proprietary, so he endorsed Arch and it's now a GNU project.  It's true that solutions are born from problems, but I wouldn't use this as a basis for supporting the problem :-)
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57492/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+<a name="CommAnchor57487"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Sounds like the Spanish civil war</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 9, 2003 21:54 UTC (Sun)
+                               by <b>lm</b> (guest, #6402)
+                              [<a href="/Articles/57487/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Re: could we make a business based on service<p>The service model has been tried before in this space.  We *spend* more in a year providing free services to the open source world than has ever been made  from supporting an open source management system.  Ask Tom Lord how easy it is to convince people to spend money in this space, he spent the last year begging for enough money to keep his internet connection on.<p>Contrast that with having to pay a dozen engineers and you start to get the picture.<p>Re: BitKeeper limits your freedom<p>I really don't want to argue about this and I would like this to be my last post to this thread (and I'm off to the beach with my family and no laptop so there is a good chance :)<p>We are sensitive to the needs of the open source world and we do our best. BK has always made it trivial to get the data out of BK if you want to do that.  If that's not enough, we built and run the BK-&gt;CVS gateway so that the zealots don't even have to touch BK.  That's as much as we can do, if it doesn't make you happy, I'm sorry about that, but I can't help you.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57487/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57488"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Sounds like the Spanish civil war</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 9, 2003 22:15 UTC (Sun)
+                               by <b>vblum</b> (guest, #1151)
+                              [<a href="/Articles/57488/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      I know - no annoyance intended, thanks for taking the time to respond. I guess I always <br>have the Trolltech example in mind. I also realize BK and Qt cater to different spaces. <p>Have fun at the beach! (I should be in the mountains, really ...)
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57488/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+</details>
+</details>
+</details>
+</details>
+</details>
+</details>
+</details>
+</details>
+</details>
+</details>
+<a name="CommAnchor57279"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 11:31 UTC (Fri)
+                               by <b>rschroev</b> (subscriber, #4164)
+                              [<a href="/Articles/57279/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      I think there is a huge difference between problems that arise as a result of conflicting hashes on one side, and not detecting corruption on the other side.<p>Colliding hashes is a bug in the system, in my view. The system may be &quot;almost good enough&quot;, but never &quot;good enough&quot;. Detection of errors introduced outside of the system is a nice feature, but it is one I can live without. Lack of the feature is not a bug. The system is effectively &quot;good enough&quot;.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57279/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor59469"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 20, 2003 13:30 UTC (Thu)
+                               by <b>Wol</b> (subscriber, #4433)
+                              [<a href="/Articles/59469/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      Colliding hashes is MATHEMATICALLY INEVITABLE.<p>It can't, therefore, be a bug.<p>Being able to generate a file that results in the hash you want, however, most definitely IS a bug, because it is a gaping security hole.<p>Cheers,<br>Wol
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/59469/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+</details>
+<a name="CommAnchor57342"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 18:55 UTC (Fri)
+                               by <b>zooko</b> (guest, #2589)
+                              [<a href="/Articles/57342/">Link</a>] (2 responses)
+      </p>
+      
+      </div>
+      </summary>
+      If you can find collisions in SHA-1, you can probably use that to forge digital signatures and gain remote authorizations to any system that uses cryptography for authentication.  (This includes, among others, any system which uses SSH, TLS, or a cryptographically authenticated VPN.)<p>Is it a lawsuit waiting to happen to run sshd?<p>
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57342/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57454"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 8, 2003 18:54 UTC (Sat)
+                               by <b>Stephen_Beynon</b> (guest, #4090)
+                              [<a href="/Articles/57454/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      You could only do that if you manage to find a way of generating a block <br>of data with a pre-determined hash.  The problem of finding 2 blocks of <br>data which generate the same hash (any hash) is a far smaller problem. 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57454/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor58133"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 13, 2003 9:59 UTC (Thu)
+                               by <b>ekj</b> (guest, #1524)
+                              [<a href="/Articles/58133/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      Sure. More spesifically, the magnitude of the problem is proportiaonal to the square root of  <br>the other problem. So finding two strings with the same 160 bit hash requires you to  <br>generate and hash on the order of 2^80 strings. I wouldn't loose much sleep over this, but if  <br>you do, there's no problem with going to a bigger hash.  <br> <br>If you could generate and hash 2^30 strings a second (and store all the hashes you already <br>have created...) you'd still need 2^50 seconds before you'd on the average get lucky. <br>Everyone designing cryptographic hashes is aware of this issue, which is why the hashes <br>are so big in the first place. 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58133/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+<a name="CommAnchor58444"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 15, 2003 4:04 UTC (Sat)
+                               by <b>graydon</b> (guest, #5009)
+                              [<a href="/Articles/58444/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      this paper is simple fud. see <a href="http://www.venge.net/monotone/docs/Hash-Integrity.html">
+http://www.venge.net/monotone/docs/Hash-Integrity.html</a> for a detailed response.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58444/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor59364"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 20, 2003 6:40 UTC (Thu)
+                               by <b>khim</b> (subscriber, #9252)
+                              [<a href="/Articles/59364/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <p>"In theory, practice and theory are the same, but in practice they are different"</p>
+
+<p><b>Exactly!</b> Here is difference: if we have two systems - one uses SHA1 without any colluisions detection and other uses SHA1 and linked list as backup then version without backup is <b>less reliable in theoty</b> but <b>more reliable in practice</b>!</p>
+
+<p>I'm joking, right ? How the hell version without collision detection can be <b>more reliable</b> ?</p>
+
+<p>No, I'm not joking. You all ussume that you "perfect" program will work on some "perfect" hardware. That's not so. Real CPU, memory, hard disk and other components are <b>not</b> 100% reliable. Thus you program can misdetect even if you algorythm is perfect. And this probability is increased when linked list added as backup for strong crypto hash. For most non-trivial programs this increase is so big that it completely dwarfs mythical SHA1 collisions. Think about it and <b>then</b> try to advocate you backup plans. Preferrable with numbers for hardware in hands, not with some abstract righteosy.</p>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/59364/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+<a name="CommAnchor57169"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">One attempt thwarted</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 19:53 UTC (Thu)
+                               by <b>ncm</b> (guest, #165)
+                              [<a href="/Articles/57169/">Link</a>] (5 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Anyone who stuck his neck out so far as to do this will not
+be satisfied with doing it just once.  There are many points
+of vulnerability in the Free Software world.  It would probably
+be much easier to sneak a backdoor into one of the distributions'
+kernels or network-service daemons, for example,  They get much 
+less scrutiny than Linus's kernel.  A successful Red Hat, Debian,
+or FreeBSD backdoor would be (has been?) hardly less damaging.
+<p>
+The distinction between a local vulnerability and a remote one
+is pretty artificial.  The distinction made, in remote exploits,
+between enabling arbitrary code execution as root or as a restricted 
+user becomes moot when a user can easily become root.  Since arbitrary
+code execution as a limited user (e.g. via lpd, sendmail, ftp) is 
+very common, there's little practical difference between a trapdoor
+that works for local or for remote exploitation.  
+<p>
+It's way too early to pat ourselves on the back for having fended off
+this one attack.  It wasn't caught by "hundreds of eyeballs", it was
+caught because of an unusual level of automated scrutiny in one corner
+of the castle.  Furthermore, it was caught because the attacker made
+a grave and foolish mistake, assuming a particular host was a primary
+source, and not a frequently-updated copy.  We may be sure that other
+attacks will be more subtle -- perhaps some already have been, and
+have evaded detection.  
+<p>
+As the economic significance of Linux and Free Software increase, we
+can also expect such attacks to multiply. 
+<p>
+One immediate lesson, already known to a few, that this attack 
+emphasizes is that current CVS servers are inherently insecure.
+Thus, any machine running a CVS server exposed to untrusted 
+individuals cannot itself be trusted.  How many projects compare
+their public CVS server contents against a trustworthy image? 
+How many projects firewall the server that takes developer updates 
+against access by non-developers?
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57169/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57191"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">One attempt thwarted</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 20:51 UTC (Thu)
+                               by <b>proski</b> (guest, #104)
+                              [<a href="/Articles/57191/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      We should consider the political significance of free software as well as its economical significance. It's possible that the attack aimed to create bad publicity for Free Software rather than to exploit the backdoor.<p>
+Collaborative development is specific for free software. We cannot say that similar can happen for non-free software, usually developed behind corporate firewall. That's why this attack could have been used for FUD very effectively, were it to succeed.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57191/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor57222"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">One attempt thwarted</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 23:35 UTC (Thu)
+                               by <b>ken_i_m</b> (guest, #4938)
+                              [<a href="/Articles/57222/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      &quot;The distinction between a local vulnerability and a remote one is pretty artificial.&quot;<p>I have to disagree with this rather strongly.  There is a huge difference between a local user who has access to a console and a remote attacker whose only leverage is the network services offered.  To imply that successful remote attacks where the vector is &quot;arbitrary code execution&quot; are &quot;very common&quot; (or easy) simply does not hold water.<p>have a nice day,<br>I think, therefore, ken_i_m
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57222/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor57236"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">One attempt thwarted</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 0:34 UTC (Fri)
+                               by <b>dlang</b> (guest, #313)
+                              [<a href="/Articles/57236/">Link</a>] (2 responses)
+      </p>
+      
+      </div>
+      </summary>
+      this attack was detected by the 'hundreds of eyeballs' approach, only one eye saw it becouse he was the only one looking for this, but in the 'traditional' closed-source approach that person would not have been looking (to address the point specificly, if there wasn't the need to make the kernel source available via all the different method the scripts would not have been publishing them and could not have identified the issue)<p>the hundreds of eyeballs approach doesn't expect that there will be hundreds, or even dozens of reports of a prticular bug, it means that with enough different people looking at something, each looking at the one particular piece they are interested in, you have complete coverage of the entire codebase.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57236/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57411"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">One attempt thwarted</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 8, 2003 3:12 UTC (Sat)
+                               by <b>lm</b> (guest, #6402)
+                              [<a href="/Articles/57411/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      &gt; this attack was detected by the 'hundreds of eyeballs' approach, <br>&gt; only one eye saw it becouse he was the only one looking for this,<br>&gt; but in the 'traditional' closed-source approach that person would <br>&gt; not have been looking <p>That's nonsense.  This attack was detected because BitMover trains their engineers to be paranoid, end of story.  There were &quot;hundreds of eyeballs&quot; that could have detected this, why didn't they?  Gimme a break.  It's pathetic of you to try and turn this into an open/closed argument, it has nothing to do with either.  This was detected because we train our engineers to be competent.  You can have good engineers in the open source world and good in the closed source world, and I'll remind you it was an open source system which was attacked.  <p>As Linus said &quot;it's telling that it was the CVS tree and not the BK tree that somebody tried to corrupt.&quot;
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57411/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor58086"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">One attempt thwarted</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 13, 2003 2:47 UTC (Thu)
+                               by <b>dlang</b> (guest, #313)
+                              [<a href="/Articles/58086/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      the bitkeeper engineers were one of those hundreds of eyeballs, they happened to detect it first.<p>the only way you will have lots of people reporting the same bug is if they don't read what others have discovered and/or there is a long time period between a bug being discovered and it being announced. the normal situation is one person (or a very small number) discoveringa issue and publicising it for others.<p>even in this case when Larry first posted about this to the L-K list he didn't post 'someone attempted to put a backdoor in the kernel' he posted 'I noticed something strange, can anyone tell me why this happened' and a few posts later he posted the change that was inserted and a few posts after that a few people noticed that it was a backdoor. 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58086/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+</details>
+<a name="CommAnchor57164"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 19:59 UTC (Thu)
+                               by <b>ksmathers</b> (guest, #2353)
+                              [<a href="/Articles/57164/">Link</a>] (6 responses)
+      </p>
+      
+      </div>
+      </summary>
+      I've been thinking about this since it was noticed yesterday evening, and it has me somewhat worried.  It seems to me to be a very irresponsible thing to do to the kernel -- what could the hacker have possibly been thinking that would justify creating such a big hole in what would have been (if successful) a pretty major hole in almost every Linux distribution within about a year.
+
+<p>If the problem had made it as far as the distributions, anyone who found the backdoor could come along later and criticize the Linux development processes, to the terrible detriment of the system and any trust that has developed in the system.  What personal use of the backdoor could possibly justify such terrible potential repercussions?
+
+<p>Honestly, it just makes me sick to think about it.     
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57164/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57175"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 20:09 UTC (Thu)
+                               by <b>allesfresser</b> (subscriber, #216)
+                              [<a href="/Articles/57175/">Link</a>] (5 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Perhaps the cracker in question wasn't after mere personal backdoor access--is it outside the realm of possibility that the code was inserted (or attempted to be inserted) specifically to denigrate the reputation of Free software?<p>I don't think it's a very big stretch to contemplate malicious intent in that regard, especially when people like SCO and company can blather on all day and not get slapped for it.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57175/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57194"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 21:00 UTC (Thu)
+                               by <b>proski</b> (guest, #104)
+                              [<a href="/Articles/57194/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Political motivation of the attacker is possible, but I don't think this attack was sponsored by a corporation - it's too naive both in code ("=" vs. "==") and in implementation of the attack (attacking a gateway rather than the master repository). We should be prepared to more serious attacks.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57194/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57339"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 18:07 UTC (Fri)
+                               by <b>minichaz</b> (guest, #630)
+                              [<a href="/Articles/57339/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      Thats silly. It's almost the perfect backdoor. A quick scan of the code concerned and you don't notice anything wrong and if anyone does spot it later it looks like it might be a typo.<p>Hard to spot, subtle, easy to trigger and easily deinable. What more could you want from a backdoor?
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57339/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor57216"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 6, 2003 23:02 UTC (Thu)
+                               by <b>tjc</b> (guest, #137)
+                              [<a href="/Articles/57216/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <font color=#663300>...is it outside the realm of possibility that the code was inserted (or attempted to be inserted) specifically to denigrate the reputation of Free software?</font><p> Hmm, I wonder if this particular bit of code would have violated any SCO copyrights if it had remained in the kernel undetected. ;-)
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57216/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor57229"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 0:12 UTC (Fri)
+                               by <b>dvrabel</b> (subscriber, #9500)
+                              [<a href="/Articles/57229/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Maybe the CIA was involved too?<p>Inserting backdoors isn't your standard marketing tactic.  Outright lies (SCO style) are however.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57229/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57317"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 15:36 UTC (Fri)
+                               by <b>allesfresser</b> (subscriber, #216)
+                              [<a href="/Articles/57317/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      Lately we've been dealing with entities that seem pretty willing to use 'non-standard marketing tactics'.  Certainly it would be in a few parties' interest to make an exploit in the kernel look like it came from a 'teenage hacker' (the stereotype is de rigeur, of course), and spread more FUD about Linux.<p>There are, of course, plenty of teenagers (and old geezers like myself, for that matter) out there that are mischievous and talented enough to do something like that on their own, but it sure looks conveniently advantageous for certain well-known (perhaps even infamous?) commercial entities...
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57317/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+</details>
+<a name="CommAnchor57246"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 2:45 UTC (Fri)
+                               by <b>iabervon</b> (subscriber, #722)
+                              [<a href="/Articles/57246/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      The real risk of contamination from this would be if one of the trusted <br>kernel developers who use the gateway had gotten the changed version, and <br>then submitted the modification to Linus in the middle of their next <br>chunk of work. Linus checks things fairly thoroughly, but a couple of <br>innocuous-looking lines in the midst of a bunch of similar changes would <br>be likely to get through. And when it got found (due, probably, to the <br>exploit showing up in a rootkit), there would be an audit trail that led <br>back as far as the innocent developer, and no further, since the fake <br>changes would have been overwritten with data from the real repository in <br>the next cycle. <br> <br>(Note that, after a cycle and only after a cycle, CVS would not see the <br>change in its repository, and therefore think that it must have been made <br>by the developer and include it in diffs) 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57246/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor58280"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 13, 2003 21:05 UTC (Thu)
+                               by <b>proski</b> (guest, #104)
+                              [<a href="/Articles/58280/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      Developers who use CVS correctly would not have this problem.  "cvs diff" doesn't include changes made by others.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58280/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor57316"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">compiler warning?</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 15:19 UTC (Fri)
+                               by <b>mmarkov</b> (guest, #4978)
+                              [<a href="/Articles/57316/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      what about the compiler warning when an<br>attempt to make an assignment inside the if (  )<br>condition is detected?
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57316/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor57326"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">compiler warning?</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 7, 2003 16:58 UTC (Fri)
+                               by <b>nix</b> (subscriber, #2304)
+                              [<a href="/Articles/57326/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      That warning is suppressed if the assignment expression is bracketed.<p>The assignment expression in the trojan was bracketed.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57326/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor57552"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 10, 2003 15:46 UTC (Mon)
+                               by <b>gerv</b> (guest, #3376)
+                              [<a href="/Articles/57552/">Link</a>] (2 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Here's my simple technical writeup. I posted it on my internal company board. Feel free to send this to anyone (perhaps the slightly less technical, or newbie coders) who is interested in how this exploit works.<p><br>Someone recently made an attempt to add a local root backdoor to the Linux kernel, by making a checkin to the subsidiary CVS repository under someone else's name. Fortunately, the master repository is on Linus' computer, behind a firewall, and the automated tracking of BitKeeper, the source control system, caught the illegal change.<p>All that aside, the inserted code is a very good example of how to add a backdoor in a very subtle manner. It was inserted into the wait4() system call, which is described as follows:<p>&quot;The wait4 function suspends execution of the current process until a child as specified by the pid argument has exited, or until a signal is delivered whose action is to terminate the current process or to call a signal handling function.&quot; <p>That's just a fancy way of saying that it's a variation on wait(), a call whereby a program tells the OS &quot;I'm waiting for a particular event to happen; let me know when it does&quot;. Any process running on a given machine can call it, and you pass it flags telling it exactly what you are waiting for.<p>The inserted code looks like this:<p>if ((options == (__WCLONE|__WALL)) &amp;&amp; (current-&gt;uid = 0))<br>    retval = -EINVAL; <p>What it seems to be doing at first glance, is: &quot;if a particular pair of options are set, and the user is root, then the call is invalid.&quot; The two options concerned make no sense when used together, so that seems a fine, if somewhat strangely specific, check to make.<p>In fact, what it actually does is check for the invalid set of flags and, if set, makes the current user root.<p>if ((options == (__WCLONE|__WALL)) &amp;&amp; (current-&gt;uid = 0))<br>    retval = -EINVAL;                               <p>Note the single equals sign in the second half of the if test; it's a single rather than a double equals, assignment rather than equality.<p>The flaw takes advantage of several features of C and Unix.<p>1) Short-circuit execution. The If test has two parts; the second is only executed if the first is true. So, unless that particular pair of options is set, none of the rest of the code is executed. Normally, those two options would not normally be set together, as they specify mutually-conflicting wait policies. However, there's nothing in the code which prevents you making such a nonsensical call.<p>2) In C, the return value of an assignment is the value assigned. This is what allows:<br>a = b = c = 3;<br>to be valid C; it sets a, b and c to 3.<p>3) C allows assignment within a logical test. So setting current-&gt;uid to 0 within the if test is perfectly valid C. This &quot;feature&quot; is the one that often catches people out with code like:<p>if (a = 3)<br>{<br>    do_something();<br>}<p>where do_something() executes all the time.<p>4) The Unix user_id for root is 0, which is logical false.<p><br>So, the exploit works like this. If a program a user runs calls wait4() with the two odd flags together, the first half of the if() test fires, the current-&gt;uid = 0 code sets current-&gt;uid to 0 and returns 0, and the second half fails. This means that the &quot;retval = -EINVAL;&quot; code will never be executed, and the function continues on its merry way, having set the user to root. <p>gcc, the GNU C Compiler, normally warns about constructs like this. It says &quot;assignment used as truth value&quot;. However, if the assignment has a (strictly unnecessary) set of brackets around it, as it is in this exploit code, the warning is suppressed. The attacker must have known that.<p>All in all, very clever. Almost enough to make one paranoid...<p>Gerv<p>(C) Gervase Markham 2003<br>Verbatim copying is permitted provided this notice is preserved.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/57552/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor58121"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 13, 2003 9:10 UTC (Thu)
+                               by <b>spitzak</b> (guest, #4593)
+                              [<a href="/Articles/58121/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      If the optimizer complained about constant parts of boolean expressions it would still detect this. (foo = 0) is a constant with a value of 0.<br>
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58121/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor58279"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 13, 2003 21:03 UTC (Thu)
+                               by <b>proski</b> (guest, #104)
+                              [<a href="/Articles/58279/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      It would complain about legitimate code.  Like this:
+
+<pre>
+#ifdef HAVE_FOO
+int foo_active;
+#else
+#define foo_active (0)
+#endif
+
+if (foo_active && bar_active) {
+    frobnicate();
+}
+</pre>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58279/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+<a name="CommAnchor58369"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Possible side-effect:  character assassination</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 14, 2003 15:50 UTC (Fri)
+                               by <b>Max.Hyre</b> (subscriber, #1054)
+                              [<a href="/Articles/58369/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <p>No one's mentioned a lucky circumstance of this attempt:  that the
+perpetrator used David Miller's name.  Mr. Miller's efforts and integrity
+are too well known for this to be seen as anything other than a
+falsification.  (Besides, if he wanted to insert a back door, he's got
+lots more effective ways to do it.  :-)
+
+<p>But what if it had been labelled as coming from ``Joe Blow'', some
+rising coder who'd just been given commit permission in the last month
+or so?  Would he be well-known enough to have his protestations of
+innocence believed?  Even if accepted, would not doubt lurk in the
+minds of many other developers?
+
+<p>Debian developers <a href="http://www.debian.org/doc/developers-reference/ch-new-maintainer.en.html#s-registering">cryptographically sign</a> every upload.
+It's a precaution should be more widespread.
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/58369/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor568314"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Sep 25, 2013 22:41 UTC (Wed)
+                               by <b>JeffyPooh</b> (guest, #93030)
+                              [<a href="/Articles/568314/">Link</a>] (4 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+This may be obsolete early-1980s nonsense, if so apologies in advance.<br>
+<p>
+Way back then I POKE'd some backspace (^h) characters into some trivial BASIC programs. The ^h in the REM section of each line covered over the actual code, leaving only what I wanted displayed. The net effect was that I had total control over what the BASIC code appeared to be under the LIST command.<br>
+<p>
+I made one little program that appeared to LIST when RUN, and appeared to RUN when LISTed. Another LISTed as PRINT "No No No" but when RUN printed "Yes Yes Yes". It was hilarious at the time. One could do anything, and it was inexplicable.<br>
+<p>
+If applicable, scan your source code for ^h.<br>
+<p>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/568314/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor568325"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Sep 26, 2013 0:17 UTC (Thu)
+                               by <b>hummassa</b> (guest, #307)
+                              [<a href="/Articles/568325/">Link</a>] (3 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Why are you commenting in a ten-years-old article?<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/568325/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor791527"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jun 20, 2019 2:37 UTC (Thu)
+                               by <b>JeffyPooh</b> (guest, #93030)
+                              [<a href="/Articles/791527/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Because: Google.<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/791527/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor846427"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Feb 17, 2021 9:39 UTC (Wed)
+                               by <b>sammythesnake</b> (guest, #17693)
+                              [<a href="/Articles/846427/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+It&#x27;s even older now and I&#x27;m commenting because a LWN post in the far future linked back to this interesting piece of history!<br>
+<p>
+It&#x27;s fascinating to read through stuff in the pre-git context!<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/846427/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor874689"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Nov 2, 2021 0:36 UTC (Tue)
+                               by <b>quackduck</b> (guest, #155108)
+                              [<a href="/Articles/874689/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Still older!<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/874689/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+</details>
+<a name="CommAnchor696086"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">An attempt to backdoor the kernel</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Aug 2, 2016 19:53 UTC (Tue)
+                               by <b>LewisMCYoutube</b> (guest, #110032)
+                              [<a href="/Articles/696086/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Git is a pleasant-to-use tool. I like pie.<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/696086/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+
+</main></div> <!-- ArticleText -->
+</div> <!-- middlecolumn -->
+<div class="rightcol not-print">
+<!-- no side ad served -->
+</div>
+</div> <!-- maincolumn -->
+
+            <br clear="all">
+            <center>
+            <P>
+            <span class="ReallySmall">
+            Copyright &copy; 2003, Eklektix, Inc.<BR>
+            
+            Comments and public postings are copyrighted by their creators.<br>
+            Linux  is a registered trademark of Linus Torvalds<br>
+            </span>
+            </center>
+            
+            </body></html>

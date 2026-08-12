@@ -12,7 +12,7 @@
 
     The operational damage was still real. GitHub use was unavailable for several days, pull-request workflows were disrupted, and old pull requests were disconnected from their commits. This record tracks the compromised GitHub source mirror and ebuild changes, not a compromise of Gentoo's canonical package distribution path.
   start_date: 2018-06-28
-  end_date: 2018-06-28
+  end_date: 2018-06-29
   target:
     name: gentoo
     kind: distribution
@@ -30,35 +30,123 @@
     types:
     - service_disruption
     - data_destruction
+  indicators:
+  - kind: file_sha256
+    value: skel.ebuild a847becd7d479d741acb9b27fe07afffee49bafe2299ab4c8d9fa65b4abaf2e1
+  - kind: file_sha256
+    value: SphinxTrain-1.0.8.ebuild 29af3458b53e939dc2a51c3633bdf8854a78f34cb3eeaf5876c7660f6e0e6be4
+  - kind: file_sha256
+    value: configure cd0ba251f05ab646850c231bf0354ba984bd9841c0a47ce92456b81a469568d1
   artifacts:
-  - id: gentoo
-    name: gentoo
+  - id: gentoo-gentoo
+    name: gentoo/gentoo GitHub mirror
     ecosystem: github
     kind: revision_control_system
-    website: https://github.com
-    repo: https://github.com/gentoo
+    website: https://github.com/gentoo/gentoo
+    repo: https://github.com/gentoo/gentoo
     start_date: 2018-06-28
-    end_date: 2018-06-28
+    end_date: 2018-06-29
     locations:
-    - uri: 
-        https://github.com/gentoo/gentoo/commit/b8ed5a815dfb8c077a92e6a3a90c1ae6a88d284d
+    - uri: https://github.com/gentoo/gentoo/commit/fdd8da2e0edc5076c3ea25d52b15c26c16da35f4
       role: distribution
-    - uri: https://github.com/gentoo-mirror/gentoo/archive/refs/heads/master.zip
+    - uri: https://github.com/gentoo/gentoo/commit/49464b7316dbd7bbfe878cb3da4817c39a6cf11c
       role: distribution
-    - uri: https://wiki.gentoo.org/wiki/Github/2018-06-28_incident
-      role: mirror
-    - uri: https://security.gentoo.org/glsa/201807-01
+    - uri: https://github.com/gentoo/gentoo/commit/afcdc03b595ded34d6c367cb870f01b3dae7dd02
+      role: distribution
+    - uri: https://github.com/gentoo/gentoo/commit/e6db0eb4f76cb920e49a6afc3af067c3d5e4b82b
+      role: distribution
+    - uri: https://wiki.gentoo.org/wiki/Project:Infrastructure/Incident_reports/2018-06-28_Github
       role: mirror
     hashes:
-    - sha1:b8ed5a815dfb8c077a92e6a3a90c1ae6a88d284d
-    - sha1:2bd555a1138cb197271e8ddeec38bf4c7ae71844
+    - sha1:fdd8da2e0edc5076c3ea25d52b15c26c16da35f4
+    - sha1:49464b7316dbd7bbfe878cb3da4817c39a6cf11c
+    - sha1:afcdc03b595ded34d6c367cb870f01b3dae7dd02
+    - sha1:e6db0eb4f76cb920e49a6afc3af067c3d5e4b82b
     commits:
-    - b8ed5a815dfb8c077a92e6a3a90c1ae6a88d284d
-    - 2bd555a1138cb197271e8ddeec38bf4c7ae71844
+    - fdd8da2e0edc5076c3ea25d52b15c26c16da35f4
+    - 49464b7316dbd7bbfe878cb3da4817c39a6cf11c
+    - afcdc03b595ded34d6c367cb870f01b3dae7dd02
+    - e6db0eb4f76cb920e49a6afc3af067c3d5e4b82b
+    indicators:
+    - kind: file
+      value: skel.ebuild
+    - kind: command
+      value: rm -rf /*
+    evidence:
+    - kind: sample
+      path: samples/gentoo-gentoo-skel/during/skel.ebuild
+      role: exact_malicious_file
+    - kind: sample
+      path: samples/gentoo-gentoo-ebuilds/during/SphinxTrain-1.0.8.ebuild
+      role: representative_exact_malicious_ebuild
+    - kind: incident_source
+      path: samples/gentoo/during/gentoo-github-incident-report.html
+      role: official_incident_report
     notes:
-    - Gentoo's incident report listed malicious content windows for gentoo/gentoo, gentoo/musl,
-      and gentoo/systemd on GitHub between 2018-06-28 and 2018-06-29 UTC.
-    - Gentoo stated its own infrastructure and default mirroring path were unaffected.
+    - Gentoo restored the branch to legitimate commit 73b724093b9c2a8756b8c35d3e09793342fa9ca9.
+    - afcdc03b added the destructive line to every ebuild; e6db0eb4 was a root-commit
+      squash of that malicious tree.
+  - id: gentoo-musl
+    name: gentoo/musl GitHub repository
+    ecosystem: github
+    kind: revision_control_system
+    website: https://github.com/gentoo/musl
+    repo: https://github.com/gentoo/musl
+    start_date: 2018-06-28
+    end_date: 2018-06-29
+    locations:
+    - uri: https://github.com/gentoo/musl/commit/e6db0eb4f76cb920e49a6afc3af067c3d5e4b82b
+      role: distribution
+    - uri: https://wiki.gentoo.org/wiki/Project:Infrastructure/Incident_reports/2018-06-28_Github
+      role: mirror
+    hashes:
+    - sha1:e6db0eb4f76cb920e49a6afc3af067c3d5e4b82b
+    commits:
+    - e6db0eb4f76cb920e49a6afc3af067c3d5e4b82b
+    evidence:
+    - kind: sample
+      path: samples/gentoo-gentoo-ebuilds/during/SphinxTrain-1.0.8.ebuild
+      role: exact_file_from_shared_malicious_tree
+    notes:
+    - The attacker force-pushed the same malicious Gentoo tree to gentoo/musl.
+    - Gentoo restored the branch to legitimate commit 60461ca1385809bacf6a114a7f1ecfe22f6da47f.
+  - id: gentoo-systemd
+    name: gentoo/systemd GitHub repository
+    ecosystem: github
+    kind: revision_control_system
+    website: https://github.com/gentoo/systemd
+    repo: https://github.com/gentoo/systemd
+    start_date: 2018-06-28
+    end_date: 2018-06-29
+    locations:
+    - uri: https://github.com/gentoo/systemd/commit/50e3544d11046408b610b955591319b1df949311
+      role: distribution
+    - uri: https://github.com/gentoo/systemd/commit/c46d8bbf632357c1cb206dbf366f8cd263a705eb
+      role: distribution
+    - uri: https://wiki.gentoo.org/wiki/Project:Infrastructure/Incident_reports/2018-06-28_Github
+      role: mirror
+    hashes:
+    - sha1:50e3544d11046408b610b955591319b1df949311
+    - sha1:c46d8bbf632357c1cb206dbf366f8cd263a705eb
+    commits:
+    - 50e3544d11046408b610b955591319b1df949311
+    - c46d8bbf632357c1cb206dbf366f8cd263a705eb
+    indicators:
+    - kind: file
+      value: configure
+    - kind: command
+      value: rm -rf $HOME ~/
+    evidence:
+    - kind: sample
+      path: samples/gentoo-systemd/during/configure
+      role: exact_malicious_file
+    notes:
+    - c46d8bbf retained the malicious configure change while squashing another revision.
+    - Gentoo restored the branch to legitimate commit bf0e0a4df2d41a5631811f7db6b6c1c866c3ed80.
+  notes:
+  - Gentoo's incident report listed malicious content windows for gentoo/gentoo, gentoo/musl,
+    and gentoo/systemd on GitHub between 2018-06-28 and 2018-06-29 UTC.
+  - Gentoo stated its own infrastructure and default mirroring path were unaffected.
   references:
   - url: 
       https://arstechnica.com/information-technology/2018/06/gentoo-linux-github-organization-hacked-and-defaced/
@@ -68,5 +156,3 @@
   - url: 
       https://wiki.gentoo.org/wiki/Project:Infrastructure/Incident_reports/2018-06-28_Github
     title: Gentoo GitHub 2018-06-28 incident report
-  - url: https://security.gentoo.org/glsa/201807-01
-    title: 'GLSA 201807-01: Gentoo GitHub organization compromise'

@@ -7,11 +7,19 @@
   story: |
     The Juniper ScreenOS incident was not a normal bug disclosure. Juniper said an internal review found unauthorized code in ScreenOS, the operating system for NetScreen firewalls. The affected firmware was official vendor firmware, distributed through the normal ScreenOS channel, and the product sat directly on network boundaries.
 
-    CVE-2015-7755 was the administrative-access backdoor. Rapid7 and Fox-IT analysis found an authentication path in SSH and Telnet that compared the supplied password against the string `<<< %s(un='%s') = %u`. The string looked like a format string, but on vulnerable builds it was a master password: any username could reach an administrative shell with the highest privileges.
+    CVE-2015-7755 was the administrative-access backdoor. Rapid7's analysis found an authentication path in SSH and Telnet that compared the supplied password against the string `<<< %s(un='%s') = %u`. The string looked like a format string, but on vulnerable builds it was a master password: any username could reach an administrative shell with the highest privileges.
 
     CVE-2015-7756 was a separate VPN decryption vulnerability. Juniper described it as independent of the authentication bypass. Public cryptographic analysis tied it to ScreenOS random-number generation, Dual_EC_DRBG, and a changed Q parameter. The attacker did not need a large code change; replacing the parameter was enough if the holder of the corresponding secret could see the right output.
 
-    The deeper lesson was that ScreenOS already carried dangerous cryptographic structure. Dual_EC output was meant to be hidden behind an ANSI X9.17 generator, but researchers found paths where raw output could surface. The unauthorized parameter change then turned weak plumbing into a practical passive decryption path for VPN traffic.
+    The deeper lesson was that ScreenOS already carried dangerous cryptographic structure. Dual_EC output was meant to be hidden behind an ANSI X9.31 generator, but in the default configuration that filter never ran at all: ScreenOS reseeded on every call, which left the filter loop's own counter exhausted, so raw Dual_EC output was what callers received. Checkoway and colleagues traced that plumbing to a cluster of changes Juniper itself made in the 2008 ScreenOS 6.2 release — crucially, not the "unauthorized code" introduced by the third party. The unauthorized parameter change then turned weak plumbing into a practical passive decryption path for VPN traffic.
+  pull_quote:
+    text: >-
+      Juniper said ScreenOS filtered Dual EC output through an ANSI X9.31
+      generator, which would have killed the backdoor. Reseeding left
+      `prng_output_index` at 32, the filter loop's own counter, so the filter
+      never ran.
+    caption: the countermeasure that never ran
+    after: 3
   start_date: 2012-09-01
   end_date: 2015-12-17
   target:
@@ -19,8 +27,8 @@
     kind: firmware
     website: https://juniper.net
   actor:
-    name: Nation-state
-    kind: state
+    name: Unknown
+    kind: unknown
   language: c
   method:
     cause: source_code_compromise
@@ -32,6 +40,50 @@
     - backdoor
     - remote_access
     - vpn_traffic_decryption
+  indicators:
+  - kind: string
+    value: "<<< %s(un='%s') = %u"
+  - kind: function
+    value: sub_13DBEC
+  - kind: log
+    value: "Admin user system has logged on via SSH from"
+  - kind: log
+    value: "SSH: Password authentication successful for admin user"
+  - kind: technique
+    value: any username paired with the hardcoded password authenticates over SSH or Telnet
+  - kind: cve
+    value: CVE-2015-7755
+  - kind: cve
+    value: CVE-2015-7756
+  notes:
+  - >-
+    Rapid7 recovered the authentication backdoor as a hardcoded password disguised to read
+    as a debug format string, and located it in the SSG5 and SSG20 ARM firmware at
+    sub_13DBEC. Any username paired with that password authenticated over SSH or Telnet
+    regardless of whether the account existed.
+  - >-
+    No file hash is recorded for the affected firmware images. Juniper's advisory identifies
+    the affected builds by version rather than by digest, and the published analyses worked
+    from decompressed binaries without stating a digest for the distributed image.
+  - >-
+    No cited source attributes the unauthorized code to a specific actor. Juniper did not name
+    one, and Checkoway et al. explicitly decline to attribute, so the actor is recorded as
+    unknown despite widespread press speculation about a state operator.
+  - >-
+    The start date is imprecise. The Q parameter change is located only by a version diff
+    between ScreenOS 6.2.0r14 and 6.2.0r15; no source establishes a day, so 2012-09-01 stands
+    in for "the 6.2.0r15 timeframe" rather than a known date.
+  - >-
+    The end date marks the December 2015 out-of-cycle patch, which restored Juniper's original
+    Q value. It does not mark the end of the underlying PRNG weakness: Dual_EC and the skipped
+    ANSI X9.31 filter remained in ScreenOS from the 2008 6.2 release until Juniper announced
+    their removal in January 2016 and shipped the replacement in ScreenOS 6.3.0r22 in April
+    2016.
+  - >-
+    Juniper's advisory was originally published as kb.juniper.net/InfoCenter/index?page=content&id=JSA10713,
+    the identifier cited by Checkoway et al. That URL now redirects to the Juniper support
+    portal article listed in the references, which serves a JavaScript shell with no readable
+    text; the archived PDF alongside this record is the usable copy.
   artifacts:
   - id: screenos-authentication-backdoor
     name: Juniper ScreenOS SSH and Telnet authentication backdoor
@@ -121,9 +173,8 @@
       https://www.wired.com/2015/12/researchers-solve-the-juniper-mystery-and-they-say-its-partially-the-nsas-fault/
     title: Researchers Solve the Juniper Mystery and They Say It's Partially the NSA's 
       Fault
-  - url: 
-      https://blog.fox-it.com/2015/12/20/deepdive-into-cve-2015-7755-juniper-screenos-authentication-backdoor/
-    title: Deep dive into CVE-2015-7755 Juniper ScreenOS authentication backdoor
+  - url: https://eprint.iacr.org/2016/376
+    title: A Systematic Analysis of the Juniper Dual EC Incident
   - url: https://www.kb.cert.org/vuls/id/640184
     title: Juniper ScreenOS contains multiple vulnerabilities
   - url: https://blog.cryptographyengineering.com/2015/12/22/on-juniper-backdoor/

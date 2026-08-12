@@ -1,0 +1,104 @@
+- id: adform
+  title: Adform tracking script hijacked to serve crypto clipper
+  synopsis: >-
+    Between 2026-07-26 and 2026-07-27 the official `trackpoint-async.js` served from
+    Adform's `s2.adform.net` carried a clipboard hijacker that swapped Bitcoin, Ethereum,
+    and TRON wallet addresses on the roughly 14,000 sites embedding the tracker.
+  story: |-
+    On July 30, 2026, security researcher Kevin Beaumont reported that Adform, a European
+    ad-tech company, had been serving a cryptocurrency stealer from one of its own
+    JavaScript files. The compromised script, `trackpoint-async.js`, is hosted on
+    `s2.adform.net` and loaded by roughly 14,000 businesses that use Adform's advertising
+    technology, so the malicious code reached ordinary visitors of thousands of unrelated
+    websites.
+
+    Adform sells advertising and measurement services, and its tracker is the sort of
+    third-party file a marketing team adds once and never revisits. The injected code took
+    advantage of exactly that. It polled the visitor's clipboard every three seconds and,
+    whenever it found something shaped like a Bitcoin, Ethereum, or TRON wallet address,
+    replaced it with an address the attackers controlled. It also rewrote wallet addresses
+    displayed on the page itself, so a victim who checked the screen before pasting saw
+    the attacker's address rather than the one they intended to pay.
+
+    The script reported back to a bare IP address, `84.32.102.230`, on port 7744, sending
+    the visitor's address and the page they had come from in a request shaped like
+    `/p?h=example.com&u=/test`. Beaumont noted that neither the file nor its associated
+    URLs, domains, or IP address returned a single detection on VirusTotal while the
+    campaign was live, which is a reasonable illustration of how little reputation
+    scanning helps against a trusted vendor's own hostname.
+
+    Adform removed the malicious code and notified customers, and the injected script had
+    begun disappearing while Beaumont's write-up was being published. Anyone who visited a
+    site carrying the Adform tracker during the window was advised to clear browser
+    cookies. No sample of the modified script carries a published digest, so the affected
+    bytes are identified by the URL and behavior rather than by hash.
+  start_date: 2026-07-26
+  end_date: 2026-07-27
+  target:
+    name: Adform
+    kind: service
+    website: https://www.adform.com
+  actor:
+    name: Unknown
+    kind: group
+  language: javascript
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: cryptocurrency_theft
+    transitive: true
+  impact:
+    types:
+    - cryptocurrency_theft
+    users: 0
+  indicators:
+  - kind: url
+    value: https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+  - kind: domain
+    value: s2.adform.net
+  - kind: ipv4
+    value: 84.32.102.230
+  - kind: url
+    value: http://84.32.102.230:7744/p
+  - kind: port
+    value: '7744'
+  - kind: technique
+    value: clipboard polled every three seconds for Bitcoin, Ethereum, and TRON addresses
+  - kind: technique
+    value: wallet addresses rendered on the page rewritten in place
+  - kind: technique
+    value: beacon carries the visitor address and referring page as h and u parameters
+  notes:
+  - No file hash is recorded. The one digest quoted in reporting is 49 hex characters,
+    which is not a SHA-256, SHA-1, or MD5, so it is not usable as an indicator and is left
+    out rather than reproduced. Beaumont also reported zero VirusTotal detections for the
+    file and its infrastructure while the campaign was live.
+  - The attacker-controlled wallet addresses were not published, so the substitution
+    targets are described by behavior rather than enumerated.
+  - This record previously carried a different field layout from the rest of the dataset
+    and cited three site homepages rather than articles. It was rewritten onto the common
+    schema and the citations replaced with the reporting they were standing in for.
+  artifacts:
+  - id: trackpoint-async-js
+    name: trackpoint-async.js
+    kind: source_archive
+    ecosystem: javascript cdn
+    website: https://www.adform.com
+    start_date: 2026-07-26
+    end_date: 2026-07-27
+    locations:
+    - uri: https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      role: distribution
+    notes:
+    - The affected artifact is the modified `trackpoint-async.js` as served from
+      s2.adform.net during the window. Adform replaced the file in place, so no versioned
+      coordinate identifies the malicious state and no archived copy has been located.
+  references:
+  - url: https://doublepulsar.com/adform-compromised-to-serve-crypto-stealer-via-supply-chain-attack-2f1ec024f33e
+    title: Adform compromised to serve crypto stealer via supply chain attack - Kevin Beaumont, DoublePulsar
+  - url: https://www.bleepingcomputer.com/news/security/online-ad-firm-adforms-script-compromised-to-steal-cryptocurrency/
+    title: Online ad firm Adform's script compromised to steal cryptocurrency - BleepingComputer
+  - url: https://thehackernews.com/2026/08/hackers-poison-adform-script-to-swap.html
+    title: Hackers Poison Adform Script to Swap Crypto Wallet Addresses Across Customer Sites - The Hacker News
+  - url: https://www.scworld.com/brief/adform-supply-chain-attack-replaced-crypto-wallet-addresses
+    title: Adform supply-chain attack replaced crypto wallet addresses - SC Media

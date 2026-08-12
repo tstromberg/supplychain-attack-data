@@ -1,0 +1,64 @@
+- id: chaindrop-2026
+  title: ChainDrop worm poisoned 444 npm packages in four hours
+  synopsis: >-
+    ChainDrop began with the compromise of the keyv and cacheable maintainer on 2026-08-04 and
+    spread to 444 package names across 2,212 versions in under four hours, taking in
+    servicetitan, ornikar, qlik, and nebula.js among others.
+  story: |
+    A self-propagating npm worm that researchers named ChainDrop spread through the
+    registry on August 4, 2026, poisoning 444 package names across 2,212 versions in
+    under four hours and touching more than a dozen victim organizations, among them
+    ServiceTitan, Ornikar, Qlik, and nebula.js.
+
+    It started with one maintainer. The operator took over the GitHub account behind
+    the `keyv` and `cacheable` package families, committed a `preinstall` hook to the
+    main branch, and cut releases through the project's own GitHub Actions workflow,
+    which meant the poisoned versions carried valid provenance. From there the worm
+    used what it stole. Every set of npm credentials it harvested became publishing
+    rights for the next round of packages, and it minted fresh tokens through npm's
+    OIDC trusted publishing where a workflow identity allowed it.
+
+    The payload was a credential harvester aimed squarely at build infrastructure:
+    npm and GitHub tokens, cloud credentials, SSH keys, database connection strings,
+    and secrets read directly out of GitHub Actions runner memory. It also wrote
+    autostart hooks into `.claude` and `.vscode` directories, so a developer who
+    merely opened affected source would run it.
+
+    The operational novelty was the command-and-control channel. Rather than
+    hardcoding an exfiltration endpoint, ChainDrop queried an Ethereum smart contract
+    at runtime to learn where to send its results, cycling through roughly 60 public
+    RPC endpoints until one responded. Blocking any single provider accomplished
+    nothing, and late on August 4 researchers watched the operator move the entire
+    C2 infrastructure with one transaction, without shipping a malware update. Wiz
+    and Chainguard both placed the payload in the Mini Shai-Hulud lineage that ran
+    through the TeamPCP and AntV compromises earlier in 2026.
+  start_date: 2026-08-04
+  end_date: 2026-08-05
+  actor:
+    name: Unknown
+    kind: group
+  impact:
+    types:
+    - credential_theft
+    - self_propagation
+    - data_exfiltration
+    - backdoor
+  references:
+  - url: https://www.stepsecurity.io/blog/chaindrop-npm-worm
+    title: 'ChainDrop npm Worm: Bun-loaded CI/CD credential harvester with Ethereum
+      dead-drop C2 - StepSecurity'
+  - url: https://www.elastic.co/security-labs/shai-hulud-chaindrop-npm-supply-chain
+    title: 'Shai-Hulud strikes again: CHAINDROP worm hits 400+ npm packages - Elastic
+      Security Labs'
+  - url: https://unit42.paloaltonetworks.com/chaindrop-npm-worm-analysis/
+    title: 'ChainDrop: Inside a Self-Propagating npm Worm - Unit 42'
+  - url: https://www.securityweek.com/over-400-npm-packages-infected-in-chaindrop-supply-chain-attack/
+    title: Over 400 NPM Packages Infected in ChainDrop Supply Chain Attack - SecurityWeek
+  notes:
+  - The origin compromise is recorded separately at [[keyv-cacheable]]. This record holds
+    the campaign aggregate.
+  - Package and version counts differ by source and collection time, ranging from 400-plus
+    to 444 package names and from 2,212 to 2,236 versions. The keyv and cacheable families
+    contributed the initial 10 to 11 carriers.
+  - Wiz and Chainguard assess ChainDrop as a descendant of the Mini Shai-Hulud family
+    tracked under [[shai-hulud-here-we-go-again]]. No public source names the operator.

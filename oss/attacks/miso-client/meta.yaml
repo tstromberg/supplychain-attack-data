@@ -30,7 +30,7 @@
     Teams had to search package contents and source trees for invisible code
     points, then map any hits back to the install path that could have executed
     the decoder on a developer machine or CI runner.
-  start_date: 2026-03-12
+  start_date: 2026-03-07
   end_date: 2026-03-13
   target:
     name: miso-client
@@ -48,12 +48,19 @@
     types:
     - credential_theft
     users: 0
+  locations:
+  - uri: https://github.com/esystemsdev/aifabrix-miso-client
+    role: distribution
+  commits:
+  - 9e80710d9af9b360bb1697ae7a5de8d89db4814f
+  - 50c55c83fbddfb28003298660e79a27311e85c52
   artifacts:
   - id: miso-client
     name: miso-client npm package
     package: '@aifabrix/miso-client'
     ecosystem: npm
     kind: source_archive
+    repo: https://github.com/esystemsdev/aifabrix-miso-client
     start_date: 2026-03-12
     end_date: 2026-03-13
     versions:
@@ -62,12 +69,43 @@
     - uri: https://www.npmjs.com/package/@aifabrix/miso-client/v/4.7.2
       role: distribution
     indicators:
+    - kind: git_commit
+      value: malicious source 9e80710d9af9b360bb1697ae7a5de8d89db4814f
+    - kind: git_commit
+      value: payload removal 50c55c83fbddfb28003298660e79a27311e85c52
+    - kind: file_sha256
+      value: src/express/error-types.ts 084f6f33dbb774c929bd9f00e48eaf0535cfbc64c95f51b34b857c48dc25e1e4
+    - kind: file_sha256
+      value: dist/express/error-types.js 6dc22fe5dd515126cf813c8f505f5da7619ed73de44db9317628ca5377d3c809
     - kind: technique
       value: invisible_unicode_payload
     - kind: function
       value: eval
     - kind: malware
       value: Glassworm
+    notes:
+    - >-
+      The exact malicious source is retained in Git commit
+      9e80710d9af9b360bb1697ae7a5de8d89db4814f. Building that commit with the
+      repository's Node 20, pnpm 9, and frozen-lockfile workflow reproduces all 446
+      published member paths, sizes, and SHA-256 values in jsDelivr's retained 4.7.2
+      manifest. The original npm gzip bytes and authoritative whole-archive checksum
+      remain unavailable, so the local complete-tree sample is explicitly reconstructed.
+    - >-
+      Commit 50c55c83fbddfb28003298660e79a27311e85c52 removed the four-line invisible
+      loader from src/express/error-types.ts on 2026-03-13.
   references:
   - url: https://www.aikido.dev/blog/glassworm-returns-unicode-attack-github-npm-vscode
     title: 'Glassworm Returns: Invisible Unicode Malware Found in 150+ GitHub Repositories'
+  - url: https://labs.cloudsecurityalliance.org/research/csa-research-note-glassworm-supply-chain-developer-toolchain/
+    title: 'GlassWorm Returns: Developer Toolchain Worm Expands to GitHub and npm -
+      Cloud Security Alliance'
+  - url: https://securityboulevard.com/2026/03/an-evolving-glassworm-malware-is-making-the-rounds-of-code-repositories/
+    title: An Evolving GlassWorm Malware is Making the Rounds of Code Repositories -
+      Security Boulevard
+  - url: https://github.com/esystemsdev/aifabrix-miso-client/commit/9e80710d9af9b360bb1697ae7a5de8d89db4814f
+    title: aifabrix-miso-client 4.7.2 source commit containing the invisible payload
+  - url: https://github.com/esystemsdev/aifabrix-miso-client/commit/50c55c83fbddfb28003298660e79a27311e85c52
+    title: aifabrix-miso-client commit removing the invisible payload
+  - url: https://data.jsdelivr.com/v1/package/npm/@aifabrix/miso-client@4.7.2
+    title: jsDelivr retained @aifabrix/miso-client 4.7.2 member manifest

@@ -5,42 +5,13 @@
     workflow to forge release state, tag v0.23.3 at an orphan commit, and dispatch the legitimate
     release pipeline.
   story: |-
-    Between April 24 and 25, 2026, an attacker forged a release of
-    elementary-data, an open-source data-observability tool used in dbt
-    pipelines, by exploiting a script-injection flaw in one of the
-    project's own GitHub Actions workflows. No maintainer ever pushed
-    the bad version; the project's CI did it on the attacker's behalf.
+    Between April 24 and 25, 2026, an attacker forged a release of elementary-data, an open-source data-observability tool used in dbt pipelines, by exploiting a script-injection flaw in one of the project's own GitHub Actions workflows. No maintainer ever pushed the bad version; the project's CI did it on the attacker's behalf.
 
-    The entry point was a pull-request comment. According to
-    StepSecurity, which reverse-engineered the incident alongside
-    Elementary's own post-mortem, the project ran an issue-update
-    workflow that interpolated comment text directly into a shell
-    `run:` block. A crafted comment let the attacker execute arbitrary
-    commands inside the workflow with the repository's `GITHUB_TOKEN`.
+    The entry point was a pull-request comment. According to StepSecurity, which reverse-engineered the incident alongside Elementary's own post-mortem, the project ran an issue-update workflow that interpolated comment text directly into a shell `run:` block, so a crafted comment let the attacker execute arbitrary commands inside the workflow with the repository's `GITHUB_TOKEN`. From there, the attacker used that token to create an orphan commit, tag it `v0.23.3`, and add a large `elementary.pth` file along with a version bump. Python evaluates `.pth` files at interpreter startup, so the payload would fire without any explicit `import elementary` in the victim's code. The attacker then dispatched the project's normal release workflow against the forged tag. PyPI accepted `elementary-data==0.23.3`, and GHCR accepted a multi-architecture `ghcr.io/elementary-data/elementary` image tagged both `0.23.3` and `latest`, all signed off by the project's own automation.
 
-    From there, the attacker used that token to create an orphan
-    commit, tag it `v0.23.3`, and add a large `elementary.pth` file
-    along with a version bump. Python's `.pth` files are evaluated by
-    the interpreter at startup, so the payload would fire without any
-    explicit `import elementary` in the victim's code. The attacker
-    then dispatched the project's normal release workflow against the
-    forged tag. PyPI accepted `elementary-data==0.23.3`, and GHCR
-    accepted a multi-architecture `ghcr.io/elementary-data/elementary`
-    image tagged both `0.23.3` and `latest`, all signed off by the
-    project's own automation.
+    The payload was a credential stealer of the kind familiar from the broader spring 2026 wave. It walked the host for SSH keys, cloud credentials, Kubernetes config, package-manager tokens, cryptocurrency wallets, and other secrets, then posted an archive named `trin.tar.gz` to `igotnofriendsonlineorirl-imgonnakmslmao.skyhanni.cloud`.
 
-    The payload was a credential stealer of the kind familiar from
-    the broader spring 2026 wave. It walked the host for SSH keys,
-    cloud credentials, Kubernetes config, package-manager tokens,
-    cryptocurrency wallets, and other secrets, then posted an archive
-    named `trin.tar.gz` to
-    `igotnofriendsonlineorirl-imgonnakmslmao.skyhanni.cloud`.
-
-    Elementary pulled the bad release, rotated affected credentials,
-    and published a clean `0.23.4`. The incident is a textbook
-    example of how a single `${{ github.event.comment.body }}`
-    interpolated into a shell step can hand an outsider the same
-    publish authority a maintainer holds.
+    Elementary pulled the bad release, rotated affected credentials, and published a clean `0.23.4`. The incident is a textbook example of how a single `${{ github.event.comment.body }}` interpolated into a shell step can hand an outsider the same publish authority a maintainer holds.
   start_date: 2026-04-24
   end_date: 2026-04-25
   target:
@@ -85,8 +56,6 @@
     locations:
     - uri: https://pypi.org/project/elementary-data/0.23.3/
       role: distribution
-    hashes:
-    - sha256:31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255
     indicators:
     - kind: file
       value: elementary.pth
@@ -110,12 +79,16 @@
     end_date: 2026-04-25
     versions:
     - 0.23.3
+    hashes:
+    - sha256:31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255
     locations:
     - uri: ghcr.io/elementary-data/elementary:0.23.3
       role: distribution
     - uri: ghcr.io/elementary-data/elementary:latest
       role: distribution
     notes:
+    - Snyk maps this digest to the compromised multi-architecture 0.23.3 image,
+      which was also served by the mutable latest tag during the incident window.
     - Clean container tags included ghcr.io/elementary-data/elementary:0.23.2.
     - A mutable latest tag or release channel was reported affected; it is recorded as 
       scope rather than a fixed version identifier.
@@ -126,3 +99,9 @@
   - url: 
       https://www.stepsecurity.io/blog/elementary-data-compromised-on-pypi-and-ghcr-forged-release-pushed-via-github-actions-script-injection
     title: elementary-data Compromised on PyPI and GHCR
+  - url: https://snyk.io/blog/malicious-release-of-elementary-data-pypi-package-steals-cloud-credentials-from-data-engineers/
+    title: Malicious Release of elementary-data PyPI Package Steals Cloud Credentials
+      from Data Engineers - Snyk
+  - url: https://cybersecuritynews.com/pypi-package-hacked-with-malware/
+    title: Popular PyPI Package With 1 Million Monthly Downloads Hacked to Inject
+      Malicious Scripts - Cyber Security News

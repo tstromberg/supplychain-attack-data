@@ -1,19 +1,33 @@
 - id: top-gg
   title: Top.gg Python SDK stole credentials
   synopsis: >-
-    Attackers hijacked the GitHub account of a Top.gg maintainer using stolen browser cookies
-    to bypass MFA. They modified the repository's requirements.txt to point to a poisoned
-    version of the Colorama package hosted on a typosquatted domain (files.pypihosted.org).
-  story: |
-    The Top.gg attack used source control as the first distribution step. Attackers hijacked a maintainer's GitHub account with stolen browser cookies, bypassing MFA, and committed a change to the official python-sdk repository. The change looked like dependency plumbing: requirements.txt pointed at a Colorama package on a fake Python-hosting domain.
+    Attackers hijacked the GitHub account of a Top.gg maintainer using stolen browser cookies to
+    bypass MFA. They modified the repository's requirements.txt to point to a poisoned version of
+    the Colorama package hosted on a typosquatted domain (files.pypihosted.org).
+  story: >
+    The Top.gg attack used source control as the first distribution step. Attackers hijacked a
+    maintainer's GitHub account with stolen browser cookies, bypassing MFA, and committed a change
+    to the official python-sdk repository. The change looked like dependency plumbing:
+    requirements.txt pointed at a Colorama package on a fake Python-hosting domain.
 
-    That small dependency edit routed installers away from the real package path. Checkmarx reported the fake infrastructure used files.pypihosted.org, a domain chosen to resemble legitimate PyPI file hosting. Users installing from the official Top.gg repository could therefore receive malware through the dependency resolver.
 
-    The malware focused on developer and Discord credentials, browser data, and cryptocurrency material. Checkmarx estimated more than 170,000 users were affected by the wider campaign using fake Python infrastructure. This record keeps the Top.gg SDK scope separate because the compromised source repository and dependency-file edit are specific and verifiable.
+    That small dependency edit routed installers away from the real package path. Checkmarx reported
+    the fake infrastructure used files.pypihosted.org, a domain chosen to resemble legitimate PyPI
+    file hosting. Users installing from the official Top.gg repository could therefore receive
+    malware through the dependency resolver.
 
-    The incident is a useful example of source-level dependency steering. The attacker did not have to publish a malicious Top.gg package; changing one requirements file inside the trusted repository was enough to make normal installation follow a hostile package URL.
-  start_date: 2024-03-01
-  end_date: 2024-03-31
+
+    The malware focused on developer and Discord credentials, browser data, and cryptocurrency
+    material. Checkmarx estimated more than 170,000 users were affected by the wider campaign using
+    fake Python infrastructure. This record keeps the Top.gg SDK scope separate because the
+    compromised source repository and dependency-file edit are specific and verifiable.
+
+
+    The incident is a useful example of source-level dependency steering. The attacker did not have
+    to publish a malicious Top.gg package; changing one requirements file inside the trusted
+    repository was enough to make normal installation follow a hostile package URL.
+  start_date: 2024-03-01T00:00:00.000Z
+  end_date: 2024-03-31T00:00:00.000Z
   target:
     name: top-gg
     kind: library
@@ -29,33 +43,65 @@
     transitive: true
   impact:
     types:
-    - credential_theft
+      - credential_theft
     users: 170000
   artifacts:
-  - id: top-gg
-    name: top-gg
-    ecosystem: github
-    kind: dependency_file
-    website: https://github.com
-    repo: https://github.com/top-gg/python-sdk
-    start_date: 2024-03-01
-    end_date: 2024-03-31
-    locations:
-    - uri: https://github.com/top-gg/python-sdk
-      role: mirror
-    indicators:
-    - kind: file
-      value: requirements.txt
-    - kind: domain
-      value: files.pypihosted.org
-    - kind: package
-      value: Colorama
-    - kind: observable
-      value: GitHub account hijack using stolen browser cookies to bypass MFA.
-    - kind: observable
-      value: requirements.txt changed to install poisoned Colorama from fake Python 
-        package infrastructure.
+    - id: top-gg
+      name: top-gg
+      ecosystem: github
+      kind: dependency_file
+      website: https://github.com
+      repo: https://github.com/top-gg/python-sdk
+      start_date: 2024-03-01T00:00:00.000Z
+      end_date: 2024-03-31T00:00:00.000Z
+      commits:
+        - ecb87731286d72c8b8172db9671f74bd42c6c534
+      locations:
+        - uri: https://github.com/top-gg/python-sdk
+          role: mirror
+        - uri: pkg:pypi/colorama@0.4.5?repository_url=https://files.pythanhosted.org
+          role: distribution
+        - uri: pkg:pypi/colorama@0.4.6?repository_url=https://files.pypihosted.org
+          role: distribution
+        - uri: pkg:pypi/colorama@0.4.3?repository_url=https://files.pypihosted.org
+          role: distribution
+        - uri: >-
+            https://files.pythanhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.5.tar.gz
+          role: distribution
+        - uri: >-
+            https://files.pypihosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz
+          role: distribution
+        - uri: >-
+            https://files.pypihosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.3.tar.gz
+          role: distribution
+      hashes:
+        - sha256:0c1873196dbd88280f4d5cf409b7b53674b3ed85f8a1a28ece9caf2f98a71207
+        - sha256:35ac61c83b85f6ddcf8ec8747f44400399ce3a9986d355834b68630270e669fb
+        - sha256:c53b93be72e700f7e0c8d5333acd68f9dc5505fb5b71773ca9a8668b98a17ba8
+      indicators:
+        - kind: file
+          value: requirements.txt
+        - kind: domain
+          value: files.pypihosted.org
+        - kind: package
+          value: Colorama
+        - kind: observable
+          value: GitHub account hijack using stolen browser cookies to bypass MFA.
+        - kind: observable
+          value: >-
+            requirements.txt changed to install poisoned Colorama from fake Python package
+            infrastructure.
   references:
-  - url: 
-      https://checkmarx.com/blog/over-170k-users-affected-by-attack-using-fake-python-infrastructure/
-    title: Over 170K Users Affected by Attack Using Fake Python Infrastructure
+    - url: >-
+        https://checkmarx.com/blog/over-170k-users-affected-by-attack-using-fake-python-infrastructure/
+      title: Over 170K Users Affected by Attack Using Fake Python Infrastructure
+    - url: https://thehackernews.com/2024/03/topgg-discord-bot-developer-hacked-in.html
+      title: Top.gg Discord Bot Developer Hacked in Supply Chain Attack
+    - url: >-
+        https://www.bleepingcomputer.com/news/security/topgg-discord-bot-devs-infected-with-malware-in-supply-chain-attack/
+      title: Top.gg Discord bot devs infected with malware in supply chain attack
+    - url: https://siliconangle.com/2024/03/21/top-gg-hit-supply-chain-attack-stolen-browser-cookies/
+      title: Top.gg hit by supply chain attack after stolen browser cookies bypass MFA
+    - url: >-
+        https://www.darkreading.com/cyberattacks-data-breaches/discord-bot-developers-targeted-by-supply-chain-attack
+      title: Discord Bot Developers Targeted by Supply Chain Attack

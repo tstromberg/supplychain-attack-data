@@ -1,0 +1,135 @@
+schema_version: 1
+interpretation:
+  - >-
+    The hostile Chrome Web Store CRX is identified by a surviving archive record and a contemporary
+    GitHub comment that links the cached Web Store package. The archive host currently denies
+    automated retrieval, and the SHA-256 is not present in Hopper or the configured malware
+    repositories.
+  - >-
+    Version 7.1.8 loaded JavaScript dynamically, so a single archived response cannot describe
+    everything the server may have delivered to every client. The preserved response is exact for
+    the cited Wayback capture and is retained as recovered runtime-payload evidence, not as a
+    substitute for the CRX.
+samples:
+  - artifact_id: thegreatsuspender
+    phase: before
+    classification: clean
+    version: 7.1.6
+    filename: the-great-suspender-7.1.6-source.zip
+    path: thegreatsuspender/before/the-great-suspender-7.1.6-source.zip
+    sha256: d5f347f6d632f4263d6a4446a20d9df1ef54f9d98708fa8a92ece97e34ea6f27
+    size: 558816
+    source:
+      url: >-
+        https://codeload.github.com/greatsuspender/thegreatsuspender/zip/9730c09986dee2d0c265a8599ff4d6d573b2d1d6
+      retrieved_at: '2026-08-10T01:19:21Z'
+      kind: immutable_repository_revision
+    verification:
+      status: exact
+      basis:
+        - official_v7_1_6_tag_commit
+        - immutable_git_revision
+        - measured_sha256
+    notes:
+      - Clean source comparator; this is not the Chrome Web Store CRX container.
+  - artifact_id: thegreatsuspender
+    phase: during
+    classification: malicious
+    version: 7.1.8-runtime
+    filename: owa.tracker-combined-latest.minified.js
+    path: thegreatsuspender/during/owa.tracker-combined-latest.minified.js
+    sha256: e1c1d2b0d2f45c9973ba4a3ef047b4e5e0a90d26f8bca51b74350851e5639652
+    size: 73306
+    source:
+      url: >-
+        https://web.archive.org/web/20210103184129id_/https://cdn.owebanalytics.com/owa/modules/base/js/owa.tracker-combined-latest.minified.js
+      original_url: https://cdn.owebanalytics.com/owa/modules/base/js/owa.tracker-combined-latest.minified.js
+      retrieved_at: '2026-08-10T01:19:21Z'
+      kind: archived_runtime_payload
+    verification:
+      status: payload_only
+      basis:
+        - contemporary_analysis_url
+        - exact_wayback_capture
+        - measured_sha256
+    notes:
+      - Exact remote response loaded by 7.1.8, not the unavailable Web Store CRX.
+      - The server could vary this response over time or by client; this capture is not exhaustive.
+  - artifact_id: thegreatsuspender
+    phase: during
+    classification: affected
+    version: 7.1.8
+    filename: crx4chrome-7.1.8-record.html
+    path: thegreatsuspender/during/crx4chrome-7.1.8-record.html
+    sha256: b885a29f0be1100dee2ef1b3b27f6480279c830caa7bb6372509502892e79ff2
+    size: 30279
+    source:
+      url: https://www.crx4chrome.com/crx/221789/
+      retrieved_at: '2026-08-10T01:19:21Z'
+      kind: extension_archive_record
+    verification:
+      status: verification_material
+      basis:
+        - archived_crx_filename
+        - archived_crx_size
+        - archived_crx_hashes
+        - measured_sha256
+    notes:
+      - >-
+        Records the unavailable CRX as 277172 bytes with SHA-256
+        099d4450357879df940cf72ae56c5f224cd28560b5ccc0e821fb3b4d56f9f6e9.
+  - artifact_id: thegreatsuspender
+    phase: during
+    classification: affected
+    version: 7.1.8
+    filename: github-issue-1263.json
+    path: thegreatsuspender/during/github-issue-1263.json
+    sha256: 98840011184356d2ca4ebf718b9b2281bfc67a5887304527fefe0fb3ca2d49f1
+    size: 16044
+    source:
+      url: https://api.github.com/repos/greatsuspender/thegreatsuspender/issues/1263
+      retrieved_at: '2026-08-10T01:19:21Z'
+      kind: contemporary_project_issue
+    verification:
+      status: payload_only
+      basis:
+        - web_store_divergence
+        - runtime_loader_description
+        - measured_sha256
+  - artifact_id: thegreatsuspender
+    phase: during
+    classification: affected
+    version: 7.1.8
+    filename: github-comment-773625959.json
+    path: thegreatsuspender/during/github-comment-773625959.json
+    sha256: b97fa41ad7873f648f91257366399cc0a23d35d9e173bccce28f3f5d9082b6ea
+    size: 2481
+    source:
+      url: https://api.github.com/repos/greatsuspender/thegreatsuspender/issues/comments/773625959
+      retrieved_at: '2026-08-10T01:19:21Z'
+      kind: contemporary_sample_lead
+    verification:
+      status: verification_material
+      basis:
+        - exact_archived_crx_url
+        - contemporary_analysis
+        - measured_sha256
+unresolved:
+  - artifact_id: thegreatsuspender
+    phase: during
+    hash: sha256:099d4450357879df940cf72ae56c5f224cd28560b5ccc0e821fb3b4d56f9f6e9
+    status: original_crx_archive_access_denied_runtime_payload_recovered
+  - artifact_id: thegreatsuspender
+    phase: during
+    coordinate: sha256:099d4450357879df940cf72ae56c5f224cd28560b5ccc0e821fb3b4d56f9f6e9
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-08-10T13:56:12.494-04:00 level=ERROR msg="command failed"
+        error="hash 099d4450357879df940cf72ae56c5f224cd28560b5ccc0e821fb3b4d56f9f6e9 unavailable
+        from configured sources: malwarebazaar: MalwareBazaar has no sample for
+        099d4450357879df940cf72ae56c5f224cd28560b5ccc0e821fb3b4d56f9f6e9: hash_not_found; triage:
+        Triage has no file analysis for SHA256
+        099d4450357879df940cf72ae56c5f224cd28560b5ccc0e821fb3b4d56f9f6e9; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-08-10T17:56:13.559Z'

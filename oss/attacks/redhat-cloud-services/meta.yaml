@@ -1,0 +1,612 @@
+- id: redhat-cloud-services
+  title: Red Hat npm namespace poisoned via a maintainer's editor
+  campaigns:
+  - miasma-2026
+  synopsis: >-
+    An attacker used a Red Hat employee's GitHub account, compromised by a malicious VS Code
+    extension, to inject the Miasma preinstall dropper into 32 @redhat-cloud-services npm
+    packages. Red Hat published 96 malicious versions before pulling them.
+  story: |
+    Red Hat confirmed in early June 2026 that attackers had published malicious
+    versions of 32 npm packages in its `@redhat-cloud-services` namespace, using
+    an employee's GitHub account that had been compromised through a booby-trapped
+    Visual Studio Code extension.
+
+    The affected packages are frontend JavaScript libraries that build the Hybrid
+    Cloud Console at console.redhat.com, Red Hat's web interface for managing
+    subscriptions and cloud services. They are not headline packages, but between
+    them they accounted for roughly 117,000 weekly npm downloads, most of it into
+    build pipelines rather than onto developer laptops.
+
+    In security bulletin RHSB-2026-006, published June 2, Red Hat said the
+    intrusion began on May 29, when the attacker used the stolen GitHub account to
+    inject malicious code into repositories in a Red Hat GitHub organization and to
+    alter configuration files in a way designed to infect other developers who
+    worked on them. Ninety-six versions across the 32 packages reached the npm
+    registry. The malware, which researchers had begun tracking as Miasma, arrived
+    as a `preinstall` script, which meant it executed during `npm install` before
+    any application code ran.
+
+    Red Hat engineering removed the compromised versions from npm after disclosure
+    and said no Red Hat product or enterprise software had been built or shipped
+    with an affected version, so customers were not asked to take action. The entry
+    point drew as much comment as the payload. A developer's editor extension is
+    not usually modeled as part of a vendor's release pipeline, and in this case it
+    was the shortest path to a namespace trusted by everyone who builds against the
+    console.
+  start_date: 2026-05-29
+  end_date: 2026-06-02
+  target:
+    name: '@redhat-cloud-services'
+    kind: organization
+    repo: https://github.com/RedHatInsights
+    website: https://www.npmjs.com/org/redhat-cloud-services
+  actor:
+    name: Unknown
+    kind: group
+  language: JavaScript
+  method:
+    cause: compromised_account_credentials
+    phase: source
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - self_propagation
+    - data_exfiltration
+    users: 116991
+  locations:
+  - uri: https://www.npmjs.com/org/redhat-cloud-services
+    role: distribution
+  - uri: https://access.redhat.com/security/vulnerabilities/RHSB-2026-006
+    role: mirror
+  indicators:
+  - kind: advisory
+    value: RHSB-2026-006
+  - kind: malware_family
+    value: Miasma
+  notes:
+  - Red Hat attributed the initial access to a GitHub account compromised by a malicious
+    VS Code extension, not to a compromised npm publishing token. The malicious code was
+    injected at the source repository and carried forward into published packages.
+  - Red Hat reported 32 packages and 96 versions. Weekly download volume across the
+    affected packages was reported as 116,991; Wiz put the figure at roughly 80,000. No
+    count of successful installs of a malicious version has been published.
+  - The per-package version list here comes from StepSecurity, which enumerated what
+    RHSB-2026-006 reported only as totals. It accounts for 95 of the 96 versions Red Hat
+    counted. Every package carries three malicious releases except
+    '@redhat-cloud-services/vulnerabilities-client', listed as 2.1.9 and 2.1.11. The
+    intervening 2.1.10 is unaccounted for and is not recorded here, because no source
+    states that it was malicious.
+  - Wiz identified the compromise on 2026-06-01 by finding at least 32 package releases
+    whose contents did not match their source repositories, which is the detection angle
+    that works when the publishing identity itself is legitimate.
+  - Red Hat stated that no Red Hat products or enterprise software were built or shipped
+    with a compromised version and that no customer action was required.
+  - Microsoft published SHA-256 values for malicious `index.js` files extracted from six
+    packages. These are component-file checksums, not checksums of the npm tarballs; five
+    identify an exact version, while the remediations-client report does not state which
+    affected version supplied its sample.
+  artifacts:
+  - id: rhcs-types
+    name: '@redhat-cloud-services/types'
+    package: '@redhat-cloud-services/types'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 3.6.1
+    - 3.6.2
+    - 3.6.4
+    hashes:
+    - md5:9e6c5af01438b52c9a411686c1f1b8ff
+    - sha1:88d098c8d96e9ae17550e9798c3b62c420464b8c
+    - sha256:d543bb3cdf1569c2b3d38c8a4081ed746cfe78bf3236c2302704d79ab7fa9558
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/types
+      role: distribution
+    notes:
+    - SlowMist published all three checksums for the complete
+      redhat-cloud-services-types-3.6.1.tgz archive. Whole-archive checksums for
+      3.6.2 and 3.6.4 remain unverified.
+  - id: rhcs-frontend-components-utilities
+    name: '@redhat-cloud-services/frontend-components-utilities'
+    package: '@redhat-cloud-services/frontend-components-utilities'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 7.4.1
+    - 7.4.2
+    - 7.4.4
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/frontend-components-utilities
+      role: distribution
+  - id: rhcs-frontend-components
+    name: '@redhat-cloud-services/frontend-components'
+    package: '@redhat-cloud-services/frontend-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 7.7.2
+    - 7.7.3
+    - 7.7.5
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/frontend-components
+      role: distribution
+  - id: rhcs-rbac-client
+    name: '@redhat-cloud-services/rbac-client'
+    package: '@redhat-cloud-services/rbac-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 9.0.3
+    - 9.0.4
+    - 9.0.6
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/rbac-client
+      role: distribution
+  - id: rhcs-javascript-clients-shared
+    name: '@redhat-cloud-services/javascript-clients-shared'
+    package: '@redhat-cloud-services/javascript-clients-shared'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 2.0.8
+    - 2.0.9
+    - 2.0.11
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/javascript-clients-shared
+      role: distribution
+  - id: rhcs-frontend-components-config-utilities
+    name: '@redhat-cloud-services/frontend-components-config-utilities'
+    package: '@redhat-cloud-services/frontend-components-config-utilities'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 4.11.2
+    - 4.11.3
+    - 4.11.5
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/frontend-components-config-utilities
+      role: distribution
+  - id: rhcs-frontend-components-notifications
+    name: '@redhat-cloud-services/frontend-components-notifications'
+    package: '@redhat-cloud-services/frontend-components-notifications'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 6.9.2
+    - 6.9.3
+    - 6.9.5
+    indicators:
+    - kind: file_sha256
+      value: index.js from 6.9.3 f88258e21592084a2f93a572ade8f9b91c0cd0e242f5cf6121ed7bad0f7bdd1f
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/frontend-components-notifications
+      role: distribution
+  - id: rhcs-tsc-transform-imports
+    name: '@redhat-cloud-services/tsc-transform-imports'
+    package: '@redhat-cloud-services/tsc-transform-imports'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 1.2.2
+    - 1.2.4
+    - 1.2.6
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/tsc-transform-imports
+      role: distribution
+  - id: rhcs-frontend-components-config
+    name: '@redhat-cloud-services/frontend-components-config'
+    package: '@redhat-cloud-services/frontend-components-config'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 6.11.3
+    - 6.11.4
+    - 6.11.6
+    hashes:
+    - md5:633ad8849a59e2bfb7a0fe589e816a07
+    - sha1:675294612f455fe6a9acb195f0cbe3687d8e2e34
+    - sha256:0c9c67ec40d5f23efa1ec3470d0ac88b4993ccc0e92be913fc29a337dfc4f060
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/frontend-components-config
+      role: distribution
+    notes:
+    - SlowMist published all three checksums for the complete
+      redhat-cloud-services-frontend-components-config-6.11.3.tgz archive.
+      Whole-archive checksums for 6.11.4 and 6.11.6 remain unverified.
+  - id: rhcs-eslint-config-redhat-cloud-services
+    name: '@redhat-cloud-services/eslint-config-redhat-cloud-services'
+    package: '@redhat-cloud-services/eslint-config-redhat-cloud-services'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 3.2.1
+    - 3.2.2
+    - 3.2.4
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/eslint-config-redhat-cloud-services
+      role: distribution
+  - id: rhcs-host-inventory-client
+    name: '@redhat-cloud-services/host-inventory-client'
+    package: '@redhat-cloud-services/host-inventory-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 5.0.3
+    - 5.0.4
+    - 5.0.6
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/host-inventory-client
+      role: distribution
+  - id: rhcs-rule-components
+    name: '@redhat-cloud-services/rule-components'
+    package: '@redhat-cloud-services/rule-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 4.7.2
+    - 4.7.3
+    - 4.7.5
+    hashes:
+    - md5:f1ffdbf5e639899f26a6ebab2eec408d
+    - sha1:f3c5c21274045ae02fef11e931de6dcf8462a067
+    - sha256:aaf00d06baa3c679b82452c50014e9824b8874e9ca2d150f19095f8de19ba90f
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/rule-components
+      role: distribution
+    notes:
+    - SlowMist published all three checksums for the complete
+      redhat-cloud-services-rule-components-4.7.2.tgz archive. Whole-archive
+      checksums for 4.7.3 and 4.7.5 remain unverified.
+  - id: rhcs-frontend-components-remediations
+    name: '@redhat-cloud-services/frontend-components-remediations'
+    package: '@redhat-cloud-services/frontend-components-remediations'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 4.9.2
+    - 4.9.3
+    - 4.9.5
+    indicators:
+    - kind: file_sha256
+      value: index.js (affected version not specified) 396cac9e457ec54ff6d3f6311cb5cc1da8054d019ce3ffa1de5741506c7a4ea4
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/frontend-components-remediations
+      role: distribution
+  - id: rhcs-frontend-components-translations
+    name: '@redhat-cloud-services/frontend-components-translations'
+    package: '@redhat-cloud-services/frontend-components-translations'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 4.4.1
+    - 4.4.2
+    - 4.4.4
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/frontend-components-translations
+      role: distribution
+  - id: rhcs-vulnerabilities-client
+    name: '@redhat-cloud-services/vulnerabilities-client'
+    package: '@redhat-cloud-services/vulnerabilities-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 2.1.9
+    - 2.1.11
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/vulnerabilities-client
+      role: distribution
+  - id: rhcs-frontend-components-advisor-components
+    name: '@redhat-cloud-services/frontend-components-advisor-components'
+    package: '@redhat-cloud-services/frontend-components-advisor-components'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 3.8.2
+    - 3.8.4
+    - 3.8.6
+    indicators:
+    - kind: file_sha256
+      value: index.js from 3.8.2 d8d170af3de17bb9b217c52aaaffdf9395f35ef015a57ef676e406c121e5e223
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/frontend-components-advisor-components
+      role: distribution
+  - id: rhcs-entitlements-client
+    name: '@redhat-cloud-services/entitlements-client'
+    package: '@redhat-cloud-services/entitlements-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 4.0.11
+    - 4.0.12
+    - 4.0.14
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/entitlements-client
+      role: distribution
+  - id: rhcs-chrome
+    name: '@redhat-cloud-services/chrome'
+    package: '@redhat-cloud-services/chrome'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 2.3.1
+    - 2.3.2
+    - 2.3.4
+    indicators:
+    - kind: file_sha256
+      value: index.js from 2.3.4 25e121e3b7d300c0d0075b33e5eca39a3e6a659fb9cfee52b70ef71686628f1b
+    hashes:
+    - sha256:88896d478986d453f5da79b311de39d9b4b1bea95c21af1d8ef181b0f4e52fe9
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/chrome
+      role: distribution
+    notes:
+    - Socket published SHA-256 88896d478986d453f5da79b311de39d9b4b1bea95c21af1d8ef181b0f4e52fe9
+      for the complete 2.3.1 tarball. Whole-archive checksums for 2.3.2 and 2.3.4
+      remain unverified.
+  - id: rhcs-notifications-client
+    name: '@redhat-cloud-services/notifications-client'
+    package: '@redhat-cloud-services/notifications-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 6.1.4
+    - 6.1.5
+    - 6.1.7
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/notifications-client
+      role: distribution
+  - id: rhcs-compliance-client
+    name: '@redhat-cloud-services/compliance-client'
+    package: '@redhat-cloud-services/compliance-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 4.0.3
+    - 4.0.4
+    - 4.0.6
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/compliance-client
+      role: distribution
+  - id: rhcs-sources-client
+    name: '@redhat-cloud-services/sources-client'
+    package: '@redhat-cloud-services/sources-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 3.0.10
+    - 3.0.11
+    - 3.0.13
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/sources-client
+      role: distribution
+  - id: rhcs-integrations-client
+    name: '@redhat-cloud-services/integrations-client'
+    package: '@redhat-cloud-services/integrations-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 6.0.4
+    - 6.0.5
+    - 6.0.7
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/integrations-client
+      role: distribution
+  - id: rhcs-frontend-components-testing
+    name: '@redhat-cloud-services/frontend-components-testing'
+    package: '@redhat-cloud-services/frontend-components-testing'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 1.2.1
+    - 1.2.2
+    - 1.2.4
+    indicators:
+    - kind: file_sha256
+      value: index.js from 1.2.4 d5a97614d5319ce9c8e01fa0b4eb06fb5b9e54fa13b23d718174a1546444123b
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/frontend-components-testing
+      role: distribution
+  - id: rhcs-remediations-client
+    name: '@redhat-cloud-services/remediations-client'
+    package: '@redhat-cloud-services/remediations-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 4.0.4
+    - 4.0.5
+    - 4.0.7
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/remediations-client
+      role: distribution
+  - id: rhcs-insights-client
+    name: '@redhat-cloud-services/insights-client'
+    package: '@redhat-cloud-services/insights-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 4.0.4
+    - 4.0.5
+    - 4.0.7
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/insights-client
+      role: distribution
+  - id: rhcs-topological-inventory-client
+    name: '@redhat-cloud-services/topological-inventory-client'
+    package: '@redhat-cloud-services/topological-inventory-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 3.0.10
+    - 3.0.11
+    - 3.0.13
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/topological-inventory-client
+      role: distribution
+  - id: rhcs-config-manager-client
+    name: '@redhat-cloud-services/config-manager-client'
+    package: '@redhat-cloud-services/config-manager-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 5.0.4
+    - 5.0.5
+    - 5.0.7
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/config-manager-client
+      role: distribution
+  - id: rhcs-hcc-pf-mcp
+    name: '@redhat-cloud-services/hcc-pf-mcp'
+    package: '@redhat-cloud-services/hcc-pf-mcp'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 0.6.1
+    - 0.6.2
+    - 0.6.4
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/hcc-pf-mcp
+      role: distribution
+  - id: rhcs-quickstarts-client
+    name: '@redhat-cloud-services/quickstarts-client'
+    package: '@redhat-cloud-services/quickstarts-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 4.0.11
+    - 4.0.12
+    - 4.0.14
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/quickstarts-client
+      role: distribution
+  - id: rhcs-patch-client
+    name: '@redhat-cloud-services/patch-client'
+    package: '@redhat-cloud-services/patch-client'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 4.0.4
+    - 4.0.5
+    - 4.0.7
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/patch-client
+      role: distribution
+  - id: rhcs-hcc-feo-mcp
+    name: '@redhat-cloud-services/hcc-feo-mcp'
+    package: '@redhat-cloud-services/hcc-feo-mcp'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 0.3.1
+    - 0.3.2
+    - 0.3.4
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/hcc-feo-mcp
+      role: distribution
+  - id: rhcs-hcc-kessel-mcp
+    name: '@redhat-cloud-services/hcc-kessel-mcp'
+    package: '@redhat-cloud-services/hcc-kessel-mcp'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-05-29
+    end_date: 2026-06-02
+    versions:
+    - 0.3.1
+    - 0.3.2
+    - 0.3.4
+    indicators:
+    - kind: file_sha256
+      value: index.js from 0.3.4 f0641e053e81f0d01fa46db35a83e0a34494886503086866d956d14e81fd3e1c
+    locations:
+    - uri: https://www.npmjs.com/package/@redhat-cloud-services/hcc-kessel-mcp
+      role: distribution
+  references:
+  - url: https://access.redhat.com/security/vulnerabilities/RHSB-2026-006
+    title: RHSB-2026-006 Supply chain compromise of @redhat-cloud-services npm packages
+      - Red Hat
+  - url: https://www.stepsecurity.io/blog/multiple-redhat-cloud-services-npm-packages-compromised
+    title: Multiple redhat-cloud-services npm Packages compromised - StepSecurity
+  - url: https://socket.dev/blog/mini-shai-hulud-campaign-hits-red-hat-cloud-services-npm-packages
+    title: Mini Shai-Hulud Campaign Hits Red Hat Cloud Services npm Packages - Socket
+  - url: https://linuxiac.com/red-hat-npm-packages-compromised-in-supply-chain-attack/
+    title: Red Hat npm Packages Compromised in Supply Chain Attack - Linuxiac
+  - url: https://thehackernews.com/2026/06/ironworm-and-new-miasma-worm-variant.html
+    title: IronWorm and New Miasma Worm Variant Hit npm in Supply Chain Attacks - The Hacker
+      News
+  - url: https://www.wiz.io/blog/miasma-supply-chain-attack-targeting-redhat-npm-packages
+    title: 'Miasma: Supply Chain Attack Targeting RedHat npm Packages - Wiz'
+  - url: https://snyk.io/blog/miasma-supply-chain-attack-malicious-code-redhat-cloud-services-npm-packages/
+    title: Miasma Attack Hits Red Hat npm Packages - Snyk
+  - url: https://slowmist.medium.com/threat-intelligence-red-hat-cloud-services-npm-package-supply-chain-poisoning-3636786dabfd
+    title: Threat Intelligence | Red Hat Cloud Services npm Package Supply Chain Poisoning
+      - SlowMist
+  - url: https://www.microsoft.com/en-us/security/blog/2026/06/02/preinstall-persistence-inside-red-hat-npm-miasma-credential-stealing-campaign/
+    title: 'Preinstall to persistence: Inside the Red Hat npm Miasma credential-stealing
+      campaign - Microsoft Security Blog'
+  - url: https://www.cybersecuritydive.com/news/dozens-red-hat-npm-packages-supply-chain-attack/821723/
+    title: Dozens of Red Hat npm packages targeted in supply chain attack - Cybersecurity
+      Dive

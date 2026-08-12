@@ -1,0 +1,116 @@
+- id: mrmustard
+  title: Xanadu MrMustard PyPI release stole HPC and cloud credentials
+  synopsis: >-
+    mrmustard 0.7.4 was uploaded to PyPI on 2026-07-23 from a hijacked maintainer account
+    with no matching tag or commit upstream. It read SSH keys, AWS credentials, and kubeconfig
+    on import, and installed three persistence mechanisms.
+  story: |
+    A malicious release of `mrmustard`, the photonic quantum computing library
+    published by Xanadu, appeared on PyPI on July 23, 2026. Anyone who ran
+    `import mrmustard` from version 0.7.4 had their SSH private keys, AWS
+    credentials, and Kubernetes configuration read off disk and sent to an
+    attacker-controlled server.
+
+    MrMustard is a research library for simulating photonic quantum circuits, the
+    kind of package that lives on university workstations and HPC login nodes
+    rather than in web application pipelines. The payload was built for that
+    audience. Alongside the usual cloud secrets it collected SLURM job queues and
+    GPU inventories, which is a reasonable way to map a research cluster from a
+    single infected laptop.
+
+    The mismatch between PyPI and GitHub gave the incident away. Version 0.7.4
+    exists on PyPI with no corresponding tag, release, or commit in the
+    `XanaduAI/MrMustard` repository, whose tags stop at v0.7.3. StepSecurity and
+    SafeDep, which both analyzed the release, described an attacker who took over a
+    maintainer's GitHub account, used the project's own CI to obtain its publishing
+    token, and then uploaded the poisoned artifact straight to the index, skipping
+    the repository entirely.
+
+    Execution happened at import rather than at install, so the code ran the first
+    time a researcher used the library rather than when pip finished. Three
+    separate persistence mechanisms kept a stealer running after the package was
+    uninstalled, which is the part that turns a bad afternoon into an incident
+    response. Anyone who imported the affected version was told to treat the host
+    as compromised and rotate every credential that had been present on it.
+  start_date: 2026-07-23
+  end_date: 2026-07-24
+  target:
+    name: MrMustard
+    kind: library
+    repo: https://github.com/XanaduAI/MrMustard
+    website: https://pypi.org/project/mrmustard/
+  actor:
+    name: Unknown
+    kind: group
+  language: Python
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+    - backdoor
+  locations:
+  - uri: https://pypi.org/project/mrmustard/
+    role: distribution
+  indicators:
+  - kind: file
+    value: mrmustard/__init__.py
+  - kind: function
+    value: _check_tf_compatibility
+  - kind: technique
+    value: execution on import rather than install
+  - kind: technique
+    value: SLURM job queue and GPU inventory collection
+  notes:
+  - Version 0.7.4 has no matching tag, release, or commit in XanaduAI/MrMustard, whose tags
+    stop at v0.7.3. The artifact was uploaded directly to PyPI, bypassing the project's
+    normal release path.
+  - Initial access was reported as takeover of a maintainer's GitHub account, followed by
+    use of the project's own CI to obtain the PyPI publishing token.
+  - The malicious code is a 258-line function named `_check_tf_compatibility()` in
+    `mrmustard/__init__.py`. The rest of the 0.7.4 release is byte-identical to the clean
+    0.7.3, so a diff against the prior version isolates the payload exactly. It runs at
+    import time and installs three persistence mechanisms that continue running after the
+    package is uninstalled. Collection targets SSH keys, AWS credentials, and kubeconfig,
+    plus SLURM job queues and GPU inventories specific to research and HPC environments.
+  - The malicious code was injected into the published artifact only. The GitHub source
+    tree was untouched, so reading the repository would not reveal it.
+  - PyPI removed the 0.7.4 release. Its metadata endpoint returns 404 while the project
+    itself still resolves, so no sample of the malicious sdist or wheel could be acquired.
+  artifacts:
+  - id: mrmustard
+    name: mrmustard
+    package: mrmustard
+    ecosystem: pypi
+    kind: source_archive
+    start_date: 2026-07-23
+    end_date: 2026-07-24
+    versions:
+    - 0.7.4
+    fixed_versions:
+    - 0.7.3
+    locations:
+    - uri: https://pypi.org/project/mrmustard/0.7.4/
+      role: distribution
+    hashes:
+    - sha256:81f0d1291a975d012d1b892cf9967557fdbb1ad4e1ac0545702ad235ace1cac5
+    - sha256:0404f8590fdaef95280c1d908068f31bf2321fe887faabf0c2329ba67c7203cb
+    notes:
+    - >-
+      Hash order is the complete malicious PyPI files mrmustard-0.7.4-py3-none-any.whl
+      and mrmustard-0.7.4.tar.gz. OSSF's malicious-packages record preserves both
+      filenames and their package-integrity SHA-256 values after PyPI removed the release.
+  references:
+  - url: https://www.stepsecurity.io/blog/compromised-pypi-mrmustard-0-7-4-credential-stealer
+    title: 'Compromised PyPI Package: mrmustard 0.7.4 Steals SSH, Cloud, and Kubernetes
+      Credentials - StepSecurity'
+  - url: https://safedep.io/mrmustard-malicious-pypi-package/
+    title: mrmustard PyPI Package Trojanized to Steal Credentials - SafeDep
+  - url: https://pypi.org/project/mrmustard/
+    title: mrmustard - PyPI
+  - url: https://osv.dev/vulnerability/MAL-2026-11049
+    title: 'OSV MAL-2026-11049: Malicious code in mrmustard'

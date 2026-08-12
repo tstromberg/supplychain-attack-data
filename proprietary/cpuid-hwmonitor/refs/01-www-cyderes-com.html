@@ -1,0 +1,1869 @@
+<!doctype html><html lang="en"><head>
+    <meta charset="utf-8">
+    <title>How CPUID's HWMonitor Supply Chain Was Hijacked to Deploy STX RAT</title>
+    
+    <meta name="description" content="Cyderes reveals how the CPUID HWMonitor supply‑chain attack deployed STX RAT, exposing risks in trusted software updates and endpoints.">
+    
+    
+    <link rel="shortcut icon" href="https://www.cyderes.com/hubfs/theme-cyderes-2025/branding/cyderes-rgb-logos-2_1.png">
+
+    
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="/hs/hsstatic/jquery-libs/static-1.1/jquery/jquery-1.7.1.js"></script>
+<script>hsjQuery = window['jQuery'];</script>
+    <meta property="og:description" content="Cyderes reveals how the CPUID HWMonitor supply‑chain attack deployed STX RAT, exposing risks in trusted software updates and endpoints.">
+    <meta property="og:title" content="How CPUID's HWMonitor Supply Chain Was Hijacked to Deploy STX RAT">
+    <meta name="twitter:description" content="Cyderes reveals how the CPUID HWMonitor supply‑chain attack deployed STX RAT, exposing risks in trusted software updates and endpoints.">
+    <meta name="twitter:title" content="How CPUID's HWMonitor Supply Chain Was Hijacked to Deploy STX RAT">
+
+    
+
+    
+    <style>
+a.cta_button{-moz-box-sizing:content-box !important;-webkit-box-sizing:content-box !important;box-sizing:content-box !important;vertical-align:middle}.hs-breadcrumb-menu{list-style-type:none;margin:0px 0px 0px 0px;padding:0px 0px 0px 0px}.hs-breadcrumb-menu-item{float:left;padding:10px 0px 10px 10px}.hs-breadcrumb-menu-divider:before{content:'›';padding-left:10px}.hs-featured-image-link{border:0}.hs-featured-image{float:right;margin:0 0 20px 20px;max-width:50%}@media (max-width: 568px){.hs-featured-image{float:none;margin:0;width:100%;max-width:100%}}.hs-screen-reader-text{clip:rect(1px, 1px, 1px, 1px);height:1px;overflow:hidden;position:absolute !important;width:1px}
+</style>
+
+<link rel="stylesheet" href="https://www.cyderes.com/hubfs/hub_generated/template_assets/1/188299596619/1783522479510/template_main.min.css">
+ 
+<style>
+  
+
+</style>
+
+
+<style>
+  #hs_cos_wrapper_footer_module .footer__contact p,
+#hs_cos_wrapper_footer_module .footer--inner .footer__bottom p {
+  color:#fff !important;
+  font-size:16px !important;
+}
+
+#hs_cos_wrapper_footer_module .footer__contact a {
+  color:#fff !important;
+  font-size:16px !important;
+}
+
+  
+ .footer--inner .footer-menus h4 {
+    color: #fff;
+    font-size: 16px;
+  }
+ .footer--inner .footer-menus .hs-menu-wrapper ul li.hs-menu-depth-1 > a {
+    color: #fff;
+   font-size: 14px;
+  }
+  .footer--inner .footer__bottom a {
+    color: #fff!important;
+   font-size: 14px;
+  }
+</style>
+
+<link rel="stylesheet" href="https://www.cyderes.com/hubfs/hub_generated/module_assets/1/196489005474/1774017935334/module_Post_Banner.min.css">
+<link rel="stylesheet" href="https://www.cyderes.com/hubfs/hub_generated/module_assets/1/196500627593/1772487420434/module_Summery_Text_Module.min.css">
+<link rel="stylesheet" href="https://www.cyderes.com/hubfs/hub_generated/module_assets/1/196499850857/1772487129452/module_Subscribe_Post_Module.min.css">
+<link rel="stylesheet" href="https://www.cyderes.com/hubfs/hub_generated/module_assets/1/196503770448/1772447531653/module_CTA_Banner_Post_Module_Footer.min.css">
+<style>
+@font-face {
+  font-family: "PX Grotesk";
+  src: url("https://www.cyderes.com/hubfs/Px-Grotesk-Italic.otf") format("opentype");
+  font-display: swap;
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "PX Grotesk";
+  src: url("https://www.cyderes.com/hubfs/Px-Grotesk-Regular.otf") format("opentype");
+  font-display: swap;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "PX Grotesk Mono";
+  src: url("https://www.cyderes.com/hubfs/Px-Grotesk-Mono-Regular.otf") format("opentype");
+  font-display: swap;
+  font-weight: 400;
+}
+</style>
+
+    <script type="application/ld+json">
+{
+  "mainEntityOfPage" : {
+    "@type" : "WebPage",
+    "@id" : "https://www.cyderes.com/howler-cell/how-cpuids-hwmonitor-supply-chain-was-hijacked-to-deploy-stx-rat"
+  },
+  "author" : {
+    "name" : "Admin",
+    "url" : "https://www.cyderes.com/howler-cell/author/admin",
+    "@type" : "Person"
+  },
+  "headline" : "How CPUID's HWMonitor Supply Chain Was Hijacked to Deploy STX RAT",
+  "datePublished" : "2026-04-10T18:35:18.000Z",
+  "dateModified" : "2026-06-22T13:11:31.259Z",
+  "publisher" : {
+    "name" : "Cyderes.com",
+    "logo" : {
+      "url" : "https://www.cyderes.com/hubfs/Cyderes_Logos_Wordmark_Black-1.png",
+      "@type" : "ImageObject"
+    },
+    "@type" : "Organization"
+  },
+  "@context" : "https://schema.org",
+  "@type" : "BlogPosting",
+  "image" : [ "https://www.cyderes.com/hubfs/Square%20Post.jpg" ]
+}
+</script>
+
+
+    
+<!--  Added by GoogleAnalytics4 integration -->
+<script>
+var _hsp = window._hsp = window._hsp || [];
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+
+var useGoogleConsentModeV2 = true;
+var waitForUpdateMillis = 1000;
+
+
+if (!window._hsGoogleConsentRunOnce) {
+  window._hsGoogleConsentRunOnce = true;
+
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'analytics_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'wait_for_update': waitForUpdateMillis
+  });
+
+  if (useGoogleConsentModeV2) {
+    _hsp.push(['useGoogleConsentModeV2'])
+  } else {
+    _hsp.push(['addPrivacyConsentListener', function(consent){
+      var hasAnalyticsConsent = consent && (consent.allowed || (consent.categories && consent.categories.analytics));
+      var hasAdsConsent = consent && (consent.allowed || (consent.categories && consent.categories.advertisement));
+
+      gtag('consent', 'update', {
+        'ad_storage': hasAdsConsent ? 'granted' : 'denied',
+        'analytics_storage': hasAnalyticsConsent ? 'granted' : 'denied',
+        'ad_user_data': hasAdsConsent ? 'granted' : 'denied',
+        'ad_personalization': hasAdsConsent ? 'granted' : 'denied'
+      });
+    }]);
+  }
+}
+
+gtag('js', new Date());
+gtag('set', 'developer_id.dZTQ1Zm', true);
+gtag('config', 'G-VT5LKNHCRE');
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VT5LKNHCRE"></script>
+
+<!-- /Added by GoogleAnalytics4 integration -->
+
+<!--  Added by GoogleTagManager integration -->
+<script>
+var _hsp = window._hsp = window._hsp || [];
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+
+var useGoogleConsentModeV2 = true;
+var waitForUpdateMillis = 1000;
+
+
+
+var hsLoadGtm = function loadGtm() {
+    if(window._hsGtmLoadOnce) {
+      return;
+    }
+
+    if (useGoogleConsentModeV2) {
+
+      gtag('set','developer_id.dZTQ1Zm',true);
+
+      gtag('consent', 'default', {
+      'ad_storage': 'denied',
+      'analytics_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied',
+      'wait_for_update': waitForUpdateMillis
+      });
+
+      _hsp.push(['useGoogleConsentModeV2'])
+    }
+
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-WVP5QT6');
+
+    window._hsGtmLoadOnce = true;
+};
+
+_hsp.push(['addPrivacyConsentListener', function(consent){
+  if(consent.allowed || (consent.categories && consent.categories.analytics)){
+    hsLoadGtm();
+  }
+}]);
+
+</script>
+
+<!-- /Added by GoogleTagManager integration -->
+
+
+
+
+
+
+<link rel="amphtml" href="https://www.cyderes.com/howler-cell/how-cpuids-hwmonitor-supply-chain-was-hijacked-to-deploy-stx-rat?hs_amp=true">
+
+<meta property="og:image" content="https://www.cyderes.com/hubfs/Square%20Post.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="628">
+
+<meta name="twitter:image" content="https://www.cyderes.com/hubfs/Square%20Post.jpg">
+
+
+<meta property="og:url" content="https://www.cyderes.com/howler-cell/how-cpuids-hwmonitor-supply-chain-was-hijacked-to-deploy-stx-rat">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="canonical" href="https://www.cyderes.com/howler-cell/how-cpuids-hwmonitor-supply-chain-was-hijacked-to-deploy-stx-rat">
+
+<meta property="og:type" content="article">
+<link rel="alternate" type="application/rss+xml" href="https://www.cyderes.com/howler-cell/rss.xml">
+<meta name="twitter:domain" content="www.cyderes.com">
+<script src="//platform.linkedin.com/in.js" type="text/javascript">
+    lang: en_US
+</script>
+
+<meta http-equiv="content-language" content="en">
+
+
+
+
+
+
+
+    
+
+  <meta name="generator" content="HubSpot"></head>
+
+  
+
+
+  
+
+  <body class=" c-header--default c-footer--default  ">
+<!--  Added by GoogleTagManager integration -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVP5QT6" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<!-- /Added by GoogleTagManager integration -->
+
+
+    <div class="body-wrapper   hs-content-id-210840284718 hs-blog-post hs-blog-id-194744329530 ">
+      
+      <div data-global-resource-path="theme-cyderes-2025/templates/partials/header.html"><div id="hs_cos_wrapper_global_header" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module">
+<div class="header--sticky-height">
+</div>
+
+<header id="" class="header header--sticky  header-- ">
+  <a href="#main-content" class="header__skip">Skip to content</a>
+  
+  
+  
+  
+  
+  <div class="header__lower">
+    <div class="container--xl">
+      <div class="row no-gutters align-items-center justify-content-between">
+        <div class="header__logo ">
+  <a class="no-stroke no-fill d-block" style="line-height: 100%" href="https://www.cyderes.com/" aria-label="Homepage">
+    
+<svg width="160" height="20" viewbox="0 0 160 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g clip-path="url(#clip0_111_29854)">
+  <path d="M4.93226 1.85C3.46043 2.66667 2.30694 3.80417 1.46766 5.25833C0.628386 6.7125 0.210815 8.35833 0.210815 10.1875C0.210815 12.0167 0.628386 13.6583 1.46766 15.1167C2.30694 16.5708 3.46043 17.7083 4.93226 18.525C6.4041 19.3417 8.07438 19.7542 9.94725 19.7542H20.8413V16.0542H10.154C9.05423 16.0542 8.05784 15.8 7.16069 15.2833C6.26766 14.7708 5.56482 14.0625 5.05629 13.1625C4.54777 12.2625 4.29144 11.3 4.29144 10.1875C4.29144 9.075 4.54363 8.07917 5.05629 7.19167C5.56482 6.30417 6.26766 5.60417 7.16069 5.09167C8.05371 4.57917 9.05009 4.32083 10.154 4.32083H20.8413V0.625H9.94725C8.07438 0.625 6.4041 1.03333 4.93226 1.85417V1.85Z" fill="#D4FC68" />
+  <path d="M39.6858 7.90417H28.461V0.625H24.5416V11.6042H39.6858C39.6858 11.6042 39.4584 12.6708 39.0036 13.475C38.5489 14.2792 37.9287 14.9083 37.1473 15.3667C36.3618 15.825 35.477 16.0542 34.4848 16.0542H24.5416V19.7583H34.6915C36.37 19.7583 37.8956 19.375 39.2724 18.6125C40.6491 17.85 41.7158 16.8042 42.4724 15.4708C43.229 14.1417 43.6093 12.6292 43.6093 10.9375V0.625H39.6899V7.90417H39.6858Z" fill="#D4FC68" />
+  <path d="M63.0532 1.89167C61.5813 1.04583 59.9524 0.625 58.1622 0.625H46.3173V19.7542H58.1622C59.9524 19.7542 61.5813 19.3292 63.0532 18.4875C64.525 17.6417 65.6785 16.4917 66.5178 15.0375C67.3571 13.5833 67.7746 11.9667 67.7746 10.1917C67.7746 8.41667 67.3571 6.8 66.5178 5.34583C65.6785 3.89167 64.525 2.74167 63.0532 1.89583V1.89167ZM62.9498 13.1833C62.4537 14.0708 61.7591 14.7708 60.8661 15.2833C59.9731 15.7958 58.9767 16.0542 57.8728 16.0542H50.2408V4.325H57.8728C58.9726 4.325 59.9731 4.57917 60.8661 5.09583C61.7633 5.60833 62.4537 6.31667 62.9498 7.21667C63.4459 8.11667 63.694 9.07917 63.694 10.1917C63.694 11.3042 63.4459 12.3 62.9498 13.1875V13.1833Z" fill="#D4FC68" />
+  <path d="M91.9855 9.98333V9.975C91.9442 8.17917 91.477 6.55 90.5633 5.1C89.6166 3.5875 88.2853 2.39583 86.5819 1.525C84.8744 0.650001 82.9768 0.216667 80.8889 0.216667H80.8062C78.6894 0.216667 76.7835 0.645834 75.0884 1.50417C73.3933 2.3625 72.0744 3.54167 71.1277 5.0375C70.1768 6.53333 69.7054 8.17083 69.7054 10.0292C69.7054 11.8875 70.1726 13.55 71.107 15.0208C72.0414 16.4917 73.3892 17.6458 75.1504 18.4917C76.9116 19.3375 78.9747 19.7583 81.3396 19.7583H90.1706V16.0583H81.629C79.0698 16.0583 77.1432 15.5167 75.8532 14.4375C74.952 13.6833 74.3731 12.7375 74.1003 11.6083H91.9855V10.9833V10.1917C91.9855 10.1917 91.9855 10.175 91.9855 10.1667V9.98333ZM77.2755 4.61667C78.3339 4.0625 79.5122 3.78333 80.8021 3.78333H80.9261C82.2202 3.78333 83.3943 4.06667 84.4527 4.6375C85.5111 5.20417 86.338 5.975 86.9292 6.94583C87.1318 7.27917 87.3013 7.62917 87.4336 7.9875H74.2532C74.3938 7.59583 74.5757 7.225 74.799 6.86667C75.3902 5.925 76.2171 5.175 77.2755 4.62083V4.61667Z" fill="#D4FC68" />
+  <path d="M94.801 19.7542H98.7245V4.325H114.448V0.625H94.801V19.7542Z" fill="#D4FC68" />
+  <path d="M137.683 9.98333V9.975C137.641 8.17917 137.174 6.55 136.26 5.1C135.31 3.5875 133.982 2.39583 132.279 1.525C130.572 0.650001 128.674 0.216667 126.582 0.216667H126.499C124.382 0.216667 122.476 0.645834 120.781 1.50417C119.086 2.3625 117.767 3.54167 116.821 5.0375C115.87 6.53333 115.398 8.17083 115.398 10.0292C115.398 11.8875 115.866 13.55 116.8 15.0208C117.734 16.4917 119.082 17.6458 120.843 18.4917C122.605 19.3375 124.668 19.7583 127.033 19.7583H135.864V16.0583H127.322C124.763 16.0583 122.836 15.5167 121.546 14.4375C120.645 13.6833 120.066 12.7375 119.793 11.6083H137.679V10.9833V10.1917C137.679 10.1917 137.679 10.175 137.679 10.1667V9.98333H137.683ZM122.973 4.61667C124.031 4.0625 125.205 3.78333 126.499 3.78333H126.623C127.917 3.78333 129.091 4.06667 130.15 4.6375C131.208 5.20417 132.035 5.975 132.626 6.94583C132.829 7.27917 132.998 7.62917 133.131 7.9875H119.95C120.091 7.59583 120.273 7.225 120.496 6.86667C121.087 5.925 121.914 5.175 122.973 4.62083V4.61667Z" fill="#D4FC68" />
+  <path d="M145.844 4.325H159.793V0.625H145.72C144.012 0.625 142.619 1.15833 141.532 2.225C140.444 3.29167 139.903 4.68333 139.903 6.32083C139.903 7.95833 140.444 9.31667 141.532 10.3958C142.619 11.4792 144.012 12.0167 145.72 12.0167H154.055C154.634 12.0167 155.121 12.2125 155.518 12.6C155.915 12.9875 156.118 13.4333 156.118 14.0125C156.118 14.5917 155.919 15.0792 155.518 15.4667C155.121 15.8542 154.629 16.05 154.055 16.05H140.023V19.7542H159.789V8.35833H145.84C145.261 8.35833 144.781 8.16667 144.397 7.775C144.012 7.3875 143.818 6.94583 143.818 6.3625C143.818 5.77917 144.008 5.29583 144.397 4.90833C144.781 4.52083 145.265 4.325 145.84 4.325H145.844Z" fill="#D4FC68" />
+  </g>
+  <defs>
+  <clippath id="clip0_111_29854">
+  <rect width="160" height="20" fill="white" />
+  </clippath>
+  </defs>
+  </svg>
+  
+
+  </a>
+</div>
+        
+        <div class="d-lg-flex flex-lg-row flex-column align-items-lg-center align-items-start justify-content-lg-center justify-content-between nav-holder header--simple">
+          <div class="custom-menu-primary">
+            
+            <span id="hs_cos_wrapper_global_header_" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_menu" style="" data-hs-cos-general-type="widget" data-hs-cos-type="menu"><div id="hs_menu_wrapper_global_header_" class="hs-menu-wrapper active-branch flyouts hs-menu-flow-horizontal" role="navigation" data-sitemap-name="default" data-menu-id="188300915043" aria-label="Navigation Menu">
+ <ul role="menu">
+  <li class="hs-menu-item hs-menu-depth-1 hs-item-has-children" role="none"><a href="javascript:;" aria-haspopup="true" aria-expanded="false" role="menuitem">Solutions</a>
+   <ul role="menu" class="hs-menu-children-wrapper">
+    <li class="hs-menu-item hs-menu-depth-2" role="none"><a href="https://www.cyderes.com/solutions/identity-and-access-management" role="menuitem">Identity &amp; Access Management</a></li>
+    <li class="hs-menu-item hs-menu-depth-2" role="none"><a href="https://www.cyderes.com/solutions/managed-detection-and-response" role="menuitem">Managed Detection &amp; Response</a></li>
+    <li class="hs-menu-item hs-menu-depth-2" role="none"><a href="https://www.cyderes.com/solutions/exposure-management" role="menuitem">Exposure Management</a></li>
+   </ul></li>
+  <li class="hs-menu-item hs-menu-depth-1" role="none"><a href="https://www.cyderes.com/solutions/meridian/" role="menuitem">Meridian</a></li>
+  <li class="hs-menu-item hs-menu-depth-1" role="none"><a href="https://www.cyderes.com/howler-cell" role="menuitem">Howler Cell</a></li>
+  <li class="hs-menu-item hs-menu-depth-1 hs-item-has-children" role="none"><a href="https://www.cyderes.com/partners" aria-haspopup="true" aria-expanded="false" role="menuitem">Partners</a>
+   <ul role="menu" class="hs-menu-children-wrapper">
+    <li class="hs-menu-item hs-menu-depth-2" role="none"><a href="https://www.cyderes.com/partners/crowdstrike" role="menuitem">CrowdStrike</a></li>
+    <li class="hs-menu-item hs-menu-depth-2" role="none"><a href="https://www.cyderes.com/partners/microsoft" role="menuitem">Microsoft</a></li>
+    <li class="hs-menu-item hs-menu-depth-2" role="none"><a href="https://www.cyderes.com/partners/sailpoint" role="menuitem">SailPoint</a></li>
+   </ul></li>
+  <li class="hs-menu-item hs-menu-depth-1" role="none"><a href="https://www.cyderes.com/resources" role="menuitem">Resources</a></li>
+  <li class="hs-menu-item hs-menu-depth-1 hs-item-has-children" role="none"><a href="javascript:;" aria-haspopup="true" aria-expanded="false" role="menuitem">Company</a>
+   <ul role="menu" class="hs-menu-children-wrapper">
+    <li class="hs-menu-item hs-menu-depth-2" role="none"><a href="https://www.cyderes.com/company/about" role="menuitem">About</a></li>
+    <li class="hs-menu-item hs-menu-depth-2" role="none"><a href="https://www.cyderes.com/company/about#executive" role="menuitem">Leadership</a></li>
+    <li class="hs-menu-item hs-menu-depth-2" role="none"><a href="https://www.cyderes.com/company/careers" role="menuitem">Careers</a></li>
+    <li class="hs-menu-item hs-menu-depth-2" role="none"><a href="https://www.cyderes.com/news" role="menuitem">News</a></li>
+   </ul></li>
+ </ul>
+</div></span>
+            
+          </div> 
+          
+          <div class="nav--cta-group hide--desktop mt-3">
+            
+            
+            <div class="cta-group d-flex align-items-center">
+              
+              
+              
+              
+
+              <a class=" btn btn--primary-reverse" href="https://www.cyderes.com/company/contact-us">
+                <span class="d-flex align-items-center justify-content-center">
+                  
+                  Contact Us
+                </span>
+              </a>
+              
+              
+              
+              
+              
+              
+
+              <a class=" btn btn--primary" href="https://my.cyderes.com/signin" target="_blank">
+                <span class="d-flex align-items-center justify-content-center">
+                  
+                  Login
+                </span>
+              </a>
+              
+              
+              
+            </div>
+            
+          </div>
+          
+        </div>
+        
+        
+        <div class="nav--cta-group hide--mobile">
+          
+          
+          <div class="cta-group d-flex flex-md-row flex-column align-items-center justify-content-between">
+            
+            
+            
+            
+
+            <a class=" btn btn--primary-reverse mr-md-2 mb-md-0 mb-3" href="https://www.cyderes.com/company/contact-us">
+              <span class="d-flex align-items-center justify-content-center">
+                
+                Contact Us
+              </span>
+            </a>
+            
+            
+            
+            
+            
+            
+
+            <a class=" btn btn--primary " href="https://my.cyderes.com/signin" target="_blank">
+              <span class="d-flex align-items-center justify-content-center">
+                
+                Login
+              </span>
+            </a>
+            
+            
+            
+          </div>
+          
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  
+</header>
+
+<div id="header-spacer" class="header-spacer"></div>
+
+
+
+
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const hamburgerBtn = document.querySelector(".header .header__lower .mainnav-mobile-trigger");
+
+    if (hamburgerBtn && !hamburgerBtn.hasAttribute("aria-label")) {
+      hamburgerBtn.setAttribute("aria-label", "Open Header main navigation menu");
+    }
+  });
+</script>
+
+<script>
+  (function () {
+    function updateNavAriaLabel() {
+      var nav = document.getElementById("hs_menu_wrapper_global_header_");
+      if (nav) {
+        nav.setAttribute("aria-label", "Header Main Navigation");
+        return true;
+      }
+      return false;
+    }
+
+    // Run immediately if available
+    if (updateNavAriaLabel()) return;
+
+    // Fallback for HubSpot async load
+    var observer = new MutationObserver(function () {
+      if (updateNavAriaLabel()) {
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  })();
+</script>
+
+
+<style>
+  .header__lower .hs-menu-flow-horizontal ul li a{
+    font-size:16px;
+  }
+  @media (max-width: 991px) {
+    .header__lower .hs-menu-flow-horizontal>ul>li.hs-item-has-children .child-trigger {
+      right:-35px;
+      cursor: pointer;
+    }
+  }
+  @media (min-width: 992px) {
+    .header__lower .nav--cta-group .cta-group.justify-content-between {
+      justify-content: end !important;
+    }
+    .header__lower .nav--cta-group .cta-group a.btn--primary-reverse {
+      padding: 12px 24px;
+    }
+  }
+</style></div></div>
+      
+
+      <main id="main-content" class="body-container-wrapper">
+        
+        <!-- Nothing to see here -->
+        
+        
+
+<div class="post_section">
+  <div id="hs_cos_wrapper_module_175864665124015" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><div class="featured banner_module">
+  <div class="wrapper_conta">
+
+    <div class="card_blog_banner">
+      <div class="left_card_blog_banner_content">
+        <div class="left_inner_card_blog_banner_content">
+          <div class="tag_conta">
+            
+            <a class="blog-tag" href="https://www.cyderes.com/howler-cell/tag/malware-analysis">Malware Analysis</a>
+            
+            <a class="blog-tag" href="https://www.cyderes.com/howler-cell/tag/active-campaign">Active Campaign</a>
+            
+          </div>
+          <div class="title_conta">
+            
+            <h1>Monitoring the Monitor: How CPUID's HWMonitor Supply Chain Was Hijacked to Deploy STX RAT</h1>
+          </div>
+          <div class="date_conta">
+            <div class="author_conta">
+              
+              <span class="date_cont">
+                
+                April 10, 2026
+                
+              </span>
+            </div>
+          </div>
+          
+          <div class="blog_author">
+            <div class="content_container">
+              <div class="author_conta">
+                
+                <div class="author">
+                  
+                  <span class="author_name">
+                    
+                    Rahul Ramesh
+
+                    
+                  </span>
+
+                </div>
+                
+                <div class="author">
+                  
+                  <span class="author_name">
+                    
+                    Reegun Jayapaul
+
+                    
+                  </span>
+
+                </div>
+                
+              </div>
+            </div>
+          </div>
+          <style>
+            /* Custom Module CSS */
+            .blog_author .author_conta{
+              display: flex;
+              flex-wrap: wrap;
+              gap: 10px;
+              align-items: center;
+            }
+            .blog_author .author_conta .author{
+              display: flex;
+              gap: 10px;
+              align-items: center;
+            }
+            .blog_author .author_conta .author img{
+              border-radius: 100%;
+              max-height: 30px;
+              width: 30px;
+              object-fit: cover;
+            }
+            .blog_author span.author_name a{
+              color: #fff;
+              font-family: 'Px Grotesk', sans-serif;
+              font-size: 16px;
+              font-weight: 700;
+              line-height: normal;
+              text-decoration: none;
+            }
+            .blog_author{
+              padding-top:20px;
+            }
+            /* Default CSS */
+
+            .blog_author .author_img_with_name {
+              display: flex;
+              gap: 10px;
+              align-items: center;
+            }
+            .blog_author .blog-author__image img{
+              border-radius: 100%;
+              max-height: 30px;
+              object-fit: cover;
+              width: 30px;
+            }
+            .blog_author .author_name a{
+              color: #fff;
+              font-family: Px Grotesk, sans-serif;
+              font-size: 16px;
+              font-weight: 700;
+              line-height: normal;
+              text-decoration: none;
+            }
+          </style>
+          
+        </div>
+      </div>
+      
+      <div class="image_conta featured_overide_img" style="background:url('https://www.cyderes.com/hubfs/Monkey%20Hanging%20left.png')no-repeat; position:relative; height:auto; background-size:cover; background-position:top;">
+        <div class="inner_image_conta">
+
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+
+<style>
+  .featured {
+    
+  }
+
+
+  
+
+  @media (min-width: 1000px) {
+    
+    /*     .body-wrapper.hs-blog-post .featured .image_conta {
+    left: unset;
+    background-size: cover !important;
+  } */
+    
+  }
+  @media(min-width:768px){
+    .image_conta{
+      width:50%;
+      float:right;
+    }
+
+    .left_card_blog_banner_content{
+      width:50%;
+      float:left;
+      padding:30px;
+      padding-top:60px;
+      padding-bottom:60px;
+      max-width: 597px;
+      margin-left: auto;
+    }
+
+    .inner_image_conta {
+      position: relative;
+      bottom: -7px;
+    }
+
+    .title_conta{
+      padding-bottom:30px;
+    }
+    .card_blog_banner {
+      display: flex;
+      gap: 30px;
+    }
+  }
+
+  @media(max-width:767px){
+    .card_blog_banner .image_conta{
+      height:350px !important;
+    }
+  }
+</style>
+
+<style>
+  .featured.banner_module .left_card_blog_banner_content .title_conta h1 {
+    font-weight: 400;
+    color: #d3fc68;
+    font-size: 33px;
+    line-height: 112%;
+    margin: .5rem 0;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+
+    // Target only resource blog banner titles
+    const banners = document.querySelectorAll(".resource_blog_banner");
+
+    banners.forEach(function(banner) {
+
+      const span = banner.querySelector(".title_conta h1 span#hs_cos_wrapper_name");
+      if (!span) return;
+
+      // Find closest HubSpot module wrapper
+      const moduleWrapper = banner.closest('[id^="hs_cos_wrapper_module_"]');
+      if (!moduleWrapper) return;
+
+      // Extract module numeric ID
+      const moduleId = moduleWrapper.id.replace("hs_cos_wrapper_module_", "");
+
+      // Make ID unique
+      span.id = "hs_cos_wrapper_name_" + moduleId;
+
+    });
+
+  });
+</script></div>
+  <div class="body-container body-container--blog-post">
+    <!--     <div class="breadcrumb_conta">
+      <a href="/">Home</a> <span>/</span> <a href="/howler-cell-test-blog">Howler Cell</a> <span>/</span> <span class="title">Monitoring the Monitor: How CPUID's HWMonitor Supply Cha...</span>
+    </div>
+ -->
+
+    <div id="hs_cos_wrapper_module_175890988474624" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><div class="breadcrumb_conta">
+   
+      
+	
+	
+	<a href="https://www.cyderes.com">Home <span>/</span></a> 
+   
+      
+	
+	
+	<a href="https://www.cyderes.com/howler-cell">Howler Cell <span>/</span></a> 
+   
+ <span class="title"><span id="hs_cos_wrapper_name" class="hs_cos_wrapper hs_cos_wrapper_meta_field hs_cos_wrapper_type_text" style="" data-hs-cos-general-type="meta_field" data-hs-cos-type="text">Monitoring the Monitor: How CPUID's HWMonitor Supply Chain Was Hijacked to Deploy STX RAT</span></span>
+</div>
+
+
+
+<style>
+  body .breadcrumb_conta a,
+  body .breadcrumb_conta span {
+    text-transform: none;
+}
+</style></div>
+    <style>
+      .breadcrumb_conta{
+        margin-top:34px;
+        margin-bottom:30px;
+      }
+      .breadcrumb_conta a, .breadcrumb_conta span{
+        font-size:16.83px;
+        line-height:105%;
+        color:#2c2c2c;
+        text-decoration:none;
+        text-transform:capitalize;
+        display:inline;
+        font-weight:400;
+      }
+      .breadcrumb_conta span{
+        text-transform:capitalize;
+        font-weight:400;
+      }
+      @media(min-width:1000px){
+        body .body-wrapper.hs-content-id-196702380034.hs-blog-post.hs-blog-id-194744329530 .image_conta{
+          background-size:contain !important;
+          left:-170px;
+        }
+        body .body-wrapper.hs-blog-post .image_conta{
+          background-size:contain !important;
+          left:-170px;
+        }
+      }
+      .left_column h3{
+        font-weight:bold;
+      }
+
+
+    </style>
+    <div class="simple_text_section">
+      <div id="hs_cos_wrapper_module_17586447617503" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><section class="summary-section" style="background:#000000;">
+  <div class="summary-content">
+    
+    <h2>Summary/Title Text</h2>
+    
+    
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
+    
+    
+  </div>
+</section>
+
+<style>
+  .summary-section{
+    display:none;
+  }
+</style>
+
+
+
+<style>
+  
+  
+  .summary-section .summary-content p{
+    font-weight:bold;
+    margin:0;
+    font-size: 22px;
+  }
+
+</style></div>
+    </div>
+    <div class="content_body_section howler_cell">
+      <div class="content_body_conta">
+        <div class="left_column">
+          
+          
+          
+          <span id="hs_cos_wrapper_post_body" class="hs_cos_wrapper hs_cos_wrapper_meta_field hs_cos_wrapper_type_rich_text" style="" data-hs-cos-general-type="meta_field" data-hs-cos-type="rich_text"><h2>Key Findings</h2>
+<p style="line-height: 123%;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">The Howler Cell Threat Research Team has identified the following key characteristics of this supply chain attack:</span></p>
+<!--more-->
+<ul style="list-style-type: disc; line-height: 1.5;">
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Supply Chain Compromise: </strong>The official CPUID download page for HWMonitor was hijacked to serve a trojanized installer from attacker-controlled Cloudflare R2 infrastructure. CPU-Z was similarly compromised. CPUID confirmed a secondary API was breached for approximately six hours before remediation.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Massive Exposure Surface: </strong>CPU-Z alone has tens of millions of users globally. HWMonitor is the standard hardware monitoring tool used by IT professionals, system administrators, data center operators, OEM hardware vendors, overclockers, and PC builders worldwide. A six-hour window on software of this reach represents extraordinary infection potential.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>DLL Sideloading via cryptbase.dll: </strong>A malicious cryptbase.dll was placed alongside the legitimate application. When HWMonitor_x64.exe executed, it sideloaded the rogue DLL via Windows DLL search order hijacking. Only the 64-bit version is affected.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Five-Stage In-Memory Unpacking Chain: </strong>The malware executes entirely in memory across five stages using reflective PE loading, XOR decryption, and layered bitwise transformations. No intermediate payloads are written to disk, significantly hindering forensic recovery and evading signature-based detection.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Final Payload Attributed to STX RAT: </strong>The Stage 5 payload hash matches STX RAT, a remote access trojan with infostealer capabilities previously distributed via a fraudulent FileZilla installer. This links the CPUID campaign to a broader ongoing operation.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Multi-Campaign Infrastructure: </strong>Four distinct campaign tags (tbs, tbs2, tbs3, snip) and referrer fields (CPZ for CPU-Z, monitor3 for HWMonitor) were identified in the C2 callback metadata, indicating an active, segmented operation across multiple software targets.</li>
+</ul>
+<h2><span style="color: #000000; font-family: 'PX Grotesk';">Summary</span></h2>
+<p style="line-height: 1.5;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">The Howler Cell Threat Research Team has identified a supply chain compromise involving HWMonitor, a widely used hardware monitoring application developed by CPUID. The legitimate software download page was compromised and redirected users to a trojanized installer hosted on attacker-controlled Cloudflare R2 infrastructure. The investigation also confirmed that CPU-Z, another CPUID product, was similarly affected.</span></p>
+<h3 style="line-height: 115%;"><strong>How the attack worked</strong></h3>
+<ul style="list-style-type: disc; line-height: 1.5;">
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]-->The malicious installer contained an additional DLL, <strong>cryptbase.dll</strong>, placed alongside the legitimate application and sideloaded when the 64-bit version of HWMonitor executed.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]-->This triggered a multistage malware chain using reflective PE loading, XOR decryption, and layered bitwise transformations across five stages, all executed entirely in memory.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]-->The final payload, identified as STX RAT, contacted the hardcoded C2 domain welcome[.]supp0v3[.]com and transmitted host metadata for victim identification and campaign tracking.</li>
+</ul>
+<h3>Why the scale of this attack matters</h3>
+<p style="line-height: 1.5;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">CPUID's tools are not niche utilities;&nbsp;they are the de facto standard for hardware diagnostics across the global technology community. CPU-Z alone has tens of millions of users worldwide. HWMonitor's core user base includes:</span></p>
+<!-- [if !supportLists]--><!--[endif]-->
+<ul>
+<li>IT professionals and system administrators conducting diagnostics</li>
+<li><!-- [if !supportLists]--><!--[endif]-->Data center engineers validating server thermals</li>
+<li><!-- [if !supportLists]--><!--[endif]-->OEM hardware vendors qualifying new components</li>
+<li><!-- [if !supportLists]--><!--[endif]-->Security researchers running forensic workstations</li>
+<li><!-- [if !supportLists]--><!--[endif]-->Corporate IT departments managing device fleets</li>
+</ul>
+<p style="line-height: 1.5;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">The portable (ZIP) version is routinely carried on USB drives and run directly on production machines without installation, reaching environments that block installer-based software. This is not an attack that happened to hit a popular tool. It was almost certainly designed to target exactly this user base. Compromising the CPUID download page is a direct attack on the people most likely to have administrative access, deep system visibility, and credentials worth stealing.<br></span></p>
+<h3 style="line-height: 115%;"><strong>What a successful infection delivers to the threat actor</strong></h3>
+<!-- [if !supportLists]--><!--[endif]-->
+<ul>
+<li>Browser credentials and session cookies capable of bypassing MFA</li>
+<li><!-- [if !supportLists]--><!--[endif]-->Persistent remote access via the STX RAT component</li>
+<li><!-- [if !supportLists]--><!--[endif]-->Crypto wallet keys and password manager data</li>
+<li><!-- [if !supportLists]--><!--[endif]-->VPN and FTP credentials enabling lateral movement into enterprise networks</li>
+<li><!-- [if !supportLists]--><!--[endif]-->Victim profile data segmented by campaign tag and referrer software, enabling prioritized follow-on exploitation</li>
+</ul>
+<p style="line-height: 123%;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">A six-hour compromise window on software of this reach represents an infection opportunity that most targeted campaigns never achieve.</span></p>
+<h2 style="line-height: 123%;">Campaign Timeline</h2>
+<ul style="list-style-type: disc;">
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Initial Discovery, April 9, 2026: </strong>A Reddit post surfaced raising concerns about potential malware distributed through recent versions of HWMonitor, prompting community discussion and preliminary VirusTotal analysis.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Compromise Identified: </strong>The legitimate CPUID download page (hxxps[://]www[.]cpuid[.]com/softwares/hwmonitor[.]html) was found redirecting users to a malicious package hosted on a Cloudflare R2 bucket.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Trojanized Package Distributed: </strong>Users downloading HWMonitor v1.63 received a compromised archive containing a malicious cryptbase.dll alongside otherwise legitimate components.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>DLL Sideloading and Payload Execution: </strong>Upon launching HWMonitor_x64.exe, the malicious DLL was sideloaded, initiating a multi-stage unpacking chain that deployed STX RAT entirely in memory.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>C2 Communication Established: </strong>The malware transmitted JSON-formatted victim metadata to the hardcoded C2 server (welcome[.]supp0v3[.]com) for campaign tracking and victim profiling.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Vendor Acknowledgment (April 9-10): </strong>CPUID author Samuel Demeulemeester publicly acknowledged the compromise, confirming that a secondary API was breached for approximately six hours, causing the main website to randomly serve malicious download links. The signed original files were not compromised; the breach has since been remediated.</li>
+<li style="line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Attribution and Correlation: </strong>The final payload hash correlates with prior reporting linking it to STX RAT campaigns previously distributed via a fraudulent FileZilla installer.</li>
+</ul>
+<h2 style="line-height: 1.5;"><span style="font-family: 'PX Grotesk';">Technical Analysis</span></h2>
+<p style="line-height: 1.5;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">HWMonitor is a widely used hardware monitoring utility that tracks system temperatures, voltages, and fan speeds. Howler Cell began its analysis after a Reddit post surfaced reporting suspected malware distributed through recent versions of HWMonitor.</span></p>
+<p style="line-height: 1.5;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">Through a combination of community discussion (Figure 1), VirusTotal analysis (Figure 2), and official confirmation from CPUID (Figure 3), it was determined that the legitimate download page had been compromised to redirect users to a malicious package hosted on a Cloudflare R2 server. The full URL of the malicious payload is provided below:</span></p>
+<p style="line-height: 115%;"><span style="line-height: 115%; color: #1a1a1a;">hxxp[://]pub-fd67c956bf8548b7b2cc23bb3774ff0c[.]r2[.]dev/hwmonitor_1[.]63[.]zip</span></p>
+<p style="text-align: center; line-height: 115%;"><span style="line-height: 115%; color: #000000; font-family: 'PX Grotesk'; font-weight: 400;">Figure 1: Reddit post</span></p>
+<p style="text-align: center; line-height: 115%;"><i><span style="line-height: 115%; color: #4a4a4a;"><img src="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image001.png?width=787&amp;height=284&amp;name=image001.png" width="787" height="284" loading="lazy" alt="Reddit post outlining reported malware through recent versions of HWMonitor" style="height: auto; max-width: 100%; width: 787px; margin-left: auto; margin-right: auto; display: block;" srcset="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image001.png?width=394&amp;height=142&amp;name=image001.png 394w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image001.png?width=787&amp;height=284&amp;name=image001.png 787w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image001.png?width=1181&amp;height=426&amp;name=image001.png 1181w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image001.png?width=1574&amp;height=568&amp;name=image001.png 1574w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image001.png?width=1968&amp;height=710&amp;name=image001.png 1968w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image001.png?width=2361&amp;height=852&amp;name=image001.png 2361w" sizes="(max-width: 787px) 100vw, 787px"></span></i></p>
+<p style="line-height: 115%;">&nbsp;</p>
+<p style="text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;">Figure 2: VirusTotal Lookup</span></p>
+<p style="text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;"><img src="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image003.png?width=775&amp;height=333&amp;name=image003.png" width="775" height="333" loading="lazy" alt="VirusTotal lookup analysis" style="height: auto; max-width: 100%; width: 775px;" srcset="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image003.png?width=388&amp;height=167&amp;name=image003.png 388w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image003.png?width=775&amp;height=333&amp;name=image003.png 775w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image003.png?width=1163&amp;height=500&amp;name=image003.png 1163w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image003.png?width=1550&amp;height=666&amp;name=image003.png 1550w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image003.png?width=1938&amp;height=833&amp;name=image003.png 1938w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image003.png?width=2325&amp;height=999&amp;name=image003.png 2325w" sizes="(max-width: 775px) 100vw, 775px"></span></p>
+<p style="text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">Figure 3: Vendor's post on X</span></p>
+<p><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;"><img src="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image005.png?width=653&amp;height=473&amp;name=image005.png" width="653" height="473" loading="lazy" alt="Confirmation of suspected malware distribution by CPUID on X" style="height: auto; max-width: 100%; width: 653px; margin-left: auto; margin-right: auto; display: block;" srcset="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image005.png?width=327&amp;height=237&amp;name=image005.png 327w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image005.png?width=653&amp;height=473&amp;name=image005.png 653w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image005.png?width=980&amp;height=710&amp;name=image005.png 980w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image005.png?width=1306&amp;height=946&amp;name=image005.png 1306w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image005.png?width=1633&amp;height=1183&amp;name=image005.png 1633w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image005.png?width=1959&amp;height=1419&amp;name=image005.png 1959w" sizes="(max-width: 653px) 100vw, 653px"></span></p>
+<p style="line-height: 123%;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">Upon inspection, the compromised package was found to contain an additional DLL named cryptbase.dll, while all other components appeared legitimate and consistent with the original distribution version 1.63 (see Figures 4 and 5).</span></p>
+<p style="line-height: 123%; text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;">Figure 4: Compromised package containing malicious DLL compared to legitimate package v1.63&nbsp;</span></p>
+<p style="line-height: 123%; text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;"><img src="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image007.png?width=798&amp;height=207&amp;name=image007.png" width="798" height="207" loading="lazy" alt="Compromised package containing malicious DLL compared to legitimate package v1.63&nbsp;" style="height: auto; max-width: 100%; width: 798px; margin-left: auto; margin-right: auto; display: block;" srcset="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image007.png?width=399&amp;height=104&amp;name=image007.png 399w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image007.png?width=798&amp;height=207&amp;name=image007.png 798w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image007.png?width=1197&amp;height=311&amp;name=image007.png 1197w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image007.png?width=1596&amp;height=414&amp;name=image007.png 1596w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image007.png?width=1995&amp;height=518&amp;name=image007.png 1995w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image007.png?width=2394&amp;height=621&amp;name=image007.png 2394w" sizes="(max-width: 798px) 100vw, 798px"></span></p>
+<p style="text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;">Figure 5: Hash check on legitimate and compromised packages&nbsp;</span></p>
+<p style="text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;"><img src="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image009.png?width=824&amp;height=150&amp;name=image009.png" width="824" height="150" loading="lazy" alt="Hash check on legitimate and compromised packages&nbsp;" style="height: auto; max-width: 100%; width: 824px;" srcset="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image009.png?width=412&amp;height=75&amp;name=image009.png 412w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image009.png?width=824&amp;height=150&amp;name=image009.png 824w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image009.png?width=1236&amp;height=225&amp;name=image009.png 1236w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image009.png?width=1648&amp;height=300&amp;name=image009.png 1648w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image009.png?width=2060&amp;height=375&amp;name=image009.png 2060w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image009.png?width=2472&amp;height=450&amp;name=image009.png 2472w" sizes="(max-width: 824px) 100vw, 824px"></span></p>
+<p style="line-height: 123%;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">Upon execution of HWMonitor_x64.exe, the malicious DLL is sideloaded into the process, as evidenced by the Procmon logs captured in Figure 6, triggering the execution of its DllMain entry point. Since the malware relies on DLL search order hijacking, only the 64-bit version of HWMonitor is affected in this attack.</span></p>
+<p style="line-height: 123%; text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;"><span style="font-weight: 400;">Figure 6: Malicious DLL loaded by HWMonitor_x64.exe&nbsp;</span></span></p>
+<p style="line-height: 123%; text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;"><span style="font-weight: 400;"><img src="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture6.png?width=805&amp;height=289&amp;name=Picture6.png" width="805" height="289" loading="lazy" alt="Malicious DLL loaded by HWMonitor_x64.exe&nbsp;" style="height: auto; max-width: 100%; width: 805px;" srcset="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture6.png?width=403&amp;height=145&amp;name=Picture6.png 403w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture6.png?width=805&amp;height=289&amp;name=Picture6.png 805w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture6.png?width=1208&amp;height=434&amp;name=Picture6.png 1208w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture6.png?width=1610&amp;height=578&amp;name=Picture6.png 1610w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture6.png?width=2013&amp;height=723&amp;name=Picture6.png 2013w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture6.png?width=2415&amp;height=867&amp;name=Picture6.png 2415w" sizes="(max-width: 805px) 100vw, 805px"></span></span></p>
+<h2>Cryptbase Analysis</h2>
+<p style="line-height: 1.5;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">The Cyderes Howler Cell Threat Research Team conducted a technical analysis of the malicious component, cryptbase.dll. The file is a 64-bit DLL module with a timestomped compilation timestamp set to 2077-08-31 05:16:43.</span></p>
+<p style="line-height: 1.5;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">Upon execution within DllMain, the malware spawns a separate thread, which initiates an additional thread responsible for executing the primary malicious payload. This multi-threaded approach is likely employed to release the loader lock. Concurrently, the malware loads the legitimate cryptbase.dll from the System32 directory (Figure 7) and returns TRUE to prevent a deadlock condition.</span></p>
+<p style="line-height: 1.5; text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;">Figure 7: DllMain thread creation and legitimate module load&nbsp;</span></p>
+<p style="line-height: 1.5; text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;"><img src="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image013.png?width=790&amp;height=411&amp;name=image013.png" width="790" height="411" loading="lazy" alt="DllMain thread creation and legitimate module load&nbsp;" style="height: auto; max-width: 100%; width: 790px;" srcset="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image013.png?width=395&amp;height=206&amp;name=image013.png 395w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image013.png?width=790&amp;height=411&amp;name=image013.png 790w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image013.png?width=1185&amp;height=617&amp;name=image013.png 1185w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image013.png?width=1580&amp;height=822&amp;name=image013.png 1580w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image013.png?width=1975&amp;height=1028&amp;name=image013.png 1975w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image013.png?width=2370&amp;height=1233&amp;name=image013.png 2370w" sizes="(max-width: 790px) 100vw, 790px"></span></p>
+<p style="line-height: 123%;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">Upon execution, the malware sends JSON-formatted metadata (Table 1) to the hardcoded C2 server (welcome[.]supp0v3[.]com), likely for tracking and profiling campaign victims with campaign ID "tbs." The callback URL registers infected victims as shown in Figure 8. Analysis identified four active campaigns tagged tbs, tbs2, tbs3, and snip. Concurrently, it unpacks a second-stage payload in memory (Figure 9), consisting of a compact shellcode stub designed to execute the reflective PE loader. The referrer field identifies the targeted software package: CPZ for CPU-Z and monitor3 for HWMonitor.</span></p>
+<p style="line-height: 123%; text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">Figure 8: Callback to register victim</span><span style="font-family: 'PX Grotesk'; font-weight: 400;"></span></p>
+<p><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;"><img src="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture8.png?width=480&amp;height=90&amp;name=Picture8.png" width="480" height="90" loading="lazy" alt="Callback to register victim" style="height: auto; max-width: 100%; width: 480px; margin-left: auto; margin-right: auto; display: block;" srcset="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture8.png?width=240&amp;height=45&amp;name=Picture8.png 240w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture8.png?width=480&amp;height=90&amp;name=Picture8.png 480w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture8.png?width=720&amp;height=135&amp;name=Picture8.png 720w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture8.png?width=960&amp;height=180&amp;name=Picture8.png 960w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture8.png?width=1200&amp;height=225&amp;name=Picture8.png 1200w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/Picture8.png?width=1440&amp;height=270&amp;name=Picture8.png 1440w" sizes="(max-width: 480px) 100vw, 480px"></span></p>
+<p>&nbsp;</p>
+<p style="text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;">Table 1: JSON Metadata Sent to C2<br><br></span><span style="font-family: 'PX Grotesk'; font-weight: 400; color: #000000;"></span></p>
+<div data-hs-responsive-table="true" style="overflow-x: auto; max-width: 100%; width: 67%; margin-left: auto; margin-right: auto;">
+<table height="95" style="width: 100%; border-collapse: collapse; table-layout: fixed; border: 1px solid #99acc2; height: 99.3228px;">
+<tbody>
+<tr style="height: 33.1076px;">
+<td style="width: 28.6967%; padding: 4px; height: 33.1076px;"><strong><span style="line-height: 115%;">tag</span></strong></td>
+<td style="width: 71.3596%; padding: 4px; height: 33.1076px;"><span style="line-height: 115%;">"tbs"</span></td>
+</tr>
+<tr style="height: 33.1076px;">
+<td style="width: 28.6967%; padding: 4px; height: 33.1076px;"><strong><span style="line-height: 115%;">referrer</span></strong></td>
+<td style="width: 71.3596%; padding: 4px; height: 33.1076px;"><span style="line-height: 115%;">"monitor3"</span></td>
+</tr>
+<tr style="height: 33.1076px;">
+<td style="width: 28.6967%; padding: 4px; height: 33.1076px;"><strong><span style="line-height: 115%;">callback</span></strong></td>
+<td style="width: 71.3596%; padding: 4px; height: 33.1076px;"><span style="line-height: 115%;">hxxps[://]welcome[.]supp0v3[.]com/d/callback</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div align="center">&nbsp;</div>
+<div align="center"><span style="font-size: 18px; font-family: 'PX Grotesk'; font-weight: 400; color: #000000;">Figure 9: Unpacked Stage 2 in memory&nbsp;</span></div>
+<div align="center"><span style="font-size: 18px; font-family: 'PX Grotesk'; font-weight: 400; color: #000000;">&nbsp;</span></div>
+<div align="center"><span style="font-size: 18px; font-family: 'PX Grotesk'; font-weight: 400; color: #000000;"><img src="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image017.png?width=766&amp;height=606&amp;name=image017.png" width="766" height="606" loading="lazy" alt="Unpacked Stage 2 in memory&nbsp;" style="height: auto; max-width: 100%; width: 766px;" srcset="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image017.png?width=383&amp;height=303&amp;name=image017.png 383w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image017.png?width=766&amp;height=606&amp;name=image017.png 766w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image017.png?width=1149&amp;height=909&amp;name=image017.png 1149w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image017.png?width=1532&amp;height=1212&amp;name=image017.png 1532w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image017.png?width=1915&amp;height=1515&amp;name=image017.png 1915w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image017.png?width=2298&amp;height=1818&amp;name=image017.png 2298w" sizes="(max-width: 766px) 100vw, 766px"></span></div>
+<div align="center">&nbsp;</div>
+<div align="center" style="text-align: left;"><span style="font-family: 'PX Grotesk'; font-size: 18px; text-wrap-mode: initial; font-weight: 400;">Once execution transfers to Stage 2, the shellcode locates the entry point of the reflective PE loader. After the PE is mapped into memory, it unpacks a subsequent stage by decrypting data embedded within the resource section using XOR decryption combined with bitwise manipulation. The XOR key used for decryption is 53 F4 49 91 8C E5 D9 9B 3A CE 62 5F 80 40 7B 30. The resolved third-stage PE is shown in Figure 10.</span></div>
+<div align="center">
+<p style="line-height: 123%; text-align: center;"><span style="color: #000000; font-family: 'PX Grotesk'; font-weight: 400;">Figure 10: Stage 3 unpacked in memory</span></p>
+<p style="line-height: 123%; text-align: center;"><span style="color: #000000; font-family: 'PX Grotesk'; font-weight: 400;"><img src="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image019.png?width=756&amp;height=485&amp;name=image019.png" width="756" height="485" loading="lazy" alt="Stage 3 unpacked in memory" style="height: auto; max-width: 100%; width: 756px;" srcset="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image019.png?width=378&amp;height=243&amp;name=image019.png 378w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image019.png?width=756&amp;height=485&amp;name=image019.png 756w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image019.png?width=1134&amp;height=728&amp;name=image019.png 1134w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image019.png?width=1512&amp;height=970&amp;name=image019.png 1512w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image019.png?width=1890&amp;height=1213&amp;name=image019.png 1890w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image019.png?width=2268&amp;height=1455&amp;name=image019.png 2268w" sizes="(max-width: 756px) 100vw, 756px"></span></p>
+</div>
+<div align="center">&nbsp;</div>
+<div align="center" style="text-align: left;">
+<p style="line-height: 123%;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">Stage 3 follows a similar pattern, functioning as a reflectively loaded DLL. Once mapped and executed, it unpacks a Stage 4 PE in memory using the same XOR decryption and bitwise manipulation routine to extract the fifth and final stage (Figure 11). This final payload is the core malware binary, identified by SHA-256 hash:</span></p>
+<p style="line-height: 115%;"><span style="line-height: 115%; color: #1a1a1a;">52862b538459c8faaf89cf2b5d79c2f0030f79f80a68f93d65ec91f046f05be6</span></p>
+<p style="line-height: 123%;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">This hash has been attributed to STX RAT, a malware variant previously observed being distributed through trojanized FileZilla installers.</span><span style="font-family: 'PX Grotesk'; font-weight: 400;"></span></p>
+<p style="line-height: 123%; text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">Figure 11: Unpacked RAT in memory - STX RAT</span></p>
+<p style="line-height: 123%; text-align: center;"><span style="font-family: 'PX Grotesk'; font-weight: 400;"><img src="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image021.png?width=775&amp;height=444&amp;name=image021.png" width="775" height="444" loading="lazy" alt="Unpacked RAT in memory - STX RAT" style="height: auto; max-width: 100%; width: 775px;" srcset="https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image021.png?width=388&amp;height=222&amp;name=image021.png 388w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image021.png?width=775&amp;height=444&amp;name=image021.png 775w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image021.png?width=1163&amp;height=666&amp;name=image021.png 1163w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image021.png?width=1550&amp;height=888&amp;name=image021.png 1550w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image021.png?width=1938&amp;height=1110&amp;name=image021.png 1938w, https://www.cyderes.com/hs-fs/hubfs/Images/Webpage%20Imagery/Howler%20Cell/CPUID/new/image021.png?width=2325&amp;height=1332&amp;name=image021.png 2325w" sizes="(max-width: 775px) 100vw, 775px"></span></p>
+<p style="line-height: 123%;">&nbsp;</p>
+</div>
+<div align="center">
+<h2 style="text-align: left;"><span style="font-family: PX Grotesk;">What Should Defenders Do?&nbsp;</span></h2>
+<ul style="list-style-type: disc;">
+<li style="text-align: left; line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Verify HWMonitor v1.63 installations: </strong>Compare file hashes against the known IOCs listed in this report. If a match is found, isolate the affected system immediately and initiate incident response procedures.</li>
+<li style="text-align: left; line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Block the identified C2 domain and malicious URL: </strong>Add welcome[.]supp0v3[.]com and the Cloudflare R2 URL to DNS, proxy, and firewall blocklists at the network perimeter.</li>
+<li style="text-align: left; line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Scan for cryptbase.dll outside System32: </strong>Any instance of cryptbase.dll present in application directories, particularly HWMonitor installation folders, should be treated as an immediate indicator of compromise.</li>
+<li style="text-align: left; line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Review credentials and session tokens on affected systems: </strong>STX RAT carries credential theft and session cookie harvesting capabilities. Force password resets and revoke active sessions where compromise is suspected. Prioritize accounts with administrative or privileged access.</li>
+<li style="text-align: left; line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Enforce hash validation for third-party tools: </strong>Establish a process for validating SHA-256 hashes on all downloaded utilities before execution, particularly portable tools run directly from USB or network shares.</li>
+<li style="text-align: left; line-height: 1.5;"><!-- [if !supportLists]--><!--[endif]--><strong>Alert IT and security staff specifically: </strong>Given that HWMonitor's core user base is IT professionals, system administrators, and security practitioners, proactively notify these groups and treat any machine in this user population that ran a CPUID download between April 9-10 as potentially compromised until verified.</li>
+</ul>
+<h2 style="text-align: left;">Conclusion</h2>
+<p style="line-height: 1.5; text-align: left;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">This analysis documents a sophisticated supply chain attack that weaponized the trust and popularity of HWMonitor to distribute STX RAT. The threat actor compromised the official CPUID download page to serve a trojanized package, employing DLL sideloading as the initial execution vector followed by a layered, five-stage in-memory unpacking chain designed to evade detection. The use of a timestomped compilation timestamp, reflective PE loading, and exclusively in-memory payload execution demonstrates a deliberate effort to hinder forensic analysis and bypass traditional security controls.</span></p>
+<p style="line-height: 1.5; text-align: left;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">The attribution of the final payload to STX RAT, previously linked to compromised software distribution sites, suggests an ongoing campaign by a threat actor with a consistent operational playbook built around abusing trusted software channels. The identification of four active campaign tags and multiple referrer values confirms that this infrastructure is actively maintained and specifically targeting CPUID's user base by product.</span></p>
+<p style="line-height: 1.5; text-align: left;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">The CPUID compromise reinforces a broader trend: commodity utilities with technically sophisticated, high-privilege user bases are increasingly attractive supply chain targets. An IT administrator or security engineer running HWMonitor on a production machine is a far higher-value target than a typical consumer endpoint. Defenders should treat any cryptbase.dll present outside of System32 as an immediate indicator of compromise, enforce hash validation on third-party software downloads, and monitor endpoints for the C2 and file IOCs listed in the Appendix. Detailed remediation steps are provided in the What Should Defenders Do section.</span></p>
+<h3 style="text-align: left;"><span style="color: #000000; font-family: 'PX Grotesk';">Appendix</span></h3>
+<h3 style="text-align: left;"><span style="font-family: 'PX Grotesk'; font-weight: 400;">Indicators of Compromise (IOCs)</span></h3>
+<div data-hs-responsive-table="true" style="overflow-x: auto; max-width: 100%; width: 90%; margin-left: auto; margin-right: auto;">
+<table style="width: 100%; border-collapse: collapse; table-layout: fixed; border: 0px #99acc2; height: 417px;">
+<tbody>
+<tr style="height: 33.1076px;">
+<td style="width: 49.1456%; padding: 4px; background-color: #e1fd95; height: 33.1076px;">
+<p><span style="color: #000000;"><strong><span style="line-height: 115%;">Name</span></strong></span></p>
+</td>
+<td style="width: 50.738%; padding: 4px; background-color: #e1fd95; height: 33.1076px;">
+<p><span style="color: #000000;"><strong><span style="line-height: 115%;">SHA-256</span></strong></span></p>
+</td>
+</tr>
+<tr style="height: 63.0903px;">
+<td style="width: 49.1456%; padding: 4px; height: 63.0903px;">
+<p><strong><span style="line-height: 115%;">HWMonitor_x64.exe (Legitimate -- abused for DLL sideloading)</span></strong></p>
+</td>
+<td style="width: 50.738%; padding: 4px; height: 63.0903px;">
+<p><span style="line-height: 115%;">02db6764d1f13b837b0a525e5931bdbc67e7a2a4d071e849c7e087255d4a2d5b</span></p>
+</td>
+</tr>
+<tr style="height: 63.0903px;">
+<td style="width: 49.1456%; padding: 4px; height: 63.0903px;">
+<p><strong><span style="line-height: 115%;">cryptbase.dll (On-disk)</span></strong></p>
+</td>
+<td style="width: 50.738%; padding: 4px; height: 63.0903px;">
+<p><span style="line-height: 115%;">a27df06c7167eced1ddaeb8adccaa5f60500f52bc7030389eed2a0903cdf8286</span></p>
+</td>
+</tr>
+<tr style="height: 63.0903px;">
+<td style="width: 49.1456%; padding: 4px; height: 63.0903px;">
+<p><strong><span style="line-height: 115%;">Stage 2 (In-memory PE)</span></strong></p>
+</td>
+<td style="width: 50.738%; padding: 4px; height: 63.0903px;">
+<p><span style="line-height: 115%;">1331f19c6732fca81f32c4cec9f89abf26371ed9d3665954f491c89e2c55e5bb</span></p>
+</td>
+</tr>
+<tr style="height: 63.0903px;">
+<td style="width: 49.1456%; padding: 4px; height: 63.0903px;">
+<p><strong><span style="line-height: 115%;">Stage 3 (In-memory PE)</span></strong></p>
+</td>
+<td style="width: 50.738%; padding: 4px; height: 63.0903px;">
+<p><span style="line-height: 115%;">116d806a5ca6f34fdd04061499daca9a352feb2e3f291c7ef3e5d470fe875f7f</span></p>
+</td>
+</tr>
+<tr style="height: 63.0903px;">
+<td style="width: 49.1456%; padding: 4px; height: 63.0903px;">
+<p><strong><span style="line-height: 115%;">Stage 4 (In-memory PE)</span></strong></p>
+</td>
+<td style="width: 50.738%; padding: 4px; height: 63.0903px;">
+<p><span style="line-height: 115%;">a70645f46eee6d765c54ba4a5c48166bd83bcfbc7771a82be9ed48ab4871ebfa</span></p>
+</td>
+</tr>
+<tr style="height: 63.0903px;">
+<td style="width: 49.1456%; padding: 4px; height: 63.0903px;">
+<p><strong><span style="line-height: 115%;">Stage 5 -- STX RAT</span></strong></p>
+</td>
+<td style="width: 50.738%; padding: 4px; height: 63.0903px;">
+<p><span style="line-height: 115%;">52862b538459c8faaf89cf2b5d79c2f0030f79f80a68f93d65ec91f046f05be6</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 style="text-align: left;">C2 Infrastructure</h3>
+<p style="line-height: 115%; text-align: left;"><strong>URL:<span> </span></strong><span style="line-height: 115%; color: #1a1a1a;">hxxps[://]welcome[.]supp0v3[.]com/d/callback</span></p>
+<p style="line-height: 115%; text-align: left;"><strong>Domain: </strong><span style="line-height: 115%; color: #1a1a1a;">welcome[.]supp0v3[.]com</span></p>
+<p style="line-height: 115%; text-align: left;">&nbsp;</p>
+<h2 style="text-align: left;">MITRE ATT&amp;CK</h2>
+<div data-hs-responsive-table="true" style="overflow-x: auto; max-width: 100%; width: 91%; margin-left: auto; margin-right: auto;">
+<table style="width: 100%; border-collapse: collapse; table-layout: fixed; border: 0px #99acc2; height: 541.493px;">
+<tbody>
+<tr style="height: 33.1076px;">
+<td style="width: 24.4919%; padding: 4px; background-color: #e1fd95; height: 33.1076px;"><span style="color: #000000; font-size: 18px;"><strong><span style="line-height: 115%;">Tactic</span></strong></span></td>
+<td style="width: 75.5491%; padding: 4px; background-color: #e1fd95; height: 33.1076px;"><span style="color: #000000; font-size: 18px;"><strong><span style="line-height: 115%;">Technique</span></strong></span></td>
+</tr>
+<tr style="height: 66.4757px;">
+<td style="width: 24.4919%; padding: 4px; height: 66.4757px;">
+<p><strong><span style="line-height: 115%;">Initial Access</span></strong></p>
+</td>
+<td style="width: 75.5491%; padding: 4px; height: 66.4757px;">
+<p>T1195.002 -- Compromise Software Supply Chain</p>
+<p>T1204.002 -- User Execution: Malicious File</p>
+</td>
+</tr>
+<tr style="height: 33.1076px;">
+<td style="width: 24.4919%; padding: 4px; height: 33.1076px;">
+<p><strong><span style="line-height: 115%;">Execution</span></strong></p>
+</td>
+<td style="width: 75.5491%; padding: 4px; height: 33.1076px;">
+<p>T1106 -- Native API</p>
+</td>
+</tr>
+<tr style="height: 176.528px;">
+<td style="width: 24.4919%; padding: 4px; height: 176.528px;">
+<p><strong><span style="line-height: 115%;">Defense Evasion</span></strong></p>
+</td>
+<td style="width: 75.5491%; padding: 4px; height: 176.528px;">
+<p>T1574.002 -- Hijack Execution Flow: DLL Side-Loading</p>
+<p>T1027.002 -- Obfuscated Files or Information: Software Packing</p>
+<p>T1620 -- Reflective Code Loading</p>
+<p>T1140 -- Deobfuscate/Decode Files or Information</p>
+<p>T1070.006 -- Indicator Removal: Timestomp</p>
+</td>
+</tr>
+<tr style="height: 33.1076px;">
+<td style="width: 24.4919%; padding: 4px; height: 33.1076px;">
+<p><strong><span style="line-height: 115%;">Discovery</span></strong></p>
+</td>
+<td style="width: 75.5491%; padding: 4px; height: 33.1076px;">
+<p>T1082 -- System Information Discovery</p>
+</td>
+</tr>
+<tr style="height: 66.4757px;">
+<td style="width: 24.4919%; padding: 4px; height: 66.4757px;">
+<p><strong><span style="line-height: 115%;">Command &amp; Control</span></strong></p>
+</td>
+<td style="width: 75.5491%; padding: 4px; height: 66.4757px;">
+<p>T1071.001 -- Web Protocols</p>
+<p>T1105 -- Ingress Tool Transfer</p>
+</td>
+</tr>
+<tr style="height: 66.4757px;">
+<td style="width: 24.4919%; padding: 4px; height: 66.4757px;">
+<p><strong><span style="line-height: 115%;">Credential Access</span></strong></p>
+</td>
+<td style="width: 75.5491%; padding: 4px; height: 66.4757px;">
+<p>T1555 -- Credentials from Password Stores</p>
+<p>T1539 -- Steal Web Session Cookie</p>
+</td>
+</tr>
+<tr style="height: 33.1076px;">
+<td style="width: 24.4919%; padding: 4px; height: 33.1076px;">
+<p><strong><span style="line-height: 115%;">Exfiltration</span></strong></p>
+</td>
+<td style="width: 75.5491%; padding: 4px; height: 33.1076px;">
+<p>T1041 -- Exfiltration Over C2 Channel</p>
+</td>
+</tr>
+<tr style="height: 33.1076px;">
+<td style="width: 24.4919%; padding: 4px; height: 33.1076px;">
+<p><strong><span style="line-height: 115%;">Collection</span></strong></p>
+</td>
+<td style="width: 75.5491%; padding: 4px; height: 33.1076px;">
+<p>T1005 -- Data from Local System</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 style="text-align: left; font-size: 14px;">&nbsp;</h2>
+<h2 style="text-align: left;">References</h2>
+<ul style="list-style-type: disc;">
+<li style="text-align: left;"><span style="font-family: 'PX Grotesk'; color: #000000;"><span style="line-height: 115%; font-weight: 400;"><span style="color: #000000;"><a href="https://www.esentire.com/blog/stx-rat-a-new-rat-in-2026-with-infostealer-capabilities" style="color: #000000;"><strong>eSentire: STX RAT: A New RAT in 2026 with Infostealer Capabilities</strong></a></span></span></span></li>
+<li style="text-align: left;"><span style="font-family: 'PX Grotesk'; color: #000000;"><!-- [if !supportLists]--><!--[endif]--><a href="https://www.reddit.com/r/pcmasterrace/comments/1sh4e5l/" style="color: #000000;"><span style="line-height: 115%;">Reddit: Community discussion on suspected HWMonitor compromise</span></a></span></li>
+<li style="text-align: left;"><span style="font-family: 'PX Grotesk'; color: #000000;"><!-- [if !supportLists]--><!--[endif]--><a href="https://x.com/d0cTB/status/2042520961824559150" style="color: #000000;"><span style="line-height: 115%;">Doc TB (@d0cTB): Vendor acknowledgment post on X</span></a></span></li>
+<li style="text-align: left;"><span style="font-family: 'PX Grotesk'; color: #000000;"><!-- [if !supportLists]--><!--[endif]--><a href="https://cybernews.com/security/cpuid-hwmonitor-hwinfo-cpuz-deliver-malware/" style="color: #000000;"><span style="line-height: 115%;">Cybernews: CPUID compromise: users got malware with HWMonitor and CPU-Z tools</span></a></span></li>
+</ul>
+</div></span>
+          
+        </div>
+        
+        <div class="right_column">
+          <div id="hs_cos_wrapper_module_175890910935318" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><div class="yellow_card">
+  <span id="hs_cos_wrapper_module_175890910935318_" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_cta" style="" data-hs-cos-general-type="widget" data-hs-cos-type="cta"><!--HubSpot Call-to-Action Code --><span class="hs-cta-wrapper" id="hs-cta-wrapper-70fb1821-4884-4242-b034-bca4c1e6e2ab"><span class="hs-cta-node hs-cta-70fb1821-4884-4242-b034-bca4c1e6e2ab" id="hs-cta-70fb1821-4884-4242-b034-bca4c1e6e2ab"><!--[if lte IE 8]><div id="hs-cta-ie-element"></div><![endif]--><a href="https://cta-redirect.hubspot.com/cta/redirect/3447277/70fb1821-4884-4242-b034-bca4c1e6e2ab"><img class="hs-cta-img" id="hs-cta-img-70fb1821-4884-4242-b034-bca4c1e6e2ab" style="border-width:0px;" height="1844" width="653" src="https://no-cache.hubspot.com/cta/default/3447277/70fb1821-4884-4242-b034-bca4c1e6e2ab.png" alt="Be Ready"></a></span><script charset="utf-8" src="/hs/cta/cta/current.js"></script><script type="text/javascript"> hbspt.cta._relativeUrls=true;hbspt.cta.load(3447277, '70fb1821-4884-4242-b034-bca4c1e6e2ab', {"useNewLoader":"true","region":"na1"}); </script></span><!-- end HubSpot Call-to-Action Code --></span>
+</div>
+
+
+<style>
+  .yellow_card{
+    margin-bottom:40px;
+    max-width:340px;
+    margin-left: auto;
+    width:340px;
+    margin-right: auto;
+  }
+  
+  .yellow_card{
+    display:none;
+  }
+  
+
+</style></div>
+
+          <div id="hs_cos_wrapper_module_175864743388822" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><style>
+  
+
+
+
+</style>
+
+<div class="howler-card">
+  
+  <h2 class="howler-title">
+    Stay informed with Howler Cell
+  </h2>
+  <div class="howler-subtext">
+    <p>Receive the latest Howler Cell&nbsp;news and research directly to your inbox.&nbsp;</p>
+  </div>
+  <div class="button-container">
+    <button class="howler-btn">
+      
+      <a href="javascript:postMessage({type:'HS_DISPLAY_CALL_TO_ACTION',id:196436624824});">
+        SUBSCRIBE
+        <span class="sr-only"> about Stay informed with Howler Cell</span>
+      </a></button>
+    <div class="howler-logo">
+      
+      
+      
+      
+      
+      
+      <img src="https://www.cyderes.com/hs-fs/hubfs/howler%20cell.png?width=96&amp;height=99&amp;name=howler%20cell.png" alt="Howler Cell" loading="lazy" width="96" height="99" style="max-width: 100%; height: auto;" srcset="https://www.cyderes.com/hs-fs/hubfs/howler%20cell.png?width=48&amp;height=50&amp;name=howler%20cell.png 48w, https://www.cyderes.com/hs-fs/hubfs/howler%20cell.png?width=96&amp;height=99&amp;name=howler%20cell.png 96w, https://www.cyderes.com/hs-fs/hubfs/howler%20cell.png?width=144&amp;height=149&amp;name=howler%20cell.png 144w, https://www.cyderes.com/hs-fs/hubfs/howler%20cell.png?width=192&amp;height=198&amp;name=howler%20cell.png 192w, https://www.cyderes.com/hs-fs/hubfs/howler%20cell.png?width=240&amp;height=248&amp;name=howler%20cell.png 240w, https://www.cyderes.com/hs-fs/hubfs/howler%20cell.png?width=288&amp;height=297&amp;name=howler%20cell.png 288w" sizes="(max-width: 96px) 100vw, 96px">
+      
+    </div>
+  </div>
+</div></div>
+
+          <div class="resources_module">
+            <div id="hs_cos_wrapper_module_175864751980024" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module">
+
+
+<div class="resource">
+  <div class="card_resource">
+    
+
+    
+    <div class="title_conta_resource">
+      <h2>Optional featured resource text</h2>
+    </div>
+    <div class="content_conta">
+      <div class="description">
+        <p></p><p><span>Howler Cell has been tracking and investigating the new variant of MedusaLocker. MedusaLocker is a well-known ransomware family active since late 2019</span></p><p></p>
+      </div>
+    </div>
+    
+    <div class="button_conta">
+      
+      
+      <a class="btn btn--primary " href="//3447277-hs-sites-com.sandbox.hs-sites.com/test">
+        Learn More
+        <span class="sr-only"> about </span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<style>
+  #hs_cos_wrapper_module_175864751980024 .resource p {
+  color:#fff;
+  font-size:16px;
+}
+
+  
+  
+  
+  
+  .resource{
+    display:none;
+  }
+  
+
+
+  .card_resource {
+    padding: 100px 20px;
+    border-radius: 20px;
+    position:relative;
+    z-index:1;
+    width:340px;
+    max-width:340px;
+    margin:0 auto;
+  }
+  .card_resource {
+    background:#2c2c2c;
+  }
+
+  .card_resource:before {
+    position:absolute;
+    content:'';
+    left:0;
+    right:0;
+    opacity:0.5;
+    top:0;
+    bottom:0;
+    height:100%;
+    width:100%;
+    background:url('https://www.cyderes.com/hubfs/Imported%20images/Light%20Dotted%20BG.png')no-repeat;
+    background-size:cover;
+    z-index:-1;
+  }
+
+  .title_conta_resource h2{
+    color:#D4FC68;
+    font-size:33px;
+    line-height:112%;
+  }
+
+  .resource .image_cont, .content_conta .description{
+    margin-bottom:40px;
+  }
+  .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+  @media(max-width:767px){
+    .card_resource{
+      width:100%;
+    }
+  }
+
+</style></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cta_banner">
+    <div id="hs_cos_wrapper_module_17586602295229" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module"><section class="cta-banner-section ">
+  <div class="cta-content">
+    <h2 class="cta-title">Ready to close your security gaps?</h2>
+    <div class="cta-subtext">
+      <p>To stay ahead of today’s relentless threatscape, you’ve got to close the gap between security strategy and execution.&nbsp;Cyderes helps you act fast, stay focused, and move your business forward.&nbsp;</p>
+    </div>
+    <div class="cta-btn">
+      
+      <a class="btn btn--primary" href="https://www.cyderes.com/company/contact-us">
+        GET IN TOUCH
+      </a></div>
+  </div>
+</section>
+
+
+<style>
+  #hs_cos_wrapper_module_17586602295229 .cta-banner-section p {
+  color:#fff;
+  font-size:16px;
+}
+
+@media (max-width:767px) {
+  #hs_cos_wrapper_module_17586602295229 .counter_section {}
+}
+
+  
+  
+  
+  .cta-banner-section h2.cta-title{
+    color:#D4FC68;
+  }
+  .cta-banner-section.resource_post h2.cta-title{
+    color:#D4FC68;
+  }
+
+/*   .cta-banner-section .cta-subtext p{
+    color: #FFFFFF;
+    font-size:24px;
+    line-height:112%;
+    font-weight:400;  
+  } */
+
+  .cta-banner-section {
+    background:#000000;
+    
+    background: url('https://www.cyderes.com/hubfs/Imported%20images/CTA%20section%20BG.png') #000000;
+      
+      background-size: cover;
+      color: #fff;
+      text-align: center;
+      padding: 4rem 2rem;
+      position:relative;
+      background-repeat: no-repeat;
+      }
+  .cta-banner-section.resource_post{
+    padding: 7rem 2rem;
+  }
+
+  @media(max-width:767px){
+    .cta-banner-section .cta-subtext p{
+      font-size:20px;
+    }
+    .cta-banner-section.resource_post{
+      padding: 3rem 1.5rem;
+    }
+  }
+</style></div>
+  </div>
+</div>
+<style>
+  body{
+    overflow:unset;
+  }
+  
+  .right_column {
+    align-self: start;
+    position: sticky;
+    top: 180px; 
+    height: fit-content;
+  }
+  @media (max-width: 991px) {
+    .right_column {
+      position: static;
+      margin-top: 40px;
+    }
+    .howler-card{
+      margin:0 auto;
+      max-width:100%;
+      width:100%;
+    }
+  }
+</style>
+<style>
+  
+  section#post_banner {
+    margin-top:0px;
+    padding-bottom: 70px;
+  }
+  @media(min-width:992px){
+    .left_column{
+      padding-left:0px;
+      max-width:880px;
+      width:90%;
+    }
+  }
+
+  .content_body_conta .left_column{
+    overflow:hidden;
+  }
+  .content_body_conta .left_column table{
+    margin-left:0 !important;
+  }
+  .content_body_conta .left_column table td{
+    border-color:#000;
+  }
+  .content_body_conta .table_conta{
+    overflow-x:auto;
+  }
+  .content_body_section .content_body_conta .left_column h3{
+    margin-top:0;
+  }
+  .content_body_section .content_body_conta .left_column p{
+    color:#000;
+    font-size:18px;
+    margin-top:0;
+  }
+  .content_body_section .content_body_conta .left_column span{
+    color:#000;
+  }
+  .content_body_section .content_body_conta .left_column hr{
+    width:40%;
+    height:2px;
+  }
+  .content_body_section .content_body_conta .left_column table ul li{
+    margin-bottom:5px;
+  }
+  .content_body_section .content_body_conta .left_column ul li{
+    color:#000;
+    line-height:112%;
+    font-size:18px;
+    margin-bottom:10px;
+  }
+  .content_body_section .content_body_conta .left_column ul{
+    padding-left:20px;
+  }
+  .body-container.body-container--blog-post {
+    max-width: 1260px;
+    margin: 0 auto;
+    padding:0 20px;
+  }
+  .post_section{
+    margin-top:0px;
+  }
+  .post_section .date_conta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  .content_body_conta{
+    margin-bottom:60px;
+  }
+  .content_body_section.howler_cell .content_body_conta .left_column h2 {
+    font-weight: 700;
+}
+ .content_body_conta .left_column pre {
+    padding: 0.75rem;
+    border: 1px solid #000;
+    font-weight: 700;
+}
+  .content_body_conta .left_column code {
+    font-family: 'Px Grotesk';
+}
+  .content_body_conta .left_column thead th,
+  .content_body_conta .left_column thead td {
+    background-color: #6e757d;
+}
+
+  @media(min-width:992px){
+    .content_body_conta {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+  }
+
+  @media(max-width:767px){
+    .blog-banner--content h1{
+      font-size:40px;
+      line-height:112%;
+    }
+    .content_body_conta .left_column{
+      margin-bottom:40px;
+    }
+     .content_body_conta .left_column br{
+      display:none;
+    }
+  }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  function fixSemanticTables() {
+
+    const scope = document.querySelector('.content_body_conta .left_column');
+    if (!scope) return;
+
+    const tables = scope.querySelectorAll("table");
+
+    tables.forEach(function(table) {
+
+      // Skip real data tables
+      if (table.querySelector("th")) return;
+      if (table.querySelectorAll("tr").length > 5) return;
+
+      const rows = table.querySelectorAll("tr");
+
+      // Only process single-cell tables
+      if (rows.length === 1 && rows[0].children.length === 1) {
+
+        const cell = rows[0].children[0];
+
+        const text = cell.innerText.trim();
+
+        // Skip empty tables
+        if (!text) return;
+
+        // Create <pre><code> for code-like content
+        if (text.includes("def ") || text.includes("{") || text.includes("=") || text.includes("&")) {
+
+          const pre = document.createElement("pre");
+          const code = document.createElement("code");
+
+          code.textContent = text;
+          pre.appendChild(code);
+
+          table.parentNode.replaceChild(pre, table);
+
+        } else {
+          // Otherwise convert to simple paragraph
+          const p = document.createElement("p");
+          p.textContent = text;
+
+          table.parentNode.replaceChild(p, table);
+        }
+      }
+
+    });
+
+  }
+
+  fixSemanticTables();
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  function fixTableHeaders() {
+
+    const scope = document.querySelector('.content_body_conta .left_column');
+    if (!scope) return;
+
+    const tables = scope.querySelectorAll("table");
+
+    tables.forEach(function(table) {
+
+      const thead = table.querySelector("thead");
+      if (!thead) return;
+
+      const firstRow = thead.querySelector("tr");
+      if (!firstRow) return;
+
+      const headerCells = firstRow.querySelectorAll("td");
+
+      headerCells.forEach(function(td) {
+
+        const th = document.createElement("th");
+        th.innerHTML = td.innerHTML;
+        th.setAttribute("scope", "col");
+
+        td.parentNode.replaceChild(th, td);
+
+      });
+
+    });
+
+  }
+
+  fixTableHeaders();
+
+});
+</script>
+
+
+        
+        <!-- Nothing to see here -->
+        
+
+      </main>
+      
+      <div data-global-resource-path="theme-cyderes-2025/templates/partials/footer.html"><div id="hs_cos_wrapper_footer_module" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_module" style="" data-hs-cos-general-type="widget" data-hs-cos-type="module">
+
+
+<footer class="footer u-pt--md u-bg--black">
+
+    <div class="footer--inner">
+        
+        <div class="footer__top u-pt--md u-pb--md">
+            <div class="footer-container container--xl">
+                <div class="row justify-content-between">
+                    <div class="col-md-4 col-12">
+                        <div class="mb-2 footer__logo">
+                            <a href="https://www.cyderes.com/" aria-label="Footer Logo">
+                                
+                                
+<svg width="160" height="20" viewbox="0 0 160 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g clip-path="url(#clip0_111_29854)">
+  <path d="M4.93226 1.85C3.46043 2.66667 2.30694 3.80417 1.46766 5.25833C0.628386 6.7125 0.210815 8.35833 0.210815 10.1875C0.210815 12.0167 0.628386 13.6583 1.46766 15.1167C2.30694 16.5708 3.46043 17.7083 4.93226 18.525C6.4041 19.3417 8.07438 19.7542 9.94725 19.7542H20.8413V16.0542H10.154C9.05423 16.0542 8.05784 15.8 7.16069 15.2833C6.26766 14.7708 5.56482 14.0625 5.05629 13.1625C4.54777 12.2625 4.29144 11.3 4.29144 10.1875C4.29144 9.075 4.54363 8.07917 5.05629 7.19167C5.56482 6.30417 6.26766 5.60417 7.16069 5.09167C8.05371 4.57917 9.05009 4.32083 10.154 4.32083H20.8413V0.625H9.94725C8.07438 0.625 6.4041 1.03333 4.93226 1.85417V1.85Z" fill="#D4FC68" />
+  <path d="M39.6858 7.90417H28.461V0.625H24.5416V11.6042H39.6858C39.6858 11.6042 39.4584 12.6708 39.0036 13.475C38.5489 14.2792 37.9287 14.9083 37.1473 15.3667C36.3618 15.825 35.477 16.0542 34.4848 16.0542H24.5416V19.7583H34.6915C36.37 19.7583 37.8956 19.375 39.2724 18.6125C40.6491 17.85 41.7158 16.8042 42.4724 15.4708C43.229 14.1417 43.6093 12.6292 43.6093 10.9375V0.625H39.6899V7.90417H39.6858Z" fill="#D4FC68" />
+  <path d="M63.0532 1.89167C61.5813 1.04583 59.9524 0.625 58.1622 0.625H46.3173V19.7542H58.1622C59.9524 19.7542 61.5813 19.3292 63.0532 18.4875C64.525 17.6417 65.6785 16.4917 66.5178 15.0375C67.3571 13.5833 67.7746 11.9667 67.7746 10.1917C67.7746 8.41667 67.3571 6.8 66.5178 5.34583C65.6785 3.89167 64.525 2.74167 63.0532 1.89583V1.89167ZM62.9498 13.1833C62.4537 14.0708 61.7591 14.7708 60.8661 15.2833C59.9731 15.7958 58.9767 16.0542 57.8728 16.0542H50.2408V4.325H57.8728C58.9726 4.325 59.9731 4.57917 60.8661 5.09583C61.7633 5.60833 62.4537 6.31667 62.9498 7.21667C63.4459 8.11667 63.694 9.07917 63.694 10.1917C63.694 11.3042 63.4459 12.3 62.9498 13.1875V13.1833Z" fill="#D4FC68" />
+  <path d="M91.9855 9.98333V9.975C91.9442 8.17917 91.477 6.55 90.5633 5.1C89.6166 3.5875 88.2853 2.39583 86.5819 1.525C84.8744 0.650001 82.9768 0.216667 80.8889 0.216667H80.8062C78.6894 0.216667 76.7835 0.645834 75.0884 1.50417C73.3933 2.3625 72.0744 3.54167 71.1277 5.0375C70.1768 6.53333 69.7054 8.17083 69.7054 10.0292C69.7054 11.8875 70.1726 13.55 71.107 15.0208C72.0414 16.4917 73.3892 17.6458 75.1504 18.4917C76.9116 19.3375 78.9747 19.7583 81.3396 19.7583H90.1706V16.0583H81.629C79.0698 16.0583 77.1432 15.5167 75.8532 14.4375C74.952 13.6833 74.3731 12.7375 74.1003 11.6083H91.9855V10.9833V10.1917C91.9855 10.1917 91.9855 10.175 91.9855 10.1667V9.98333ZM77.2755 4.61667C78.3339 4.0625 79.5122 3.78333 80.8021 3.78333H80.9261C82.2202 3.78333 83.3943 4.06667 84.4527 4.6375C85.5111 5.20417 86.338 5.975 86.9292 6.94583C87.1318 7.27917 87.3013 7.62917 87.4336 7.9875H74.2532C74.3938 7.59583 74.5757 7.225 74.799 6.86667C75.3902 5.925 76.2171 5.175 77.2755 4.62083V4.61667Z" fill="#D4FC68" />
+  <path d="M94.801 19.7542H98.7245V4.325H114.448V0.625H94.801V19.7542Z" fill="#D4FC68" />
+  <path d="M137.683 9.98333V9.975C137.641 8.17917 137.174 6.55 136.26 5.1C135.31 3.5875 133.982 2.39583 132.279 1.525C130.572 0.650001 128.674 0.216667 126.582 0.216667H126.499C124.382 0.216667 122.476 0.645834 120.781 1.50417C119.086 2.3625 117.767 3.54167 116.821 5.0375C115.87 6.53333 115.398 8.17083 115.398 10.0292C115.398 11.8875 115.866 13.55 116.8 15.0208C117.734 16.4917 119.082 17.6458 120.843 18.4917C122.605 19.3375 124.668 19.7583 127.033 19.7583H135.864V16.0583H127.322C124.763 16.0583 122.836 15.5167 121.546 14.4375C120.645 13.6833 120.066 12.7375 119.793 11.6083H137.679V10.9833V10.1917C137.679 10.1917 137.679 10.175 137.679 10.1667V9.98333H137.683ZM122.973 4.61667C124.031 4.0625 125.205 3.78333 126.499 3.78333H126.623C127.917 3.78333 129.091 4.06667 130.15 4.6375C131.208 5.20417 132.035 5.975 132.626 6.94583C132.829 7.27917 132.998 7.62917 133.131 7.9875H119.95C120.091 7.59583 120.273 7.225 120.496 6.86667C121.087 5.925 121.914 5.175 122.973 4.62083V4.61667Z" fill="#D4FC68" />
+  <path d="M145.844 4.325H159.793V0.625H145.72C144.012 0.625 142.619 1.15833 141.532 2.225C140.444 3.29167 139.903 4.68333 139.903 6.32083C139.903 7.95833 140.444 9.31667 141.532 10.3958C142.619 11.4792 144.012 12.0167 145.72 12.0167H154.055C154.634 12.0167 155.121 12.2125 155.518 12.6C155.915 12.9875 156.118 13.4333 156.118 14.0125C156.118 14.5917 155.919 15.0792 155.518 15.4667C155.121 15.8542 154.629 16.05 154.055 16.05H140.023V19.7542H159.789V8.35833H145.84C145.261 8.35833 144.781 8.16667 144.397 7.775C144.012 7.3875 143.818 6.94583 143.818 6.3625C143.818 5.77917 144.008 5.29583 144.397 4.90833C144.781 4.52083 145.265 4.325 145.84 4.325H145.844Z" fill="#D4FC68" />
+  </g>
+  <defs>
+  <clippath id="clip0_111_29854">
+  <rect width="160" height="20" fill="white" />
+  </clippath>
+  </defs>
+  </svg>
+  
+
+                                
+                            </a>
+                        </div>
+                        
+                        <div class="footer__contact mb-2">
+                            <h3>Kansas City</h3>
+<p>Corporate Offices &amp; Cyber Defense Center&nbsp;<br>13323 Holmes Road&nbsp;<br>Kansas City, MO 64145</p>
+<p><span style="color: #ffffff;"><a href="tel:18554048324" rel="noopener" target="_blank" style="color: #ffffff;">855-404-TECH (8324)</a></span></p>
+<p><span style="color: #ffffff;"><a href="mailto:connect@cyderes.com" rel="noopener" style="color: #ffffff;">connect@cyderes.com</a></span></p>
+                        </div>
+                        
+                        
+                        
+                        <div class="footer__social mb-lg-0 mb-2 mt-lg-0 mt-3 px-lg-0 px-3">
+                            <div class="footer__social-title">
+                                
+                            </div>
+                            <div class="footer__social-items">
+                            
+                                
+                                
+                                
+                                
+                                
+                                    
+                                
+                                <a href="https://www.youtube.com/@BeEverydayReady" target="_blank" rel="noopener" aria-label="YouTube">
+                                     
+                                    
+                                        
+                                        
+                                            
+                                        
+                                        
+                                        <img src="https://www.cyderes.com/hs-fs/hubfs/youtube-logo-2431_1024.png?width=30&amp;height=30&amp;name=youtube-logo-2431_1024.png" alt="youtube-logo-2431_1024" width="30" height="30" style="max-width: 100%; height: auto;" srcset="https://www.cyderes.com/hs-fs/hubfs/youtube-logo-2431_1024.png?width=15&amp;height=15&amp;name=youtube-logo-2431_1024.png 15w, https://www.cyderes.com/hs-fs/hubfs/youtube-logo-2431_1024.png?width=30&amp;height=30&amp;name=youtube-logo-2431_1024.png 30w, https://www.cyderes.com/hs-fs/hubfs/youtube-logo-2431_1024.png?width=45&amp;height=45&amp;name=youtube-logo-2431_1024.png 45w, https://www.cyderes.com/hs-fs/hubfs/youtube-logo-2431_1024.png?width=60&amp;height=60&amp;name=youtube-logo-2431_1024.png 60w, https://www.cyderes.com/hs-fs/hubfs/youtube-logo-2431_1024.png?width=75&amp;height=75&amp;name=youtube-logo-2431_1024.png 75w, https://www.cyderes.com/hs-fs/hubfs/youtube-logo-2431_1024.png?width=90&amp;height=90&amp;name=youtube-logo-2431_1024.png 90w" sizes="(max-width: 30px) 100vw, 30px">
+                                        
+                                    
+                                </a>
+                            
+                                
+                                
+                                
+                                
+                                    
+                                
+                                
+                                    
+                                
+                                <a href="https://www.linkedin.com/company/cyderes/" target="_blank" rel="nofollow noopener" aria-label="LinkedIn">
+                                     
+                                    
+                                        
+                                        
+                                            
+                                        
+                                        
+                                        <img src="https://www.cyderes.com/hs-fs/hubfs/linkedin-112_1024.png?width=24&amp;height=24&amp;name=linkedin-112_1024.png" alt="linkedin-112_1024" width="24" height="24" style="max-width: 100%; height: auto;" srcset="https://www.cyderes.com/hs-fs/hubfs/linkedin-112_1024.png?width=12&amp;height=12&amp;name=linkedin-112_1024.png 12w, https://www.cyderes.com/hs-fs/hubfs/linkedin-112_1024.png?width=24&amp;height=24&amp;name=linkedin-112_1024.png 24w, https://www.cyderes.com/hs-fs/hubfs/linkedin-112_1024.png?width=36&amp;height=36&amp;name=linkedin-112_1024.png 36w, https://www.cyderes.com/hs-fs/hubfs/linkedin-112_1024.png?width=48&amp;height=48&amp;name=linkedin-112_1024.png 48w, https://www.cyderes.com/hs-fs/hubfs/linkedin-112_1024.png?width=60&amp;height=60&amp;name=linkedin-112_1024.png 60w, https://www.cyderes.com/hs-fs/hubfs/linkedin-112_1024.png?width=72&amp;height=72&amp;name=linkedin-112_1024.png 72w" sizes="(max-width: 24px) 100vw, 24px">
+                                        
+                                    
+                                </a>
+                            
+                                
+                                
+                                
+                                
+                                
+                                    
+                                
+                                <a href="https://www.instagram.com/cyderes/" target="_blank" rel="noopener" aria-label="Instagram">
+                                     
+                                    
+                                        
+                                        
+                                            
+                                        
+                                        
+                                        <img src="https://www.cyderes.com/hs-fs/hubfs/black-instagram-logo-3497_1024.png?width=24&amp;height=24&amp;name=black-instagram-logo-3497_1024.png" alt="black-instagram-logo-3497_1024" width="24" height="24" style="max-width: 100%; height: auto;" srcset="https://www.cyderes.com/hs-fs/hubfs/black-instagram-logo-3497_1024.png?width=12&amp;height=12&amp;name=black-instagram-logo-3497_1024.png 12w, https://www.cyderes.com/hs-fs/hubfs/black-instagram-logo-3497_1024.png?width=24&amp;height=24&amp;name=black-instagram-logo-3497_1024.png 24w, https://www.cyderes.com/hs-fs/hubfs/black-instagram-logo-3497_1024.png?width=36&amp;height=36&amp;name=black-instagram-logo-3497_1024.png 36w, https://www.cyderes.com/hs-fs/hubfs/black-instagram-logo-3497_1024.png?width=48&amp;height=48&amp;name=black-instagram-logo-3497_1024.png 48w, https://www.cyderes.com/hs-fs/hubfs/black-instagram-logo-3497_1024.png?width=60&amp;height=60&amp;name=black-instagram-logo-3497_1024.png 60w, https://www.cyderes.com/hs-fs/hubfs/black-instagram-logo-3497_1024.png?width=72&amp;height=72&amp;name=black-instagram-logo-3497_1024.png 72w" sizes="(max-width: 24px) 100vw, 24px">
+                                        
+                                    
+                                </a>
+                            
+                            </div>
+                        </div>
+                        
+                    </div>
+
+
+
+                    <div class="col-md-8 col-12">
+                        <div class="footer-menus footer-menus--top mb-md-4 mb-5 mt-5 mt-md-0">
+                            <div class="pb-2 footer__menu m-md-0 m-auto">
+                                <div class="row px-md-0">
+
+                                    
+                                    
+                                    <!-- (Integer: 1) -->
+                                    
+                                    <div class="col-12 col-md-12 col-md-12 d-md-flex justify-content-md-end">
+                                        <div class="footer__nav  ">
+                                            
+                                            <h4 class="mb-1">Navigate</h4>
+                                            
+                                            <span id="hs_cos_wrapper_footer_module_" class="hs_cos_wrapper hs_cos_wrapper_widget hs_cos_wrapper_type_simple_menu" style="" data-hs-cos-general-type="widget" data-hs-cos-type="simple_menu"><div id="hs_menu_wrapper_footer_module_" class="hs-menu-wrapper active-branch flyouts hs-menu-flow-vertical" role="navigation" data-sitemap-name="" data-menu-id="" aria-label="Navigation Menu">
+ <ul role="menu">
+  <li class="hs-menu-item hs-menu-depth-1" role="none"><a href="https://www.cyderes.com/solutions/managed-detection-and-response" role="menuitem" target="_self">Managed Detection &amp; Response</a></li>
+  <li class="hs-menu-item hs-menu-depth-1" role="none"><a href="https://www.cyderes.com/solutions/identity-and-access-management" role="menuitem" target="_self">Identity &amp; Access Management</a></li>
+  <li class="hs-menu-item hs-menu-depth-1" role="none"><a href="https://www.cyderes.com/solutions/exposure-management" role="menuitem" target="_self">Exposure Management</a></li>
+  <li class="hs-menu-item hs-menu-depth-1" role="none"><a href="https://www.cyderes.com/solutions/meridian/" role="menuitem" target="_self">Meridian</a></li>
+  <li class="hs-menu-item hs-menu-depth-1" role="none"><a href="https://www.cyderes.com/company/contact-us" role="menuitem" target="_self">Contact Us</a></li>
+  <li class="hs-menu-item hs-menu-depth-1" role="none"><a href="https://www.cyderes.com/company/careers" role="menuitem" target="_self">Join Our Team</a></li>
+ </ul>
+</div></span>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer__bottom">
+            <div class="footer-container container--xl">
+                <div class="d-md-flex align-items-center justify-content-between">
+                    <div class="footer--copyright mb-md-0 mb-2">
+                        
+                        <p><img src="https://www.cyderes.com/hs-fs/hubfs/theme-cyderes-2025/branding/Cyderes_Logos_SmallScaleSymbol_Cybervolt.png?width=10&amp;height=10&amp;name=Cyderes_Logos_SmallScaleSymbol_Cybervolt.png" width="10" height="10" loading="lazy" alt="Cyderes_Logos_SmallScaleSymbol_Cybervolt" style="height: auto; max-width: 100%; width: 10px;" srcset="https://www.cyderes.com/hs-fs/hubfs/theme-cyderes-2025/branding/Cyderes_Logos_SmallScaleSymbol_Cybervolt.png?width=5&amp;height=5&amp;name=Cyderes_Logos_SmallScaleSymbol_Cybervolt.png 5w, https://www.cyderes.com/hs-fs/hubfs/theme-cyderes-2025/branding/Cyderes_Logos_SmallScaleSymbol_Cybervolt.png?width=10&amp;height=10&amp;name=Cyderes_Logos_SmallScaleSymbol_Cybervolt.png 10w, https://www.cyderes.com/hs-fs/hubfs/theme-cyderes-2025/branding/Cyderes_Logos_SmallScaleSymbol_Cybervolt.png?width=15&amp;height=15&amp;name=Cyderes_Logos_SmallScaleSymbol_Cybervolt.png 15w, https://www.cyderes.com/hs-fs/hubfs/theme-cyderes-2025/branding/Cyderes_Logos_SmallScaleSymbol_Cybervolt.png?width=20&amp;height=20&amp;name=Cyderes_Logos_SmallScaleSymbol_Cybervolt.png 20w, https://www.cyderes.com/hs-fs/hubfs/theme-cyderes-2025/branding/Cyderes_Logos_SmallScaleSymbol_Cybervolt.png?width=25&amp;height=25&amp;name=Cyderes_Logos_SmallScaleSymbol_Cybervolt.png 25w, https://www.cyderes.com/hs-fs/hubfs/theme-cyderes-2025/branding/Cyderes_Logos_SmallScaleSymbol_Cybervolt.png?width=30&amp;height=30&amp;name=Cyderes_Logos_SmallScaleSymbol_Cybervolt.png 30w" sizes="(max-width: 10px) 100vw, 10px"> © 2026 Cyderes. All rights reserved.</p>
+                        
+                    </div>
+
+                    <div class="footer--utility">
+                        <div class="d-md-flex flex-wrap align-items-center">
+                            
+
+                            
+                            
+                            
+                            
+                            
+                            <a href="https://www.cyderes.com/privacy-policy" class="footer--util-link mx-md-2 my-md-0 my-2">
+                                Privacy Policy
+                            </a>
+                            
+
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                            <a href="https://trust.cyderes.com/" target="_blank" rel="noopener" class="footer--util-link mx-md-2 my-md-0 my-2">
+                                Trust Center
+                            </a>
+                            
+
+                            
+                            
+                            
+                            
+                            
+                            <a href="https://www.cyderes.com/terms-of-use" class="footer--util-link mx-md-2 my-md-0 my-2">
+                                Terms of Use
+                            </a>
+                            
+
+                            
+                            
+                            
+                            
+                            
+                            <a href="https://www.cyderes.com/accessibility" class="footer--util-link mx-md-2 my-md-0 my-2">
+                                Accessibility Statement
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</footer>
+
+</div></div>
+      
+    </div>
+
+
+    
+
+
+    
+<!-- HubSpot performance collection script -->
+<script defer src="/hs/hsstatic/content-cwv-embed/static-1.1293/embed.js"></script>
+<script>
+var hsVars = hsVars || {}; hsVars['language'] = 'en';
+</script>
+
+<script src="/hs/hsstatic/cos-i18n/static-1.53/bundles/project.js"></script>
+<script src="/hs/hsstatic/keyboard-accessible-menu-flyouts/static-1.17/bundles/project.js"></script>
+<script src="https://www.cyderes.com/hubfs/hub_generated/template_assets/1/188299564691/1783522476819/template_main_v2.min.js"></script>
+<!-- Start of Web Interactives Embed Code -->
+<script defer src="https://js.hubspot.com/web-interactives-embed.js" type="text/javascript" id="hubspot-web-interactives-loader" data-loader="hs-previewer" data-hsjs-portal="3447277" data-hsjs-env="prod" data-hsjs-hublet="na1"></script>
+<!-- End of Web Interactives Embed Code -->
+
+<!-- Start of HubSpot Analytics Code -->
+<script type="text/javascript">
+var _hsq = _hsq || [];
+_hsq.push(["setContentType", "blog-post"]);
+_hsq.push(["setCanonicalUrl", "https:\/\/www.cyderes.com\/howler-cell\/how-cpuids-hwmonitor-supply-chain-was-hijacked-to-deploy-stx-rat"]);
+_hsq.push(["setPageId", "210840284718"]);
+_hsq.push(["setContentMetadata", {
+    "contentPageId": 210840284718,
+    "legacyPageId": "210840284718",
+    "contentFolderId": null,
+    "contentGroupId": 194744329530,
+    "abTestId": null,
+    "languageVariantId": 210840284718,
+    "languageCode": "en",
+    
+    
+}]);
+</script>
+
+<script type="text/javascript" id="hs-script-loader" async defer src="/hs/scriptloader/3447277.js"></script>
+<!-- End of HubSpot Analytics Code -->
+
+
+<script type="text/javascript">
+var hsVars = {
+    render_id: "097b3e29-651d-4c0b-b905-8db801b9012b",
+    ticks: 1783522516593,
+    page_id: 210840284718,
+    
+    content_group_id: 194744329530,
+    portal_id: 3447277,
+    app_hs_base_url: "https://app.hubspot.com",
+    cp_hs_base_url: "https://cp.hubspot.com",
+    language: "en",
+    analytics_page_type: "blog-post",
+    scp_content_type: "",
+    
+    analytics_page_id: "210840284718",
+    category_id: 3,
+    folder_id: 0,
+    is_hubspot_user: false
+}
+</script>
+
+
+<script defer src="/hs/hsstatic/HubspotToolsMenu/static-1.640/js/index.js"></script>
+
+
+
+<div id="fb-root"></div>
+  <script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v3.0";
+  fjs.parentNode.insertBefore(js, fjs);
+ }(document, 'script', 'facebook-jssdk'));</script> <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+ 
+
+
+
+  
+</body></html>

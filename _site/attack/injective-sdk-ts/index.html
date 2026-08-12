@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Injective SDK release hooked wallet key derivation</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Injective SDK release hooked wallet key derivation</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> Injective Labs · <a href="https://www.npmjs.com/package/@injectivelabs/sdk-ts" target="_blank">website</a> · <a href="https://github.com/InjectiveLabs/sdk-ts" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-06-08</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> TypeScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> cryptocurrency_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> private_key_theft, cryptocurrency_theft, data_exfiltration</div>
+    <div class="meta-item"><strong>User Impact:</strong> 310</div>
+    <div class="meta-item"><strong>Phase:</strong> source</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">A trusted contributor account pushed commits that wrapped the Injective SDK&#39;s key derivation functions, and @injectivelabs/sdk-ts@1.20.21 shipped them to npm on 2026-06-08. Mnemonics and private keys were exfiltrated through fake Injective telemetry.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>A malicious release of `@injectivelabs/sdk-ts`, the TypeScript SDK for the
+Injective blockchain, reached npm on June 8, 2026 carrying code that captured
+wallet mnemonics and private keys as developers generated them. Socket, which
+detected the release, said it was live for about nineteen minutes.</p>
+    
+      <p>The Injective SDK sees roughly 50,000 downloads a week and is the standard way
+to build applications against the Injective chain, which makes any code path
+that touches key derivation unusually valuable. The attacker took the direct
+route. Socket said the malicious code hooked `fromMnemonic()` and `fromHex()`,
+so that any developer or application deriving a wallet through the SDK handed
+over the full mnemonic phrase and private key material as a side effect of a
+normal call.</p>
+    
+      <p>Exfiltration was designed to survive a glance at network logs. The captured
+material was base64-encoded and POSTed to
+`testnet[.]archival[.]chain[.]grpc-web[.]injective[.]network`, a hostname built
+to read as ordinary Injective infrastructure telemetry. The malicious commits
+arrived from a GitHub account belonging to a developer with an established
+history of contributions to the repository, and the run-up is visible in the
+history: a branch named `test-backdoor-check` appeared at 20:06 GMT+2, testing
+access, before version 1.20.21 was published at 22:59.</p>
+    
+      <p>Injective reverted the release by 23:18 and published a clean 1.20.23 at 23:48.
+npm statistics recorded 310 downloads of the bad version, and the same
+compromised version was pinned as a dependency across 17 other packages in the
+Injective scope, which extended the blast radius past the direct installs.
+Socket noted that the malicious version was deprecated rather than deleted and
+that compromised GitHub release artifacts were still present at the time of
+reporting. Anyone whose mnemonic or private key passed through the affected
+version was told to move funds and rotate keys, on the assumption that
+possession is the whole game.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>@injectivelabs/sdk-ts</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-06-08</td>
+          <td>
+            
+              <code>1.20.21</code>
+            
+          </td>
+          <td>
+            
+              <code>1.20.23</code>
+            
+          </td>
+          <td>
+            
+              <code>sha256:244b92499bef2e24950f0ca3f753cd1131c574dc58bb025896a70ab97fe71970</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/package/@injectivelabs/sdk-ts</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>domain:testnet.archival.chain.grpc-web.injective.network</code></li>
+    
+      <li><code>branch:test-backdoor-check</code></li>
+    
+      <li><code>function:fromMnemonic</code></li>
+    
+      <li><code>function:fromHex</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://socket.dev/blog/compromised-injective-sdk-npm-package" target="_blank">Compromised Injective SDK npm Package Exfiltrates Wallet Keys and Mnemonics - Socket</a></li>
+    
+      <li><a href="https://www.bleepingcomputer.com/news/security/injective-sdk-on-npm-infected-with-cryptocurrency-wallet-stealer/" target="_blank">Injective SDK on npm infected with cryptocurrency wallet stealer - BleepingComputer</a></li>
+    
+      <li><a href="https://thehackernews.com/2026/07/injective-labs-github-compromise-pushes.html" target="_blank">Injective Labs GitHub Compromise Pushes Wallet-Key-Stealing npm Packages - The Hacker News</a></li>
+    
+      <li><a href="https://crypto.news/compromised-injective-sdk-sends-wallet-keys-through-fake-telemetry/" target="_blank">Compromised Injective SDK sends wallet keys through fake telemetry - crypto.news</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

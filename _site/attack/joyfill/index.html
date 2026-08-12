@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joyfill npm beta releases carried a DEV#POPPER RAT</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Joyfill npm beta releases carried a DEV#POPPER RAT</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> Joyfill · <a href="https://www.npmjs.com/org/joyfill" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-07-28</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> remote_access, credential_theft, data_exfiltration, backdoor</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Two Joyfill beta releases published on 2026-07-28 appended an obfuscated implant after the legitimate package code. It resolved its C2 through blockchain transactions, opened a Socket.IO remote access channel, and staged a Python credential stealer.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Two prerelease versions of Joyfill&#39;s npm packages shipped a remote access
+trojan on July 28, 2026. Joyfill sells document and form tooling, and its
+`@joyfill/components` and `@joyfill/layouts` packages are used for forms and
+layout work in web applications.</p>
+    
+      <p>Socket, which analyzed the releases, identified
+`@joyfill/layouts@0.1.2-2773.beta.0`, published at 10:54:57 UTC, and
+`@joyfill/components@4.0.0-rc24-2773-beta.4`, published nine minutes later at
+11:03:59. In both, the implant was appended after the legitimate package code
+and hidden under several layers of JavaScript obfuscation, including seeded
+character shuffling and dynamically constructed functions.</p>
+    
+      <p>Execution happened at import time. That detail mattered more than the payload
+itself, because it means `npm install --ignore-scripts`, the mitigation most
+organizations adopted after two years of postinstall worms, offered nothing.
+The code exposed Node&#39;s `require` and `module` on the global object, then
+resolved its command-and-control address by querying Tron and Aptos addresses
+and retrieving encrypted code through BSC transactions, which it XOR-decrypted
+and evaluated. Using a public blockchain as the address book means the
+operators can rotate infrastructure without shipping a new package.</p>
+    
+      <p>What arrived was a 77 KB remote access trojan associated with the DEV#POPPER
+family, supporting JavaScript evaluation, shell execution, file management, and
+clipboard theft, followed by an 82,457-byte Python credential harvester that
+collected browser data, wallet extensions, and Git credentials. The malware
+also injected itself into developer tooling, including VS Code and npm, to
+survive removal of the package. Socket advised treating affected machines as
+compromised rather than merely at risk, and pinning back to `@joyfill/layouts`
+0.1.1 and `@joyfill/components` 4.0.0-rc24.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>@joyfill/layouts</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-07-28</td>
+          <td>
+            
+              <code>0.1.2-2773.beta.0</code>
+            
+          </td>
+          <td>
+            
+              <code>0.1.1</code>
+            
+          </td>
+          <td>
+            
+              <code>sha256:adc4af90540d33cd1e98f44b51482ae9250fbeb97d6f8d7841c81b618cb2c6e6</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>@joyfill/components</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-07-28</td>
+          <td>
+            
+              <code>4.0.0-rc24-2773-beta.4</code>
+            
+          </td>
+          <td>
+            
+              <code>4.0.0-rc24</code>
+            
+          </td>
+          <td>
+            
+              <code>sha256:bcc93dc55bc7daedf4ca57254f0e7a7f1c40e09851eab98fe10cde801982db17</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/package/@joyfill/components</code></li>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/package/@joyfill/layouts</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>malware_family:DEV#POPPER</code></li>
+    
+      <li><code>technique:execution on module import rather than install hook</code></li>
+    
+      <li><code>technique:C2 address resolved through Tron and Aptos addresses and BSC transactions</code></li>
+    
+      <li><code>technique:Socket.IO remote access channel</code></li>
+    
+      <li><code>technique:persistence by injection into VS Code and npm</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://socket.dev/blog/joyfill-npm-beta-releases-compromised" target="_blank">Two Joyfill npm Beta Releases Compromised to Deliver DEV#POPPER Remote Access Trojan - Socket</a></li>
+    
+      <li><a href="https://www.stepsecurity.io/blog/joyfill-npm-supply-chain-compromise" target="_blank">Compromised npm Packages: @joyfill/components and @joyfill/layouts Ship an Obfuscated Remote Access Trojan - StepSecurity</a></li>
+    
+      <li><a href="https://thehackernews.com/2026/07/two-compromised-joyfill-npm-packages.html" target="_blank">Two Compromised joyfill npm Packages Run RAT When Imported Into Node.js - The Hacker News</a></li>
+    
+      <li><a href="https://safedep.io/joyfill-npm-blockchain-c2-supply-chain/" target="_blank">Joyfill npm Packages Compromised with Blockchain C2 Loader - SafeDep</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

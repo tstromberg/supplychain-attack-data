@@ -7,7 +7,7 @@
   story: |
     Blaze Widget was one of the five plugins Wordfence tied to the June 2024 WordPress.org source compromise. The attacker did not create a fake package; the malicious code landed in the official plugin distribution path.
 
-    Wordfence listed Blaze Widget versions 2.2.5 through 2.5.2 as infected and reported no patched version at the time of publication. Sites updating through WordPress.org could receive the poisoned plugin.
+    The official CVE lists Blaze Widget versions 2.2.5 through 2.5.2 as infected. Immutable repository evidence extends the observed lower bound to 2.2.4: revision 3105768 still declares 2.2.4 but adds the campaign command-and-control logic to the previously clean file. Sites updating through WordPress.org could receive the poisoned plugin.
 
     The shared payload tried to create an administrator account and send credentials to `94.156.79.8`. It also injected footer JavaScript for SEO spam, turning a plugin update into both an account-takeover path and a search-spam foothold.
 
@@ -15,7 +15,7 @@
   start_date: 2024-06-21
   end_date: 2024-06-24
   target:
-    name: wp-blaze-widget
+    name: BLAZE Retail Widget
     kind: plugin
     repo: https://wordpress.org/plugins/blaze-widget/
   actor:
@@ -32,20 +32,34 @@
     - account_takeover
     - defacement
     users: 0
+  indicators:
+  - kind: file_sha256
+    value: blaze-widget-r3105768-blaze_widget.php 271117a4501b9eb5153d3ad65afd7ac07be2f59fabd67fbaa676d8e059a80b3c
+  - kind: file_sha256
+    value: blaze-widget-r3106494-blaze_widget.php 28e145ad13289cbd819ce730f673b27c8b9d49c5488a3796de24eb0f775353c6
   artifacts:
   - id: wp-blaze-widget
-    name: wp-blaze-widget
+    name: blaze-widget
+    package: blaze-widget
     kind: extension
     ecosystem: wordpress
     repo: https://wordpress.org/plugins/blaze-widget/
     start_date: 2024-06-21
     end_date: 2024-06-24
     versions:
-    - 2.2.5
+    - 2.2.4
     - 2.5.2
+    fixed_versions:
+    - 2.5.4
     locations:
     - uri: https://wordpress.org/plugins/blaze-widget/
       role: distribution
+    - uri: https://plugins.svn.wordpress.org/!svn/rvr/2268477/blaze-widget/trunk/blaze_widget.php
+      role: mirror
+    - uri: https://plugins.svn.wordpress.org/!svn/rvr/3105768/blaze-widget/trunk/blaze_widget.php
+      role: mirror
+    - uri: https://plugins.svn.wordpress.org/!svn/rvr/3106796/blaze-widget/trunk/blaze_widget.php
+      role: mirror
     indicators:
     - kind: ip
       value: 94.156.79.8
@@ -53,7 +67,16 @@
       value: Options
     - kind: user
       value: PluginAuth
+    notes:
+    - The CVE's 2.2.5 lower bound is contradicted by immutable SVN revision 3105768,
+      whose plugin header says 2.2.4 and whose source contains the campaign C2 logic.
+      Revision 2268477 is the preceding clean 2.2.4 file, revision 3106494 is malicious
+      2.5.2, and revision 3106796 is clean 2.5.4.
   references:
   - url: 
       https://www.wordfence.com/blog/2024/06/supply-chain-attack-on-wordpress-org-plugins-leads-to-5-maliciously-compromised-wordpress-plugins/
     title: Supply Chain Attack on WordPress.org Plugins Leads to 5 Maliciously Compromised WordPress Plugins
+  - url: https://cveawg.mitre.org/api/cve/CVE-2024-6297
+    title: CVE-2024-6297 record
+  - url: https://wpscan.com/vulnerability/2c9eb68a-bf19-42df-9c71-f85c440225bc/
+    title: Various Plugins - Injected Backdoor

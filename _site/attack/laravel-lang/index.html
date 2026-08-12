@@ -30,89 +30,19 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Between 2026-05-22 22:32 UTC and 2026-05-23 00:00 UTC an attacker with push access to the Laravel-Lang organization rewrote every tag in lang, attributes, actions, and http-statuses to commits that eager-loaded src/helpers.php through composer&#39;s autoload. The dropper fetched a PHP stage 2 from flipboxstudio.info, which executed an ELF binary and exfiltrated runner environment data to the same host.</p>
+  <p class="synopsis">An attacker with push access to Laravel-Lang rewrote every tag in lang, attributes, actions, and http-statuses to commits that autoloaded a credential stealer through composer. The dropper fetched a PHP second stage from flipboxstudio.info and exfiltrated runner environment data.</p>
 
   
   <h2>Story</h2>
   <div class="story">
     
-      <p>Late on May 22, 2026, an attacker with push access to the Laravel-Lang
-GitHub organization rewrote every version tag on four widely used Laravel
-translation packages, planting a credential stealer that ran on the next
-`composer update` for downstream applications.</p>
+      <p>Late on May 22, 2026, an attacker with push access to the Laravel-Lang GitHub organization rewrote every version tag on four widely used Laravel translation packages, planting a credential stealer that ran on the next `composer update` for downstream applications.</p>
     
-      <p>Laravel-Lang publishes Laravel translation packages on Packagist, the
-central Composer package index. Four repositories under the organization
-back four Composer packages: `lang`, `attributes`, `actions`, and
-`http-statuses`. Between 22:32 UTC on May 22 and midnight UTC on May 23,
-researchers at StepSecurity said the attacker rewrote every tag across all
-four — 502 on the `lang` repository alone, with smaller numbers in
-proportion to the others. Each malicious commit was authored as
-`Your Name &lt;you@example.com&gt;` and changed two files: `composer.json` and a
-new `src/helpers.php`. Identical diffs and the same fake author string
-across all four repositories pointed StepSecurity to a single compromised
-organization-wide push credential. An earlier Aikido report had described
-the delivery as a fork-tag pattern; StepSecurity&#39;s git evidence ruled that
-out.</p>
+      <p>Laravel-Lang publishes Laravel translation packages on Packagist, the central Composer package index. Four repositories under the organization back four Composer packages: `lang`, `attributes`, `actions`, and `http-statuses`. Between 22:32 and 23:24 UTC on May 22, researchers at StepSecurity said the attacker rewrote every tag across all four, 502 on the `lang` repository alone and smaller numbers in proportion to the others. Each malicious commit was authored as `Your Name &lt;you@example.com&gt;` and changed two files, `composer.json` and a new `src/helpers.php`. Identical diffs and the same fake author string across all four repositories pointed StepSecurity to a single compromised organization-wide push credential. An earlier Aikido report had described the delivery as a fork-tag pattern; StepSecurity&#39;s git evidence ruled that out. A malware researcher at Aikido filed the compromise directly with the maintainers, urging them to rotate credentials and delete the new tags.</p>
     
-      <p>The `composer.json` change appended `src/helpers.php` to the
-`autoload.files` array. Composer includes every file on that list whenever
-an application loads `vendor/autoload.php`, which is the standard Laravel
-boot path, so no individual call site needed to import the helper. Any
-`composer update`, or any `composer install` without a pre-attack lockfile,
-would resolve each version constraint to the new tag SHA and execute the
-helper on the next request — and, because the entry sits in the autoload
-list, on every subsequent PHP request the application served. Pre-attack
-lockfiles were safe until they were refreshed.</p>
+      <p>The `composer.json` change appended `src/helpers.php` to the `autoload.files` array. Composer includes every file on that list whenever an application loads `vendor/autoload.php`, the standard Laravel boot path, so no individual call site needed to import the helper. Any `composer update`, or any `composer install` without a pre-attack lockfile, resolved each version constraint to the new tag SHA and executed the helper on the next request, and on every request the application served afterward. Pre-attack lockfiles were safe until they were refreshed. The dropper assembled its C2 hostname at runtime from character codes to avoid plain-text strings, fetched a second stage from `flipboxstudio.info`, a typosquat of the legitimate `flipboxstudio.com`, over TLS with certificate verification disabled and a spoofed Mozilla User-Agent, wrote it under `sys_get_temp_dir()/.laravel_locale/`, executed it in a detached process, and unlinked itself from disk. A per-host MD5 marker kept the stealer from running twice on the same machine. On Windows it dropped a `.vbs` file and ran it through `cscript`, and StepSecurity observed a Linux variant that executed an ELF from `/tmp/.&lt;8 hex&gt;` and removed the path so the process kept running from a deleted inode under parent PID 1.</p>
     
-      <p>The dropper assembled its C2 hostname at runtime from character codes to
-avoid plain-text strings, fetched a second stage from `flipboxstudio.info`
-— a typosquat of the legitimate `flipboxstudio.com` — over a TLS connection
-with certificate verification disabled and a spoofed Mozilla User-Agent,
-wrote it under `sys_get_temp_dir()/.laravel_locale/`, executed it in a
-detached process, and unlinked itself from disk. A per-host MD5 marker kept
-the stealer from running twice on the same machine. On Unix the helper
-invoked the staged PHP via `exec(&quot;php ...&quot;)`; on Windows it dropped a `.vbs`
-file and ran it through `cscript`. StepSecurity also observed a Linux
-variant in which stage two dropped an ELF at `/tmp/.&lt;8 hex&gt;`, executed it,
-and removed the path so the process kept running from a deleted inode with
-parent PID 1.</p>
-    
-      <p>Socket&#39;s reverse engineering of stage two describes a credential-harvesting
-framework with seventeen collectors. It scraped cloud-instance metadata
-from AWS IMDS at `169.254.169.254` along with Azure, Google Cloud,
-DigitalOcean, Heroku, Netlify, and Vercel endpoints; read Kubernetes
-service-account tokens from `/var/run/secrets/` and HashiCorp Vault tokens
-from the environment; pulled secrets from Jenkins, GitLab Runner, GitHub
-Actions, CircleCI, TravisCI, and ArgoCD working directories; harvested SSH
-keys, Git credentials, Docker tokens, VPN configs, and per-process
-environments from `/proc/&lt;pid&gt;/environ`; and walked profile directories for
-Chrome, Edge, Firefox, Brave, and Opera along with the local stores for
-1Password, Bitwarden, LastPass, KeePass, Dashlane, and NordPass and a
-catalog of cryptocurrency wallets and browser extensions. On Windows the
-payload shipped an embedded `DebugChromium.exe` that abused Chrome&#39;s own
-debugging interface to extract the v127+ app-bound encryption key and
-decrypt cookies and saved passwords that Chrome&#39;s newer protections would
-otherwise have kept out of reach. Exfiltration POSTed the collected
-material to `https://flipboxstudio.info/exfil`. The XOR key
-`k9X2mP7vL4nQ8wR1` recurs across the obfuscated strings and is itself a
-useful hunt artifact.</p>
-    
-      <p>Packagist removed the malicious versions and temporarily delisted the four
-packages. StepSecurity advised downstream operators to halt `composer
-update` until lockfiles were verified against pre-attack SHAs, scan
-affected hosts for `/tmp/.laravel_locale/` artifacts and orphaned PHP or
-ELF processes, and rotate any CI tokens, cloud credentials, GitHub
-personal access tokens, and deploy keys reachable from a runner that
-executed during the window.</p>
-    
-      <p>The tag-rewrite delivery looks superficially similar to the actions-cool
-incident four days earlier (see [[actions-cool]]), but the two are
-distinct. In the actions-cool case, TeamPCP routed tags on official refs
-to commits inside an attacker-owned fork without ever pushing to the
-official repository. The Laravel-Lang attacker, by contrast, held push
-access and rewrote tags directly. The `flipboxstudio.info` infrastructure
-does not appear in the Mini Shai-Hulud campaign.</p>
+      <p>Socket&#39;s reverse engineering of stage two describes a credential-harvesting framework with seventeen collectors, reaching cloud instance metadata, Kubernetes service-account and HashiCorp Vault tokens, working directories for Jenkins, GitLab Runner, GitHub Actions, CircleCI, TravisCI, and ArgoCD, SSH keys, Git and Docker credentials, per-process environments, browser profiles, password manager stores, and cryptocurrency wallets. On Windows the payload shipped an embedded `DebugChromium.exe` that abused Chrome&#39;s own debugging interface to extract the v127+ app-bound encryption key and decrypt saved passwords that Chrome&#39;s newer protections would otherwise have kept out of reach. Packagist removed the malicious versions and temporarily delisted the four packages, and StepSecurity advised operators to halt `composer update` until lockfiles were verified against pre-attack SHAs and to rotate any CI token, cloud credential, or deploy key a runner could reach during the window. The tag-rewrite delivery resembles the actions-cool compromise four days earlier (see [[actions-cool]]), but the two are distinct. There, TeamPCP routed tags on official refs to commits inside an attacker-owned fork without ever pushing to the official repository; here the attacker held push access and rewrote tags directly. The `flipboxstudio.info` infrastructure does not appear in the Mini Shai-Hulud campaign.</p>
     
   </div>
   

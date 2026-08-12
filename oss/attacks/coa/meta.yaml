@@ -11,6 +11,14 @@
     The malicious package used a `preinstall` hook to run `compile.js` before normal installation finished. That placement mattered: the payload did not wait for an application to import coa or call its parser. Dependency resolution was enough to give the attacker code execution in developer and build environments.
 
     The event overlapped with the rc compromise and showed the same failure mode as earlier npm incidents. A trusted package name, a valid publisher path, and enough dependency gravity put malicious code on machines that never made an explicit decision to trust coa.
+  pull_quote:
+    text: >-
+      coa 2.0.3 shipped a `preinstall` hook that called a `compile.js` the
+      attacker had forgotten to include. The failed installs broke React, Vue
+      and Nuxt builds worldwide, and that packaging mistake is what exposed
+      the compromise.
+    caption: caught by the file the attacker forgot
+    after: 3
   start_date: 2021-11-04
   end_date: 2021-11-04
   target:
@@ -68,6 +76,7 @@
     - sha256:cd2adb9c16e3c5373f77c4288ab017be03c3a7f8320a2506e9129a402c0c69d6
     - sha256:dc7a59c2d600db8f748f0a722e363527e3332a0fd7ffd7d24342a7de6125e9e0
     - md5:9c6664390b305a8aeeec859ab8169095
+    - sha256:f53ef1ed12f9ba49831ea33100083c9a92bc8adc6620f8a3b36a2d9ae2eb8591
     indicators:
     - kind: file
       value: compile.js
@@ -77,6 +86,8 @@
       value: sdd.dll
     - kind: lifecycle_hook
       value: preinstall
+    - kind: file_sha256
+      value: package.json reported diff 883e2a3d03e5916172d5a8aeb96a53390244cd345b80a5d86802e991538eb722
     - kind: domain
       value: pastorcryptograph.at
     - kind: ip

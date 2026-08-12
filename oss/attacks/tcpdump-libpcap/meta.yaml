@@ -8,9 +8,16 @@
 
     The delivery split across related tools. tcpdump carried build-time code that fetched and compiled a payload. libpcap, the packet capture library under it, was changed to hide traffic on the port the payload used.
 
-    This compromise was more elaborate than a single hidden shell. The tcpdump configure script attempted to fetch a shell script named `services` over HTTP, generate `conftes.c`, compile it, and run it. The resulting program connected to a fixed address on TCP/1963 and accepted byte-sized commands to exit, sleep, or spawn an obfuscated shell. Libpcap was changed in `gencode.c` to hide traffic on port 1963, bending the sniffer's own eyes away from the backdoor.
+    This compromise was more elaborate than a single hidden shell. The poisoned tcpdump configure script attempted to fetch a shell script named `services` from `mars.raketti.net` over HTTP, generate `conftes.c`, compile it, and run it. The resulting program connected back to the same host, 212.146.0.34, on TCP/1963 and accepted byte-sized commands to exit, sleep, or spawn a shell whose traffic was obfuscated by XORing every byte with the constant 0x89. Libpcap was also changed in `gencode.c` to hide traffic on port 1963, bending the sniffer's own eyes away from the backdoor.
 
     That pairing is why the incident still stands out. The attacker did not just compromise a network diagnostic tool; they also altered the capture library so the diagnostic stack was less likely to see the backdoor's own traffic. Verification had to cover both archives, not only the obvious tcpdump executable.
+  pull_quote:
+    text: >-
+      The poisoned libpcap compiled `not port 1963` into every filter it
+      built, so a tcpdump freshly built from the same tarball could not show
+      the backdoor's own callbacks.
+    caption: the sniffer compiled its own blind spot
+    after: 2
   start_date: 2002-11-11
   end_date: 2002-11-13
   target:
@@ -25,13 +32,20 @@
   method:
     cause: compromised_infrastructure
     phase: distribution
-    motive: unauthorized_access
+    motive: unauthorized_access_control
     transitive: false
   impact:
     types:
     - backdoor
     - remote_code_execution
-    users: 0
+  notes:
+  - No source reports how many people fetched the trojaned archives, so impact users is
+    left unset rather than asserted as zero. The files were served from the main
+    tcpdump.org HTTP path for roughly two days.
+  - The start and end dates bound the window CERT documented for tcpdump.org itself,
+    10:14 GMT on 2002-11-11 to 15:05:19 GMT on 2002-11-13. CIAC N-014 adds that early
+    reports placed modified versions in circulation around 2002-10-30, so total exposure
+    including mirrors may have been longer than the two-day duration recorded here.
   artifacts:
   - id: tcpdump-3-6-2
     name: tcpdump
@@ -48,6 +62,19 @@
       role: distribution
     hashes:
     - md5:3a1c2dd3471486f9c7df87029bf2f1e9
+    indicators:
+    - kind: file
+      value: conftes.c
+    - kind: observable
+      value: http://mars.raketti.net/~mash/services
+    - kind: domain
+      value: mars.raketti.net
+    - kind: ip
+      value: 212.146.0.34
+    - kind: port
+      value: 1963/tcp
+    - kind: string
+      value: '0x89'
   - id: tcpdump-3-7-1
     name: tcpdump
     package: tcpdump
@@ -63,12 +90,26 @@
       role: distribution
     hashes:
     - md5:3c410d8434e63fb3931fe77328e4dd88
+    indicators:
+    - kind: file
+      value: conftes.c
+    - kind: observable
+      value: http://mars.raketti.net/~mash/services
+    - kind: domain
+      value: mars.raketti.net
+    - kind: ip
+      value: 212.146.0.34
+    - kind: port
+      value: 1963/tcp
+    - kind: string
+      value: '0x89'
   - id: libpcap-0-7-1
     name: libpcap
     package: libpcap
     ecosystem: tcpdump.org source release
     kind: source_archive
     website: https://tcpdump.org
+    repo: https://github.com/the-tcpdump-group/libpcap
     start_date: 2002-11-11
     end_date: 2002-11-13
     versions:
@@ -78,11 +119,21 @@
       role: distribution
     hashes:
     - md5:73ba7af963aff7c9e23fa1308a793dca
+    indicators:
+    - kind: file
+      value: gencode.c
+    - kind: port
+      value: 1963/tcp
+    - kind: string
+      value: not port 1963
   references:
+  - url: https://seclists.org/bugtraq/2002/Nov/219
+    title: Latest libpcap and tcpdump sources from tcpdump.org contain a trojan
+  - url: https://web.archive.org/web/20021229020300id_/http://www.hlug.org:80/trojan/
+    title: Houston Linux Users Group original tcpdump/libpcap trojan analysis
   - url: https://bbs.archlinux.org/viewtopic.php?id=165
     title: Arch Linux forum thread on trojaned tcpdump/libpcap sources
-  - url: 
-      https://www.theregister.com/security/2002/11/14/popular-packet-sniffing-packages_contaminated_by_trojan/
+  - url: https://www.theregister.com/2002/11/14/popular_packet_sniffing_packages_contaminated/
     title: Popular packet sniffing packages contaminated by Trojan
   - url: https://linuxsecurity.com/news/hackscracks/libpcap-and-tcpdump-sources-trojaned
     title: libpcap and tcpdump sources trojaned

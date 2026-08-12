@@ -11,6 +11,13 @@
     The backdoor had two faces. At build time, the modified `configure` script compiled and ran `tests/tests.c`, which attempted an HTTP callback to 212.26.42.47 on port 9090. At runtime, a patch in `src/help.c` gave unauthenticated users root shell execution when they issued `HELP ACIDBITCHEZ`. The published diff and hashes turned the incident into a compact lesson in source-release trust: a project server, a mirror network, and a small source patch were enough to turn a widely deployed FTP daemon into a root shell.
 
     ProFTPD's response was to tell users to verify checksums and replace any 1.3.3c source obtained during the exposure window. That is the practical cleanup burden in source-distribution attacks: downstream packagers and administrators have to ask not only which version they built, but which copy of that version they built from.
+  pull_quote:
+    text: >-
+      The ProFTPD core team believed the way into `ftp.proftpd.org` was a
+      ProFTPD vulnerability that had already been announced and fixed
+      upstream, but sat unpatched on the project's own distribution server.
+    caption: the fix shipped, the server stayed unpatched
+    after: 2
   start_date: 2010-11-28
   end_date: 2010-12-02
   target:
@@ -19,8 +26,8 @@
     website: https://ftp.proftpd.org
     repo: https://github.com/proftpd/proftpd
   actor:
-    name: Individual Hacker
-    kind: person
+    name: Unknown attacker
+    kind: unknown
   language: C
   method:
     cause: compromised_infrastructure
@@ -50,16 +57,14 @@
       role: mirror
     - uri: https://www.aldeid.com/wiki/Exploits/proftpd-1.3.3c-backdoor
       role: mirror
-    - uri: https://www.theregister.com/2010/12/02/proftpd_backdoor/
+    - uri: https://www.theregister.com/2010/12/02/proftpd_backdoored/
       role: mirror
     - uri: 
         https://www.zdnet.com/article/open-source-proftpd-hacked-backdoor-planted-in-source-code/
       role: mirror
-    - uri: https://www.securityfocus.com/bid/45150
-      role: mirror
     hashes:
-    - md5:4f2c554d6273b8145095837913ba9e5d
-    - md5:8571bd78874b557e98480ed48e2df1d2
+    - md5:a43df54cc0b16c9e63a1045129d7b144
+    - sha256:d56d6d643534fe618b26807948b3cfe43c02b3f7abf7f4a073778c9c1666d1eb
     indicators:
     - kind: observable
       value: ftp://ftp.proftpd.org/distrib/source/proftpd-1.3.3c.tar.gz
@@ -73,15 +78,31 @@
       value: src/help.c
     - kind: file
       value: tests/tests.c
+    evidence:
+    - kind: source_archive
+      path: samples/proftpd/before/proftpd-1.3.3c.tar.bz2
+      role: clean_same_version_comparator
+    - kind: source_diff
+      path: samples/proftpd/during/proftpd-1.3.3c-rootkit.patch
+      role: malicious_changes
+    notes:
+    - >-
+      The previously listed MD5 values 4f2c554d6273b8145095837913ba9e5d
+      and 8571bd78874b557e98480ed48e2df1d2 identify the clean gzip and bzip2
+      archives respectively; they are not malicious artifact hashes.
+    - >-
+      SecurityFocus BID 45150 was previously listed as a location. The BID database
+      is retired and the URL now serves a generic SecurityFocus notice with no entry
+      for this incident, so the location was removed.
   references:
-  - url: https://www.theregister.com/2010/12/02/proftpd_backdoor/
-    title: Backdoor sneaked into ProFTPD source code
+  - url: https://www.theregister.com/2010/12/02/proftpd_backdoored/
+    title: Hackers poison well of open-source FTP app
   - url: 
       https://www.zdnet.com/article/open-source-proftpd-hacked-backdoor-planted-in-source-code/
     title: Open source ProFTPD hacked, backdoor planted in source code
   - url: https://www.aldeid.com/wiki/Exploits/proftpd-1.3.3c-backdoor
     title: Exploits/proftpd-1.3.3c-backdoor
-  - url: https://lwn.net/Articles/418326/
-    title: ProFTPD source archive backdoored
-  - url: https://www.linux-magazine.com/Online/News/ProFTPD-Backdoor-Discovered
-    title: ProFTPD Backdoor Discovered
+  - url: https://lwn.net/Articles/418478/
+    title: Back door in ProFTPD FTP server (The H)
+  - url: https://sourceforge.net/p/proftp/mailman/proftp-user/thread/alpine.LSU.2.02.1012011556230.25361%40schiller.dip.t-dialin.net/
+    title: Distribution file rootkit-compromised - ProFTPD user mailing list

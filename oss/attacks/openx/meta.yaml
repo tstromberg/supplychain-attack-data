@@ -4,13 +4,21 @@
     The official OpenX Source 2.8.10 distribution archives were compromised for months, shipping
     a remote PHP code execution backdoor in the open-source ad server.
   story: |
-    OpenX sat between publishers, advertisers, and every visitor who loaded an ad slot. In 2013, heise Security found that official OpenX Source 2.8.10 downloads from the project server contained a hidden PHP execution path. The compromised ZIP, tar.gz, and tar.bz2 archives came from the trusted download channel.
+    OpenX sat between publishers, advertisers, and every visitor who loaded an ad slot. In 2013, heise Security found that official OpenX Source 2.8.10 downloads from the project server contained a hidden PHP execution path. The compromised ZIP, tar.gz, and tar.bz2 archives came from the trusted download channel, and the backdoor did not sit in plain view inside them: it rode in a nested archive, `openx-2.8.10/etc/plugins/openXVideoAds.zip`, the plugin bundle that a normal installation unpacks.
 
-    The attacker hid PHP inside `flowplayer-3.1.1.min.js`, a JavaScript file nested under the video ads plugin. OpenX delivery code then read that file through `MAX_commonReadFile` and reached it through `require_once`, turning an innocuous-looking asset into server-side code. Rapid7 later described exploitation as a single request with a ROT13-encoded and reversed payload.
+    The attacker hid PHP inside `flowplayer-3.1.1.min.js`, a JavaScript file nested under the video ads plugin. That file alone would have been inert, because web servers do not hand `.js` files to the PHP interpreter. Three files were modified, not one. In `player.delivery.php`, the `echo file_get_contents()` call that 2.8.9 and 2.8.11 used to serve the player became `MAX_commonReadFile()`. In `lib/max/Delivery/common.php`, the attacker injected the function that call now resolved to: `function MAX_commonReadFile($arg) { if($conf['debug']['read']){ echo file_get_contents($arg); } require_once($arg); }`. That second edit is what converted a read into an include, turning an innocuous-looking asset into server-side code. Rapid7 later described exploitation as a single request with a ROT13-encoded and reversed payload.
 
-    Heise reported that the backdoor appeared to have been present for almost a year and was already being used against ad servers. OpenX 2.8.10 was the current open-source release, so administrators who installed or refreshed the package during the window could inherit the backdoor as part of ordinary deployment.
+    The backdoor was already being used against ad servers. Heise confirmed it in a download from November 2012, put its own body text at "at least three quarters of a year" unnoticed, and summarized that as almost a year; Rapid7 dated the exposure from at least November 2012 through August 2013, the roughly nine-month window recorded here. OpenX 2.8.10 was the current open-source release, so administrators who installed or refreshed the package during the window could inherit the backdoor as part of ordinary deployment.
 
     Remediation required more than removing one line. Acunetix and other advisories recommended upgrading to OpenX 2.8.11 or later, auditing the server for prior compromise, rotating credentials and API keys, and considering a clean reinstall if exploitation evidence existed. A compromised ad server could also deliver attacks to site visitors.
+  pull_quote:
+    text: >-
+      2.8.9 and 2.8.11 read the video player file with `echo
+      file_get_contents()`; in 2.8.10 that call became `MAX_commonReadFile()`,
+      whose `require_once($arg)` made PHP parse a minified JavaScript asset as
+      source.
+    caption: the read that became a require
+    after: 2
   start_date: 2012-11-01
   end_date: 2013-08-08
   target:
@@ -48,6 +56,8 @@
       role: distribution
     - uri: https://www.openx.org/download/openx-source-2.8.10.tar.bz2
       role: distribution
+    - uri: https://www.opensource.be/openx/files/openx-2.8.10.zip
+      role: mirror
     - uri: 
         https://web.archive.org/web/20131201000000*/http://www.openx.org/download/openx-source-2.8.10.zip
       role: distribution
@@ -64,7 +74,8 @@
         https://www.unmaskparasites.com/2013/12/05/ad-networks-openx-source-compromised/
       role: mirror
     hashes:
-    - md5:3cf59a7b8996dcc52370cf918f248ee4
+    - md5:46fbfea4c901de2b168f871eb824875a
+    - sha256:de81072439b47e701f5f4aa2b3c49c31ef0c43d9cf71e6f0a94ca3434a6ba276
     - md5:558c80e601fb996e5f6bbc99a9ee0051
     - md5:fa4991d5fd3bf4a947b6ab0b15ce10b2
     - md5:5014c31b479094c0b32221ae1f1473ac
@@ -86,12 +97,32 @@
       value: Obfuscated PHP was hidden inside a JavaScript file in the video ads plugin.
     - kind: observable
       value: Exploit payloads could be sent as ROT13-encoded and reversed content.
+    evidence:
+    - kind: source_archive
+      path: samples/openx/before/openx-2.8.9.zip
+      role: clean_predecessor
+    - kind: source_archive
+      path: samples/openx/during/openx-2.8.10.zip
+      role: malicious_distribution
+    - kind: source_archive
+      path: samples/openx/after/openx-2.8.11.zip
+      role: clean_remediation
     notes:
     - Heise reported that the compromised official downloads covered the ZIP, tgz, and 
       tbz2 archives and that the backdoor appeared to have been present for almost a 
       year.
     - Acunetix recommends upgrading to OpenX 2.8.11 or later and auditing for prior 
       unauthorized access before trusting an in-place upgrade.
+    - >-
+      The MD5 values 6b3459f16238aa717f379565650cb0cf,
+      558c80e601fb996e5f6bbc99a9ee0051,
+      fa4991d5fd3bf4a947b6ab0b15ce10b2, and
+      5014c31b479094c0b32221ae1f1473ac identify the embedded plugin archive
+      and its three malicious files, not the outer OpenX release ZIP.
+    - >-
+      The previously listed MD5 3cf59a7b8996dcc52370cf918f248ee4 had no
+      supporting source and was removed. The captured malicious release ZIP is
+      MD5 46fbfea4c901de2b168f871eb824875a.
   references:
   - url: 
       https://www.clearmind.cc/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/
@@ -115,3 +146,7 @@
     title: 'Achtung: Anzeigen-Server OpenX enthält eine Hintertür'
   - url: https://www.rapid7.com/db/modules/exploit/multi/http/openx_backdoor_php/
     title: OpenX Backdoor PHP Code Execution
+  - url: https://www.opensource.be/openx/
+    title: phpAds, OpenAds, and OpenX GPL release archive
+  - url: https://www.itnews.com.au/news/openx-releases-malvertising-backdoor-fix-352776
+    title: OpenX releases malvertising backdoor fix

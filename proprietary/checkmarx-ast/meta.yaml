@@ -1,19 +1,32 @@
----
 - id: checkmarx-march-2026
   title: Checkmarx tools stole CI secrets
-  synopsis: TeamPCP poisoned Checkmarx GitHub Actions and OpenVSX extensions. The
-    payload hunted CI, cloud, SSH, Kubernetes, and developer credentials from trusted
-    scanning tools.
-  story: |
-    The March Checkmarx incident began in the places developers trust by habit. Malicious OpenVSX extensions appeared early on March 23. Later that day, Checkmarx GitHub Actions tags were altered so CI jobs pulled attacker code as normal scanner setup.
+  synopsis: >-
+    TeamPCP poisoned Checkmarx GitHub Actions and OpenVSX extensions. The payload hunted CI, cloud,
+    SSH, Kubernetes, and developer credentials from trusted scanning tools.
+  story: >
+    The March Checkmarx incident began in the places developers trust by habit. Malicious OpenVSX
+    extensions appeared early on March 23. Later that day, Checkmarx GitHub Actions tags were
+    altered so CI jobs pulled attacker code as normal scanner setup.
 
-    The GitHub Actions payload changed the action startup path and ran `setup.sh`. It searched runners for environment variables, SSH keys, cloud metadata, Kubernetes tokens, and GitHub Actions process memory. It encrypted the collection, wrote `tpcp.tar.gz`, and tried to send it to TeamPCP infrastructure, with GitHub release upload as a fallback.
 
-    The OpenVSX payload used the IDE instead of CI. Compromised `ast-results` and `cx-dev-assist` VSIX files loaded a malicious checker, gated execution on the presence of cloud credentials, fetched a second stage, then used the same credential-stealing grammar. On developer machines it could install a user-level systemd persistence loop.
+    The GitHub Actions payload changed the action startup path and ran `setup.sh`. It searched
+    runners for environment variables, SSH keys, cloud metadata, Kubernetes tokens, and GitHub
+    Actions process memory. It encrypted the collection, wrote `tpcp.tar.gz`, and tried to send it
+    to TeamPCP infrastructure, with GitHub release upload as a fallback.
 
-    Checkmarx removed the affected artifacts, deleted older GitHub versions, rotated credentials, and advised users to move to verified releases. The incident is recorded as its own attack because it compromised Checkmarx-controlled distribution channels on March 23, even though the technique and infrastructure tie it to the wider TeamPCP campaign.
-  start_date: 2026-03-23
-  end_date: 2026-03-23
+
+    The OpenVSX payload used the IDE instead of CI. Compromised `ast-results` and `cx-dev-assist`
+    VSIX files loaded a malicious checker, gated execution on the presence of cloud credentials,
+    fetched a second stage, then used the same credential-stealing grammar. On developer machines it
+    could install a user-level systemd persistence loop.
+
+
+    Checkmarx removed the affected artifacts, deleted older GitHub versions, rotated credentials,
+    and advised users to move to verified releases. The incident is recorded as its own attack
+    because it compromised Checkmarx-controlled distribution channels on March 23, even though the
+    technique and infrastructure tie it to the wider TeamPCP campaign.
+  start_date: 2026-03-23T00:00:00.000Z
+  end_date: 2026-03-23T00:00:00.000Z
   target:
     name: Checkmarx developer tooling
     kind: developer_tooling
@@ -29,174 +42,207 @@
     transitive: true
   impact:
     types:
-    - credential_theft
-    - persistence
+      - credential_theft
+      - persistence
     users: 0
   locations:
-  - uri: https://github.com/Checkmarx/ast-github-action
-    role: distribution
-  - uri: https://github.com/Checkmarx/kics-github-action
-    role: distribution
-  - uri: https://open-vsx.org/extension/checkmarx/ast-results
-    role: distribution
-  - uri: https://open-vsx.org/extension/checkmarx/cx-dev-assist
-    role: distribution
-  indicators:
-  - kind: domain
-    value: checkmarx.zone
-  - kind: ip
-    value: 83.142.209.11
-  - kind: file
-    value: setup.sh
-  - kind: file
-    value: environmentAuthChecker.js
-  - kind: file
-    value: checkmarx-util-1.0.4.tgz
-  - kind: file
-    value: tpcp.tar.gz
-  - kind: file
-    value: sysmon.py
-  - kind: observable
-    value: docs-tpcp GitHub repository used as fallback exfiltration path.
-  - kind: observable
-    value: OpenVSX extensions fetched checkmarx-util-1.0.4.tgz from checkmarx.zone/static.
-  artifacts:
-  - id: checkmarx-ast-github-action
-    name: Checkmarx AST GitHub Action
-    package: checkmarx/ast-github-action
-    ecosystem: github actions
-    kind: action
-    website: https://github.com
-    repo: https://github.com/Checkmarx/ast-github-action
-    start_date: '2026-03-23T12:58:00Z'
-    end_date: '2026-03-23T16:50:00Z'
-    versions:
-    - 2.3.32
-    fixed_versions:
-    - 2.3.33
-    locations:
     - uri: https://github.com/Checkmarx/ast-github-action
       role: distribution
-    references:
-    - url: https://checkmarx.com/blog/ongoing-security-updates/
-      title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-    - url: https://www.wiz.io/blog/teampcp-attack-kics-github-action
-      title: 'KICS GitHub Action Compromised: TeamPCP Strikes Again in Supply Chain
-        Attack'
-    notes:
-    - Checkmarx later identified 2.3.32 and floating main references that resolved
-      during the exposure window as compromised; safe replacement guidance pointed
-      users to v2.3.33 or later.
-    - Floating main references that resolved during the March 2026 exposure window
-      were affected.
-  - id: checkmarx-kics-github-action
-    name: Checkmarx KICS GitHub Action
-    package: checkmarx/kics-github-action
-    ecosystem: github actions
-    kind: action
-    website: https://github.com
-    repo: https://github.com/Checkmarx/kics-github-action
-    start_date: '2026-03-23T12:58:00Z'
-    end_date: '2026-03-23T16:50:00Z'
-    fixed_versions:
-    - 2.1.20
-    locations:
     - uri: https://github.com/Checkmarx/kics-github-action
       role: distribution
-    references:
-    - url: https://checkmarx.com/blog/ongoing-security-updates/
-      title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-    - url: https://www.wiz.io/blog/teampcp-attack-kics-github-action
-      title: 'KICS GitHub Action Compromised: TeamPCP Strikes Again in Supply Chain
-        Attack'
-    - url: https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags
-      title: 'Checkmarx KICS GitHub Action Compromised: Malware Injected in All Git
-        Tags'
-    notes:
-    - Third-party reporting described all release tags as poisoned with setup.sh changes;
-      Checkmarx described any floating reference that resolved during the window as
-      affected.
-    - All active tags during the March 2026 exposure window were reported affected.
-    - Floating main references that resolved during the March 2026 exposure window
-      were affected.
-  - id: checkmarx-ast-results
-    name: Checkmarx AST Results OpenVSX extension
-    package: checkmarx.ast-results
-    ecosystem: openvsx
-    kind: extension
-    repo: https://open-vsx.org/extension/checkmarx/ast-results
-    start_date: '2026-03-23T02:53:00Z'
-    end_date: '2026-03-23T15:41:00Z'
-    versions:
-    - 2.53.0
-    locations:
     - uri: https://open-vsx.org/extension/checkmarx/ast-results
       role: distribution
-    hashes:
-    - sha256:65bd72fcddaf938cefdf55b3323ad29f649a65d4ddd6aea09afa974dfc7f105d
-    indicators:
-    - kind: file_sha256
-      value: ast-results-2.53.0.vsix 65bd72fcddaf938cefdf55b3323ad29f649a65d4ddd6aea09afa974dfc7f105d
-    - kind: file_sha256
-      value: environmentAuthChecker.js 527f795a201a6bc114394c4cfd1c74dce97381989f51a4661aafbc93a4439e90
-    references:
-    - url: https://checkmarx.com/blog/ongoing-security-updates/
-      title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-    - url: https://www.wiz.io/blog/teampcp-attack-kics-github-action
-      title: 'KICS GitHub Action Compromised: TeamPCP Strikes Again in Supply Chain
-        Attack'
-  - id: checkmarx-cx-dev-assist
-    name: Checkmarx Developer Assist OpenVSX extension
-    package: checkmarx.cx-dev-assist
-    ecosystem: openvsx
-    kind: extension
-    repo: https://open-vsx.org/extension/checkmarx/cx-dev-assist
-    start_date: '2026-03-23T02:53:00Z'
-    end_date: '2026-03-23T15:41:00Z'
-    versions:
-    - 1.7.0
-    locations:
     - uri: https://open-vsx.org/extension/checkmarx/cx-dev-assist
       role: distribution
-    hashes:
-    - sha256:744c9d61b66bcd2bb5474d9afeee6c00bb7e0cd32535781da188b80eb59383e0
-    indicators:
-    - kind: file_sha256
-      value: cx-dev-assist-1.7.0.vsix 744c9d61b66bcd2bb5474d9afeee6c00bb7e0cd32535781da188b80eb59383e0
-    - kind: file_sha256
-      value: environmentAuthChecker.js 527f795a201a6bc114394c4cfd1c74dce97381989f51a4661aafbc93a4439e90
-    references:
+  indicators:
+    - kind: domain
+      value: checkmarx.zone
+    - kind: ip
+      value: 83.142.209.11
+    - kind: file
+      value: setup.sh
+    - kind: file
+      value: environmentAuthChecker.js
+    - kind: file
+      value: checkmarx-util-1.0.4.tgz
+    - kind: file
+      value: tpcp.tar.gz
+    - kind: file
+      value: sysmon.py
+    - kind: observable
+      value: docs-tpcp GitHub repository used as fallback exfiltration path.
+    - kind: observable
+      value: OpenVSX extensions fetched checkmarx-util-1.0.4.tgz from checkmarx.zone/static.
+  artifacts:
+    - id: checkmarx-ast-github-action
+      name: Checkmarx AST GitHub Action
+      package: checkmarx/ast-github-action
+      ecosystem: github actions
+      kind: action
+      website: https://github.com
+      repo: https://github.com/Checkmarx/ast-github-action
+      start_date: '2026-03-23T12:58:00Z'
+      end_date: '2026-03-23T16:50:00Z'
+      versions:
+        - 2.3.32
+      fixed_versions:
+        - 2.3.33
+      locations:
+        - uri: https://github.com/Checkmarx/ast-github-action
+          role: distribution
+      references:
+        - url: https://checkmarx.com/blog/ongoing-security-updates/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+        - url: https://www.wiz.io/blog/teampcp-attack-kics-github-action
+          title: 'KICS GitHub Action Compromised: TeamPCP Strikes Again in Supply Chain Attack'
+      notes:
+        - >-
+          Checkmarx later identified 2.3.32 and floating main references that resolved during the
+          exposure window as compromised; safe replacement guidance pointed users to v2.3.33 or
+          later.
+        - >-
+          Floating main references that resolved during the March 2026 exposure window were
+          affected.
+        - >-
+          Package coordinates recorded for the affected releases:
+          pkg:github/Checkmarx/ast-github-action@2.3.32.
+    - id: checkmarx-kics-github-action
+      name: Checkmarx KICS GitHub Action
+      package: checkmarx/kics-github-action
+      ecosystem: github actions
+      kind: action
+      website: https://github.com
+      repo: https://github.com/Checkmarx/kics-github-action
+      start_date: '2026-03-23T12:58:00Z'
+      end_date: '2026-03-23T16:50:00Z'
+      fixed_versions:
+        - 2.1.20
+      locations:
+        - uri: https://github.com/Checkmarx/kics-github-action
+          role: distribution
+      references:
+        - url: https://checkmarx.com/blog/ongoing-security-updates/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+        - url: https://www.wiz.io/blog/teampcp-attack-kics-github-action
+          title: 'KICS GitHub Action Compromised: TeamPCP Strikes Again in Supply Chain Attack'
+        - url: >-
+            https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags
+          title: 'Checkmarx KICS GitHub Action Compromised: Malware Injected in All Git Tags'
+      notes:
+        - >-
+          Third-party reporting described all release tags as poisoned with setup.sh changes;
+          Checkmarx described any floating reference that resolved during the window as affected.
+        - All active tags during the March 2026 exposure window were reported affected.
+        - >-
+          Floating main references that resolved during the March 2026 exposure window were
+          affected.
+    - id: checkmarx-ast-results
+      name: Checkmarx AST Results OpenVSX extension
+      package: checkmarx.ast-results
+      ecosystem: openvsx
+      kind: extension
+      repo: https://open-vsx.org/extension/checkmarx/ast-results
+      start_date: '2026-03-23T02:53:00Z'
+      end_date: '2026-03-23T15:41:00Z'
+      versions:
+        - 2.53.0
+      locations:
+        - uri: https://open-vsx.org/extension/checkmarx/ast-results
+          role: distribution
+      hashes:
+        - sha256:65bd72fcddaf938cefdf55b3323ad29f649a65d4ddd6aea09afa974dfc7f105d
+      indicators:
+        - kind: file_sha256
+          value: ast-results-2.53.0.vsix 65bd72fcddaf938cefdf55b3323ad29f649a65d4ddd6aea09afa974dfc7f105d
+        - kind: file_sha256
+          value: >-
+            environmentAuthChecker.js
+            527f795a201a6bc114394c4cfd1c74dce97381989f51a4661aafbc93a4439e90
+      references:
+        - url: https://checkmarx.com/blog/ongoing-security-updates/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+        - url: https://www.wiz.io/blog/teampcp-attack-kics-github-action
+          title: 'KICS GitHub Action Compromised: TeamPCP Strikes Again in Supply Chain Attack'
+      notes:
+        - >-
+          Package coordinates recorded for the affected releases:
+          pkg:vscode/checkmarx/ast-results@2.53.0.
+    - id: checkmarx-cx-dev-assist
+      name: Checkmarx Developer Assist OpenVSX extension
+      package: checkmarx.cx-dev-assist
+      ecosystem: openvsx
+      kind: extension
+      repo: https://open-vsx.org/extension/checkmarx/cx-dev-assist
+      start_date: '2026-03-23T02:53:00Z'
+      end_date: '2026-03-23T15:41:00Z'
+      versions:
+        - 1.7.0
+      locations:
+        - uri: https://open-vsx.org/extension/checkmarx/cx-dev-assist
+          role: distribution
+      hashes:
+        - sha256:744c9d61b66bcd2bb5474d9afeee6c00bb7e0cd32535781da188b80eb59383e0
+      indicators:
+        - kind: file_sha256
+          value: >-
+            cx-dev-assist-1.7.0.vsix
+            744c9d61b66bcd2bb5474d9afeee6c00bb7e0cd32535781da188b80eb59383e0
+        - kind: file_sha256
+          value: >-
+            environmentAuthChecker.js
+            527f795a201a6bc114394c4cfd1c74dce97381989f51a4661aafbc93a4439e90
+      references:
+        - url: https://checkmarx.com/blog/ongoing-security-updates/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+        - url: https://www.wiz.io/blog/teampcp-attack-kics-github-action
+          title: 'KICS GitHub Action Compromised: TeamPCP Strikes Again in Supply Chain Attack'
+      notes:
+        - >-
+          Package coordinates recorded for the affected releases:
+          pkg:vscode/checkmarx/cx-dev-assist@1.7.0.
+  references:
     - url: https://checkmarx.com/blog/ongoing-security-updates/
       title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+    - url: https://checkmarx.com/blog/checkmarx-security-update/
+      title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
     - url: https://www.wiz.io/blog/teampcp-attack-kics-github-action
-      title: 'KICS GitHub Action Compromised: TeamPCP Strikes Again in Supply Chain
-        Attack'
-  references:
-  - url: https://checkmarx.com/blog/ongoing-security-updates/
-    title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-  - url: https://checkmarx.com/blog/checkmarx-security-update/
-    title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-  - url: https://www.wiz.io/blog/teampcp-attack-kics-github-action
-    title: 'KICS GitHub Action Compromised: TeamPCP Strikes Again in Supply Chain
-      Attack'
-  - url: https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags
-    title: 'Checkmarx KICS GitHub Action Compromised: Malware Injected in All Git
-      Tags'
+      title: 'KICS GitHub Action Compromised: TeamPCP Strikes Again in Supply Chain Attack'
+    - url: >-
+        https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags
+      title: 'Checkmarx KICS GitHub Action Compromised: Malware Injected in All Git Tags'
+    - url: https://sysdig.com/blog/teampcp-sandclock-cloud-stealer-checkmarx/
+      title: TeamPCP Deploys SANDCLOCK Cloud Stealer in Checkmarx Breach
+    - url: https://arcticwolf.com/resources/blog/teampcp-supply-chain-attack-checkmarx/
+      title: TeamPCP Supply Chain Attack Targets Checkmarx and Trivy
   campaigns:
-  - checkmarx-vs-teampcp-2026
+    - checkmarx-vs-teampcp-2026
 - id: checkmarx-april-2026
   title: Checkmarx channels shipped stealers
-  synopsis: A second Checkmarx wave hit DockerHub, GitHub Actions, VS Code Marketplace,
-    and OpenVSX. The affected artifacts again put developer and CI credentials at
-    risk.
-  story: |
-    On April 22, Checkmarx found a second wave of malicious artifacts. This time the scope crossed more official channels: a public KICS DockerHub image, the AST GitHub Action, and both Microsoft Marketplace and OpenVSX releases of Checkmarx IDE extensions.
+  synopsis: >-
+    A second Checkmarx wave hit DockerHub, GitHub Actions, VS Code Marketplace, and OpenVSX. The
+    affected artifacts again put developer and CI credentials at risk.
+  story: >
+    On April 22, Checkmarx found a second wave of malicious artifacts. This time the scope crossed
+    more official channels: a public KICS DockerHub image, the AST GitHub Action, and both Microsoft
+    Marketplace and OpenVSX releases of Checkmarx IDE extensions.
 
-    The Docker image window was short, less than thirty minutes. The extension windows were longer, ending first in the Microsoft marketplace and later in OpenVSX. Checkmarx said older known-safe versions were not overwritten, so the risk sat in new tags, mutable image tags, and auto-update paths that resolved during the exposure windows.
 
-    The recommended response matched the payload's job. Block TeamPCP lookalike infrastructure, pin immutable SHAs, review IDE auto-update behavior, and rotate secrets where affected artifacts ran. A scanner image, action, or IDE extension has proximity to source code, credentials, cloud metadata, and deployment material.
+    The Docker image window was short, less than thirty minutes. The extension windows were longer,
+    ending first in the Microsoft marketplace and later in OpenVSX. Checkmarx said older known-safe
+    versions were not overwritten, so the risk sat in new tags, mutable image tags, and auto-update
+    paths that resolved during the exposure windows.
 
-    Checkmarx later linked the broader incident to credentials obtained after the March supply-chain compromise, reported March 30 repository data exfiltration, and said leaked material appeared on April 25. This record tracks the April artifact distribution wave, not the later disclosure event.
+
+    The recommended response matched the payload's job. Block TeamPCP lookalike infrastructure, pin
+    immutable SHAs, review IDE auto-update behavior, and rotate secrets where affected artifacts
+    ran. A scanner image, action, or IDE extension has proximity to source code, credentials, cloud
+    metadata, and deployment material.
+
+
+    Checkmarx later linked the broader incident to credentials obtained after the March supply-chain
+    compromise, reported March 30 repository data exfiltration, and said leaked material appeared on
+    April 25. This record tracks the April artifact distribution wave, not the later disclosure
+    event.
   start_date: '2026-04-22T12:31:35.883Z'
   end_date: '2026-04-22T21:20:00Z'
   target:
@@ -214,162 +260,218 @@
     transitive: true
   impact:
     types:
-    - credential_theft
+      - credential_theft
     users: 0
   locations:
-  - uri: https://github.com/Checkmarx/ast-github-action
-    role: distribution
-  - uri: https://hub.docker.com/r/checkmarx/kics
-    role: distribution
-  - uri: https://open-vsx.org/extension/checkmarx/ast-results
-    role: distribution
-  - uri: https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results
-    role: distribution
-  - uri: https://open-vsx.org/extension/checkmarx/cx-dev-assist
-    role: distribution
-  - uri: https://marketplace.visualstudio.com/items?itemName=checkmarx.cx-dev-assist
-    role: distribution
-  indicators:
-  - kind: domain
-    value: checkmarx.cx
-  - kind: domain
-    value: audit.checkmarx.cx
-  - kind: domain
-    value: updates.checkmarx.cx
-  - kind: ip
-    value: 91.195.240.123
-  - kind: ip
-    value: 94.154.172.43
-  - kind: ip
-    value: 94.154.172.183
-  - kind: observable
-    value: Checkmarx reported March 30 data exfiltration from GitHub repositories.
-  - kind: observable
-    value: Checkmarx reported April 25 dark-web publication of data related to Checkmarx.
-  artifacts:
-  - id: checkmarx-ast-github-action
-    name: Checkmarx AST GitHub Action
-    package: checkmarx/ast-github-action
-    ecosystem: github actions
-    kind: action
-    website: https://github.com
-    repo: https://github.com/Checkmarx/ast-github-action
-    start_date: '2026-04-22T14:17:59Z'
-    end_date: '2026-04-22T15:41:31Z'
-    versions:
-    - 2.3.35
-    fixed_versions:
-    - 2.3.36
-    locations:
     - uri: https://github.com/Checkmarx/ast-github-action
       role: distribution
-    references:
-    - url: https://checkmarx.com/blog/ongoing-security-updates/
-      title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-    - url: https://checkmarx.com/blog/checkmarx-security-update-april-22/
-      title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-  - id: checkmarx-kics
-    name: Checkmarx KICS DockerHub image
-    package: checkmarx/kics
-    ecosystem: dockerhub
-    kind: oci_image
-    website: https://hub.docker.com
-    repo: https://hub.docker.com/r/checkmarx/kics
-    start_date: '2026-04-22T12:31:35.883Z'
-    end_date: '2026-04-22T12:59:46.562Z'
-    versions:
-    - v2.1.20-debian
-    - v2.1.21-debian
-    - v2.1.21
-    - v2.1.20
-    locations:
     - uri: https://hub.docker.com/r/checkmarx/kics
       role: distribution
-    references:
-    - url: https://checkmarx.com/blog/ongoing-security-updates/
-      title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-    - url: https://checkmarx.com/blog/checkmarx-security-update-april-22/
-      title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-    notes:
-    - The mutable debian Docker tag was reported affected.
-    - The mutable alpine Docker tag was reported affected.
-    - A mutable latest tag or release channel was reported affected; it is recorded
-      as scope rather than a fixed version identifier.
-    - Checkmarx published truncated Docker image digests; they are intentionally not
-      recorded as hashes because they are not complete SHA-256 values.
-  - id: checkmarx-ast-results
-    name: Checkmarx AST Results extension
-    package: checkmarx.ast-results
-    ecosystem: vscode marketplace
-    kind: extension
-    repo: https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results
-    start_date: '2026-04-22T13:06:00Z'
-    end_date: '2026-04-22T21:20:00Z'
-    versions:
-    - '2.63'
-    - '2.66'
-    fixed_versions:
-    - 2.67.0
-    locations:
     - uri: https://open-vsx.org/extension/checkmarx/ast-results
       role: distribution
     - uri: https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results
       role: distribution
-    references:
-    - url: https://checkmarx.com/blog/ongoing-security-updates/
-      title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-    - url: https://checkmarx.com/blog/checkmarx-security-update-april-22/
-      title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-    notes:
-    - The Microsoft Marketplace exposure ended at 2026-04-22 17:48:00 UTC.
-    - The OpenVSX exposure ended at 2026-04-22 21:20:00 UTC.
-  - id: checkmarx-cx-dev-assist
-    name: Checkmarx Developer Assist extension
-    package: checkmarx.cx-dev-assist
-    ecosystem: vscode marketplace
-    kind: extension
-    repo: https://marketplace.visualstudio.com/items?itemName=checkmarx.cx-dev-assist
-    start_date: '2026-04-22T13:06:00Z'
-    end_date: '2026-04-22T21:20:00Z'
-    versions:
-    - '1.17'
-    - '1.19'
-    fixed_versions:
-    - 1.18.0
-    - 1.20.0
-    locations:
     - uri: https://open-vsx.org/extension/checkmarx/cx-dev-assist
       role: distribution
     - uri: https://marketplace.visualstudio.com/items?itemName=checkmarx.cx-dev-assist
       role: distribution
-    references:
+  indicators:
+    - kind: domain
+      value: checkmarx.cx
+    - kind: domain
+      value: audit.checkmarx.cx
+    - kind: domain
+      value: updates.checkmarx.cx
+    - kind: ip
+      value: 91.195.240.123
+    - kind: ip
+      value: 94.154.172.43
+    - kind: ip
+      value: 94.154.172.183
+    - kind: observable
+      value: Checkmarx reported March 30 data exfiltration from GitHub repositories.
+    - kind: observable
+      value: Checkmarx reported April 25 dark-web publication of data related to Checkmarx.
+  artifacts:
+    - id: checkmarx-ast-github-action
+      name: Checkmarx AST GitHub Action
+      package: checkmarx/ast-github-action
+      ecosystem: github actions
+      kind: action
+      website: https://github.com
+      repo: https://github.com/Checkmarx/ast-github-action
+      start_date: '2026-04-22T14:17:59Z'
+      end_date: '2026-04-22T15:41:31Z'
+      versions:
+        - 2.3.35
+      fixed_versions:
+        - 2.3.36
+      locations:
+        - uri: https://github.com/Checkmarx/ast-github-action
+          role: distribution
+      references:
+        - url: https://checkmarx.com/blog/ongoing-security-updates/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+        - url: https://checkmarx.com/blog/checkmarx-security-update-april-22/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+      notes:
+        - >-
+          Package coordinates recorded for the affected releases:
+          pkg:github/Checkmarx/ast-github-action@2.3.35.
+    - id: checkmarx-kics
+      name: Checkmarx KICS DockerHub image
+      package: checkmarx/kics
+      ecosystem: dockerhub
+      kind: oci_image
+      website: https://hub.docker.com
+      repo: https://hub.docker.com/r/checkmarx/kics
+      start_date: '2026-04-22T12:31:35.883Z'
+      end_date: '2026-04-22T12:59:46.562Z'
+      versions:
+        - v2.1.20-debian
+        - v2.1.21-debian
+        - v2.1.21
+        - v2.1.20
+      locations:
+        - uri: https://hub.docker.com/r/checkmarx/kics
+          role: distribution
+      hashes:
+        - sha256:2588a44890263a8185bd5d9fadb6bc9220b60245dbcbc4da35e1b62a6f8c230d
+        - sha256:d186161ae8e33cd7702dd2a6c0337deb14e2b178542d232129c0da64b1af06e4
+        - sha256:415610a42c5b51347709e315f5efb6fffa588b6ebc1b95b24abf28088347791b
+        - sha256:222e6bfed0f3bb1937bf5e719a2342871ccd683ff1c0cb967c8e31ea58beaf7b
+        - sha256:a6871deb0480e1205c1daff10cedf4e60ad951605fd1a4efaca0a9c54d56d1cb
+        - sha256:ff7b0f114f87c67402dfc2459bb3d8954dd88e537b0e459482c04cffa26c1f07
+        - sha256:a0d9366f6f0166dcbf92fcdc98e1a03d2e6210e8d7e8573f74d50849130651a0
+        - sha256:26e8e9c5e53c972997a278ca6e12708b8788b70575ca013fd30bfda34ab5f48f
+        - sha256:7391b531a07fccbbeaf59a488e1376cfe5b27aef757430a36d6d3a087c610322
+      references:
+        - url: https://checkmarx.com/blog/ongoing-security-updates/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+        - url: https://checkmarx.com/blog/checkmarx-security-update-april-22/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+        - url: >-
+            https://www.docker.com/blog/trivy-kics-and-the-shape-of-supply-chain-attacks-so-far-in-2026/
+          title: Trivy, KICS, and the shape of supply chain attacks so far in 2026
+      notes:
+        - The mutable debian Docker tag was reported affected.
+        - The mutable alpine Docker tag was reported affected.
+        - >-
+          A mutable latest tag or release channel was reported affected; it is recorded as scope
+          rather than a fixed version identifier.
+        - >-
+          Hashes are ordered as the alpine/v2.1.20/v2.1.21 index, amd64 image, and arm64 image; the
+          debian/v2.1.20-debian/v2.1.21-debian index, amd64 image, and arm64 image; then the latest
+          index, amd64 image, and arm64 image.
+        - >-
+          Docker published these nine complete OCI index and platform-manifest digests. Checkmarx
+          also listed six additional truncated values, which are intentionally not recorded because
+          they are not complete SHA-256 digests.
+        - >-
+          Package coordinates recorded for the affected releases: pkg:docker/checkmarx/kics@v2.1.21,
+          pkg:docker/checkmarx/kics@v2.1.20-debian, pkg:docker/checkmarx/kics@v2.1.21-debian,
+          pkg:docker/checkmarx/kics@v2.1.20.
+    - id: checkmarx-ast-results
+      name: Checkmarx AST Results extension
+      package: checkmarx.ast-results
+      ecosystem: vscode marketplace
+      kind: extension
+      repo: https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results
+      start_date: '2026-04-22T13:06:00Z'
+      end_date: '2026-04-22T21:20:00Z'
+      versions:
+        - '2.63'
+        - '2.66'
+      fixed_versions:
+        - 2.67.0
+      locations:
+        - uri: https://open-vsx.org/extension/checkmarx/ast-results
+          role: distribution
+        - uri: https://marketplace.visualstudio.com/items?itemName=checkmarx.ast-results
+          role: distribution
+      references:
+        - url: https://checkmarx.com/blog/ongoing-security-updates/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+        - url: https://checkmarx.com/blog/checkmarx-security-update-april-22/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+      notes:
+        - The Microsoft Marketplace exposure ended at 2026-04-22 17:48:00 UTC.
+        - The OpenVSX exposure ended at 2026-04-22 21:20:00 UTC.
+        - >-
+          Package coordinates recorded for the affected releases:
+          pkg:vscode/checkmarx/ast-results@2.63, pkg:vscode/checkmarx/ast-results@2.66.
+    - id: checkmarx-cx-dev-assist
+      name: Checkmarx Developer Assist extension
+      package: checkmarx.cx-dev-assist
+      ecosystem: vscode marketplace
+      kind: extension
+      repo: https://marketplace.visualstudio.com/items?itemName=checkmarx.cx-dev-assist
+      start_date: '2026-04-22T13:06:00Z'
+      end_date: '2026-04-22T21:20:00Z'
+      versions:
+        - '1.17'
+        - '1.19'
+      fixed_versions:
+        - 1.18.0
+        - 1.20.0
+      locations:
+        - uri: https://open-vsx.org/extension/checkmarx/cx-dev-assist
+          role: distribution
+        - uri: https://marketplace.visualstudio.com/items?itemName=checkmarx.cx-dev-assist
+          role: distribution
+      references:
+        - url: https://checkmarx.com/blog/ongoing-security-updates/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+        - url: https://checkmarx.com/blog/checkmarx-security-update-april-22/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+      notes:
+        - The Microsoft Marketplace exposure ended at 2026-04-22 17:48:00 UTC.
+        - The OpenVSX exposure ended at 2026-04-22 21:20:00 UTC.
+        - >-
+          Package coordinates recorded for the affected releases:
+          pkg:vscode/checkmarx/cx-dev-assist@1.17, pkg:vscode/checkmarx/cx-dev-assist@1.19.
+  references:
     - url: https://checkmarx.com/blog/ongoing-security-updates/
       title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
     - url: https://checkmarx.com/blog/checkmarx-security-update-april-22/
       title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-    notes:
-    - The Microsoft Marketplace exposure ended at 2026-04-22 17:48:00 UTC.
-    - The OpenVSX exposure ended at 2026-04-22 21:20:00 UTC.
-  references:
-  - url: https://checkmarx.com/blog/ongoing-security-updates/
-    title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-  - url: https://checkmarx.com/blog/checkmarx-security-update-april-22/
-    title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+    - url: https://www.thehackernews.com/2026/04/teampcp-checkmarx-kics-docker-hub-supply-chain.html
+      title: TeamPCP Targets Checkmarx KICS Docker Image in New Supply Chain Attack
+    - url: https://socket.dev/blog/teampcp-strikes-checkmarx-kics-docker-hub
+      title: TeamPCP Claims Responsibility for Checkmarx KICS Docker Hub Compromise
+    - url: https://www.gitguardian.com/blog/teampcp-compromises-checkmarx-kics-docker/
+      title: TeamPCP Compromises Checkmarx KICS on Docker Hub
   campaigns:
-  - checkmarx-vs-teampcp-2026
+    - checkmarx-vs-teampcp-2026
 - id: checkmarx-may-2026
   title: Checkmarx Jenkins plugin shipped backdoor
-  synopsis: A malicious 2026.5.09 Checkmarx AST Scanner release reached the Jenkins
-    Marketplace. The plugin put CI systems at risk by running attacker code inside
-    trusted build infrastructure.
-  story: |
-    TeamPCP returned to Checkmarx through a channel built for trust: the Jenkins AST Scanner plugin. Checkmarx said a modified version of the plugin was published to the Jenkins Marketplace, where Jenkins controllers could pull it as a normal security-scanning integration. The compromised version was 2026.5.09.
+  synopsis: >-
+    A malicious 2026.5.09 Checkmarx AST Scanner release reached the Jenkins Marketplace. The plugin
+    put CI systems at risk by running attacker code inside trusted build infrastructure.
+  story: >
+    TeamPCP returned to Checkmarx through a channel built for trust: the Jenkins AST Scanner plugin.
+    Checkmarx said a modified version of the plugin was published to the Jenkins Marketplace, where
+    Jenkins controllers could pull it as a normal security-scanning integration. The compromised
+    version was 2026.5.09.
 
-    The impact was not limited to the plugin process itself. A Jenkins scanner plugin runs inside CI/CD infrastructure, close to source code, environment variables, credentials stores, cloud tokens, Kubernetes material, and deployment secrets. That makes a backdoored security tool a direct path into the systems it was meant to inspect.
 
-    Public reporting also described GitHub-side defacement. The plugin repository was renamed with a TeamPCP taunt and its description claimed Checkmarx failed to rotate secrets, matching the actor's habit of pairing payload delivery with public humiliation. The incident followed March and April Checkmarx artifact compromises, so this record stays separate by date and artifact scope while preserving the repeated-access pattern.
+    The impact was not limited to the plugin process itself. A Jenkins scanner plugin runs inside
+    CI/CD infrastructure, close to source code, environment variables, credentials stores, cloud
+    tokens, Kubernetes material, and deployment secrets. That makes a backdoored security tool a
+    direct path into the systems it was meant to inspect.
 
-    Checkmarx published malicious artifact hashes for the HPI, JAR, and POM files and told users to ensure they were on 2.0.13-829.vc72453fa_1c16 from December 17, 2025 or an earlier safe version while clean releases were restored. Jenkins update metadata later showed clean May 9 releases 2.0.13-847.v08c0072b_2fd5 and 2.0.13-848.v76e89de8a_053.
+
+    Public reporting also described GitHub-side defacement. The plugin repository was renamed with a
+    TeamPCP taunt and its description claimed Checkmarx failed to rotate secrets, matching the
+    actor's habit of pairing payload delivery with public humiliation. The incident followed March
+    and April Checkmarx artifact compromises, so this record stays separate by date and artifact
+    scope while preserving the repeated-access pattern.
+
+
+    Checkmarx published malicious artifact hashes for the HPI, JAR, and POM files and told users to
+    ensure they were on 2.0.13-829.vc72453fa_1c16 from December 17, 2025 or an earlier safe version
+    while clean releases were restored. Jenkins update metadata later showed clean May 9 releases
+    2.0.13-847.v08c0072b_2fd5 and 2.0.13-848.v76e89de8a_053.
   start_date: '2026-05-09T01:25:00Z'
   end_date: '2026-05-10T08:47:00Z'
   target:
@@ -387,68 +489,79 @@
     transitive: true
   impact:
     types:
-    - credential_theft
+      - credential_theft
     users: 0
   locations:
-  - uri: https://plugins.jenkins.io/checkmarx-ast-scanner
-    role: distribution
-  artifacts:
-  - id: checkmarx-ast-scanner
-    name: Checkmarx Jenkins AST plugin
-    package: checkmarx-ast-scanner
-    ecosystem: jenkins marketplace
-    kind: plugin
-    repo: https://plugins.jenkins.io/checkmarx-ast-scanner
-    start_date: '2026-05-09T01:25:00Z'
-    end_date: '2026-05-10T08:47:00Z'
-    versions:
-    - 2026.5.09
-    locations:
     - uri: https://plugins.jenkins.io/checkmarx-ast-scanner
       role: distribution
-    hashes:
-    - sha256:01ff1e56fd59a8fa525d97e670f7f297a1a204331b89b2cd4e36a9abc6419203
-    - sha256:f50a96d26a5b0beb29de4127e82b2bf350c21511e5a43d286e43f798dc6cd53f
-    - sha256:3ddb8967919a801b3c383e58cddceab21138134c6a26560d99e2672e86f36f2a
-    indicators:
-    - kind: file
-      value: checkmarx-ast-scanner-2026.5.09.hpi
-    - kind: file
-      value: checkmarx-ast-scanner-2026.5.09.jar
-    - kind: file
-      value: checkmarx-ast-scanner-2026.5.09.pom
-    - kind: observable
-      value: Jenkins Marketplace release version 2026.5.09.
-    - kind: observable
-      value: GitHub repository renamed to Checkmarx-Fully-Hacked-by-TeamPCP-and-Their-Customers-Should-Cancel-Now.
-    - kind: observable
-      value: Repository description changed to "Checkmarx fails to rotate secrets
-        again. with love - TeamPCP."
-    - kind: observable
-      value: Dune-themed cx-plugins-releases repositories with "A Mini Shai-Hulud
-        has Appeared" descriptions.
-    references:
+  artifacts:
+    - id: checkmarx-ast-scanner
+      name: Checkmarx Jenkins AST plugin
+      package: checkmarx-ast-scanner
+      ecosystem: jenkins marketplace
+      kind: plugin
+      repo: https://plugins.jenkins.io/checkmarx-ast-scanner
+      start_date: '2026-05-09T01:25:00Z'
+      end_date: '2026-05-10T08:47:00Z'
+      versions:
+        - 2026.5.09
+      locations:
+        - uri: https://plugins.jenkins.io/checkmarx-ast-scanner
+          role: distribution
+      hashes:
+        - sha256:01ff1e56fd59a8fa525d97e670f7f297a1a204331b89b2cd4e36a9abc6419203
+        - sha256:f50a96d26a5b0beb29de4127e82b2bf350c21511e5a43d286e43f798dc6cd53f
+        - sha256:3ddb8967919a801b3c383e58cddceab21138134c6a26560d99e2672e86f36f2a
+      indicators:
+        - kind: file
+          value: checkmarx-ast-scanner-2026.5.09.hpi
+        - kind: file
+          value: checkmarx-ast-scanner-2026.5.09.jar
+        - kind: file
+          value: checkmarx-ast-scanner-2026.5.09.pom
+        - kind: observable
+          value: Jenkins Marketplace release version 2026.5.09.
+        - kind: observable
+          value: >-
+            GitHub repository renamed to
+            Checkmarx-Fully-Hacked-by-TeamPCP-and-Their-Customers-Should-Cancel-Now.
+        - kind: observable
+          value: >-
+            Repository description changed to "Checkmarx fails to rotate secrets again. with love -
+            TeamPCP."
+        - kind: observable
+          value: >-
+            Dune-themed cx-plugins-releases repositories with "A Mini Shai-Hulud has Appeared"
+            descriptions.
+      references:
+        - url: https://checkmarx.com/blog/ongoing-security-updates/
+          title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+        - url: https://plugins.jenkins.io/checkmarx-ast-scanner/releases/
+          title: Checkmarx AST Scanner Jenkins Plugin Releases
+      notes:
+        - >-
+          Checkmarx's guidance named 2.0.13-829.vc72453fa_1c16 or earlier as the version line to
+          stay on while the malicious release was avoided.
+        - >-
+          Checkmarx listed the exposure window as 2026-05-09 01:25:00 UTC to 2026-05-10 08:47:00
+          UTC.
+        - >-
+          Jenkins update metadata later listed clean releases 2.0.13-847.v08c0072b_2fd5 and
+          2.0.13-848.v76e89de8a_053, both released on May 9, 2026.
+        - >-
+          Package coordinates recorded for the affected releases:
+          pkg:jenkins/checkmarx-ast-scanner@2026.5.09.
+  references:
     - url: https://checkmarx.com/blog/ongoing-security-updates/
       title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
+    - url: https://socradar.io/blog/checkmarx-jenkins-plugin-teampcp-backdoor/
+      title: Checkmarx Jenkins Plugin Backdoored in New TeamPCP Supply Chain Attack
+    - url: >-
+        https://www.theregister.com/devops/2026/05/11/checkmarx-tackles-another-teampcp-intrusion-as-jenkins-plugin-sabotaged/5237780
+      title: Checkmarx tackles another TeamPCP intrusion as Jenkins plugin sabotaged
+    - url: https://updates.jenkins.io/download/plugins/checkmarx-ast-scanner/
+      title: Checkmarx AST Scanner Jenkins Update Metadata
     - url: https://plugins.jenkins.io/checkmarx-ast-scanner/releases/
       title: Checkmarx AST Scanner Jenkins Plugin Releases
-    notes:
-    - Checkmarx's guidance named 2.0.13-829.vc72453fa_1c16 or earlier as the version
-      line to stay on while the malicious release was avoided.
-    - Checkmarx listed the exposure window as 2026-05-09 01:25:00 UTC to 2026-05-10
-      08:47:00 UTC.
-    - Jenkins update metadata later listed clean releases 2.0.13-847.v08c0072b_2fd5
-      and 2.0.13-848.v76e89de8a_053, both released on May 9, 2026.
-  references:
-  - url: https://checkmarx.com/blog/ongoing-security-updates/
-    title: 'Update: Ongoing Checkmarx Supply Chain Security Incident'
-  - url: https://socradar.io/blog/checkmarx-jenkins-plugin-teampcp-backdoor/
-    title: Checkmarx Jenkins Plugin Backdoored in New TeamPCP Supply Chain Attack
-  - url: https://www.theregister.com/devops/2026/05/11/checkmarx-tackles-another-teampcp-intrusion-as-jenkins-plugin-sabotaged/5237780
-    title: Checkmarx tackles another TeamPCP intrusion as Jenkins plugin sabotaged
-  - url: https://updates.jenkins.io/download/plugins/checkmarx-ast-scanner/
-    title: Checkmarx AST Scanner Jenkins Update Metadata
-  - url: https://plugins.jenkins.io/checkmarx-ast-scanner/releases/
-    title: Checkmarx AST Scanner Jenkins Plugin Releases
   campaigns:
-  - checkmarx-vs-teampcp-2026
+    - checkmarx-vs-teampcp-2026

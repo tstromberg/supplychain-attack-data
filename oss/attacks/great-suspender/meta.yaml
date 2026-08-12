@@ -12,7 +12,7 @@
     The important distribution fact is that the hostile code was in the store package, not in the public GitHub source. Users who trusted automatic extension updates received code that open-source review of the repository would not explain.
 
     Microsoft removed the extension from Edge first. Google later removed it from the Chrome Web Store and force-disabled installed copies on February 4, 2021. Users were left recovering suspended tabs and migrating to forks or alternatives.
-  start_date: 2020-10-01
+  start_date: 2020-10-27
   end_date: 2021-02-04
   target:
     name: thegreatsuspender
@@ -38,25 +38,49 @@
     name: thegreatsuspender
     kind: extension_package
     repo: https://github.com/greatsuspender/thegreatsuspender
-    start_date: 2020-10-01
+    start_date: 2020-10-27
     end_date: 2021-02-04
     versions:
     - 7.1.8
     locations:
+    - uri: https://chrome.google.com/webstore/detail/the-great-suspender/klbibkeccnjlkjkiokjodocebajanakg
+      role: distribution
     - uri: https://github.com/greatsuspender/thegreatsuspender
       role: mirror
+    hashes:
+    - sha256:099d4450357879df940cf72ae56c5f224cd28560b5ccc0e821fb3b4d56f9f6e9
     indicators:
     - kind: version
       value: 7.1.8
     - kind: domain
       value: owebanalytics.com
+    - kind: extension_id
+      value: klbibkeccnjlkjkiokjodocebajanakg
     - kind: observable
       value: Chrome Web Store package diverged from the public GitHub source.
     - kind: observable
       value: Extension loaded obfuscated remote JavaScript with broad web-request permissions.
+    evidence:
+    - kind: sample
+      path: samples/thegreatsuspender/before/the-great-suspender-7.1.6-source.zip
+      role: preceding_clean_source_release
+    - kind: file
+      path: samples/thegreatsuspender/during/owa.tracker-combined-latest.minified.js
+      role: archived_runtime_payload_response
+    - kind: document
+      path: samples/thegreatsuspender/during/crx4chrome-7.1.8-record.html
+      role: malicious_crx_hash_and_size_record
+    - kind: document
+      path: samples/thegreatsuspender/during/github-issue-1263.json
+      role: contemporary_project_analysis
+    notes:
+    - The malicious Web Store CRX remains unavailable; its exact SHA-256 and size are preserved.
+    - The remote server could vary the JavaScript by time or client, so the recovered response is one observed payload only.
   references:
   - url: https://github.com/greatsuspender/thegreatsuspender/issues/1263
     title: 'URGENT: SECURITY: New maintainer is probably malicious'
+  - url: https://www.crx4chrome.com/crx/221789/
+    title: The Great Suspender 7.1.8 CRX archive record
   - url: https://www.theregister.com/2021/02/05/chrome_extension_great_suspender/
     title: Google banishes The Great Suspender from Chrome extension store
   - url: 

@@ -6,11 +6,9 @@
   story: |
     This campaign moved through CI trust one mutable tag at a time. Unit 42 traced the earliest known access to a SpotBugs maintainer PAT leaked in December 2024. Months later, that credential was used to move the reviewdog/action-setup v1 tag to malicious code, placing the attacker inside workflows that trusted the official reviewdog action.
 
-    The reviewdog compromise became the bridge into tj-actions. When tj-actions/changed-files ran a CI workflow that depended on reviewdog/action-setup through tj-actions/eslint-changed-files, the malicious reviewdog code stole a GitHub token with write access to tj-actions/changed-files. The attacker then used that token to point changed-files tags at malicious commits.
+    The reviewdog compromise became the bridge into tj-actions. When tj-actions/changed-files ran a CI workflow that depended on reviewdog/action-setup through tj-actions/eslint-changed-files, the malicious reviewdog code stole a GitHub token with write access to tj-actions/changed-files. The attacker then used that token to point changed-files tags at malicious commits. The first abuse appears to have targeted Coinbase's agentkit repository, and after that workflow was removed, the attacker widened the blast radius by replacing all tj-actions/changed-files tags with a malicious commit.
 
-    The first changed-files abuse appears to have targeted Coinbase's agentkit repository. After that workflow was removed, the attacker widened the blast radius by replacing all tj-actions/changed-files tags with a malicious commit. Public repositories that ran the action could print secrets into public workflow logs, often as double-encoded base64 output.
-
-    The leak surface was unusual because the attacker did not need to exfiltrate secrets to a private server. In public repositories, the malicious action could write secret material into public workflow logs, leaving exposure behind even after the tag was restored.
+    The leak surface was unusual because the attacker did not need to exfiltrate secrets to a private server. In public repositories, the malicious action could write secret material straight into public workflow logs, often as double-encoded base64, leaving exposure behind even after the tag was restored.
 
     The campaign shows the thin line between dependency metadata and credential disclosure. No package manager was needed; trusted GitHub Action tags were the distribution system. The practical mitigation was to rotate exposed secrets, remove or pin affected actions by full commit SHA, and audit workflow logs from the exposure window.
   start_date: 2025-03-11

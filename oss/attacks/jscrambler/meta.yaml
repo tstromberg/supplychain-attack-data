@@ -1,0 +1,189 @@
+- id: jscrambler
+  title: Jscrambler npm releases dropped a Rust infostealer
+  synopsis: >-
+    An attacker with a stolen npm publishing credential shipped five malicious jscrambler
+    releases and poisoned its webpack, gulp, grunt, and metro plugins on 2026-07-11. Later
+    versions moved the dropper out of the install hook and into dist/index.js.
+  story: |
+    Attackers used a stolen npm publishing credential on July 11, 2026 to release
+    five malicious versions of `jscrambler`, the client-side code protection tool,
+    along with poisoned releases of its webpack, gulp, grunt, and Metro plugins.
+    The first bad version went out at 16:12:40 BST and security vendors flagged it
+    within minutes.
+
+    Jscrambler sells JavaScript obfuscation and integrity protection, and its npm
+    package is wired into build pipelines, which is precisely where the payload
+    wanted to be. The malicious releases were `jscrambler` 8.14.0, 8.16.0, 8.17.0,
+    8.18.0, and 8.20.0, plus `jscrambler-webpack-plugin@8.6.2`,
+    `gulp-jscrambler@8.6.2`, `grunt-jscrambler@8.5.2`, and
+    `jscrambler-metro-plugin@9.0.2`. Each dropped and executed a Rust infostealer
+    on Windows, macOS, and Linux.
+
+    The interesting part is what changed mid-incident. The first releases used a
+    `preinstall` hook, the ordinary approach. From 8.18.0 onward the attacker
+    dropped the install hook entirely and moved the dropper into a self-executing
+    function inside `dist/index.js` and the CLI binary. That defeats scanners that
+    only inspect lifecycle scripts, and it renders `npm install --ignore-scripts`
+    useless as a mitigation, since the code runs when the tool is used rather than
+    when it is installed.
+
+    The collection profile reflected 2026 developer machines: cloud credentials, CI
+    tokens, browser sessions, cryptocurrency wallets, Bitwarden vaults, and the
+    configuration files of AI coding assistants including Claude Desktop and
+    Cursor. The malicious releases were downloaded 1,479 times before Jscrambler
+    deprecated them and published clean builds as 8.22.0, 8.6.3, 8.6.3, 8.5.3, and
+    9.0.3. In its own advisory the company described the incident as an
+    unauthorized publication of a malicious npm package affecting CI.
+  pull_quote:
+    text: >-
+      From 8.18.0 the dropper left the install hook and moved into
+      `dist/index.js`, so it ran when the tool was used rather than when it was
+      installed, and `npm install --ignore-scripts` stopped being a mitigation.
+    caption: the pivot, mid-incident
+    after: 3
+  start_date: 2026-07-11
+  end_date: 2026-07-11
+  target:
+    name: Jscrambler
+    kind: application
+    website: https://www.npmjs.com/package/jscrambler
+  actor:
+    name: Unknown
+    kind: group
+  language: Rust
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+    - cryptocurrency_theft
+    users: 1479
+  locations:
+  - uri: https://www.npmjs.com/package/jscrambler
+    role: distribution
+  indicators:
+  - kind: file
+    value: dist/index.js
+  - kind: technique
+    value: self-executing dropper in package entry point rather than install hook
+  notes:
+  - From version 8.18.0 the attacker abandoned the preinstall hook and injected the dropper
+    as a self-executing function inside dist/index.js and the CLI binary. This defeats
+    install-script scanners and is not mitigated by `npm install --ignore-scripts`.
+  - The first malicious version was published 2026-07-11 at 16:12:40 BST, which the npm
+    registry records as 15:12:40Z. The malicious releases were downloaded 1,479 times in
+    total before deprecation, against roughly 15,800 weekly downloads for the main package.
+  - The npm registry records a seventh release the same afternoon, jscrambler 8.15.0 at
+    17:07:14Z, sitting between two versions reported as malicious. No published source
+    lists 8.15.0 as affected, so it is not recorded as a malicious version here. Treat its
+    status as unresolved rather than clean.
+  - The payload targets cloud credentials, CI tokens, browser sessions, cryptocurrency
+    wallets, Bitwarden vaults, and configuration files for AI coding tools including
+    Claude Desktop and Cursor.
+  artifacts:
+  - id: jscrambler
+    name: jscrambler
+    package: jscrambler
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-07-11
+    end_date: 2026-07-11
+    versions:
+    - 8.14.0
+    - 8.16.0
+    - 8.17.0
+    - 8.18.0
+    - 8.20.0
+    fixed_versions:
+    - 8.22.0
+    locations:
+    - uri: https://www.npmjs.com/package/jscrambler
+      role: distribution
+    hashes:
+    - sha1:a59c35648644214332e384bb179e68f2cab1ee23
+    - sha512:eecb60c7601a64d332956cec6bb4b7a5b52d890480b879a22f072ba9b9ebcef2b46e244ca164f00b800a2ecd44456f3529c867e01cfdfd1b198e1dbd21766b09
+    notes:
+    - OSSF MAL-2026-10187 maps these checksums to the complete jscrambler-8.16.0.tgz npm archive.
+  - id: jscrambler-webpack-plugin
+    name: jscrambler-webpack-plugin
+    package: jscrambler-webpack-plugin
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-07-11
+    end_date: 2026-07-11
+    versions:
+    - 8.6.2
+    fixed_versions:
+    - 8.6.3
+    locations:
+    - uri: https://www.npmjs.com/package/jscrambler-webpack-plugin
+      role: distribution
+  - id: gulp-jscrambler
+    name: gulp-jscrambler
+    package: gulp-jscrambler
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-07-11
+    end_date: 2026-07-11
+    versions:
+    - 8.6.2
+    fixed_versions:
+    - 8.6.3
+    locations:
+    - uri: https://www.npmjs.com/package/gulp-jscrambler
+      role: distribution
+    hashes:
+    - sha1:961070dedb31b584f766ef9f25e9e3047d96db9f
+    - sha512:7470c4acc1a7fc2125313d0ab08a1b9cfe520fdee592107c3ed6b43cc0b52ecfd0ba4654919e5fef42c7bde627cdcb4f18616a3bcf3a99a3f1cbd09805acc220
+    notes:
+    - OSSF MAL-2026-10673 maps these checksums to the complete gulp-jscrambler-8.6.2.tgz npm archive.
+  - id: grunt-jscrambler
+    name: grunt-jscrambler
+    package: grunt-jscrambler
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-07-11
+    end_date: 2026-07-11
+    versions:
+    - 8.5.2
+    fixed_versions:
+    - 8.5.3
+    locations:
+    - uri: https://www.npmjs.com/package/grunt-jscrambler
+      role: distribution
+  - id: jscrambler-metro-plugin
+    name: jscrambler-metro-plugin
+    package: jscrambler-metro-plugin
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-07-11
+    end_date: 2026-07-11
+    versions:
+    - 9.0.2
+    fixed_versions:
+    - 9.0.3
+    locations:
+    - uri: https://www.npmjs.com/package/jscrambler-metro-plugin
+      role: distribution
+    hashes:
+    - sha1:bfd34b5e0a947c9928c7c06ffa77269d96b3e970
+    - sha512:57e00f3ee41a8412bcacf5e9922f720aac3ed0d224e75c0fb681e61788cb26d2153d9237595227302a16ebd12ced0f803cc147b6b9e7f45601aef1f06b571ac5
+    notes:
+    - OSSF MAL-2026-10674 maps these checksums to the complete jscrambler-metro-plugin-9.0.2.tgz npm archive.
+  references:
+  - url: https://jscrambler.com/blog/security-advisory-malicious-npm-package
+    title: Unauthorized Publication of a Malicious npm Package Affecting CI - Jscrambler
+  - url: https://thehackernews.com/2026/07/compromised-jscrambler-8140-npm-release.html
+    title: Compromised jscrambler 8.14.0 npm Release Drops Rust Infostealer During Install
+      - The Hacker News
+  - url: https://www.bankinfosecurity.com/jscrambler-npm-breach-exposes-developers-to-malware-a-32215
+    title: Jscrambler npm Breach Exposes Developers to Malware - BankInfoSecurity
+  - url: https://cybersecuritynews.com/hackers-compromised-jscrambler/
+    title: Hackers Compromised jscrambler With 15,800+ Weekly Downloads to Attack Developers
+      - Cyber Security News
+  - url: https://github.com/ossf/malicious-packages
+    title: OSSF malicious-packages database

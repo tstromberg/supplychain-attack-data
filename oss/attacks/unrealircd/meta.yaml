@@ -11,6 +11,13 @@
     The source change was disguised as `DEBUGMODE3` logic. When input began with `AB`, `DEBUGMODE3_INFO` matched and `DEBUG3_LOG` ultimately called `system()`, executing the rest of the client-supplied command as the user running the daemon. The project told users to grep include/struct.h for `DEBUG3_DOLOG_SYSTEM`; two matching lines meant the running tree was trojanized.
 
     The response was a lesson in distribution hygiene. The project restored the good April 2009 archive, published MD5s for good and bad files, told affected administrators to re-download, verify, recompile, and restart, and said it would re-implement PGP/GPG signing. The Register captured the blunt public takeaway: source mirrors can become the attack if releases are not routinely checked and signed.
+  pull_quote:
+    text: >-
+      The `AB` check ran on the raw recv() buffer in `read_packet()`, before
+      any IRC parsing, so a passworded server — or a hub configured to let no
+      users in at all — was equally exploitable.
+    caption: why a passworded hub was no defense
+    after: 3
   start_date: 2009-11-10
   end_date: 2010-06-12
   target:
@@ -50,6 +57,7 @@
       role: mirror
     hashes:
     - md5:752e46f2d873c1679fa99de3f52a274d
+    - sha256:45264abc6c4aaaa132ea735fb90aaf43185950825f0b947d6e0f6210c6e3e7c8
     indicators:
     - kind: observable
       value: ftp://ftp.unrealircd.com/Unreal3.2.8.1.tar.gz
@@ -62,6 +70,16 @@
     - kind: observable
       value: grep DEBUG3_DOLOG_SYSTEM include/struct.h returns DEBUG3_LOG and 
         DEBUG3_DOLOG_SYSTEM system() macros on trojanized source trees.
+    evidence:
+    - kind: source_archive
+      path: samples/unrealircd/during/Unreal3.2.8.1_backdoor.tar.gz
+      role: malicious_distribution
+    - kind: source_archive
+      path: samples/unrealircd/before/Unreal3.2.8.1.tar.gz
+      role: clean_same_version_comparator
+    - kind: source_diff
+      path: samples/unrealircd/during/Unreal3.2.8.1-vs-Unreal3.2.8.1_backdoor.diff
+      role: malicious_changes
     notes:
     - The project forum notice lists md5:7b741e94e867c0a7370553fd01506c66 as the clean 
       Unreal3.2.8.1.tar.gz checksum; clean checksums are kept in notes rather than 
@@ -83,3 +101,5 @@
     title: UnrealIRCd backdoored for months
   - url: https://seclists.org/dailydave/2010/q2/56
     title: 'DailyDave: Unreal IRC 0day'
+  - url: https://blog.stalkr.net/2010/06/unrealircd-3281-backdoored.html
+    title: UnrealIRCd 3.2.8.1 backdoored investigation and preserved artifacts

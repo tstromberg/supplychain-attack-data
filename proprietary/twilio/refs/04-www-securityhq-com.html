@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+        <script>
+        document.documentElement.classList.add('js');
+    </script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        var savedConsent = localStorage.getItem('consentMode');
+        var defaultConsent = {
+            'ad_storage': 'denied',
+            'analytics_storage': 'denied',
+            'functionality_storage': 'denied',
+        };
+
+        var consentMode = savedConsent ?
+            (function () {
+                try {
+                    var parsedConsent = JSON.parse(savedConsent);
+                    return (parsedConsent.ad_storage && parsedConsent.analytics_storage && parsedConsent.functionality_storage) ?
+                        parsedConsent : defaultConsent;
+                } catch (e) {
+                    return defaultConsent;
+                }
+            })() :
+            defaultConsent;
+
+        gtag('consent', 'default', consentMode);
+    </script>
+            <!-- Google Tag Manager -->
+        <script>
+            (function (w, d, s, l, i) {
+                w[l] = w[l] || [];
+                w[l].push({
+                    'gtm.start':
+                        new Date().getTime(), event: 'gtm.js'
+                });
+                var f = d.getElementsByTagName(s)[0],
+                    j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+                j.async = true;
+                j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+                f.parentNode.insertBefore(j, f);
+            })(window, document, 'script', 'dataLayer', 'GTM-MHRR824');
+        </script>
+        <!-- End Google Tag Manager -->
+
+    
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="profile" href="https://gmpg.org/xfn/11"/>
+
+    
+    <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="SecurityHQ" />
+    <link rel="manifest" href="/favicon/site.webmanifest" />
+
+    <meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+<link rel="preload" href="https://www.securityhq.com/wp-content/themes/SiTheme/fonts/Plain-Light.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="https://www.securityhq.com/wp-content/themes/SiTheme/fonts/Plain-Regular.woff" as="font" type="font/woff" crossorigin>
+
+	<!-- This site is optimized with the Yoast SEO Premium plugin v27.7 (Yoast SEO v27.7) - https://yoast.com/product/yoast-seo-premium-wordpress/ -->
+	<link media="all" href="https://www.securityhq.com/wp-content/cache/autoptimize/css/autoptimize_2367998a9aa2699d5d90ae03d078cbd3.css" rel="stylesheet"><title>Security 101: Compromised AWS S3 Buckets - SecurityHQ</title>
+	<meta name="description" content="AWS S3 Buckets containing customer details, Personally Identifiable Information, passwords, and more can be vulnerable. Safeguard them now." />
+	<link rel="canonical" href="https://www.securityhq.com/blog/security-101-compromised-aws-s3-buckets/" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="Security 101: Compromised AWS S3 Buckets" />
+	<meta property="og:description" content="AWS S3 Buckets containing customer details, Personally Identifiable Information, passwords, and more can be vulnerable. Safeguard them now." />
+	<meta property="og:url" content="https://www.securityhq.com/blog/security-101-compromised-aws-s3-buckets/" />
+	<meta property="og:site_name" content="SecurityHQ" />
+	<meta property="article:publisher" content="https://www.facebook.com/Sechq" />
+	<meta property="article:published_time" content="2021-09-20T12:22:37+00:00" />
+	<meta property="article:modified_time" content="2022-10-10T13:34:34+00:00" />
+	<meta property="og:image" content="https://www.securityhq.com/wp-content/uploads/2021/09/Security-101-Compromised-AWS-S3-Buckets.-SecurityHQ.jpg" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="628" />
+	<meta property="og:image:type" content="image/jpeg" />
+	<meta name="author" content="Nikhil Mohanlal" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:creator" content="@security_hq" />
+	<meta name="twitter:site" content="@security_hq" />
+	<meta name="twitter:label1" content="Written by" />
+	<meta name="twitter:data1" content="Nikhil Mohanlal" />
+	<meta name="twitter:label2" content="Est. reading time" />
+	<meta name="twitter:data2" content="5 minutes" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https:\/\/schema.org","@graph":[{"@type":"Article","@id":"https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/#article","isPartOf":{"@id":"https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/"},"author":{"name":"Nikhil Mohanlal","@id":"https:\/\/www.securityhq.com\/#\/schema\/person\/6ba4da42d62195a797cbba43e5616ef2"},"headline":"Security 101: Compromised AWS S3 Buckets","datePublished":"2021-09-20T12:22:37+00:00","dateModified":"2022-10-10T13:34:34+00:00","mainEntityOfPage":{"@id":"https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/"},"wordCount":1020,"publisher":{"@id":"https:\/\/www.securityhq.com\/#organization"},"image":{"@id":"https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/#primaryimage"},"thumbnailUrl":"https:\/\/www.securityhq.com\/wp-content\/uploads\/2021\/09\/1920x928px-Banner.jpg","keywords":["Access Management","AWS","Buckets","Patient Data Breach","S3 Bucket","Simple Storage Service","Twilio Breach"],"articleSection":["Notes from the Field"],"inLanguage":"en-US"},{"@type":"WebPage","@id":"https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/","url":"https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/","name":"Security 101: Compromised AWS S3 Buckets - SecurityHQ","isPartOf":{"@id":"https:\/\/www.securityhq.com\/#website"},"primaryImageOfPage":{"@id":"https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/#primaryimage"},"image":{"@id":"https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/#primaryimage"},"thumbnailUrl":"https:\/\/www.securityhq.com\/wp-content\/uploads\/2021\/09\/1920x928px-Banner.jpg","datePublished":"2021-09-20T12:22:37+00:00","dateModified":"2022-10-10T13:34:34+00:00","description":"AWS S3 Buckets containing customer details, Personally Identifiable Information, passwords, and more can be vulnerable. Safeguard them now.","breadcrumb":{"@id":"https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/#breadcrumb"},"inLanguage":"en-US","potentialAction":[{"@type":"ReadAction","target":["https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/"]}]},{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/#primaryimage","url":"https:\/\/www.securityhq.com\/wp-content\/uploads\/2021\/09\/1920x928px-Banner.jpg","contentUrl":"https:\/\/www.securityhq.com\/wp-content\/uploads\/2021\/09\/1920x928px-Banner.jpg","width":1920,"height":928,"caption":"AWS S3 Buckets"},{"@type":"BreadcrumbList","@id":"https:\/\/www.securityhq.com\/blog\/security-101-compromised-aws-s3-buckets\/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https:\/\/www.securityhq.com\/"},{"@type":"ListItem","position":2,"name":"Security 101: Compromised AWS S3 Buckets"}]},{"@type":"WebSite","@id":"https:\/\/www.securityhq.com\/#website","url":"https:\/\/www.securityhq.com\/","name":"SecurityHQ","description":"SecurityHQ is an industry leader in providing Cyber Security Services including Managed Security Services, Professional Services and Compliance.","publisher":{"@id":"https:\/\/www.securityhq.com\/#organization"},"potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https:\/\/www.securityhq.com\/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"en-US"},{"@type":"Organization","@id":"https:\/\/www.securityhq.com\/#organization","name":"SecurityHQ","url":"https:\/\/www.securityhq.com\/","logo":{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/www.securityhq.com\/#\/schema\/logo\/image\/","url":"https:\/\/www.securityhq.com\/wp-content\/uploads\/2020\/07\/SecurityHQ-01-1024x321-1.png","contentUrl":"https:\/\/www.securityhq.com\/wp-content\/uploads\/2020\/07\/SecurityHQ-01-1024x321-1.png","width":1024,"height":321,"caption":"SecurityHQ"},"image":{"@id":"https:\/\/www.securityhq.com\/#\/schema\/logo\/image\/"},"sameAs":["https:\/\/www.facebook.com\/Sechq","https:\/\/x.com\/security_hq","https:\/\/www.linkedin.com\/company\/securityhq\/","https:\/\/www.youtube.com\/channel\/UCtdnVd-mK86nRo7WlshB4zw\/"]},{"@type":"Person","@id":"https:\/\/www.securityhq.com\/#\/schema\/person\/6ba4da42d62195a797cbba43e5616ef2","name":"Nikhil Mohanlal"}]}</script>
+	<!-- / Yoast SEO Premium plugin. -->
+
+
+<link rel='dns-prefetch' href='//js.hs-scripts.com' />
+<link rel='dns-prefetch' href='//www.securityhq.com' />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://www.securityhq.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.securityhq.com%2Fblog%2Fsecurity-101-compromised-aws-s3-buckets%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://www.securityhq.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.securityhq.com%2Fblog%2Fsecurity-101-compromised-aws-s3-buckets%2F&#038;format=xml" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="blogfilters-js-extra">
+var blogfilters_params = {"ajaxurl":"https://www.securityhq.com/wp-admin/admin-ajax.php","posts":"{\"page\":0,\"name\":\"security-101-compromised-aws-s3-buckets\",\"error\":\"\",\"m\":\"\",\"p\":0,\"post_parent\":\"\",\"subpost\":\"\",\"subpost_id\":\"\",\"attachment\":\"\",\"attachment_id\":0,\"pagename\":\"\",\"page_id\":0,\"second\":\"\",\"minute\":\"\",\"hour\":\"\",\"day\":0,\"monthnum\":0,\"year\":0,\"w\":0,\"category_name\":\"\",\"tag\":\"\",\"cat\":\"\",\"tag_id\":\"\",\"author\":\"\",\"author_name\":\"\",\"feed\":\"\",\"tb\":\"\",\"paged\":0,\"meta_key\":\"\",\"meta_value\":\"\",\"preview\":\"\",\"s\":\"\",\"sentence\":\"\",\"title\":\"\",\"fields\":\"all\",\"menu_order\":\"\",\"embed\":\"\",\"category__in\":[],\"category__not_in\":[],\"category__and\":[],\"post__in\":[],\"post__not_in\":[],\"post_name__in\":[],\"tag__in\":[],\"tag__not_in\":[],\"tag__and\":[],\"tag_slug__in\":[],\"tag_slug__and\":[],\"post_parent__in\":[],\"post_parent__not_in\":[],\"author__in\":[],\"author__not_in\":[],\"search_columns\":[],\"ignore_sticky_posts\":false,\"suppress_filters\":false,\"cache_results\":true,\"update_post_term_cache\":true,\"update_menu_item_cache\":false,\"lazy_load_term_meta\":true,\"update_post_meta_cache\":true,\"post_type\":\"\",\"posts_per_page\":5,\"nopaging\":false,\"comments_per_page\":\"50\",\"no_found_rows\":false,\"order\":\"DESC\"}"};
+//# sourceURL=blogfilters-js-extra
+</script>
+
+<script id="knowledgefilters-js-extra">
+var knowledgefilters_params = {"ajaxurl":"https://www.securityhq.com/wp-admin/admin-ajax.php","posts":"{\"page\":0,\"name\":\"security-101-compromised-aws-s3-buckets\",\"error\":\"\",\"m\":\"\",\"p\":0,\"post_parent\":\"\",\"subpost\":\"\",\"subpost_id\":\"\",\"attachment\":\"\",\"attachment_id\":0,\"pagename\":\"\",\"page_id\":0,\"second\":\"\",\"minute\":\"\",\"hour\":\"\",\"day\":0,\"monthnum\":0,\"year\":0,\"w\":0,\"category_name\":\"\",\"tag\":\"\",\"cat\":\"\",\"tag_id\":\"\",\"author\":\"\",\"author_name\":\"\",\"feed\":\"\",\"tb\":\"\",\"paged\":0,\"meta_key\":\"\",\"meta_value\":\"\",\"preview\":\"\",\"s\":\"\",\"sentence\":\"\",\"title\":\"\",\"fields\":\"all\",\"menu_order\":\"\",\"embed\":\"\",\"category__in\":[],\"category__not_in\":[],\"category__and\":[],\"post__in\":[],\"post__not_in\":[],\"post_name__in\":[],\"tag__in\":[],\"tag__not_in\":[],\"tag__and\":[],\"tag_slug__in\":[],\"tag_slug__and\":[],\"post_parent__in\":[],\"post_parent__not_in\":[],\"author__in\":[],\"author__not_in\":[],\"search_columns\":[],\"ignore_sticky_posts\":false,\"suppress_filters\":false,\"cache_results\":true,\"update_post_term_cache\":true,\"update_menu_item_cache\":false,\"lazy_load_term_meta\":true,\"update_post_meta_cache\":true,\"post_type\":\"\",\"posts_per_page\":5,\"nopaging\":false,\"comments_per_page\":\"50\",\"no_found_rows\":false,\"order\":\"DESC\"}"};
+//# sourceURL=knowledgefilters-js-extra
+</script>
+
+<script></script><link rel="https://api.w.org/" href="https://www.securityhq.com/wp-json/" /><link rel="alternate" title="JSON" type="application/json" href="https://www.securityhq.com/wp-json/wp/v2/posts/5311" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://www.securityhq.com/xmlrpc.php?rsd" />
+
+<link rel='shortlink' href='https://www.securityhq.com/?p=5311' />
+			<!-- DO NOT COPY THIS SNIPPET! Start of Page Analytics Tracking for HubSpot WordPress plugin v11.3.45-->
+			<script class="hsq-set-content-id" data-content-id="blog-post">
+				var _hsq = _hsq || [];
+				_hsq.push(["setContentType", "blog-post"]);
+			</script>
+			<!-- DO NOT COPY THIS SNIPPET! End of Page Analytics Tracking for HubSpot WordPress plugin -->
+			<meta name="generator" content="Powered by WPBakery Page Builder - drag and drop page builder for WordPress."/>
+<link rel="icon" href="https://www.securityhq.com/wp-content/uploads/2020/06/favicon-150x150.png" sizes="32x32" />
+<link rel="icon" href="https://www.securityhq.com/wp-content/uploads/2020/06/favicon.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://www.securityhq.com/wp-content/uploads/2020/06/favicon.png" />
+<meta name="msapplication-TileImage" content="https://www.securityhq.com/wp-content/uploads/2020/06/favicon.png" />
+
+<noscript><style> .wpb_animate_when_almost_visible { opacity: 1; }</style></noscript></head>
+<body class="wp-singular post-template-default single single-post postid-5311 single-format-standard wp-theme-SiTheme design-2026 wpb-js-composer js-comp-ver-8.7.3 vc_responsive">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MHRR824"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+<script>
+    var _hsp = window._hsp = window._hsp || [];
+
+    _hsp.push(['addPrivacyConsentListener', function (consent) {
+        var consentMode = {
+            analytics_storage: consent.categories.analytics ? 'granted' : 'denied',
+            ad_storage: consent.categories.advertisement ? 'granted' : 'denied',
+            functionality_storage: consent.categories.functionality ? 'granted' : 'denied'
+        };
+
+        gtag('consent', 'update', consentMode);
+        localStorage.setItem('consentMode', JSON.stringify(consentMode));
+    }]);
+</script>
+<div id="page">
+                        <header class="header-2026 header-2026--overlay">
+    <div class="header-2026__navbar">
+        <div class="container-2026 header-2026__bar">
+            <a class="header-2026__brand" href="https://www.securityhq.com/">
+                <img
+                    src="https://www.securityhq.com/wp-content/themes/SiTheme/images/logo.svg"
+                    alt="SecurityHQ"
+                    width="147"
+                    height="26"
+                    class="header-2026__logo no-lazy"
+                />
+            </a>
+
+            <button
+                class="header-2026__toggler"
+                type="button"
+                aria-controls="header2026Nav"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span class="header-2026__toggler-icon" aria-hidden="true">
+                    <span class="header-2026__toggler-bar"></span>
+                    <span class="header-2026__toggler-bar"></span>
+                    <span class="header-2026__toggler-bar header-2026__toggler-bar--short"></span>
+                </span>
+            </button>
+
+            <div class="header-2026__collapse" id="header2026Nav">
+                <ul class="header-2026__menu">
+                                                                        <li class="header-2026__menu-item">
+                                <a
+                                    class="header-2026__link"
+                                    href="https://www.securityhq.com/about-us/"
+                                    target="_self"
+                                                                    >
+                                    About                                </a>
+                            </li>
+                                                    <li class="header-2026__menu-item">
+                                <a
+                                    class="header-2026__link"
+                                    href="https://www.securityhq.com/solutions/"
+                                    target="_self"
+                                                                    >
+                                    Solutions                                </a>
+                            </li>
+                                                    <li class="header-2026__menu-item">
+                                <a
+                                    class="header-2026__link"
+                                    href="https://www.securityhq.com/platform/"
+                                    target="_self"
+                                                                    >
+                                    Platform                                </a>
+                            </li>
+                                                    <li class="header-2026__menu-item">
+                                <a
+                                    class="header-2026__link"
+                                    href="https://www.securityhq.com/knowledge-base/"
+                                    target="_self"
+                                                                    >
+                                    Blog &amp; Resources                                </a>
+                            </li>
+                                                            </ul>
+
+                <div class="header-2026__actions">
+                    <form
+                        role="search"
+                        method="get"
+                        class="header-2026__search"
+                        id="header2026Search"
+                        action="https://www.securityhq.com/"
+                        hidden
+                    >
+                        <label class="visually-hidden" for="header2026SearchInput">
+                            Search                        </label>
+                        <input
+                            type="search"
+                            name="s"
+                            id="header2026SearchInput"
+                            class="header-2026__search-input"
+                            placeholder="Search"
+                            value=""
+                        />
+                    </form>
+
+                    <button
+                        type="button"
+                        class="header-2026__search-toggle"
+                        aria-expanded="false"
+                        aria-controls="header2026Search"
+                        aria-label="Open search"
+                    >
+                        <svg class="header-2026__search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+
+                    <a
+                        class="header-2026__btn-login"
+                        href="https://platform.securityhq.com/app/auth.do"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        PLATFORM LOGIN                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+                <div id="content" class="site-content">
+
+<section id="industry-banner" class="first-zone blog-2025 blue-top bg-light-blue position-relative">
+    <div class="container">
+        <div class="row content position-relative">
+            <div class="col-lg-6 col-md-12 banner-content-wrapper">
+                <div class="top">
+                    <div class="breadcrumb">
+                        <a href="/">Home</a>&nbsp;>&nbsp;
+                        <a href="/blog/">Blog</a>                        &nbsp;>&nbsp;
+                        <span>Security 101: Compromised AWS S3 Buckets</span>                    </div>
+                    <p class="post-details-top title1"><span
+                                class="category">Notes from the Field</span>
+                        &#8226; 6 MIN READ
+                    </p>
+                    <h1 class="likeh2">Security 101: Compromised AWS S3 Buckets</h1>                                            <p class="post-details-bottom title1">by Nikhil Mohanlal, Eleanor Barlow                            &#8226; Sep 2021                        </p>
+                                    </div>
+                <div class="bottom">
+                    
+		<div class="share-icons">
+			<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.securityhq.com%2Fblog%2Fsecurity-101-compromised-aws-s3-buckets%2F" target="_blank">
+	            <noscript><img width="23" height="23" alt="Facebook icon" src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/facebook-blue.svg"></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2023%2023%22%3E%3C/svg%3E' class="lazyload" width="23" height="23" alt="Facebook icon" data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/facebook-blue.svg">
+	        </a>
+	        <a href="//twitter.com/share?text=Security+101%3A+Compromised+AWS+S3+Buckets&url=https%3A%2F%2Fwww.securityhq.com%2Fblog%2Fsecurity-101-compromised-aws-s3-buckets%2F" target="_blank">
+	            <noscript><img width="23" height="23" alt="Twitter icon" src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/twitter-blue.svg"></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2023%2023%22%3E%3C/svg%3E' class="lazyload" width="23" height="23" alt="Twitter icon" data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/twitter-blue.svg">
+	        </a>
+	        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fwww.securityhq.com%2Fblog%2Fsecurity-101-compromised-aws-s3-buckets%2F&title=Security+101%3A+Compromised+AWS+S3+Buckets"
+	           target="_blank">
+	            <noscript><img width="23" height="23" alt="Linkedin icon" src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/linkedin-blue.svg"></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2023%2023%22%3E%3C/svg%3E' class="lazyload" width="23" height="23" alt="Linkedin icon" data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/linkedin-blue.svg">
+	        </a>
+	        <a href="/cdn-cgi/l/email-protection#a09fd3d5c2cac5c3d49df3c5c3d5d2c9d4d9809190919a80e3cfcdd0d2cfcdc9d3c5c480e1f7f380f39380e2d5c3cbc5d4d386c1cdd09bc2cfc4d99dc8d4d4d0d38593e18592e68592e6d7d7d78ed3c5c3d5d2c9d4d9c8d18ec3cfcd8592e6c2cccfc78592e6d3c5c3d5d2c9d4d98d9190918dc3cfcdd0d2cfcdc9d3c5c48dc1d7d38dd3938dc2d5c3cbc5d4d38592e6">
+	            <noscript><img width="23" height="23" alt="E-mail icon" src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/mail-blue.svg"></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2023%2023%22%3E%3C/svg%3E' class="lazyload" width="23" height="23" alt="E-mail icon" data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/mail-blue.svg">
+	        </a>
+	        <a href="javascript:window.print()">
+	            <noscript><img width="23" height="23" alt="print icon" src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/print-blue.svg"></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2023%2023%22%3E%3C/svg%3E' class="lazyload" width="23" height="23" alt="print icon" data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/print-blue.svg">
+	        </a>
+	    </div>
+	                </div>
+            </div>
+            <div class="lazyload col-lg-6 col-md-12 banner-image-wrapper"
+                 data-bg="https://www.securityhq.com/wp-content/uploads/2021/09/1920x928px-Banner.jpg" style="background-image: url(data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20500%20300%22%3E%3C/svg%3E);">
+                <noscript><img class="d-lg-none" src="https://www.securityhq.com/wp-content/uploads/2021/09/1920x928px-Banner.jpg"
+                     alt="Security 101: Compromised AWS S3 Buckets"></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20210%20140%22%3E%3C/svg%3E' class="lazyload d-lg-none" data-src="https://www.securityhq.com/wp-content/uploads/2021/09/1920x928px-Banner.jpg"
+                     alt="Security 101: Compromised AWS S3 Buckets">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="blog">
+    <div class="container">
+        <div class="row content">
+                                    <div class="col-xl-4 col-lg-3 col-md-12 blog-toc-sidebar">
+                <nav class="blog-toc sticky-top" aria-label="Table of contents">
+                    <h3 class="blog-toc-title">Contents</h3>
+                    <ul class="blog-toc-list list-unstyled">
+                                                <li>
+                            <a href="#" class="scrollto blog-toc-link" data-target=".toc-heading-0">What is a Bucket and How Can it Be Used?</a>
+                        </li>
+                                                <li>
+                            <a href="#" class="scrollto blog-toc-link" data-target=".toc-heading-1">Insecure S3 Buckets Examples</a>
+                        </li>
+                                                <li>
+                            <a href="#" class="scrollto blog-toc-link" data-target=".toc-heading-2">Twilio Breach</a>
+                        </li>
+                                                <li>
+                            <a href="#" class="scrollto blog-toc-link" data-target=".toc-heading-3">Premier Diagnostics Patient Data Breach</a>
+                        </li>
+                                                <li>
+                            <a href="#" class="scrollto blog-toc-link" data-target=".toc-heading-4">What Does an S3 Bucket Look Like?</a>
+                        </li>
+                                                <li>
+                            <a href="#" class="scrollto blog-toc-link" data-target=".toc-heading-5">What To Do Next</a>
+                        </li>
+                                            </ul>
+                </nav>
+            </div>
+                        <div class="col-xl-8 col-lg-9 col-md-12  main-content main-content-2025 bg-white">
+                <div class="the-content">
+                    
+<p class="wp-block-paragraph">S3 is a service provided by Amazon Web Services (AWS), it stands for Simple Storage Service and allows users to store data and assets.</p>
+
+
+
+<p class="wp-block-paragraph">It is useful in that it allows storage for public sites, such as JavaScript files, images, and more. These stores are called Buckets. Many companies host their assets on Amazon S3 Buckets, which is an effective method to store and backup files and resources and can be used for public facing and private/internal assets. Internal development teams may utilise S3 Buckets on a regular basis as a place to store their files, such as automation scripts or programs which are used on a regular basis.</p>
+
+
+
+<h2 class="wp-block-heading toc-heading toc-heading-0" id="h-what-is-a-bucket-and-how-can-it-be-used">What is a Bucket and How Can it Be Used?</h2>
+
+
+
+<p class="wp-block-paragraph">A Bucket is simply a place that the AWS user has created to store their files. As AWS has servers hosted all around the world, the user can choose to create these Buckets in different geographical regions. These servers are often chosen based on latency levels and costs.</p>
+
+
+
+<p class="wp-block-paragraph">As an admin, you can modify your Bucket to suit your requirements- Permissions, Identify &amp; Access Management (IAM), policies and Access Control Lists, to name a few.</p>
+
+
+
+<p class="wp-block-paragraph">But this is also where a key issue lies. Amazon S3 Buckets are quick to set up, which can also mean that security measures can be left misconfigured. And if they’re not dealt with soon, the S3 Bucket can be left open for anyone to access, including malicious attackers.</p>
+
+
+
+<h2 class="wp-block-heading toc-heading toc-heading-1" id="h-insecure-s3-buckets-examples">Insecure S3 Buckets Examples</h2>
+
+
+
+<p class="wp-block-paragraph">Numerous public Buckets have been reported as exposed, many of which contain customer details, Personally Identifiable Information (PII), databases, passwords and more. Because of this, there has been a growth in the number of companies that have reported high-level data breaches.</p>
+
+
+
+<p class="wp-block-paragraph">Amidst the list of those reporting such breaches, include corporate giants such as Ford and Netflix.</p>
+
+
+
+<p class="wp-block-paragraph">Infact ‘<a href="https://venturebeat.com/2021/06/14/lightspin-46-of-aws-s3-buckets-could-be-misconfigured-and-unsafe/" target="_blank" rel="noreferrer noopener">A cloud security service provider ran some in-depth research into 40,000 AWS buckets and their cloud storage permissions found that 46% of AWS S3 buckets could be misconfigured and should therefore be considered unsafe</a>.’</p>
+
+
+
+<p class="wp-block-paragraph">Below is a screenshot of a leaked S3 Bucket from Netflix containing database credentials.</p>
+
+
+
+<div class="wp-block-image"><figure class="aligncenter size-large"><img fetchpriority="high" decoding="async" width="1011" height="556" src="https://www.securityhq.com/wp-content/uploads/2021/09/Screen-shot-1-.png" alt="" class="wp-image-5317" srcset="https://www.securityhq.com/wp-content/uploads/2021/09/Screen-shot-1-.png 1011w, https://www.securityhq.com/wp-content/uploads/2021/09/Screen-shot-1--300x165.png 300w, https://www.securityhq.com/wp-content/uploads/2021/09/Screen-shot-1--768x422.png 768w" sizes="(max-width: 1011px) 100vw, 1011px" /><figcaption>Leaked S3 Bucket from Netflix containing database credentials. </figcaption></figure></div>
+
+
+
+<p class="wp-block-paragraph">It is also worth noting that a misconfigured Bucket does not only mean access to a Bucket. It also means the ability to modify content and the permissions of the content. This creates a larger more malicious attack vector. An attacker can introduce malicious content/files to damage a website or download database backups. Or even run the insecure Bucket as a Command Control server for a malware campaign.</p>
+
+
+
+<p class="wp-block-paragraph">An interesting point to make a note of is that if a Bucket was publicly accessible at one point, it is likely already cached or archived.</p>
+
+
+
+<h2 class="wp-block-heading toc-heading toc-heading-2" id="h-twilio-breach">Twilio Breach</h2>
+
+
+
+<p class="wp-block-paragraph">In July 2020 Twilio, a cloud communications platform-as-a-service (CPaaS), became compromised as a bad actor broke into one of their unprotected, world-writeable S3 Buckets and attempted to upload an SDK which was accessible by Twilio’s customers. It was deemed &#8216;non-malicious&#8217; after analysis, however, the ability to write to a critical S3 Bucket made Twilio aware of their malpractice with S3 Buckets and the possible implications and damage a bad actor could inflict if they desired.</p>
+
+
+
+<h2 class="wp-block-heading toc-heading toc-heading-3" id="h-premier-diagnostics-patient-data-breach">Premier Diagnostics Patient Data Breach</h2>
+
+
+
+<p class="wp-block-paragraph">In a more recent breach, of March 2021, over 50, 000 patient records stored on two publicly accessible AWS S3 Buckets for Utah-based COVID-19 testing service Premier Diagnostics, were the cause of a damaging security misconfiguration. Both Buckets were without password protection or authentication. The security team at AWS were alerted, along with the Bucket owners, but the data had already been exposed. Including ‘medical insurance information, patient information, private test sample IDs, among other PII, and sensitive information. One of the exposed Buckets, titled patient-images, contained more than 200,000 images. Each patient had four files uploaded – front and back images of medical insurance and ID cards (including driver’s licenses and passports). The second Bucket, named paper-records, contained names, dates of birth, and test sample IDs. The loss of this crown jewel data is quite significant not just in volume but also in terms of its highly sensitive nature.’ – <a href="https://securityboulevard.com/2021/03/another-s3-bucket-leads-to-breach-of-50k-patient-records/" target="_blank" rel="noreferrer noopener">SecurityBoulevard</a></p>
+
+
+
+<h2 class="wp-block-heading toc-heading toc-heading-4" id="h-what-does-an-s3-bucket-look-like">What Does an S3 Bucket Look Like?</h2>
+
+
+
+<p class="wp-block-paragraph">Buckets are often accessed through the browser. Below is listed the standard URL format for S3 Buckets.</p>
+
+
+
+<ul class="wp-block-list"><li>http://[bucket_name].s3.amazonaws.com/</li><li>http://s3.amazonaws.com/[bucket_name]/</li></ul>
+
+
+
+<p class="wp-block-paragraph">A publicly accessible Bucket will immediately list the contents of it in XML format.</p>
+
+
+
+<figure class="wp-block-image size-large"><noscript><img decoding="async" width="428" height="359" src="https://www.securityhq.com/wp-content/uploads/2021/09/image-2.png" alt="" class="wp-image-5316" srcset="https://www.securityhq.com/wp-content/uploads/2021/09/image-2.png 428w, https://www.securityhq.com/wp-content/uploads/2021/09/image-2-300x252.png 300w" sizes="(max-width: 428px) 100vw, 428px" /></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20428%20359%22%3E%3C/svg%3E' decoding="async" width="428" height="359" data-src="https://www.securityhq.com/wp-content/uploads/2021/09/image-2.png" alt="" class="lazyload wp-image-5316" data-srcset="https://www.securityhq.com/wp-content/uploads/2021/09/image-2.png 428w, https://www.securityhq.com/wp-content/uploads/2021/09/image-2-300x252.png 300w" data-sizes="(max-width: 428px) 100vw, 428px" /><figcaption>Standard URL format for S3 Buckets. </figcaption></figure>
+
+
+
+<h2 class="wp-block-heading toc-heading toc-heading-5" id="h-what-to-do-next">What To Do Next</h2>
+
+
+
+<p class="wp-block-paragraph" id="h-there-are-some-practical-options-to-secure-an-s3-bucket-often-such-misconfigurations-are-caused-by-a-lack-of-cloud-security-and-or-coupled-with-human-error-which-is-why-it-is-crucial-to-stay-educated-on-how-to-protect-your-data-below-are-a-few-important-practices-to-consider-when-configuring-one">There are some practical options to secure an S3 Bucket. Often, such misconfigurations are caused by a lack of Cloud Security and/or coupled with human error. Which is why it is crucial to stay educated on how to <a href="https://www.securityhq.com/webinars/tips-to-educate-and-protect-your-staff-from-security-threats/">protect your data</a>. Below are a few important practices to consider when configuring one.</p>
+
+
+
+<ol class="wp-block-list" type="1"><li>First, and most importantly, remove public access from the Bucket/Buckets! Unless it is needed and doesn&#8217;t contain any private information. This also includes all the contents within the Bucket. Disabling public access to the files within, will ensure that it meets the same conditions that the Bucket is following.</li></ol>
+
+
+
+<ul class="wp-block-list"><li>Second, control the permissions by following the principle of Least Privilege. The less access granted the better in this case. Making the permissions as granular as possible. Run an audit of the roles needed and ensure that the necessary permissions are set for those roles. Having an admin that manages whitelisting and blacklisting will drastically increase the posture of the Bucket.</li></ul>
+
+
+
+<ul class="wp-block-list"><li>Amazon have a whole page devoted to the best security practices of S3 Buckets which you can check out here (<a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html" target="_blank" rel="noreferrer noopener">https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html</a>)</li></ul>
+
+
+
+<ul class="wp-block-list"><li>One major practice that is seemingly prominent in the industry is security education. Having a deeper understanding of <a href="https://www.securityhq.com/services/managed-detect-response/">security practices</a> in place as opposed to an instruction guide will always be a stronger long-lasting solution. <a href="https://www.securityhq.com/webinars/tips-to-educate-and-protect-your-staff-from-security-threats/">Watch this webinar</a> for tips to educate and protect staff from security threats.</li></ul>
+
+
+
+<p class="wp-block-paragraph">For more information on how to secure your systems, people, and processes, speak with a&nbsp;<a href="https://www.securityhq.com/contact/">SecurityHQ expert</a>. Or, if you suspect an incident,&nbsp;<a href="https://www.securityhq.com/report-cyber-security-incident/">report it here</a>.</p>
+                </div>
+            </div>
+                    </div>
+    </div>
+</section>
+
+    <section class="related-content-2023 ver2024 platform-page bg-light-grey">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h2>Stay <span class="text-blue">Informed</span></h2>
+                    <div class="description">View the latest security insights here.</div>
+                </div>
+                                                <div class="col-12 col-lg-4 news-block-wrapper">
+        <div class="news-block">
+            <div class="image">
+                <noscript><img class="mw-100 w-100 h-auto" width="528" height="347" src="https://www.securityhq.com/wp-content/uploads/2021/08/Security-101-LOLBins-Malware-Exploitation-528 × 347-Website-Thumbnail.jpg"
+                     alt="Security 101: What are LOLBins and How Can They be Used Maliciously?"></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20528%20347%22%3E%3C/svg%3E' class="lazyload mw-100 w-100 h-auto" width="528" height="347" data-src="https://www.securityhq.com/wp-content/uploads/2021/08/Security-101-LOLBins-Malware-Exploitation-528 × 347-Website-Thumbnail.jpg"
+                     alt="Security 101: What are LOLBins and How Can They be Used Maliciously?">
+                <div class="type blog-color color-variation-">blog</div>
+            </div>
+            <div class="title">
+                <a href="https://www.securityhq.com/blog/security-101-lolbins-malware-exploitation/" >Security 101: What are LOLBins and How Can They be Used Maliciously?</a>
+            </div>
+            <div class="cta-wrapper">
+                <a href="https://www.securityhq.com/blog/security-101-lolbins-malware-exploitation/" >Learn More <noscript><img class="arrow"
+                                                                                                 width="20"
+                                                                                                 height="18"
+                                                                                                 alt="arrow"
+                                                                                                 src="https://www.securityhq.com/wp-content/themes/SiTheme/images/arrow-right-blue2.svg"/></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2020%2018%22%3E%3C/svg%3E' class="lazyload arrow"
+                                                                                                 width="20"
+                                                                                                 height="18"
+                                                                                                 alt="arrow"
+                                                                                                 data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/arrow-right-blue2.svg"/></a>
+            </div>
+        </div>
+    </div>
+                    <div class="col-12 col-lg-4 news-block-wrapper">
+        <div class="news-block">
+            <div class="image">
+                <noscript><img class="mw-100 w-100 h-auto" width="528" height="347" src="https://www.securityhq.com/wp-content/uploads/2021/01/Managed-Data-Security-Datasheet-Thumbnail.jpg"
+                     alt="Managed Data Security(Powered by IBM Security Guardium)"></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20528%20347%22%3E%3C/svg%3E' class="lazyload mw-100 w-100 h-auto" width="528" height="347" data-src="https://www.securityhq.com/wp-content/uploads/2021/01/Managed-Data-Security-Datasheet-Thumbnail.jpg"
+                     alt="Managed Data Security(Powered by IBM Security Guardium)">
+                <div class="type blog-color color-variation-">blog</div>
+            </div>
+            <div class="title">
+                <a href="https://www.securityhq.com/datasheets/managed-data-security/" >Managed Data Security(Powered by IBM Security Guardium)</a>
+            </div>
+            <div class="cta-wrapper">
+                <a href="https://www.securityhq.com/datasheets/managed-data-security/" >Learn More <noscript><img class="arrow"
+                                                                                                 width="20"
+                                                                                                 height="18"
+                                                                                                 alt="arrow"
+                                                                                                 src="https://www.securityhq.com/wp-content/themes/SiTheme/images/arrow-right-blue2.svg"/></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2020%2018%22%3E%3C/svg%3E' class="lazyload arrow"
+                                                                                                 width="20"
+                                                                                                 height="18"
+                                                                                                 alt="arrow"
+                                                                                                 data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/arrow-right-blue2.svg"/></a>
+            </div>
+        </div>
+    </div>
+                    <div class="col-12 col-lg-4 news-block-wrapper">
+        <div class="news-block">
+            <div class="image">
+                <noscript><img class="mw-100 w-100 h-auto" width="528" height="347" src="https://www.securityhq.com/wp-content/uploads/2021/03/Website-Thumbnails-White-Paper-Part-Two-528x347-1.jpg"
+                     alt="The Early Indications of a Breach. Cyber Kill Chain Analysis. Part 2 of 2."></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20528%20347%22%3E%3C/svg%3E' class="lazyload mw-100 w-100 h-auto" width="528" height="347" data-src="https://www.securityhq.com/wp-content/uploads/2021/03/Website-Thumbnails-White-Paper-Part-Two-528x347-1.jpg"
+                     alt="The Early Indications of a Breach. Cyber Kill Chain Analysis. Part 2 of 2.">
+                <div class="type blog-color color-variation-">blog</div>
+            </div>
+            <div class="title">
+                <a href="https://www.securityhq.com/whitepapers/the-early-indications-of-a-breach/" >The Early Indications of a Breach. Cyber Kill Chain Analysis. Part 2 of 2.</a>
+            </div>
+            <div class="cta-wrapper">
+                <a href="https://www.securityhq.com/whitepapers/the-early-indications-of-a-breach/" >Learn More <noscript><img class="arrow"
+                                                                                                 width="20"
+                                                                                                 height="18"
+                                                                                                 alt="arrow"
+                                                                                                 src="https://www.securityhq.com/wp-content/themes/SiTheme/images/arrow-right-blue2.svg"/></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2020%2018%22%3E%3C/svg%3E' class="lazyload arrow"
+                                                                                                 width="20"
+                                                                                                 height="18"
+                                                                                                 alt="arrow"
+                                                                                                 data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/arrow-right-blue2.svg"/></a>
+            </div>
+        </div>
+    </div>
+                            </div>
+        </div>
+    </section>
+
+</div><!-- #content -->
+
+            <footer class="footer-2026">
+    <div class="footer-2026__stretch">
+        <div class="panel-2026 blue-bg panel-2026-flat-top footer-2026__panel">
+            <div class="footer-2026__main">
+        <div class="row footer-2026__top">
+            <div class="col-12 col-lg-6 col-xl-4 footer-2026__cta-col">
+                <p class="footer-2026__copy body-2 text-navy">Security is complicated. Reaching us isn't. Connect with the SecurityHQ team anytime.</p>
+                <a href="https://www.securityhq.com/contact/" class="footer-2026__cta">
+                    Get in touch
+                </a>
+            </div>
+            <div class="col-12 col-lg-6 offset-xl-2 col-xl-6 footer-2026__nav-col">
+                <nav class="footer-2026__nav body-1 text-navy" aria-label="Footer">
+                    <ul class="footer-2026__nav-list list-unstyled mb-0">
+                                                                                    <li class="footer-2026__nav-item">
+                                    <a
+                                        class="footer-2026__nav-link"
+                                        href="https://www.securityhq.com/about-us/"
+                                        target="_self"
+                                                                            >
+                                        About                                    </a>
+                                </li>
+                                                            <li class="footer-2026__nav-item">
+                                    <a
+                                        class="footer-2026__nav-link"
+                                        href="https://www.securityhq.com/solutions/"
+                                        target="_self"
+                                                                            >
+                                        Solutions                                    </a>
+                                </li>
+                                                            <li class="footer-2026__nav-item">
+                                    <a
+                                        class="footer-2026__nav-link"
+                                        href="https://www.securityhq.com/platform/"
+                                        target="_self"
+                                                                            >
+                                        Platform                                    </a>
+                                </li>
+                                                            <li class="footer-2026__nav-item">
+                                    <a
+                                        class="footer-2026__nav-link"
+                                        href="https://www.securityhq.com/knowledge-base/"
+                                        target="_self"
+                                                                            >
+                                        Blog &amp; Resources                                    </a>
+                                </li>
+                                                                        </ul>
+                </nav>
+                <div class="footer-2026__social">
+                    <a target="_blank" href="https://www.facebook.com/Sechq"><noscript><img width="8" height="20"
+                                                              class="social-img"
+                                                              alt="facebook icon"
+                                                              src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/2025/Facebook.svg"/></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%208%2020%22%3E%3C/svg%3E' width="8" height="20"
+                                                              class="lazyload social-img"
+                                                              alt="facebook icon"
+                                                              data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/2025/Facebook.svg"/></a>
+<a target="_blank" href="https://www.linkedin.com/company/securityhq/"><noscript><img width="19" height="20"
+                                                                            class="social-img"
+                                                                            alt="linkedin icon"
+                                                                            src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/2025/Linkedin.svg"/></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2019%2020%22%3E%3C/svg%3E' width="19" height="20"
+                                                                            class="lazyload social-img"
+                                                                            alt="linkedin icon"
+                                                                            data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/2025/Linkedin.svg"/></a>
+<a target="_blank" href="https://twitter.com/security_hq"><noscript><img width="19" height="20"
+                                                               class="social-img"
+                                                               alt="twitter icon"
+                                                               src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/2025/Twitter.svg"/></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2019%2020%22%3E%3C/svg%3E' width="19" height="20"
+                                                               class="lazyload social-img"
+                                                               alt="twitter icon"
+                                                               data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/2025/Twitter.svg"/></a>
+<a target="_blank" href="https://www.youtube.com/channel/UCtdnVd-mK86nRo7WlshB4zw/"><noscript><img width="27"
+                                                                                         height="20"
+                                                                                         class="social-img"
+                                                                                         alt="youtube icon"
+                                                                                         src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/2025/YouTube.svg"/></noscript><img src='data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2027%2020%22%3E%3C/svg%3E' width="27"
+                                                                                         height="20"
+                                                                                         class="lazyload social-img"
+                                                                                         alt="youtube icon"
+                                                                                         data-src="https://www.securityhq.com/wp-content/themes/SiTheme/images/social/2025/YouTube.svg"/></a>                </div>
+            </div>
+        </div>
+
+        <div class="row footer-2026__logo-row">
+            <div class="col-12">
+                <a class="footer-2026__logo" href="https://www.securityhq.com/">
+                    <img
+                        src="https://www.securityhq.com/wp-content/themes/SiTheme/images/logo-dark.svg"
+                        alt="SecurityHQ"
+                        width="393"
+                        height="72"
+                        class="footer-2026__logo-img no-lazy"
+                    />
+                </a>
+            </div>
+        </div>
+        </div>
+        </div>
+    </div>
+
+    <div class="footer-2026__bar">
+        <div class="container container-2026">
+            <div class="row footer-2026__bar-row justify-content-between align-items-center">
+                <div class="col-12 col-md-auto footer-2026__copyright">
+                    <p>© 2026 SecurityHQ. All rights reserved.</p>
+                </div>
+                <div class="col-12 col-md-auto">
+                    <nav class="footer-2026__legal" aria-label="Legal">
+                        <a href="https://www.securityhq.com/privacy-policy/">Privacy</a>
+                        <a href="https://www.securityhq.com/disclosures/">Terms of service</a>
+                        <a target="_blank" rel="noopener noreferrer" href="https://www.securityhq.com/wp-content/uploads/2026/05/SecurityHQ-Cookie-policy.pdf">Cookie settings</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+    
+</div><!-- #page -->
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/SiTheme/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<noscript><style>.lazyload{display:none;}</style></noscript><script data-noptimize="1">window.lazySizesConfig=window.lazySizesConfig||{};window.lazySizesConfig.loadMode=1;</script><script async data-noptimize="1" src='https://www.securityhq.com/wp-content/plugins/autoptimize/classes/external/js/lazysizes.min.js?ao_version=3.1.15.1'></script><script id="leadin-script-loader-js-js-extra">
+var leadin_wordpress = {"userRole":"visitor","pageType":"post","leadinPluginVersion":"11.3.45"};
+//# sourceURL=leadin-script-loader-js-js-extra
+</script>
+<script id="leadin-script-loader-js-js" src="https://js.hs-scripts.com/6507446.js?integration=WordPress&#038;ver=11.3.45"></script>
+
+
+
+
+
+
+
+<script id="wp-emoji-settings" type="application/json">
+{"baseUrl":"https://s.w.org/images/core/emoji/17.0.2/72x72/","ext":".png","svgUrl":"https://s.w.org/images/core/emoji/17.0.2/svg/","svgExt":".svg","source":{"concatemoji":"https://www.securityhq.com/wp-includes/js/wp-emoji-release.min.js?ver=7.0.3"}}
+</script>
+<script type="module">
+/*! This file is auto-generated */
+var e="script#wp-emoji-settings",t=document.querySelector(e);if(!(t instanceof HTMLScriptElement))throw new Error("Element missing: "+e);const r=JSON.parse(t.text),s=(window._wpemojiSettings=r,"wpEmojiSettingsSupports"),o=["flag","emoji"];function i(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(s,JSON.stringify(t))}catch(e){}}function c(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0);const r=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);return t.every((e,t)=>e===r[t])}function p(e,t){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var n=e.getImageData(16,16,1,1);for(let e=0;e<n.data.length;e++)if(0!==n.data[e])return!1;return!0}function u(e,t,n,r){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\udde8\ud83c\uddf6","\ud83c\udde8\u200b\ud83c\uddf6")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!r(e,"\ud83e\u1fac8")}return!1}function f(e,t,n,r){let a;const s=(a="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):document.createElement("canvas")).getContext("2d",{willReadFrequently:!0}),o=(s.textBaseline="top",s.font="600 32px Arial",{});return e.forEach(e=>{o[e]=t(s,e,n,r)}),o}function a(e){var t=document.createElement("script");t.src=e,t.defer=!0,document.head.appendChild(t)}r.supports={everything:!0,everythingExceptFlag:!0},new Promise(t=>{let n=function(){try{var e=JSON.parse(sessionStorage.getItem(s));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(o),u.toString(),c.toString(),p.toString()].join(",")+"));",r=new Blob([e],{type:"text/javascript"});const a=new Worker(URL.createObjectURL(r),{name:"wpTestEmojiSupports"});return void(a.onmessage=e=>{i(n=e.data),a.terminate(),t(n)})}catch(e){}i(n=f(o,u,c,p))}t(n)}).then(e=>{for(const n in e)r.supports[n]=e[n],r.supports.everything=r.supports.everything&&r.supports[n],"flag"!==n&&(r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&r.supports[n]);var t;r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&!r.supports.flag,r.supports.everything||((t=r.source||{}).concatemoji?a(t.concatemoji):t.wpemoji&&t.twemoji&&(a(t.twemoji),a(t.wpemoji)))});
+//# sourceURL=https://www.securityhq.com/wp-includes/js/wp-emoji-loader.min.js
+</script>
+<script></script>            <!-- Start of HubSpot Embed Code -->
+        <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/6507446.js"></script>
+        <!-- End of HubSpot Embed Code -->
+    <script defer src="https://www.securityhq.com/wp-content/cache/autoptimize/js/autoptimize_f016e564b3eaf13a638ccd778b0377f7.js"></script></body>
+</html>
+<!--
+Performance optimized by W3 Total Cache. Learn more: https://www.boldgrid.com/w3-total-cache/?utm_source=w3tc&utm_medium=footer_comment&utm_campaign=free_plugin
+
+Page Caching using Disk: Enhanced 
+
+Served from: securityhq.com @ 2026-08-11 23:49:24 by W3 Total Cache
+-->

@@ -1,0 +1,118 @@
+schema_version: 1
+interpretation:
+  - >-
+    A contemporaneous Audacity forum reply links the poisoned main installer's VirusTotal report and
+    identifies it as a roughly 350 kB replacement. This supplies the exact SHA-256 that was
+    previously missing. The clean 2.1.2 installer below matches independent archive-mirror MD5 and
+    SHA-1 records.
+  - >-
+    A contemporaneous Classic Shell forum report records both installers' MD5, SHA-1, and exact
+    sizes. The recovered files match every one of those values. The infected file's measured SHA-256
+    also matches the VirusTotal report linked directly from The Register's August 2016 coverage.
+  - >-
+    Triage independently maps the published infected MD5 and SHA-1 to the same SHA-256 and preserves
+    the exact bytes as ClassicShell.exe. Its provider record is retained in the sidecar; the
+    incident-specific local filename distinguishes the poisoned file from the clean same-version
+    installer.
+samples:
+  - artifact_id: fosshub-audacity
+    phase: before
+    classification: clean
+    version: 2.1.2
+    filename: audacity-win-2.1.2.exe
+    path: fosshub-audacity/before/audacity-win-2.1.2.exe
+    sha256: 22e0f0ada3e8d24690dd741ca9feb868dffc024d45d2cd3168f8c54c47eec3c9
+    size: 26496761
+    source:
+      url: https://www.download3k.com/DownloadLink2-Audacity-Audacity.html
+      retrieved_at: '2026-08-10T02:45:42Z'
+      kind: software_archive_mirror
+    verification:
+      status: exact
+      basis:
+        - download3k_md5_0032ee390228e10587d8689fc62b367a
+        - download3k_sha1_850f643bb715782f120edb8eee982b0f3543a332
+        - videohelp_release_date_2016_01_20_and_size_25_3_mb
+        - measured_hashes_and_size
+    notes:
+      - This is the genuine installer that the much smaller malicious FossHub upload impersonated.
+  - artifact_id: fosshub-classic-shell
+    phase: before
+    classification: clean
+    version: 4.3.0
+    filename: ClassicShellSetup_4_3_0.exe
+    path: fosshub-classic-shell/before/ClassicShellSetup_4_3_0.exe
+    sha256: 4ee910b283871ab31ef03eeb15d9557e89b55eda8f0580340b4dd2fc90305ac8
+    size: 7220496
+    source:
+      url: https://www.novopos.ch/client/WINDOWS/ClassicShellSetup_4_3_0.exe
+      retrieved_at: '2026-08-10T02:10:47Z'
+      kind: software_archive_mirror
+    verification:
+      status: exact
+      basis:
+        - classic_shell_forum_clean_md5_e10881b65c27c6e09e5a33cd8bcd99c6
+        - classic_shell_forum_clean_sha1_a6b06d07fe3b1a7204b1b62c67fbf3c602385364
+        - classic_shell_forum_clean_size_7220496
+        - >-
+          hybrid_analysis_clean_sha256_4ee910b283871ab31ef03eeb15d9557e89b55eda8f0580340b4dd2fc90305ac8
+        - measured_hashes_and_size
+    notes:
+      - The clean file is the signed installer that the malicious FossHub upload impersonated.
+  - artifact_id: fosshub-classic-shell
+    phase: during
+    classification: malicious
+    version: 4.3.0
+    filename: ClassicShellSetup_4_3_0_infected.exe
+    path: fosshub-classic-shell/during/ClassicShellSetup_4_3_0_infected.exe
+    sha256: a848bf24651421fbcd15c7e44f80bb87cbacd2599eb86508829537693359e032
+    size: 7148732
+    source:
+      url: https://tria.ge/api/v0/samples/260803-1vjbssycqd/sample
+      retrieved_at: '2026-08-10T02:10:01Z'
+      kind: malware_sandbox
+    verification:
+      status: exact
+      basis:
+        - classic_shell_forum_infected_md5_c67dff7c65792e6ea24aa748f34b9232
+        - classic_shell_forum_infected_sha1_438b6fa7d5a2c7ca49837f403bcbb73c14d46a3e
+        - classic_shell_forum_infected_size_7148732
+        - >-
+          register_linked_virustotal_sha256_a848bf24651421fbcd15c7e44f80bb87cbacd2599eb86508829537693359e032
+        - triage_md5_and_sha1_search_to_sha256_summary
+        - measured_hashes_and_size
+    notes:
+      - Triage classifies the file as a bootkit and persistence sample.
+      - The same SHA-256 was independently recovered from Hopper.
+      - >-
+        Reported digests sha1:438b6fa7d5a2c7ca49837f403bcbb73c14d46a3e,
+        md5:c67dff7c65792e6ea24aa748f34b9232 resolve to these bytes.
+unresolved:
+  - artifact_id: fosshub-audacity
+    phase: during
+    version: 2.1.2
+    coordinate: sha256:176f96b1516ba4fba24035808f9428ff48123d4069db5b600ebcb7528c48d1f8
+    status: unavailable
+    attempts:
+      - >-
+        Forager SHA-256 lookup on 2026-08-09: unavailable from Hopper, MalwareBazaar, Triage, and
+        Malshare.
+      - >-
+        Forager PURL/SHA-256: time=2026-08-10T13:56:03.254-04:00 level=ERROR msg="command failed"
+        error="hash 176f96b1516ba4fba24035808f9428ff48123d4069db5b600ebcb7528c48d1f8 unavailable
+        from configured sources: malwarebazaar: MalwareBazaar has no sample for
+        176f96b1516ba4fba24035808f9428ff48123d4069db5b600ebcb7528c48d1f8: hash_not_found; triage:
+        Triage has no file analysis for SHA256
+        176f96b1516ba4fba24035808f9428ff48123d4069db5b600ebcb7528c48d1f8; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-08-10T17:56:04.417Z'
+    notes:
+      - >-
+        An Audacity forum moderator linked this exact VirusTotal record on August 3, 2016 while
+        describing the infected main installer.
+      - >-
+        The malicious replacement was reported as roughly 350 kB, versus 25.3 MB for the genuine
+        installer.
+      - >-
+        VirusTotal:
+        https://www.virustotal.com/en/file/176f96b1516ba4fba24035808f9428ff48123d4069db5b600ebcb7528c48d1f8/analysis/1470250515/

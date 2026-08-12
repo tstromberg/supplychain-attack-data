@@ -1,0 +1,244 @@
+schema_version: 1
+interpretation:
+  - >-
+    The previous unscoped PURL was incorrect. The compromised official package
+    was @bitwarden/cli@2026.4.0. Bitwarden confirms that its npm delivery path
+    served the malicious release for 93 minutes on April 22, 2026; the company
+    found no impact to the legitimate source repository or other products.
+  - >-
+    The original tarball has been removed. jsDelivr retains a complete nine-file
+    manifest for 2026.4.0. Four members differ from the exact 2026.3.0 base: two
+    added malicious files, modified package.json, and a one-byte change to build/bw.js.
+    Every other member, including the no-longer-retrievable WebAssembly file, has the
+    same retained SHA-256 as the clean base. Those facts permit a complete
+    member-for-member tree reconstruction, but not recovery of the original npm
+    tarball bytes. Ossprey later published the original tarball's SHA-256; it does not
+    match the synthetic archive, confirming that the reconstructed filename must remain.
+  - >-
+    The recovered package.json adds a preinstall hook and redirects the bw CLI
+    binary to bw_setup.js. That setup file installs Bun and launches bw1.js.
+    The 10,154,904-byte bw1.js is the payload Socket analyzed; all three files
+    match jsDelivr's retained content hashes and Socket's manifest sizes.
+samples:
+  - artifact_id: bitwarden-cli
+    phase: before
+    classification: clean
+    coordinate: pkg:npm/%40bitwarden/cli@2026.3.0
+    version: 2026.3.0
+    filename: '@bitwarden-cli-2026.3.0.tgz'
+    path: bitwarden-cli/before/@bitwarden-cli-2026.3.0.tgz
+    sha256: 6fcc809342be234bce7f2cd3b0a8ed8f463ec1f170d6517e40d982daac1de9a6
+    size: 3750201
+    source:
+      url: https://registry.npmjs.org/@bitwarden/cli/-/cli-2026.3.0.tgz
+      retrieved_at: '2026-08-10T12:32:00.310069Z'
+      kind: official_registry
+    verification:
+      status: exact
+      basis:
+        - npm_registry_distribution
+        - npm_publication_time_2026_04_02T17_27_31_694Z
+        - immediately_precedes_removed_2026_4_0
+        - embedded_name_and_version
+        - bw1_js_and_bw_setup_js_absent
+        - measured_sha256_and_size
+  - artifact_id: bitwarden-cli
+    phase: during
+    classification: carrier
+    coordinate: pkg:npm/%40bitwarden/cli@2026.4.0
+    version: 2026.4.0
+    filename: package.json
+    path: bitwarden-cli/during/package.json
+    sha256: 167ce57ef59a32a6a0ef4137785828077879092d7f83ddbc1755d6e69116e0ad
+    size: 4124
+    source:
+      url: https://cdn.jsdelivr.net/npm/@bitwarden/cli@2026.4.0/package.json
+      retrieved_at: '2026-08-10T12:34:30Z'
+      kind: official_cdn_archive
+    verification:
+      status: payload_only
+      basis:
+        - jsdelivr_manifest_content_hash_and_size
+        - socket_manifest_content_id_and_size
+        - embedded_name_and_version
+        - adds_preinstall_node_bw_setup_js
+        - redirects_bin_bw_to_bw_setup_js
+        - measured_sha256_and_size
+    notes:
+      - Exact modified package manifest only; this is not the removed npm tarball.
+  - artifact_id: bitwarden-cli
+    phase: during
+    classification: carrier
+    coordinate: pkg:npm/%40bitwarden/cli@2026.4.0
+    version: 2026.4.0
+    filename: bw_setup.js
+    path: bitwarden-cli/during/bw_setup.js
+    sha256: f35475829991b303c5efc2ee0f343dd38f8614e8b5e69db683923135f85cf60d
+    size: 4293
+    source:
+      url: https://cdn.jsdelivr.net/npm/@bitwarden/cli@2026.4.0/bw_setup.js
+      retrieved_at: '2026-08-10T12:34:30Z'
+      kind: official_cdn_archive
+    verification:
+      status: payload_only
+      basis:
+        - jsdelivr_manifest_content_hash_and_size
+        - socket_manifest_content_id_and_size
+        - downloads_bun_1_3_13_from_github_releases
+        - launches_bun_with_bw1_js
+        - measured_sha256_and_size
+    notes:
+      - Exact malicious setup/loader file only; this is not the removed npm tarball.
+  - artifact_id: bitwarden-cli
+    phase: during
+    classification: malicious
+    coordinate: pkg:npm/%40bitwarden/cli@2026.4.0
+    version: 2026.4.0
+    filename: bw1.js
+    path: bitwarden-cli/during/bw1.js
+    sha256: 18f784b3bc9a0bcdcb1a8d7f51bc5f54323fc40cbd874119354ab609bef6e4cb
+    size: 10154904
+    source:
+      url: https://cdn.jsdelivr.net/npm/@bitwarden/cli@2026.4.0/bw1.js
+      retrieved_at: '2026-08-10T12:34:30Z'
+      kind: official_cdn_archive
+    verification:
+      status: payload_only
+      basis:
+        - socket_identifies_bw1_js_as_the_malicious_payload
+        - jsdelivr_manifest_content_hash_and_size
+        - socket_manifest_content_id_and_size
+        - contains_reported_long_live_the_resistance_marker
+        - measured_sha256_and_size
+    notes:
+      - Exact malicious payload file only; this is not the removed npm tarball.
+  - artifact_id: bitwarden-cli
+    phase: during
+    classification: malicious
+    coordinate: pkg:npm/%40bitwarden/cli@2026.4.0
+    version: 2026.4.0
+    filename: '@bitwarden-cli-2026.4.0-RECONSTRUCTED.tgz'
+    path: bitwarden-cli/during/@bitwarden-cli-2026.4.0-RECONSTRUCTED.tgz
+    sha256: ac71803ababd0dd6f33d5f441ff99d2427939dc0c3435d91afd0d7a61ab0a105
+    size: 6645072
+    source:
+      url: https://data.jsdelivr.com/v1/package/npm/@bitwarden/cli@2026.4.0
+      retrieved_at: '2026-08-11T15:42:38Z'
+      kind: reconstructed_distribution
+      original_url: https://registry.npmjs.org/@bitwarden/cli/-/cli-2026.4.0.tgz
+      reconstruction:
+        method: exact_member_overlay_on_verified_predecessor
+        base:
+          coordinate: pkg:npm/%40bitwarden/cli@2026.3.0
+          path: bitwarden-cli/before/@bitwarden-cli-2026.3.0.tgz
+          sha256: 6fcc809342be234bce7f2cd3b0a8ed8f463ec1f170d6517e40d982daac1de9a6
+          member_count: 7
+        retained_manifest:
+          url: https://data.jsdelivr.com/v1/package/npm/@bitwarden/cli@2026.4.0
+          retrieved_at: '2026-08-11T15:42:38Z'
+          sha256: 1b48406de8eafc96c18636c4c92c909c63379810c3361f83a707bb6b59271203
+          member_count: 9
+          member_hash: sha256_base64
+        overlays:
+          - path: package/package.json
+            operation: replace
+            source_path: bitwarden-cli/during/package.json
+            sha256: 167ce57ef59a32a6a0ef4137785828077879092d7f83ddbc1755d6e69116e0ad
+            size: 4124
+          - path: package/build/bw.js
+            operation: replace
+            source_url: https://cdn.jsdelivr.net/npm/@bitwarden/cli@2026.4.0/build/bw.js
+            sha256: 7481f8fb190be198b773203974d0051e16c37da4470c900c68e69eeb6f360f64
+            size: 3396423
+          - path: package/bw_setup.js
+            operation: add
+            source_path: bitwarden-cli/during/bw_setup.js
+            sha256: f35475829991b303c5efc2ee0f343dd38f8614e8b5e69db683923135f85cf60d
+            size: 4293
+          - path: package/bw1.js
+            operation: add
+            source_path: bitwarden-cli/during/bw1.js
+            sha256: 18f784b3bc9a0bcdcb1a8d7f51bc5f54323fc40cbd874119354ab609bef6e4cb
+            size: 10154904
+        unchanged_members:
+          count: 5
+          verification: path_size_and_sha256_match_base_and_retained_manifest
+        packaging:
+          format: ustar_gzip
+          member_mtime: '1985-10-26T08:15:00Z'
+          uid: 0
+          gid: 0
+          uname: root
+          gname: wheel
+          path_order: lexicographic
+          gzip_timestamp: omitted
+          authoritative_original_archive_sha256: 99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f
+          original_archive_bytes_recovered: false
+    verification:
+      status: tree_equivalent
+      basis:
+        - retained_jsdelivr_manifest_accounts_for_all_9_members
+        - all_reconstructed_paths_sizes_and_sha256_values_match_manifest
+        - 5_unchanged_members_match_verified_2026_3_0_base
+        - 4_exact_added_or_replaced_members_match_retained_hashes
+        - authoritative_original_archive_sha256_does_not_match_synthetic_archive
+        - measured_synthetic_archive_sha256_and_size
+    notes:
+      - >-
+        Synthetic complete-tree reconstruction, not the removed npm tarball. The
+        RECONSTRUCTED filename and tree_equivalent status are intentional: Ossprey's
+        authoritative whole-archive SHA-256 is
+        99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f, which does not
+        match this synthetic archive.
+  - artifact_id: bitwarden-cli
+    phase: after
+    classification: remediated
+    coordinate: pkg:npm/%40bitwarden/cli@2026.4.1
+    version: 2026.4.1
+    filename: '@bitwarden-cli-2026.4.1.tgz'
+    path: bitwarden-cli/after/@bitwarden-cli-2026.4.1.tgz
+    sha256: 1df625bd0888e796b60b960c0ce7715af060456b9140a4aaed0b97dd2e0431d1
+    size: 3750213
+    source:
+      url: https://registry.npmjs.org/@bitwarden/cli/-/cli-2026.4.1.tgz
+      retrieved_at: '2026-08-10T12:32:00.288747Z'
+      kind: official_registry
+    verification:
+      status: exact
+      basis:
+        - npm_registry_distribution
+        - npm_publication_time_2026_04_23T15_54_37_374Z
+        - bitwarden_remediation_release
+        - embedded_name_and_version
+        - no_preinstall_hook
+        - bin_bw_points_to_build_bw_js
+        - bw1_js_and_bw_setup_js_absent
+        - measured_sha256_and_size
+unresolved:
+  - artifact_id: bitwarden-cli
+    phase: during
+    coordinate: pkg:npm/%40bitwarden/cli@2026.4.0
+    status: original_distribution_unavailable_tree_reconstructed
+    attempts:
+      - npm removed the malicious version record and original tarball.
+      - Wayback Machine has no capture of the original tarball URL.
+      - unpkg returns 404 for the removed version.
+      - Software Heritage does not retain version 2026.4.0.
+      - >-
+        jsDelivr lists 11 files and serves the three decisive malicious files,
+        but its advertised build/0267f925739a02ab7f0e.module.wasm returns 404.
+      - >-
+        Socket lists the same 11 files and content mappings, but its copy of
+        that WebAssembly member returns HTTP 400. Strict Forager reconstruction
+        rejected and removed the incomplete archive.
+      - >-
+        On 2026-08-11 the retained jsDelivr manifest hash for that WebAssembly
+        member was found to match the exact 2026.3.0 base, allowing a complete
+        tree reconstruction without retrieving the member again.
+      - >-
+        Ossprey published SHA-256
+        99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f for the
+        original package tarball. The synthetic archive hashes to
+        ac71803ababd0dd6f33d5f441ff99d2427939dc0c3435d91afd0d7a61ab0a105, so it is
+        complete at the member-tree level but is not byte-for-byte identical.
+    last_attempted_at: '2026-08-11T15:42:38Z'

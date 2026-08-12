@@ -1,0 +1,142 @@
+- id: vapi-server-sdk
+  title: Vapi server SDK caught in the Phantom Gyp npm wave
+  campaigns:
+  - miasma-2026
+  synopsis: >-
+    On 2026-06-03 the Miasma worm republished 57 npm packages in under two hours, hiding
+    execution in a 157-byte binding.gyp file instead of an install script. The largest
+    victim was @vapi-ai/server-sdk, at more than 408,000 downloads a month.
+  story: |
+    A self-replicating npm worm poisoned 57 packages in less than two hours on
+    June 3, 2026, and did it without touching the `preinstall` or `postinstall`
+    hooks that most supply-chain scanners watch. The largest package caught in the
+    wave was `@vapi-ai/server-sdk`, the server-side SDK for the voice-AI platform
+    Vapi, which StepSecurity put at more than 408,000 downloads a month.
+
+    The technique, which StepSecurity named "Phantom Gyp," abused `node-gyp`, the
+    build tool Node.js uses to compile native addons. A `binding.gyp` file
+    describes how to build those addons, and it can contain shell commands that
+    `node-gyp` evaluates while resolving the build. The attacker needed 157 bytes:
+    a command of the form `"<!(node index.js > /dev/null 2>&1 && echo stub.c)"`,
+    which quietly executed the package's own `index.js` during installation.
+    Nothing appeared in `package.json`, so tools that inventory lifecycle scripts
+    saw a clean package.
+
+    What `index.js` ran was a four-layer unpacking chain: a ROT-N Caesar cipher
+    fed to `eval()`, an AES-128-GCM decryption layer, a loader that downloaded the
+    Bun JavaScript runtime, and finally the Miasma payload itself. Once resident,
+    it swept for npm, GitHub, AWS, GCP, Azure, HashiCorp Vault, and Kubernetes
+    credentials, pulled GitHub Actions secrets out of runner memory, and wrote
+    startup hooks into the configuration directories of AI coding assistants
+    including Claude Code and Cursor, so that a developer opening the project
+    again would re-execute it.
+
+    Stolen material went to GitHub, where the account `liuende501` held 236
+    programmatically created repositories used as drop boxes. Snyk, which tracked
+    the same activity as a node-gyp supply-chain compromise, counted more than 300
+    malicious versions across the affected packages. The worm closed the loop by
+    using the credentials it collected to republish trojanized versions from any
+    maintainer account it could reach, which is how a technique demonstrated on
+    one project arrived in 56 others the same afternoon.
+  start_date: 2026-06-03
+  end_date: 2026-06-05
+  target:
+    name: '@vapi-ai/server-sdk'
+    kind: library
+    repo: https://github.com/VapiAI/server-sdk-typescript
+    website: https://www.npmjs.com/package/@vapi-ai/server-sdk
+  actor:
+    name: Unknown
+    kind: group
+  language: JavaScript
+  method:
+    cause: compromised_account_credentials
+    phase: distribution
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - self_propagation
+    - data_exfiltration
+    - remote_code_execution
+    users: 408000
+  locations:
+  - uri: https://www.npmjs.com/package/@vapi-ai/server-sdk
+    role: distribution
+  indicators:
+  - kind: file
+    value: binding.gyp
+  - kind: malware_family
+    value: Miasma
+  - kind: account
+    value: 'GitHub: liuende501'
+  - kind: file
+    value: .claude/setup.mjs
+  notes:
+  - StepSecurity counted 57 packages and more than 286 malicious versions published in
+    under two hours on 2026-06-03. Snyk reported 57 packages and over 300 malicious
+    versions for the same activity, tracking it as a node-gyp supply chain compromise.
+  - The binding.gyp payload was reported as `"<!(node index.js > /dev/null 2>&1 && echo
+    stub.c)"`. Execution occurs because node-gyp evaluates shell commands in binding.gyp
+    during dependency installation, so `npm install --ignore-scripts` does not prevent it.
+  - '@vapi-ai/server-sdk was the largest single victim of this wave by download volume.
+    Specific affected version identifiers for the Vapi package have not been published;
+    four versions were reported as compromised.'
+  - Exfiltration used 236 programmatically created repositories under the GitHub account
+    liuende501. Repository descriptions referenced earlier security disclosures in
+    reversed text.
+  artifacts:
+  - id: vapi-ai-server-sdk
+    name: '@vapi-ai/server-sdk'
+    package: '@vapi-ai/server-sdk'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-03
+    end_date: 2026-06-03
+    versions:
+    - 0.11.1
+    - 0.11.2
+    - 1.2.1
+    - 1.2.2
+    hashes:
+    - sha256:a10efe41b7bd357d5ebb328178bc6a8a430cfab1c463602c3b1aeb5621bbd9d2
+    - sha256:2bbea133e823705f841b665a72cf7aa8714a4f6408288215a1a8365e17c205dc
+    - sha256:f61e0a2980195682b5135f2620052b4287c7e1a0452bcfe7c897c5f32b1995f4
+    - sha256:127aef493c197efd18be027fe54aa4d9056d2ed8cce600d81bdd04f25a16c4a1
+    fixed_versions:
+    - 1.2.0
+    locations:
+    - uri: https://www.npmjs.com/package/@vapi-ai/server-sdk
+      role: distribution
+    - uri: https://registry.npmjs.org/@vapi-ai/server-sdk/-/server-sdk-0.11.1.tgz
+      role: distribution
+    - uri: https://registry.npmjs.org/@vapi-ai/server-sdk/-/server-sdk-0.11.2.tgz
+      role: distribution
+    - uri: https://registry.npmjs.org/@vapi-ai/server-sdk/-/server-sdk-1.2.1.tgz
+      role: distribution
+    - uri: https://registry.npmjs.org/@vapi-ai/server-sdk/-/server-sdk-1.2.2.tgz
+      role: distribution
+    notes:
+    - Four versions were reported compromised on 2026-06-03 without published identifiers.
+      These four are the only versions the npm registry records as published that day,
+      in two pairs across both maintained release lines - 0.11.1 at 23:26:29Z and 1.2.1 at
+      23:26:39Z, then 0.11.2 at 23:28:37Z and 1.2.2 at 23:28:48Z. Identifiers are derived
+      from registry publish timestamps, not from a vendor advisory.
+    - The registry corroborates the identification. The `latest` dist-tag points at 1.2.0,
+      published 2026-04-22, which is older than 1.2.1 and 1.2.2. Rolling `latest` back to
+      the last pre-incident release is the expected response to a compromised publish, so
+      1.2.0 is recorded as the remediated release.
+    - All four versions remain published and installable by explicit version or by a range
+      that resolves to them. They were not unpublished, only removed from the `latest`
+      tag, so a lockfile or caret range pinned into the 0.11.x line can still reach them.
+    - The four SHA-256 values are measured complete npm archives and correspond to
+      0.11.1, 0.11.2, 1.2.1, and 1.2.2 in that order.
+  references:
+  - url: https://www.stepsecurity.io/blog/binding-gyp-npm-supply-chain-attack-spreads-like-worm
+    title: 'Miasma npm Supply Chain Attack: Self-Spreading Worm via Phantom Gyp - StepSecurity'
+  - url: https://snyk.io/blog/node-gyp-supply-chain-compromise-self-propagating-npm-worm-binding-gyp/
+    title: Node-gyp Supply Chain Compromise - Snyk
+  - url: https://thehackernews.com/2026/06/ironworm-and-new-miasma-worm-variant.html
+    title: IronWorm and New Miasma Worm Variant Hit npm in Supply Chain Attacks - The Hacker
+      News

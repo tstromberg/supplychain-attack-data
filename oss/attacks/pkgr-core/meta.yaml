@@ -1,0 +1,76 @@
+- id: pkgr-core
+  title: "@pkgr/core npm phishing shipped Scavenger"
+  campaigns:
+  - npnjs-scam-npm-2025
+  synopsis: >-
+    Attackers used a phished maintainer credential to publish malicious @pkgr/core 0.2.8
+    through the official npm registry during the July 2025 npnjs.com campaign.
+  story: |-
+    On July 18, 2025, attackers added `@pkgr/core` to the list of npm packages compromised through the `npnjs.com` phishing campaign, publishing malicious version 0.2.8 under JounQin's hijacked publishing token. The package is a small utility library that other JounQin-maintained tools depend on, which extended the blast radius well beyond projects that name it directly.
+
+    StepSecurity and Socket identified the release while working through the same cluster that produced the malicious `eslint-config-prettier`, `eslint-plugin-prettier`, `synckit`, and `napi-postinstall` publishes. The pattern was identical across all of them: a fresh version showed up on npm with no corresponding commit, pull request, or tag in the project's GitHub repository, a sign that the registry credential rather than the source tree had been the entry point.
+
+    The payload matched the Scavenger family seen in the sibling packages, a Windows-only loader that ran `node-gyp.dll` through `rundll32` once the package was unpacked on a developer workstation or CI runner. Install-time execution made the package's lack of a user-facing application largely beside the point: the credentials and network access available to the build environment were the target.
+
+    JounQin revoked the leaked token, deprecated and removed 0.2.8, and published clean version 0.2.9. Operators who installed during the window were advised to rotate any credential reachable from the affected machine.
+  start_date: 2025-07-18
+  end_date: 2025-07-19
+  target:
+    name: '@pkgr/core'
+    kind: library
+    repo: https://github.com/un-ts/pkgr
+  actor:
+    name: Third Party
+    kind: group
+  language: JavaScript
+  method:
+    cause: social_engineering
+    phase: distribution
+    motive: remote_code_execution
+    transitive: true
+  impact:
+    types:
+    - code_execution
+    users: 0
+  artifacts:
+  - id: pkgr-core
+    name: '@pkgr/core npm package'
+    package: '@pkgr/core'
+    ecosystem: npm
+    kind: source_archive
+    repo: https://github.com/un-ts/pkgr
+    start_date: 2025-07-18
+    end_date: 2025-07-19
+    versions:
+    - 0.2.8
+    fixed_versions:
+    - 0.2.9
+    locations:
+    - uri: https://www.npmjs.com/package/@pkgr/core/v/0.2.8
+      role: distribution
+    - uri: https://registry.npmjs.org/@pkgr/core/-/core-0.2.8.tgz
+      role: mirror
+    indicators:
+    - kind: file
+      value: install.js
+    - kind: file
+      value: node-gyp.dll
+    - kind: file_sha256
+      value: install.js 32d0dbdfef0e5520ba96a2673244267e204b94a49716ea13bf635fa9af6f66bf
+    - kind: file_sha256
+      value: node-gyp.dll c68e42f416f482d43653f36cd14384270b54b68d6496a8e34ce887687de5b441
+  references:
+  - url: 
+      https://www.stepsecurity.io/blog/supply-chain-security-alert-eslint-config-prettier-package-shows-signs-of-compromise
+    title: eslint-config-prettier package shows signs of compromise
+  - url: 
+      https://socket.dev/blog/npm-phishing-campaign-leads-to-prettier-tooling-packages-compromise
+    title: npm phishing campaign leads to Prettier tooling packages compromise
+  - url: https://www.crowdstrike.com/en-us/blog/crowdstrike-falcon-prevents-npm-package-supply-chain-attacks/
+    title: CrowdStrike Falcon Prevents Supply Chain Attack Involving Compromised NPM Packages
+  - url: https://osv.dev/vulnerability/MAL-2025-6021
+    title: Malicious code in @pkgr/core (npm)
+  - url: https://security.snyk.io/vuln/SNYK-JS-PKGRCORE-10873302
+    title: Embedded Malicious Code in @pkgr/core
+  - url: https://safedep.io/ti/packages/npm/%40pkgr/core/
+    title: Is @pkgr/core malicious?

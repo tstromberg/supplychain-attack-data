@@ -1,0 +1,94 @@
+schema_version: 1
+interpretation:
+  - >-
+    Debian's orig archive is byte-identical to the clean distribution identified by CERT, including
+    the published MD5 and exact size.
+samples:
+  - artifact_id: tcp-wrappers
+    phase: before
+    classification: clean
+    version: '7.6'
+    filename: tcp_wrappers_7.6.tar.gz
+    path: tcp-wrappers/before/tcp_wrappers_7.6.tar.gz
+    sha256: 9543d7adedf78a6de0b221ccbbd1952e08b5138717f4ade814039bb489a4315d
+    size: 99438
+    source:
+      url: https://deb.debian.org/debian/pool/main/t/tcp-wrappers/tcp-wrappers_7.6.q.orig.tar.gz
+      retrieved_at: '2026-08-09T12:23:31Z'
+      kind: distribution_mirror
+    verification:
+      status: exact
+      basis:
+        - cert_md5_e6fa25f71226d090f34de3f6b122fb5a
+        - cert_size_99438
+        - measured_sha256
+    notes:
+      - Debian's filename adds .q, but the bytes match CERT's clean tcp_wrappers_7.6.tar.gz exactly.
+  - artifact_id: tcp-wrappers
+    phase: during
+    classification: malicious
+    version: '7.6'
+    filename: tcp-wrappers-backdoor-report.html
+    path: tcp-wrappers/during/tcp-wrappers-backdoor-report.html
+    sha256: 7351d23ac64c454f60f317c5261d40ae6cf250d722b8fbe01520310ba1b73ecf
+    size: 11626
+    source:
+      url: https://www.opennet.ru/base/netsoft/22.txt.html
+      retrieved_at: '2026-08-09T17:22:08Z'
+      kind: contemporary_mailing_list_mirror
+    verification:
+      status: payload_only
+      basis:
+        - maintainer_published_complete_diff
+        - independent_bugtraq_archive_corroboration
+        - measured_sha256
+    notes:
+      - >-
+        This preserves Wietse Venema's contemporary message and complete malicious diff, not the
+        poisoned release archive.
+  - artifact_id: tcp-wrappers
+    phase: during
+    classification: malicious
+    version: '7.6'
+    filename: tcp_wrappers_7.6-backdoor.diff
+    path: tcp-wrappers/during/tcp_wrappers_7.6-backdoor.diff
+    sha256: b13a9280e9c44a3d704eca728c28dbf79b65c44c6350fd9bdfa5692d8fc33f4f
+    size: 1948
+    source:
+      url: https://www.opennet.ru/base/netsoft/22.txt.html
+      retrieved_at: '2026-08-09T17:22:08Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - maintainer_published_complete_diff
+        - independent_bugtraq_archive_corroboration
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: '7.6'
+    notes:
+      - >-
+        HTML markup and entity encoding were removed; the complete visible context diff and line
+        ordering were preserved.
+      - >-
+        The mailing-list HTML mirrors may have normalized tabs, so this is reconstruction evidence
+        rather than a mechanically verified patch.
+unresolved:
+  - artifact_id: tcp-wrappers
+    phase: during
+    version: '7.6'
+    hash: md5:af7f76fb9960a95a1341c1777b48f1df
+    status: original_distribution_unavailable_complete_diff_recovered
+  - artifact_id: tcp-wrappers
+    phase: during
+    coordinate: md5:af7f76fb9960a95a1341c1777b48f1df
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-08-10T13:56:56.275-04:00 level=ERROR msg="command failed"
+        error="hash af7f76fb9960a95a1341c1777b48f1df unavailable from configured sources:
+        malwarebazaar: MalwareBazaar has no sample for af7f76fb9960a95a1341c1777b48f1df:
+        hash_not_found; triage: Triage has no file analysis for MD5
+        af7f76fb9960a95a1341c1777b48f1df; malshare: download returned status 404"
+    last_attempted_at: '2026-08-10T17:56:57.574Z'

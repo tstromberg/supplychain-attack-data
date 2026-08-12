@@ -1,0 +1,178 @@
+- id: mastra
+  title: Mastra npm org republished 140+ packages with a dropper dependency
+  synopsis: >-
+    An attacker took over a maintainer account with publish rights across the @mastra npm
+    organization and, in 88 minutes on 2026-06-17, republished more than 140 packages with a
+    dependency on easy-day-js, whose postinstall dropper fetched a second stage.
+  story: |
+    An attacker who controlled a maintainer account in the `@mastra` npm
+    organization republished more than 140 packages of the Mastra AI agent
+    framework in an 88-minute burst on June 17, 2026, adding a single malicious
+    dependency to each. Microsoft Threat Intelligence later attributed the
+    operation with high confidence to Sapphire Sleet, the North Korean actor also
+    tracked as BlueNoroff and APT38.
+
+    Mastra is a TypeScript framework for building AI agents, and its packages draw
+    more than 1.1 million downloads a week between them, with `@mastra/core` alone
+    at roughly 918,000. That made the organization a good place to reach the sort
+    of developer machine that holds LLM API keys and cloud credentials. Mastra's
+    own incident report described the way in. A compromised LinkedIn
+    account contacted the maintainer, along with maintainers of other prominent
+    TypeScript packages. He was on a call, clicked the link, and his machine was
+    compromised. Two decisions turned that into a registry compromise. The account
+    used to publish, `ehindero`, belonged to a former contributor whose access had
+    never been revoked, and while Mastra required MFA for npm maintainers it had
+    also, in the project's words, "mistakenly" allowed token bypass. The tokens
+    worked without the second factor.
+
+    The dependency the attacker added was `easy-day-js`, a package built to pass
+    for the widely used `dayjs` date library. StepSecurity traced the setup: an
+    account named `sergey2016` published a clean `easy-day-js@1.11.21` at 07:05 UTC
+    on June 16 to establish a plausible history, then released 1.11.22 at 01:01 UTC
+    the next day containing an obfuscated `setup.cjs` dropper. Between 01:12 and
+    02:39 UTC the republishing did the rest, injecting the dependency across the
+    ecosystem.
+
+    The dropper ran through three layers of obfuscation, wrote beacon files
+    recording its installation paths so the operators could map victims, fetched a
+    second stage from `https://23.254.164.92:8000`, and deleted itself. Microsoft's
+    write-up placed the target set as LLM API keys, cloud provider credentials,
+    database connection strings, and CI/CD secrets, the same collection profile
+    Sapphire Sleet had used against the axios HTTP client three months earlier.
+    StepSecurity said its Harden Runner product blocked the C2 connection at the
+    network layer for customers, preventing the second stage from arriving.
+    Developers were told to treat any workstation, CI runner, or build system that
+    installed a `@mastra/*` package after June 16 as compromised.
+  start_date: 2026-06-16
+  end_date: 2026-06-17
+  target:
+    name: Mastra
+    kind: library
+    repo: https://github.com/mastra-ai/mastra
+    website: https://mastra.ai/
+  actor:
+    name: Sapphire Sleet
+    kind: group
+  language: JavaScript
+  method:
+    cause: social_engineering
+    phase: dependency
+    motive: cryptocurrency_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+    users: 1100000
+  locations:
+  - uri: https://www.npmjs.com/org/mastra
+    role: distribution
+  indicators:
+  - kind: file_sha256
+    value: dist/auth/index.cjs 545496ca30982faf438999c56f484da1b689f3e4eeebe3c711898e98603c685a
+  - kind: file_sha256
+    value: dist/auth/index.js 0e892f51c15dd0fd1b466339dd8161a72232d6f6684182b4a10d0e3488818316
+  - kind: file_sha256
+    value: dist/chunk-2PWS6DZG.cjs e743f1f0583b2d14ab72777cc7f0c990834c1a6c760474d88453ee387bf532c1
+  - kind: file_sha256
+    value: dist/chunk-T6HDSHKF.js d0d7ad6fad73678dba14c068baa52f1fff6d249c2d7b33aa1a37700374d0b067
+  - kind: file_sha256
+    value: dist/chunk-ULN5D73V.cjs 1b3af7a4f7f08f308f0550b428e2e38811181d66a2bd47181c6550f744eef8aa
+  - kind: file_sha256
+    value: dist/server/types.d.ts 8a82157e66ae712bff528bcb0aa44fbb7b7e3dba84391ae9d508c81650b78333
+  - kind: file_sha256
+    value: dist/test-utils/llm-mock.cjs 2b4b10b2655b251c0b58a6f0a90db66477a69ef5631edcc4a89de26277d80dde
+  - kind: file_sha256
+    value: dist/test-utils/llm-mock.js 7d5e83509ca34495c8d1869f21f3431e7ba4346a526fd4f2c920fdf0a13d2e74
+  - kind: package
+    value: easy-day-js
+  - kind: file
+    value: setup.cjs
+  - kind: ipv4
+    value: 23.254.164.92
+  - kind: port
+    value: '8000'
+  - kind: account
+    value: 'npm: sergey2016'
+  - kind: account
+    value: 'npm: ehindero'
+  notes:
+  - >-
+    The per-file SHA-256 values come from the OSSF malicious-packages record MAL-2026-6011, which
+    lists them as evidence files for @mastra/core 1.42.1. No digest for the published npm
+    archive itself has been recorded by that source.
+  - The in-scope compromise is the @mastra npm organization. easy-day-js is an
+    attacker-created package impersonating dayjs and is recorded here only as the injected
+    dependency.
+  - Initial access was social engineering. Mastra's incident report describes a compromised
+    LinkedIn account contacting the maintainer, who clicked a link while on a call and had
+    his machine compromised. The same account approached maintainers of other prominent
+    TypeScript packages.
+  - Two contributing conditions are worth recording. The publishing account ehindero
+    belonged to a former contributor whose access had never been revoked, and Mastra
+    required MFA for npm maintainers but also allowed token bypass, which the project
+    called a mistake and has since removed across all packages.
+  - Microsoft assessed Sapphire Sleet's primary motivation as cryptocurrency theft,
+    targeting technology and intellectual property related to cryptocurrency trading,
+    which is why the motive is recorded as cryptocurrency_theft rather than credential
+    theft alone.
+  - 'Timeline in UTC: easy-day-js 1.11.21 published clean on 2026-06-16 at 07:05, malicious
+    1.11.22 on 2026-06-17 at 01:01, and the Mastra republish window from 01:12 to 02:39.'
+  - Microsoft Threat Intelligence attributed the attack to Sapphire Sleet with high
+    confidence on 2026-06-19, and noted the pattern matched the March 2026 axios compromise
+    recorded at [[axios]].
+  - Reported package counts range from 140+ to 145. Combined
+    weekly downloads across the affected packages exceeded 1.1 million, with @mastra/core
+    at roughly 918,000.
+  artifacts:
+  - id: mastra-core
+    name: '@mastra/core'
+    package: '@mastra/core'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-17
+    end_date: 2026-06-17
+    versions:
+    - 1.42.1
+    fixed_versions:
+    - 1.43.0
+    locations:
+    - uri: https://www.npmjs.com/package/@mastra/core
+      role: distribution
+    - uri: https://registry.npmjs.org/@mastra/core/-/core-1.42.1.tgz
+      role: distribution
+    notes:
+    - '@mastra/core is the highest-download package in the scope at roughly 918,000 weekly
+      downloads. 1.42.1 was published at 01:15:13Z on 2026-06-17, inside the reported
+      01:12-02:39Z republishing window; 1.43.0 followed at 08:23:01Z, after it. The
+      identifiers are derived from npm registry publish timestamps rather than from a
+      published advisory list. The registry corroborates it: 1.42.1 now returns 404 while
+      1.42.0 and 1.43.0 are both still served, so the registry pulled exactly that version.
+      Because it was removed, no sample of the malicious tarball could be acquired.'
+  - id: mastra-npm
+    name: '@mastra npm packages'
+    ecosystem: npm
+    kind: source_archive
+    start_date: 2026-06-17
+    end_date: 2026-06-17
+    locations:
+    - uri: https://www.npmjs.com/org/mastra
+      role: distribution
+    notes:
+    - More than 140 packages in the @mastra scope were republished with the easy-day-js
+      dependency during the 01:12-02:39Z window. No source enumerates the full package and
+      version list, so only @mastra/core is recorded with version identifiers.
+  references:
+  - url: https://www.stepsecurity.io/blog/mastra-npm-packages-compromised-using-easy-day-js
+    title: 'Mastra npm Supply Chain Attack: 140+ Packages Backdoored via easy-day-js
+      Typosquat - StepSecurity'
+  - url: https://www.microsoft.com/en-us/security/blog/2026/06/17/postinstall-payload-inside-mastra-npm-supply-chain-compromise/
+    title: 'From package to postinstall payload: Inside the Mastra npm supply chain
+      compromise by Sapphire Sleet - Microsoft Security Blog'
+  - url: https://orca.security/resources/blog/mastra-npm-supply-chain-attack/
+    title: 144 Mastra npm Packages Compromised via Supply Chain Attack - Orca Security
+  - url: https://www.kodemsecurity.com/resources/mastra-npm-packages-compromised-easy-day-js-supply-chain-attack-iocs-and-response-runbook
+    title: 'Mastra npm Compromise: easy-day-js Attack & Response - Kodem'
+  - url: https://thehackernews.com/2026/06/144-mastra-npm-packages-compromised-via.html
+    title: 145 Mastra npm Packages Compromised via Hijacked Contributor Account - The Hacker
+      News

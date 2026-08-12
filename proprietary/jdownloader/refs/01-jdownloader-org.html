@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JDownloader — Website installer incident (May 2026)</title>
+  <meta id="meta-desc" name="description" content="Self-contained information on jdownloader.org about the May 2026 incident affecting some installer downloads: timeline, scope, and how to check your system." />
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #fafafa;
+      --fg: #1a1a1a;
+      --muted: #555;
+      --border: #ddd;
+      --accent: #436976;
+      --accent-hover: #355a62;
+      --card: #fff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141518;
+        --fg: #eee;
+        --muted: #aaa;
+        --border: #333;
+        --card: #1c1d21;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: 1rem;
+      line-height: 1.55;
+      color: var(--fg);
+      background: var(--bg);
+    }
+    .wrap {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 1.75rem 1.25rem 3rem;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .lang-picker-wrap {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .lang-picker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+    .lang-btn {
+      font: inherit;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.35rem 0.55rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--fg);
+      cursor: pointer;
+      line-height: 1.25;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+    .lang-btn:hover {
+      border-color: var(--accent);
+      background: var(--bg);
+    }
+    .lang-btn:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(67, 105, 118, 0.35);
+    }
+    .lang-btn[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: rgba(67, 105, 118, 0.14);
+      color: var(--fg);
+    }
+    .lang-flag {
+      width: 18px;
+      height: 12px;
+      display: block;
+      object-fit: cover;
+      flex-shrink: 0;
+      border-radius: 2px;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+    }
+    @media (prefers-color-scheme: dark) {
+      .lang-flag {
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+      }
+    }
+    h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.65rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .lede {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    nav.links {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+    }
+    nav.links a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    nav.links a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    section {
+      margin-bottom: 2rem;
+    }
+    h2 {
+      margin: 0 0 0.65rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    h3 {
+      margin: 1.25rem 0 0.5rem;
+      font-size: 1.05rem;
+      font-weight: 650;
+    }
+    p { margin: 0 0 0.85rem; }
+    ul, ol { margin: 0 0 0.85rem; padding-left: 1.35rem; }
+    li { margin: 0.35rem 0; }
+    .notice {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.15rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.92rem;
+    }
+    .notice strong { display: block; margin-bottom: 0.35rem; }
+
+    .risk-scope-callout {
+      margin: 0 0 1.5rem;
+      padding: 1rem 1.15rem;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: var(--fg);
+      background: rgba(67, 105, 118, 0.1);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+    }
+    .risk-scope-callout p {
+      margin: 0 0 0.75rem;
+    }
+    .risk-scope-callout p:last-child {
+      margin-bottom: 0;
+    }
+    footer {
+      margin-top: 2.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    footer .doc-stand {
+      margin: 0.65rem 0 0;
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+    footer .doc-stand time {
+      font-variant-numeric: tabular-nums;
+    }
+    footer .legal-disclaimer {
+      margin: 1rem 0 0;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+    footer .legal-disclaimer p {
+      margin: 0;
+    }
+    code, .mono { font-family: ui-monospace, Consolas, monospace; font-size: 0.9em; }
+    a { color: var(--accent); }
+    a:hover { color: var(--accent-hover); }
+
+    .safe-now-msg {
+      margin: 1rem 0 1.1rem;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      font-size: 1.02rem;
+      font-weight: 600;
+      line-height: 1.45;
+      letter-spacing: normal;
+      text-transform: none;
+      color: var(--fg);
+      background: rgba(46, 125, 50, 0.07);
+      border: 1px solid rgba(46, 125, 50, 0.28);
+      border-radius: 8px;
+      box-shadow: none;
+    }
+    .safe-now-msg strong {
+      font-weight: 700;
+    }
+    @media (prefers-color-scheme: dark) {
+      .safe-now-msg {
+        color: var(--fg);
+        letter-spacing: normal;
+        text-transform: none;
+        background: rgba(129, 199, 132, 0.1);
+        border-color: rgba(165, 214, 167, 0.35);
+        box-shadow: none;
+      }
+    }
+
+    .rsa-callout {
+      margin: 0 0 1.5rem;
+      padding: 1rem 1.15rem;
+      font-size: 0.98rem;
+      line-height: 1.55;
+      color: var(--fg);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      box-shadow: none;
+    }
+    .rsa-callout p {
+      margin: 0;
+    }
+    .rsa-callout p + p {
+      margin-top: 0.65rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      .rsa-callout {
+        background: var(--card);
+        box-shadow: none;
+      }
+    }
+
+    .hash-table-wrap {
+      overflow-x: auto;
+      margin: 0 0 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+    }
+    .hash-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+    }
+    .hash-table th,
+    .hash-table td {
+      padding: 0.5rem 0.65rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    .hash-table th {
+      font-weight: 650;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .hash-table tr:last-child td {
+      border-bottom: none;
+    }
+    .hash-table td.mono,
+    .hash-table th.mono {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.78rem;
+      word-break: break-all;
+    }
+    .hash-table .size-cell {
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    p.hash-xref {
+      font-size: 0.92rem;
+      margin: 0 0 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="lang-picker-wrap">
+        <span id="lang-picker-label" class="sr-only">Language</span>
+        <div class="lang-picker" role="group" aria-labelledby="lang-picker-label">
+          <button type="button" class="lang-btn" id="lang-btn-en" aria-pressed="true">
+            <img class="lang-flag" src="" alt="" width="18" height="12" aria-hidden="true" />
+            EN
+          </button>
+          <button type="button" class="lang-btn" id="lang-btn-de" aria-pressed="false">
+            <img class="lang-flag" src="" alt="" width="18" height="12" aria-hidden="true" />
+            DE
+          </button>
+        </div>
+      </div>
+
+      <div class="locale-en">
+        <h1>Website installer incident — May 2026</h1>
+        <p class="lede">Information for users of JDownloader (jdownloader.org).</p>
+        <nav class="links" aria-label="JDownloader website">
+          <a href="https://jdownloader.org/">jdownloader.org</a>
+          <a href="https://jdownloader.org/impressum">Imprint</a>
+          <a href="https://my.jdownloader.org/legal/privacy.html">Privacy</a>
+          <a href="#known-malicious-en">SHA256 / file sizes</a>
+        </nav>
+      </div>
+      <div class="locale-de" hidden>
+        <h1>Website-Installer-Vorfall — Mai 2026</h1>
+        <p class="lede">Informationen für Nutzer von JDownloader (jdownloader.org).</p>
+        <nav class="links" aria-label="JDownloader-Website">
+          <a href="https://jdownloader.org/">jdownloader.org</a>
+          <a href="https://jdownloader.org/impressum">Impressum</a>
+          <a href="https://my.jdownloader.org/legal/privacy.html">Datenschutz</a>
+          <a href="#known-malicious-de">SHA256 / Dateigrößen</a>
+        </nav>
+      </div>
+    </header>
+
+    <article class="locale-en">
+      <div class="notice">
+        <strong>About this page</strong>
+        This notice on jdownloader.org is the public incident information for users. If we add or change details later, reload this page to see the latest version.
+      </div>
+
+      <div class="risk-scope-callout" role="note">
+        <p><strong>Who may be at risk:</strong> Only people who <strong>downloaded and installed from jdownloader.org</strong> during <strong>6th–7th May 2026 (UTC)</strong> using <strong>one or more website download links for &quot;Download Alternative Installer&quot;</strong> and/or the <strong>affected Linux shell installer link</strong> — see the timeline below.</p>
+        <p><strong>Who is not affected:</strong> <strong>Everything</strong> that is <strong>not</strong> among the at-risk cases above. The incident was limited to specific links on this site, so other paths are unaffected for that structural reason. <strong>We only name channels below that we have explicitly reviewed;</strong> the list is <strong>not exhaustive</strong>, and we do <strong>not</strong> list distribution options we have not checked ourselves.</p>
+        <ul>
+          <li>Other installer download options on <strong>jdownloader.org</strong> (everything except <strong>&quot;Download Alternative Installer&quot;</strong> and the affected <strong>Linux shell installer</strong> link), per our incident analysis of the site.</li>
+          <li>Updates installed through JDownloader&apos;s <strong>built-in updater</strong> (RSA-signed; see <a href="#inapp-heading-en">In-app updates</a>), which is independent of the manipulated website links.</li>
+          <li>Channels we have explicitly verified as <strong>not</strong> connected to the manipulated jdownloader.org links: <strong>winget</strong>, <strong>Flatpak</strong> (e.g. Flathub), <strong>Snap</strong>, and <strong>Docker</strong> images from registries.</li>
+        </ul>
+      </div>
+
+      <section id="summary-en" aria-labelledby="summary-heading-en">
+        <h2 id="summary-heading-en">What happened</h2>
+        <p>In early May 2026, attackers succeeded in altering the official JDownloader website so that <strong>certain installer links published here</strong> <strong>were repointed</strong> from the <strong>genuine JDownloader installer downloads</strong> to <strong>unrelated malicious third-party files</strong>: on Windows, <strong>only</strong> the <strong>installer download links</strong> for <strong>&quot;Download Alternative Installer&quot;</strong> — <strong>not</strong> the other installers offered on jdownloader.org — and <strong>the Linux shell installer link</strong> from the site. <strong>Our genuine installer packages were not modified</strong> — <strong>only the targets of the download links published here</strong> pointed to the wrong files. <strong>Installer binaries continue to be hosted externally as usual.</strong> Once confirmed, those malicious link targets were removed, <strong>links were corrected</strong> back to the legitimate external hosts, and the <strong>security issue</strong> was fixed. <strong>The website stayed fully offline</strong> while analysis, remediation, and further verification were completed. <strong>In the night of 8th–9th May 2026 (UTC)</strong>, after those checks, it was brought back online and normal public service resumed with verified clean installer links.</p>
+        <p><strong>Technical scope:</strong> Changes were made through the website&apos;s <strong>content management system</strong>, affecting published pages and links. The attacker did <strong>not</strong> gain access to the underlying server stack — in particular <strong>no access to the host filesystem</strong> or broader operating-system-level control beyond CMS-managed web content. <strong>Access to personal data did not occur</strong> in connection with this incident.</p>
+        <p class="safe-now-msg" role="status"><strong>jdownloader.org is secure again.</strong></p>
+      </section>
+
+      <section id="timeline-en" aria-labelledby="timeline-heading-en">
+        <h2 id="timeline-heading-en">Timeline (UTC)</h2>
+        <p>Approximate order of events:</p>
+        <ol>
+          <li><strong>5th May 2026</strong>, late evening (~23:55 UTC) — Attackers tested their approach on a low-traffic page before changing live installer links.</li>
+          <li><strong>6th May 2026</strong>, shortly after midnight (~00:01 UTC) — On jdownloader.org, a few <strong>download links</strong> were <strong>changed</strong>: if you used <strong>&quot;Download Alternative Installer&quot;</strong> or the <strong>Linux shell installer</strong> link, you could get <strong>malicious files from elsewhere</strong> instead of the real JDownloader installers. <strong>Other installers</strong> on the same page were <strong>not</strong> affected.</li>
+          <li><strong>6th through 7th May 2026</strong> — Primary <strong>risk window</strong> for downloads via those manipulated links.</li>
+          <li><strong>7th May 2026</strong> — At <time datetime="2026-05-07T17:06:00Z"><strong>17:06 UTC</strong></time> we were alerted to the problem via <strong>reddit.com</strong>. Suspicious downloads and warnings became visible; the issue was confirmed and incident handling began. At <time datetime="2026-05-07T17:24:00Z"><strong>17:24 UTC</strong></time>, the server was shut down.</li>
+          <li><strong>7th → 8th May 2026</strong> — Malicious link targets removed; legitimate installer links restored; remediation completed; configuration hardened. <strong>The website remained fully offline</strong> until that work plus follow-on analysis and remediation were finished.</li>
+          <li><strong>Night of 8th–9th May 2026 (UTC)</strong> — After further checks, the website was brought back online; normal operation resumed with verified clean installer links.</li>
+        </ol>
+      </section>
+
+      <section id="scope-en" aria-labelledby="scope-heading-en">
+        <h2 id="scope-heading-en">What was involved</h2>
+        <ul>
+          <li><strong>Windows:</strong> Only the <strong>&quot;Download Alternative Installer&quot;</strong> <strong>installer download links</strong> on the site were manipulated: <strong>they pointed users to unrelated malicious downloads</strong>, <strong>not</strong> to defective or modified copies of our own installers. If you used such a link during the risk window, the file you got could fail usual trust checks (unexpected publisher, missing or invalid signature vs. genuine installers from us).</li>
+          <li><strong>Linux:</strong> A shell-based installer obtained via a swapped link could contain harmful commands.</li>
+        </ul>
+      </section>
+
+      <section id="known-malicious-en" aria-labelledby="known-mal-heading-en">
+        <h2 id="known-mal-heading-en">Known malicious file indicators</h2>
+        <p><strong>Official JDownloader installer packages were not modified;</strong> the following <strong>SHA256</strong> digests and <strong>exact sizes in bytes</strong> describe <strong>unrelated malicious files</strong> that were observed as the substituted download targets during the incident. Your saved copy may use a different file name; compare <strong>hash and size together</strong>. A match is a strong indicator of the bad file — <strong>do not run it</strong>; delete it and obtain a fresh installer from the official download section on jdownloader.org.</p>
+        <p><strong>Below are the known SHA256 checksums of the malicious substitute installer files</strong> observed during this incident.</p>
+        <div class="hash-table-wrap" role="region" aria-label="SHA256 and size table">
+          <table class="hash-table">
+            <thead>
+              <tr>
+                <th scope="col">File name (as observed)</th>
+                <th scope="col">Size (bytes)</th>
+                <th scope="col" class="mono">SHA256</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">JDownloader2Setup_unix_nojre.sh</td>
+                <td class="size-cell">7934496</td>
+                <td class="mono">6d975c05ef7a164707fa359284a31bfe0b1681fe0319819cb9e2c4eec2a1a8af</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-amd64_v11_0_30.exe</td>
+                <td class="size-cell">104910336</td>
+                <td class="mono">fb1e3fe4d18927ff82cffb3f82a0b4ffb7280c85db5a8a8b6f6a1ac30a7e7ed9</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-amd64_v17_0_18.exe</td>
+                <td class="size-cell">101420032</td>
+                <td class="mono">04cb9f0bca6e0e4ed30bc92726590724bf60938440b3825252657d1b3af45495</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-amd64_v1_8_0_482.exe</td>
+                <td class="size-cell">61749248</td>
+                <td class="mono">5a6636ce490789d7f26aaa86e50bd65c7330f8e6a7c32418740c1d009fb12ef3</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-amd64_v21_0_10.exe</td>
+                <td class="size-cell">107124736</td>
+                <td class="mono">32891c0080442bf0a0c5658ada2c3845435b4e09b114599a516248723aad7805</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-x86_v11_0_29.exe</td>
+                <td class="size-cell">87157760</td>
+                <td class="mono">de8b2bdfc61d63585329b8cfca2a012476b46387435410b995aeae5b502bd95e</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-x86_v17_0_17.exe</td>
+                <td class="size-cell">86576128</td>
+                <td class="mono">e4a20f746b7dd19b8d9601b884e67c8166ea9676b917adea6833b695ba13de16</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-x86_v1_8_0_472.exe</td>
+                <td class="size-cell">62498304</td>
+                <td class="mono">4ff7eec9e69b6008b77de1b6e5c0d18aa717f625458d80da610cb170c784e97c</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="inapp-en" aria-labelledby="inapp-heading-en">
+        <h2 id="inapp-heading-en">In-app updates</h2>
+        <div class="rsa-callout" role="note">
+          <p><strong>This incident did not affect updates delivered from inside JDownloader.</strong></p>
+          <p>Every update installed through the application&apos;s <strong>built-in updater is RSA-signed and cryptographically verified</strong>. That channel is independent of the website download links that were manipulated.</p>
+        </div>
+      </section>
+
+      <section id="check-en" aria-labelledby="check-heading-en">
+        <h2 id="check-heading-en">How to tell if you might be affected</h2>
+        <p><strong>Timing and execution:</strong> You are only in the <strong>potential at-risk group</strong> if you <strong>downloaded</strong> an installer via the affected website links <strong>during the risk window in the timeline</strong> <strong>and</strong> you <strong>ran (executed)</strong> that file. Visiting the site alone, downloads outside that window, or a file you never executed are different situations (see the subsections below).</p>
+        <p class="hash-xref">If you still have a downloaded installer, compare <strong>SHA256 and byte size</strong> to the <a href="#known-malicious-en">known malicious indicators</a> (Windows and Linux shell script).</p>
+
+        <h3>Windows: &quot;Download Alternative Installer&quot; from jdownloader.org</h3>
+        <ol>
+          <li>Confirm you mean an installer from <strong>any of the &quot;Download Alternative Installer&quot;</strong> download links on the site — other installers on jdownloader.org were <strong>not</strong> swapped. Note roughly when you downloaded (see timeline).</li>
+          <li>Locate the file if you still have it; <strong>do not run</strong> it until verified.</li>
+          <li>Right-click → <strong>Properties</strong> → <strong>Digital Signatures</strong>: genuine installers should show <strong>AppWork GmbH</strong>. Unknown publishers or missing signatures → do not execute; delete the file.</li>
+          <li><strong>Never</strong> bypass SmartScreen or Defender warnings to force a run.</li>
+        </ol>
+
+        <h3>Linux shell installer from the website</h3>
+        <p>Do not re-run until you can verify integrity (for example checksums published with the genuine installer, or signature checks as above). If you cannot verify, delete the file and obtain a fresh installer from the official download section on jdownloader.org — installer links there have been restored and verified.</p>
+
+        <h3>Only in-app or store updates</h3>
+        <p>Those paths were not tied to this website installer issue. <strong>In-app updates are RSA-signed</strong> (see <a href="#inapp-heading-en">In-app updates</a> above). Continue normal good habits (updates, scans, heed warnings).</p>
+
+        <h3>No file left / unsure</h3>
+        <p>Run a full scan with up-to-date security software. Treat browser download history only as a memory aid. If you suspect execution of malware, follow the next section.</p>
+      </section>
+
+      <section id="next-en" aria-labelledby="next-heading-en">
+        <h2 id="next-heading-en">What to do next</h2>
+
+        <h3>File never started</h3>
+        <p>If the file was <strong>never executed</strong>, <strong>usually nothing happened</strong>. <strong>Delete it</strong> and <strong>download fresh installer packages from jdownloader.org</strong> (official download section).</p>
+
+        <h3>Installer executed — when in doubt</h3>
+        <p><strong>Clear recommendation:</strong> If you <strong>cannot rule out</strong> that you <strong>downloaded and executed</strong> a malicious installer, perform a <strong>clean reinstall of your operating system</strong> (full wipe / fresh install or vendor recovery). Antivirus scans reduce risk but cannot guarantee removal of every persistence mechanism.</p>
+        <p>Until you consider the system clean again, avoid sensitive logins on this machine if you can; <strong>change passwords for important accounts from another device</strong>. On this PC run a <strong>full scan</strong> with up-to-date protection and review unfamiliar programs and startup entries. Restore personal files only from backups you trust.</p>
+      </section>
+
+      <section id="tips-en" aria-labelledby="tips-heading-en">
+        <h2 id="tips-heading-en">General security tips</h2>
+        <ul>
+          <li>Verify digital signatures before running installers from the web.</li>
+          <li>Never ignore antivirus, Microsoft Defender, or SmartScreen warnings.</li>
+          <li>Do not disable real-time protection or habitually click through warnings.</li>
+          <li>Prefer official channels.</li>
+          <li>Keep your operating system and browser updated.</li>
+          <li>When uncertain, pause — download later from a verified channel.</li>
+        </ul>
+      </section>
+    </article>
+
+    <article class="locale-de" hidden>
+      <div class="notice">
+        <strong>Zu dieser Seite</strong>
+        Dieser Hinweis auf jdownloader.org ist die öffentliche Vorfallsinformation für Nutzer. Wenn wir später Ergänzungen oder Korrekturen veröffentlichen, sehen Sie die aktuelle Fassung nach einem Neuladen dieser Seite.
+      </div>
+
+      <div class="risk-scope-callout" role="note">
+        <p><strong>Wer kann gefährdet sein:</strong> Nur wer <strong>von jdownloader.org</strong> zwischen dem <strong>6.</strong> und dem <strong>7. Mai 2026 (UTC)</strong> installiert hat und dabei <strong>einen oder mehreren der Website-Download-Links für &quot;Download Alternative Installer&quot;</strong> <strong>und/oder den betroffenen Linux-Shell-Installer-Link</strong> genutzt hat — siehe Zeitleiste unten.</p>
+        <p><strong>Wer ist nicht betroffen:</strong> <strong>Alles</strong>, was <strong>nicht</strong> zu den oben genannten Risikofällen gehört. Der Vorfall betraf nur bestimmte Links auf dieser Website; andere Wege sind aus diesem strukturellen Grund nicht betroffen. <strong>Nachfolgend nennen wir nur Kanäle, die wir explizit geprüft haben;</strong> die Liste ist <strong>nicht abschließend</strong>. Verteilungsoptionen, die wir selbst nicht geprüft haben, führen wir <strong>nicht</strong> auf.</p>
+        <ul>
+          <li>Weitere Installer-Downloadoptionen auf <strong>jdownloader.org</strong> (alles außer <strong>&quot;Download Alternative Installer&quot;</strong> und dem betroffenen <strong>Linux-Shell-Installer</strong>-Link), gemäß unserer Vorfallsanalyse der Website.</li>
+          <li>Updates über den <strong>eingebauten Updater</strong> von JDownloader (RSA-signiert; siehe <a href="#inapp-heading-de">In-App-Updates</a>), unabhängig von den manipulierten Website-Links.</li>
+          <li>Kanäle, die wir ausdrücklich verifiziert haben und die <strong>nicht</strong> mit den manipulierten jdownloader.org-Links zusammenhängen: <strong>winget</strong>, <strong>Flatpak</strong> (z.&nbsp;B. Flathub), <strong>Snap</strong> sowie <strong>Docker</strong>-Images aus Registries.</li>
+        </ul>
+      </div>
+
+      <section id="summary-de" aria-labelledby="summary-heading-de">
+        <h2 id="summary-heading-de">Was passiert ist</h2>
+        <p>Anfang Mai 2026 ist es Angreifern gelungen, <strong>bestimmte auf der offiziellen JDownloader-Website angezeigte Installer-Download-Links</strong> so zu setzen, dass sie <strong>auf fremde, schädliche Dateien verwiesen</strong> statt auf die <strong>vorgesehenen echten JDownloader-Installationspakete</strong>: Unter Windows <strong>nur</strong> <strong>die Download-Links</strong> für <strong>&quot;Download Alternative Installer&quot;</strong> — <strong>nicht</strong> die übrigen dort angebotenen Installer — sowie <strong>der Linux-Shell-Installer-Link</strong> von dieser Website. <strong>An den echten Installer-Paketen wurde nichts geändert</strong> — verändert wurden <strong>ausschließlich die Ziele der hier veröffentlichten Links</strong>. <strong>Die Pakete werden weiterhin extern gehostet wie gewohnt.</strong> Nach Bestätigung wurden die <strong>schädlichen Link-Ziele</strong> entfernt, die Links wieder auf die <strong>korrekten externen Quellen</strong> gesetzt und <strong>das Sicherheitsproblem</strong> behoben. <strong>Die Website blieb bis zur Freischaltung vollständig offline</strong>, während Analyse, Fehlerbehebung und weitere Prüfungen liefen. <strong>In der Nacht vom 8. auf den 9. Mai 2026 (UTC)</strong> wurde sie nach diesen Prüfungen wieder online gestellt; der öffentliche Betrieb lief anschließend mit verifizierten, sauberen Installer-Links.</p>
+        <p><strong>Technischer Umfang:</strong> Die Änderungen erfolgten über das <strong>Content-Management-System</strong> (CMS) und betrafen die dort verwalteten Seiten und Verweise. Der Angreifer hatte <strong>keinen Zugriff</strong> auf die darunterliegende Systemebene des Servers — insbesondere <strong>keinen Zugriff auf das Dateisystem</strong> und keine Kontrolle jenseits des durch das CMS editierbaren Webinhalts. <strong>Ein Zugriff auf personenbezogene Daten hat nicht stattgefunden.</strong></p>
+        <p class="safe-now-msg" role="status"><strong>jdownloader.org ist wieder sicher.</strong></p>
+      </section>
+
+      <section id="timeline-de" aria-labelledby="timeline-heading-de">
+        <h2 id="timeline-heading-de">Zeitleiste (UTC)</h2>
+        <p>Ungefähre Reihenfolge:</p>
+        <ol>
+          <li><strong>5. Mai 2026</strong>, spätabends (~23:55 UTC) — Angreifer testen ihr Vorgehen auf einer wenig frequentierten Seite, bevor live Installer-Links geändert werden.</li>
+          <li><strong>6. Mai 2026</strong>, kurz nach Mitternacht (~00:01 UTC) — Auf jdownloader.org wurden einige <strong>Download-Links</strong> <strong>falsch eingestellt</strong>: Beim Klick auf <strong>&quot;Download Alternative Installer&quot;</strong> oder den <strong>Linux-Shell-Installer</strong> konnte man <strong>fremde, schädliche Dateien</strong> bekommen statt der echten JDownloader-Installer. <strong>Die übrigen Installer</strong> auf derselben Seite waren <strong>nicht</strong> betroffen.</li>
+          <li><strong>6. bis 7. Mai 2026</strong> — Haupt-<strong>Risikofenster</strong> für Downloads über diese manipulierten Links.</li>
+          <li><strong>7. Mai 2026</strong> — Um <time datetime="2026-05-07T17:06:00Z"><strong>17:06 UTC</strong></time> wurden wir <strong>über reddit.com</strong> auf das Problem aufmerksam gemacht. Auffällige Downloads und Warnungen werden sichtbar; Problem wird bestätigt, Incident-Handling startet. Um <time datetime="2026-05-07T17:24:00Z"><strong>17:24 UTC</strong></time> wurde der Server heruntergefahren.</li>
+          <li><strong>7. bis 8. Mai 2026</strong> — Schädliche Link-Ziele entfernt; korrekte Installer-Verlinkungen wiederhergestellt; Folgemaßnahmen umgesetzt; Konfiguration gehärtet. <strong>Die Website blieb währenddessen vollständig offline</strong>, bis diese Arbeiten sowie Analyse und Fehlerbehebung abgeschlossen waren.</li>
+          <li><strong>In der Nacht vom 8. auf den 9. Mai 2026 (UTC)</strong> — Nach weiteren Prüfungen wurde die Website wieder online gestellt; regulärer Betrieb mit verifizierten, sauberen Installer-Links.</li>
+        </ol>
+      </section>
+
+      <section id="scope-de" aria-labelledby="scope-heading-de">
+        <h2 id="scope-heading-de">Was betroffen war</h2>
+        <ul>
+          <li><strong>Windows:</strong> Es wurden <strong>nur</strong> die <strong>Download-Links für &quot;Download Alternative Installer&quot;</strong> auf der Website manipuliert: <strong>Sie verwiesen auf fremde, schädliche Downloads</strong>, <strong>nicht</strong> auf veränderte oder fehlerhafte Kopien unserer eigenen Installer. Bei einem solchen Download im Risikofenster kann die erhaltene Datei übliche Vertrauensprüfungen nicht bestehen (unerwarteter Herausgeber, fehlende oder ungültige Signatur im Vergleich zu echten Installer-Paketen von uns).</li>
+          <li><strong>Linux:</strong> Ein über einen manipulierten Link bezogener Shell-Installer kann schädliche Befehle enthalten.</li>
+        </ul>
+      </section>
+
+      <section id="known-malicious-de" aria-labelledby="known-mal-heading-de">
+        <h2 id="known-mal-heading-de">Bekannte Merkmale schädlicher Dateien</h2>
+        <p><strong>Offizielle JDownloader-Installer-Pakete wurden nicht verändert;</strong> die folgenden <strong>SHA256</strong>-Werte und <strong>exakten Größen in Bytes</strong> beschreiben <strong>fremde, schädliche Dateien</strong>, die während des Vorfalls als ausgetauschte Download-Ziele festgestellt wurden. Ihre gespeicherte Kopie kann einen anderen Dateinamen haben — vergleichen Sie <strong>Hash und Größe gemeinsam</strong>. Bei Übereinstimmung spricht viel für die schädliche Datei: <strong>nicht ausführen</strong>, löschen und den Installer vom offiziellen Download-Bereich auf jdownloader.org neu beziehen — die Installer-Links dort sind wiederhergestellt und verifiziert.</p>
+        <p><strong>Es folgen die bekannten SHA256-Prüfsummen der bösartigen Ersatz-Installer</strong>, die während dieses Vorfalls festgestellt wurden.</p>
+        <div class="hash-table-wrap" role="region" aria-label="Tabelle SHA256 und Größe">
+          <table class="hash-table">
+            <thead>
+              <tr>
+                <th scope="col">Dateiname (wie festgestellt)</th>
+                <th scope="col">Größe (Bytes)</th>
+                <th scope="col" class="mono">SHA256</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">JDownloader2Setup_unix_nojre.sh</td>
+                <td class="size-cell">7934496</td>
+                <td class="mono">6d975c05ef7a164707fa359284a31bfe0b1681fe0319819cb9e2c4eec2a1a8af</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-amd64_v11_0_30.exe</td>
+                <td class="size-cell">104910336</td>
+                <td class="mono">fb1e3fe4d18927ff82cffb3f82a0b4ffb7280c85db5a8a8b6f6a1ac30a7e7ed9</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-amd64_v17_0_18.exe</td>
+                <td class="size-cell">101420032</td>
+                <td class="mono">04cb9f0bca6e0e4ed30bc92726590724bf60938440b3825252657d1b3af45495</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-amd64_v1_8_0_482.exe</td>
+                <td class="size-cell">61749248</td>
+                <td class="mono">5a6636ce490789d7f26aaa86e50bd65c7330f8e6a7c32418740c1d009fb12ef3</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-amd64_v21_0_10.exe</td>
+                <td class="size-cell">107124736</td>
+                <td class="mono">32891c0080442bf0a0c5658ada2c3845435b4e09b114599a516248723aad7805</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-x86_v11_0_29.exe</td>
+                <td class="size-cell">87157760</td>
+                <td class="mono">de8b2bdfc61d63585329b8cfca2a012476b46387435410b995aeae5b502bd95e</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-x86_v17_0_17.exe</td>
+                <td class="size-cell">86576128</td>
+                <td class="mono">e4a20f746b7dd19b8d9601b884e67c8166ea9676b917adea6833b695ba13de16</td>
+              </tr>
+              <tr>
+                <td class="mono">JDownloader2Setup_windows-x86_v1_8_0_472.exe</td>
+                <td class="size-cell">62498304</td>
+                <td class="mono">4ff7eec9e69b6008b77de1b6e5c0d18aa717f625458d80da610cb170c784e97c</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="inapp-de" aria-labelledby="inapp-heading-de">
+        <h2 id="inapp-heading-de">In-App-Updates</h2>
+        <div class="rsa-callout" role="note">
+          <p><strong>Dieser Vorfall betraf nicht die Updates aus dem laufenden JDownloader heraus.</strong></p>
+          <p>Alle über den <strong>eingebauten Updater</strong> eingespielten Updates werden <strong>RSA-signiert und kryptographisch geprüft</strong>. Dieser Kanal steht in keinem Zusammenhang mit den manipulierten Download-Links auf der Website.</p>
+        </div>
+      </section>
+
+      <section id="check-de" aria-labelledby="check-heading-de">
+        <h2 id="check-heading-de">Erkennen einer möglichen Betroffenheit</h2>
+        <p><strong>Zeitraum und Ausführung:</strong> Potenziell betroffen sind Sie nur, wenn Sie den betreffenden Installer <strong>im Risikofenster aus der Zeitleiste</strong> über die manipulierten Website-Links <strong>heruntergeladen</strong> <strong>und ausgeführt</strong> haben. Ein Seitenbesuch ohne solchen Download, Downloads außerhalb dieses Zeitraums oder eine Datei, die Sie nie gestartet haben, ist eine andere Lage (siehe die Unterabschnitte unten).</p>
+        <p class="hash-xref">Wenn Sie einen heruntergeladenen Installer noch haben, vergleichen Sie <strong>SHA256 und Byte-Größe</strong> mit den <a href="#known-malicious-de">bekannten schädlichen Merkmalen</a> (Windows und Linux-Shell-Skript).</p>
+
+        <h3>Windows: &quot;Download Alternative Installer&quot; von jdownloader.org</h3>
+        <ol>
+          <li>Sicherstellen, dass es um einen Installer über <strong>einen der &quot;Download Alternative Installer&quot;</strong>-Download-Links geht — die übrigen Installer auf jdownloader.org wurden <strong>nicht</strong> ausgetauscht. Ungefähren Downloadzeitpunkt notieren (siehe Zeitleiste).</li>
+          <li>Datei suchen, falls noch vorhanden; <strong>nicht ausführen</strong>, bis sie verifiziert ist.</li>
+          <li>Rechtsklick → <strong>Eigenschaften</strong> → <strong>Digitale Signaturen</strong>: echte Installer sollten <strong>AppWork GmbH</strong> zeigen. Unbekannte Herausgeber oder fehlende Signaturen → nicht starten; Datei löschen.</li>
+          <li><strong>Niemals</strong> SmartScreen- oder Defender-Warnungen umgehen, um eine Ausführung zu erzwingen.</li>
+        </ol>
+
+        <h3>Linux-Shell-Installer von der Website</h3>
+        <p>Nicht erneut ausführen, bis die Integrität bestätigt ist (z.&nbsp;B. mit veröffentlichten Prüfsummen zum echten Installer oder den Signaturprüfungen wie oben). Bei Unsicherheit die Datei löschen und einen frischen Installer aus dem offiziellen Download-Bereich auf jdownloader.org beziehen — die Website ist wieder sicher; die Installer-Links dort sind verifiziert und vertrauenswürdig.</p>
+
+        <h3>Nur In-App- oder Store-Updates</h3>
+        <p>Diese Wege hängen nicht an diesem Website-Installer-Problem. <strong>In-App-Updates sind RSA-signiert</strong> (siehe Abschnitt <a href="#inapp-heading-de">In-App-Updates</a> oben). Gewohnte gute Praxis beibehalten (Updates, Scans, Warnungen ernst nehmen).</p>
+
+        <h3>Keine Datei mehr / unsicher</h3>
+        <p>Vollständigen Scan mit aktueller Sicherheitssoftware fahren. Browser-Downloadhistorie nur als Gedächtnisstütze nutzen. Bei Verdacht auf Malware-Ausführung den nächsten Abschnitt befolgen.</p>
+      </section>
+
+      <section id="next-de" aria-labelledby="next-heading-de">
+        <h2 id="next-heading-de">Was Sie jetzt tun können</h2>
+
+        <h3>Datei nie gestartet</h3>
+        <p>Wurde die Datei <strong>nie ausgeführt</strong>, ist in der Regel <strong>nichts passiert</strong>. <strong>Einfach löschen</strong> und <strong>frische Installer-Pakete von jdownloader.org</strong> beziehen (offizieller Download-Bereich).</p>
+
+        <h3>Installer ausgeführt — bei Unsicherheit</h3>
+        <p><strong>Klare Empfehlung:</strong> Wenn Sie <strong>nicht ausschließen können</strong>, dass Sie einen <strong>bösartigen Installer heruntergeladen und ausgeführt</strong> haben, <strong>saubere Neuinstallation des Betriebssystems</strong> (vollständiges Zurücksetzen / Neuaufsetzen oder Hersteller-Wiederherstellung). Antivirus-Scans senken das Risiko, garantieren aber keine Entfernung jeder versteckten Persistenz.</p>
+        <p>Solange Sie das System noch nicht wieder als sauber einstufen: nach Möglichkeit <strong>keine</strong> sensiblen Anmeldungen auf diesem Rechner — Passwörter für wichtige Konten <strong>von einem anderen Gerät aus</strong> ändern; auf diesem Rechner einen <strong>Vollscan</strong> mit aktuellem Schutz laufen lassen und unbekannte Programme sowie Autostart-Einträge prüfen. Persönliche Dateien nur aus Backups zurückspielen, denen Sie vertrauen.</p>
+      </section>
+
+      <section id="tips-de" aria-labelledby="tips-heading-de">
+        <h2 id="tips-heading-de">Allgemeine Sicherheitshinweise</h2>
+        <ul>
+          <li>Vor der Ausführung von Web-Installern digitale Signaturen prüfen.</li>
+          <li>Antivirus-, Defender- oder SmartScreen-Warnungen nicht ignorieren.</li>
+          <li>Echtzeitschutz nicht dauerhaft abschalten oder Warnungen gewohnheitsmäßig wegklicken.</li>
+          <li>Offizielle Kanäle bevorzugen.</li>
+          <li>Betriebssystem und Browser aktuell halten.</li>
+          <li>Bei Unsicherheit innehalten — später von einer verifizierten Quelle laden.</li>
+        </ul>
+      </section>
+    </article>
+
+    <footer class="locale-en">
+      <p>JDownloader · Information sheet · May 2026 · This page on <a href="https://jdownloader.org/">jdownloader.org</a> may be updated; reload it later to see the current version.</p>
+      <div class="legal-disclaimer" role="note">
+        <p>This page is <strong>incident information</strong> for users, prepared <strong>to the best of our knowledge and belief</strong>. <a href="https://jdownloader.org/impressum">Imprint</a> · <a href="https://my.jdownloader.org/legal/privacy.html">Privacy</a></p>
+      </div>
+      <p class="doc-stand">As of: <time datetime="2026-05-08T23:00:00Z">8th May 2026, 23:00 UTC</time></p>
+    </footer>
+    <footer class="locale-de" hidden>
+      <p>JDownloader · Informationsblatt · Mai 2026 · Diese Seite auf <a href="https://jdownloader.org/">jdownloader.org</a> kann fortgeschrieben werden — später erneut laden, um die aktuelle Fassung zu sehen.</p>
+      <div class="legal-disclaimer" role="note">
+        <p>Diese Seite ist <strong>Vorfallsinformation</strong> für Nutzer, zusammengestellt <strong>nach bestem Wissen und Gewissen</strong>. <a href="https://jdownloader.org/impressum">Impressum</a> · <a href="https://my.jdownloader.org/legal/privacy.html">Datenschutz</a></p>
+      </div>
+      <p class="doc-stand">Stand: <time datetime="2026-05-08T23:00:00Z">8. Mai 2026, 23:00 UTC</time></p>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var SVG_DE =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 3">' +
+        '<path fill="#000" d="M0 0h5v1H0z"/>' +
+        '<path fill="#D00" d="M0 1h5v1H0z"/>' +
+        '<path fill="#FFCE00" d="M0 2h5v1H0z"/>' +
+        "</svg>";
+      var SVG_GB =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30">' +
+        '<rect fill="#012169" width="60" height="30"/>' +
+        '<path stroke="#FFF" stroke-width="9" d="M0 0l60 30M60 0L0 30"/>' +
+        '<path stroke="#C8102E" stroke-width="5" d="M0 0l60 30M60 0L0 30"/>' +
+        '<path stroke="#FFF" stroke-width="11" d="M30 0v30M0 15h60"/>' +
+        '<path stroke="#C8102E" stroke-width="7" d="M30 0v30M0 15h60"/>' +
+        "</svg>";
+
+      function svgDataUrl(svg) {
+        return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+      }
+
+      var URL_DE = svgDataUrl(SVG_DE);
+      var URL_GB = svgDataUrl(SVG_GB);
+
+      var META = {
+        en: {
+          title: "JDownloader — Website installer incident (May 2026)",
+          description:
+            "Self-contained information on jdownloader.org about the May 2026 incident affecting some installer downloads: timeline, scope, and how to check your system."
+        },
+        de: {
+          title: "JDownloader — Website-Installer-Vorfall (Mai 2026)",
+          description:
+            "Eigenständige Information auf jdownloader.org zum Vorfall Mai 2026 bei einigen Installer-Downloads: Zeitfenster, Umfang und Systemprüfung."
+        }
+      };
+
+      var LABEL = {
+        en: "Language",
+        de: "Sprache"
+      };
+
+      function preferredLocale() {
+        try {
+          var arr = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ""];
+          var i;
+          for (i = 0; i < arr.length; i++) {
+            var tag = String(arr[i]).toLowerCase().replace("_", "-");
+            if (tag === "de" || tag.indexOf("de-") === 0) {
+              return "de";
+            }
+          }
+        } catch (e0) {}
+        return "en";
+      }
+
+      var btnEn = document.getElementById("lang-btn-en");
+      var btnDe = document.getElementById("lang-btn-de");
+      var lbl = document.getElementById("lang-picker-label");
+      var metaDesc = document.getElementById("meta-desc");
+
+      btnEn.querySelector(".lang-flag").src = URL_GB;
+      btnDe.querySelector(".lang-flag").src = URL_DE;
+
+      function applyLocale(lo) {
+        if (lo !== "de" && lo !== "en") {
+          return;
+        }
+        document.documentElement.lang = lo === "de" ? "de" : "en";
+        document.title = META[lo].title;
+        if (metaDesc) {
+          metaDesc.setAttribute("content", META[lo].description);
+        }
+        if (lbl) {
+          lbl.textContent = LABEL[lo];
+        }
+
+        document.querySelectorAll(".locale-en").forEach(function (el) {
+          el.hidden = lo !== "en";
+        });
+        document.querySelectorAll(".locale-de").forEach(function (el) {
+          el.hidden = lo !== "de";
+        });
+
+        btnEn.setAttribute("aria-pressed", lo === "en" ? "true" : "false");
+        btnDe.setAttribute("aria-pressed", lo === "de" ? "true" : "false");
+      }
+
+      applyLocale(preferredLocale());
+
+      btnEn.addEventListener("click", function () {
+        applyLocale("en");
+      });
+      btnDe.addEventListener("click", function () {
+        applyLocale("de");
+      });
+    })();
+  </script>
+</body>
+</html>

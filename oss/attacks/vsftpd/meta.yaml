@@ -4,19 +4,19 @@
     The official vsftpd 2.3.4 source archive was replaced with a backdoored tarball around
     June 30 to July 1, 2011, and removed on July 3.
   story: |
-    In early July 2011, Chris Evans warned that the master vsftpd download for `vsftpd-2.3.4.tar.gz` had been replaced with a backdoored tarball. Rapid7's Metasploit module later placed the introduction window between June 30 and July 1, with removal on July 3. The bad archive had SHA-256 `2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5`, and its detached GPG signature failed against Evans' signing key.
+    In early July 2011, Chris Evans warned that the master vsftpd download for `vsftpd-2.3.4.tar.gz` had been replaced with a backdoored tarball, crediting Mathias Kresin as the first to notice. Rapid7's Metasploit module later placed the introduction window between June 30 and July 1, with removal on July 3. The bad archive had SHA-256 `2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5`, and its detached GPG signature failed against Evans' signing key.
 
     The delivery was the official source archive. The code change did not need a vulnerable parser or malformed FTP command. It changed the daemon being built, and the failed detached signature was the clean technical signal that the archive and release key no longer matched.
 
     The payload was blunt and memorable. The diff showed `str.c` checking for the byte sequence `0x3a 0x29`, the ASCII smiley `:)`, and calling `vsf_sysutil_extra()`. The added function in `sysdeputil.c` created a TCP listener on port 6200, accepted a connection, duplicated it onto standard input, output, and error, then executed `/bin/sh`.
 
-    There was no installation beacon, which meant the attacker likely needed download logs, broad scanning, or prior knowledge of targets to find victims. Evans moved the project download to a more trusted host and published the warning with a diff reference so administrators could verify both source integrity and runtime exposure.
+    There was no installation beacon, and Evans wrote that it was unclear how victims would be identified. With no obfuscation in the change, he judged it "pretty much guaranteed that any major redistributor would notice the badness." Evans moved the project download to a more trusted host and published the warning with a diff reference so administrators could verify both source integrity and runtime exposure.
   start_date: 2011-06-30
   end_date: 2011-07-03
   target:
     name: vsftpd
     kind: daemon
-    website: https://security.appspot.com
+    website: https://vsftpd.beasts.org
   actor:
     name: Individual Hacker
     kind: person
@@ -30,11 +30,20 @@
     types:
     - backdoor
     - remote_code_execution
+  notes:
+  - >-
+    Evans described the payload as "a TCP callback shell". The diff shows the opposite
+    direction: `vsf_sysutil_extra()` binds and listens on port 6200 and waits for an
+    inbound connection. This record follows the code rather than the advisory wording.
+  - >-
+    `security.appspot.com` was the more trusted host Evans moved downloads to after the
+    incident, not the compromised host. It is retained as an artifact location, while the
+    target and artifact websites name `vsftpd.beasts.org`, where the bad archive was served.
   artifacts:
   - id: vsftpd
     name: vsftpd
     kind: source_archive
-    website: https://security.appspot.com
+    website: https://vsftpd.beasts.org
     start_date: 2011-06-30
     end_date: 2011-07-03
     versions:
@@ -53,6 +62,10 @@
       role: mirror
     - uri: https://github.com/DoctorKisow/vsftpd-2.3.4
       role: mirror
+    - uri: https://raw.githubusercontent.com/DoctorKisow/vsftpd-2.3.4/240f33c36ed8d9e7d3e59280fb0cd7dfbf6fee29/infection.diff
+      role: mirror
+    - uri: https://mirror.slackbuilds.org/slackware/slackware64-13.37/source/n/vsftpd/vsftpd-2.3.4.tar.gz
+      role: mirror
     - uri: https://www.rapid7.com/db/modules/exploit/unix/ftp/vsftpd_234_backdoor/
       role: mirror
     - uri: https://packetstormsecurity.com/files/154237/vsftpd-2.3.4-Backdoor.html
@@ -61,8 +74,6 @@
         https://github.com/kennetham/The_Practical_Guide_for_Information_System_Security/blob/master/backdoor_vsftpd_234.c
       role: mirror
     hashes:
-    - md5:a2bfd376c14ec3a83553c0c1aac0d1ff
-    - sha1:26043b532863a0b354d0b7937ad7fed75c1b0a32
     - sha256:2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5
     indicators:
     - kind: observable
@@ -94,8 +105,7 @@
     title: vsftpd 2.3.4 backdoor diff
   - url: https://github.com/DoctorKisow/vsftpd-2.3.4
     title: 'GitHub: DoctorKisow/vsftpd-2.3.4'
+  - url: https://mirrors.slackware.com/slackware/slackware64-13.37/source/n/vsftpd/vsftpd-2.3.4.tar.gz.mirrorlist
+    title: Slackware mirror index for the clean vsftpd 2.3.4 archive
   - url: https://github.com/advisories/GHSA-qf3g-hgw2-8r8h
     title: 'GitHub Advisory Database: CVE-2011-2523'
-  - url: 
-      https://www.computerworld.com/article/2518230/vsftpd-developer-confirms-backdoor-in-version-2-3-4.html
-    title: vsftpd developer confirms backdoor in version 2.3.4

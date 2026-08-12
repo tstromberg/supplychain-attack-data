@@ -7,58 +7,13 @@
     on 2026-05-18. The malicious build fetched an obfuscated payload that harvested Vault, npm,
     AWS, GitHub, 1Password, and SSH credentials and installed a Python LaunchAgent on macOS.
   story: |
-    Nine months after a high-profile worm called s1ngularity tore through the
-    Nx ecosystem, a new attacker briefly published a malicious version of the
-    popular Nx Console VS Code extension on the Visual Studio Marketplace and
-    OpenVSX on May 18, 2026 — and according to StepSecurity, this one came a
-    step closer to abusing Sigstore for legitimate-looking provenance
-    attestations than any earlier supply-chain compromise.
+    Nine months after a high-profile worm called s1ngularity tore through the Nx ecosystem, a new attacker briefly published a malicious version of the popular Nx Console VS Code extension on the Visual Studio Marketplace and OpenVSX on May 18, 2026, and according to StepSecurity this one came closer to abusing Sigstore for legitimate-looking provenance attestations than any earlier supply-chain compromise.
 
-    Nx Console is a Visual Studio Code companion extension to the Nx build
-    system. After the 2025 s1ngularity incident, Nrwl, the company behind Nx,
-    added a manual-approval gate to the `nx` npm publish pipeline. Nx Console
-    kept its older setup, in which a single organization member could publish
-    a new extension version unattended. On May 18, an attacker used a stolen
-    contributor credential to publish a malicious version 18.95.0 to both
-    marketplaces.
+    Nx Console is a Visual Studio Code companion to the Nx build system. After the 2025 s1ngularity incident, Nrwl added a manual-approval gate to the `nx` npm publish pipeline, but Nx Console kept an older setup in which a single organization member could publish unattended. Nrwl's own postmortem traces the entry point to May 11, when a contributor ran `pnpm install` in an external repository at 20:43 UTC. That project's `.npmrc` set `minimum-release-age=10080`, a seven-day quarantine on new releases, but the pinned pnpm 10.14 predated support for the setting and ignored it silently, so the install pulled `@tanstack/zod-adapter@1.166.15`, published 77 minutes earlier. Its `prepare` script fetched a 2.3 MB obfuscated harvester that took the contributor's GitHub CLI OAuth token. The attacker sat on that access for about five days, deleting workflow runs to cover the trail, before publishing malicious version 18.95.0 on May 18.
 
-    According to Nrwl, the credential traced back to the TanStack Mini
-    Shai-Hulud compromise a week earlier. That payload had stolen GitHub CLI
-    tokens from a Nrwl developer's machine — enough access to run workflows on
-    the Nx Console repository as a contributor and reach the extension publish
-    step. The malicious build was live on the Visual Studio Marketplace for
-    18 minutes, from 12:30 to 12:48 UTC, and on OpenVSX for 36 minutes, from
-    12:33 to 13:09 UTC.
+    The extension fetched and ran an obfuscated, multi-channel credential stealer. StepSecurity, which published the most detailed dissection, said it harvested Vault tokens, `.npmrc` credentials, AWS metadata endpoints and Secrets Manager entries, GitHub `ghp_`, `gho_`, and `ghs_` tokens, GitHub Actions secrets, 1Password CLI sessions, on-disk private keys, database connection strings, GCP service accounts, and Docker credentials, exfiltrating over HTTPS, through the GitHub API using the victim's own tokens, and over DNS. On Linux it attempted sudoers injection; on macOS it wrote `~/.local/share/kitty/cat.py` and registered a LaunchAgent at `~/Library/LaunchAgents/com.user.kitty-monitor.plist`. StepSecurity also found Sigstore code paths in the payload, requesting short-lived signing certificates from `fulcio.sigstore.dev`, writing log entries to `rekor.sigstore.dev`, and building `slsa.dev/provenance/v1` attestations through npm's OIDC trusted-publisher flow. With the right OIDC material and enough runner time, the attacker could in principle have published follow-on npm versions carrying valid provenance, a meaningful escalation over earlier worms. The exposure window closed first.
 
-    The extension fetched and ran an obfuscated, multi-channel credential
-    stealer. StepSecurity, which published the most detailed dissection of the
-    payload, said it harvested Vault tokens, `.npmrc` credentials, AWS metadata
-    endpoints and Secrets Manager entries, GitHub `ghp_`, `gho_`, and `ghs_`
-    tokens, GitHub Actions secrets, 1Password CLI sessions, on-disk private
-    keys, database connection strings, GCP service accounts, and Docker
-    credentials. Exfiltration ran over HTTPS, through the GitHub API using the
-    victim's own tokens, and over DNS. On Linux, the payload attempted
-    sudoers injection. On macOS, it wrote `~/.local/share/kitty/cat.py` and
-    registered `~/Library/LaunchAgents/com.user.kitty-monitor.plist` as a
-    LaunchAgent.
-
-    StepSecurity also identified Sigstore-related code paths in the payload:
-    requests for short-lived signing certificates from `fulcio.sigstore.dev`,
-    log entries to `rekor.sigstore.dev`, and `slsa.dev/provenance/v1`
-    attestations through npm's OIDC trusted-publisher flow. With the right
-    OIDC material and enough time on a runner, the attacker could in principle
-    have published follow-on npm versions carrying valid provenance
-    attestations — a meaningful escalation over earlier worms, where forged
-    provenance was not in reach. The exposure window closed before any such
-    publish landed.
-
-    Microsoft and OpenVSX reported 28 and 41 downloads respectively for
-    version 18.95.0. Nrwl's internal telemetry, however, counted roughly 6,000
-    extension activations from VS Code over the next two days. Nrwl shipped
-    18.100.0, added a two-admin approval step to Nx Console publishes to mirror
-    the `nx` npm pipeline, and instructed affected users to update, kill any
-    `cat.py` or `__DAEMONIZED` processes, unload the LaunchAgent, delete the
-    persistence files, and rotate every credential reachable from the machine.
+    Nobody's tooling caught it. A maintainer noticed a routine publisher-notification email from the Visual Studio Marketplace at 12:36 UTC, an upload nobody had authorized, and Nrwl unpublished within 11 minutes; Open VSX was not checked until the primary marketplace was handled, leaving it exposed for 36 minutes. "We did not detect this through any system we built," the postmortem says. Microsoft and OpenVSX reported 28 and 41 downloads for 18.95.0, the latter across 21 unique IPs, while Nrwl's own telemetry counted roughly 6,000 activations over the following two days, and the company told anyone with auto-update enabled during the window to assume compromise. Nrwl shipped 18.100.0, extended the two-reviewer approval gate and pinned Action SHAs to every publish-capable repository, and called the gap an oversight rather than a deliberate scope decision. Affected users were told to update, kill any `cat.py` or `__DAEMONIZED` processes, unload the LaunchAgent, delete the persistence files, and rotate every credential reachable from the machine.
   start_date: 2026-05-18
   end_date: 2026-05-18
   target:
@@ -142,10 +97,15 @@
       role: distribution
     - uri: https://open-vsx.org/extension/nrwl/angular-console
       role: distribution
+    hashes:
+    - sha256:1a4afce34918bdc74ae3f31edaffffaa0ee074d83618f53edfd88137927340b8
     notes:
     - Available on the Visual Studio Marketplace from 12:30 UTC to 12:48 UTC and on
       OpenVSX from 12:33 UTC to 13:09 UTC on 2026-05-18.
+    - StepSecurity identifies this SHA-256 as the complete malicious 18.95.0 VSIX.
   references:
+  - url: https://nx.dev/blog/nx-console-v18-95-0-postmortem
+    title: Postmortem - Nx Console v18.95.0 supply-chain compromise - Nx
   - url: https://github.com/nrwl/nx-console/security/advisories/GHSA-c9j4-9m59-847w
     title: GHSA-c9j4-9m59-847w - Compromised Nx Console version 18.95.0
   - url: https://www.stepsecurity.io/blog/nx-console-vs-code-extension-compromised

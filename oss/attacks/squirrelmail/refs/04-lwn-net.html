@@ -1,0 +1,754 @@
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><title>The backdooring of SquirrelMail [LWN.net]</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="The backdooring of SquirrelMail">
+<meta property="og:site_name" content="LWN.net">
+<meta property="og:type" content="article">
+<meta property="og:description" content="SquirrelMail advertises itself as 'webmail for nuts.'  It is a PHP-based package which is in wi [...]">
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="robots" CONTENT="noai, noimageai">
+        <link rel="icon" href="https://static.lwn.net/images/favicon.png"
+              type="image/png">
+        <link rel="alternate" type="application/rss+xml" title="LWN.net headlines" href="https://lwn.net/headlines/rss">
+        <link rel="stylesheet" href="/CSS/lwn-v1">
+<style>div.MakeALink { display: none }</style>
+
+        
+        </head>
+        <body>
+        <a name="t"></a>
+<div id="menu"><a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/logo/barepenguin-70.webp" class="logo"
+                 border="0" alt="LWN.net Logo">
+            <span class="logo">LWN<br>.net</span>
+            <span class="logobl">News from the source</span></a>
+            <a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/lcorner-ss.png" class="sslogo"
+                 border="0" alt="LWN"></a><div class="navmenu-container">
+           <ul class="navmenu">
+        <li><a class="navmenu" href="#t"><b>Content</b></a><ul><li><a href="/current/">Weekly Edition</a></li><li><a href="/Archives/">Archives</a></li><li><a href="/Search/">Search</a></li><li><a href="/Kernel/">Kernel</a></li><li><a href="/Security/">Security</a></li><li><a href="/Calendar/">Events calendar</a></li><li><a href="/Comments/unread">Unread comments</a></li><li><hr></li><li><a href="/op/FAQ.lwn">LWN FAQ</a></li><li><a href="/op/AuthorGuide.lwn">Write for us</a></li></ul></li>
+<li><a class="navmenu" href="#t"><b>Edition</b></a><ul><li><a href="/Articles/262090/">Return to the Security page</a></li></ul></li>
+</ul></div>
+</div> <!-- menu -->
+<div class="topnav-spacer"></div>
+<div class="top-banner not-print"><!-- no top ad served --></div>
+<div class="topnav-container">
+<div class="not-handset"><form action="https://lwn.net/Login/" method="post" name="loginform"
+                 class="loginform">
+        <label><b>User:</b> <input type="text" name="uname" value="" size="8" id="uc" /></label> 
+		<label><b>Password:</b> <input type="password" name="pword" size="8" id="pc" /></label> <input type="hidden" name="target" value="/Articles/262688/" /> <input type="submit" name="submit" value="Log in" /></form> |
+           <form action="https://lwn.net/subscribe/" method="post" class="loginform">
+           <input type="submit" name="submit" value="Subscribe" />
+           </form> |
+           <form action="https://lwn.net/Login/newaccount" method="post" class="loginform">
+           <input type="submit" name="submit" value="Register" />
+           </form>
+        </div>
+               <div class="handset-only">
+               <a href="/Login/"><b>Log in</b></a> /
+               <a href="/subscribe/"><b>Subscribe</b></a> /
+               <a href="/Login/newaccount"><b>Register</b></a>
+               </div>
+               </div><div class="maincolumn flexcol">
+<div class="middlecolumn">
+<div class="PageHeadline">
+<h1>The backdooring of SquirrelMail</h1>
+</div>
+<div class="ArticleText"><main>
+<blockquote class="ad">
+<b>Benefits for LWN subscribers</b>
+<p>
+The primary benefit from <a href="/Promo/nst-nag5/subscribe">subscribing to LWN</a>
+       is helping to keep us publishing, but, beyond that, subscribers get
+       immediate access to all site content and access to a number of extra
+       site features.  Please sign up today!
+</blockquote>
+<div class="FeatureByline">
+           By <b>Jonathan Corbet</b><br>December 19, 2007</br>
+           </div>
+<a href="http://squirrelmail.org/">SquirrelMail</a> advertises itself as
+"webmail for nuts."  It is a PHP-based package which is in wide use; most
+distributions include a SquirrelMail package.  Security problems in
+SquirrelMail are certainly not unheard-of; even so, the <a
+href="/Articles/262690/">announcement</a> that the source distribution for
+version 1.4.12 had been compromised raised some eyebrows.  Initially the
+project downplayed the problem:
+<p>
+<div class="BigQuote">
+	Further investigations show that the modifications to the code
+	should have little to no impact at this time.  Modifications seemed
+	to be based around a PHP global variable which we cannot track
+	down.  The changes made will most likely generate an error, rather
+	than a compromise of a system in the event the code does get
+	executed.
+</div>
+<p>
+It only took one day, though, before Uwe Schindler <a
+href="/Articles/262691/">pointed out</a> that, in fact, the changes made to
+the source opened a remote-execution back door into deployed SquirrelMail
+systems.  Somewhere along the way, the project discovered that the 1.4.11
+release had also been tampered with.  The SquirrelMail developers released
+<a href="http://lwn.net/Articles/262211/">version 1.4.13</a> to close the
+vulnerabilities.  
+<p>
+There have not been any public reports of systems being compromised by way
+of this vulnerability.  Additionally, it would appear that all of the
+distributors which shipped the affected versions got their version of the
+code prior to the attack.  So the episode would appear to have ended
+reasonably well - as far as we know.  There are some lessons that one can
+take from this attack, though.
+<p>
+
+The downplaying of the problem initially was a potentially fatal mistake.
+If somebody has been tampering with the sources, there is no excuse not to
+go into red-alert mode immediately, even if the developers involved do not
+understand the attack.  When a project has been compromised at such a
+fundamental level, one must assume the worst.
+<p>
+
+
+The compromise was discovered after a user noticed that the tarballs on the
+download site did not match the posted MD5 checksums.  Your editor suspects
+that very few of us actually verify checksums in the packages they take
+from the net.  Doing so more often would be a good exercise in software
+hygiene for all of us.
+<p>
+
+That said, the project got lucky this time around.  A smarter attacker
+would have replaced the checksums after adding the back door, making the
+changes harder to detect.  Longer-term, the <a
+href="http://www.win.tue.nl/hashclash/SoftIntCodeSign/">increasing doubts
+about the security of MD5</a> suggest that relying on it to detect changes
+to tarballs might not be entirely safe.  Far better to use public-key
+signatures; they should have a longer shelf life, and, if the keys
+are managed properly, they are impossible to replace.  It seems that the
+project has posted GPG signatures for 1.4.13, though the Wayback Machine <a
+href="http://web.archive.org/web/20070616190044/http://www.squirrelmail.org/download.php">suggests</a>
+that this is a recent practice.  Your editor was unable to find the public
+key needed to verify the signatures.
+<p>
+
+The modifications to the tarballs were done using a compromised developer's
+account.  The specific changes made were not put into the SquirrelMail
+source repository.  The project has said nothing, though, about what has
+been done to ensure that no other changes were made there.  Some sort of
+statement from the project along these lines would be most reassuring to
+SquirrelMail's users.
+<p>
+
+Perhaps the most encouraging conclusion, though, is this: there have been
+several attempts to compromise source distributions over the years.  Many
+of them have succeeded in getting bad code into high-profile packages.  But
+none of these attacks - so far as we know - have escaped detection for any
+significant period of time, and none of them have led to any sort of
+wide-scale exploit.  As a whole, we would appear to be reasonably resistant
+to this kind of attack, even when the front-line defenses fail.  With luck,
+and continued vigilance, that trend will continue.  Both will be required,
+though: there is no doubt that the attackers will keep trying.<br clear="all"><table class="IndexEntries">
+           <tr><th colspan=2>Index entries for this article</th></tr>
+           <tr><td><a href="/Security/Index/">Security</a></td><td><a href="/Security/Index/#Backdoors">Backdoors</a></td></tr>
+            <tr><td><a href="/Security/Index/">Security</a></td><td><a href="/Security/Index/#Web_application_flaws">Web application flaws</a></td></tr>
+            </table><br clear="all">
+<hr width="60%%" align="left">
+            <form action="/Login/" method="post">
+            <input type="hidden" name="target" value="/Articles/262688/" />
+            <input type="submit" name="login" value="Log in" /> to post comments
+            <p>
+        <p><a name="Comments"></a>
+<a name="CommAnchor262790"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Far better to use public-key signatures</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 5:39 UTC (Thu)
+                               by <b>khim</b> (subscriber, #9252)
+                              [<a href="/Articles/262790/">Link</a>] (4 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <p>I can only say "huh?". It's certainly true that public-key signatures are impossible to replace if you don't have access to private key. It's very much <b>not</b> true that they have a longer shelf life! If you'll try to sign multi megabyte archive by using RSA or DSS directly process will take minutes if not hours and the check will be just as slow - thus ALL public-key cryptography depends on "normal" hashes (usually SHA1 today) in practice! Of course if MD5 or SHA1 is broken public-key signing scheme based on MD5 or SHA1 is broken as well...</p>
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262790/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor262795"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Far better to use public-key signatures</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 7:45 UTC (Thu)
+                               by <b>anselm</b> (subscriber, #2796)
+                              [<a href="/Articles/262795/">Link</a>] (3 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <p>
+One short-term way of alleviating this problem could be by publishing 
+(and signing) both an MD5 <i>and</i> an SHA-1 checksum of the archive(s) 
+in question. Even if an ambitious attacker managed to find a way to 
+compromise an archive such that its MD5 or SHA-1 checksum stayed the same 
+while the modified code still made sense, finding such a compromise that 
+kept <i>both</i> hashes identical would be that much more difficult. (For 
+extra credit, use two hash functions that are not as closely related as 
+MD5 and SHA-1, or add a third one.)
+</p> 
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262795/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor262874"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Far better to use public-key signatures</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 18:03 UTC (Thu)
+                               by <b>hmh</b> (subscriber, #3838)
+                              [<a href="/Articles/262874/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment"><pre>
+And, also add the size of the files.  Might as well make things even a little more difficult
+to the attacker by reducing even more the set of possible streams he can use...
+</pre></div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262874/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor262893"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Far better to use public-key signatures</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 19:19 UTC (Thu)
+                               by <b>rise</b> (guest, #5045)
+                              [<a href="/Articles/262893/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment"><pre>
+Sadly it's been shown that using both hashes doesn't increase the work factor by very much.
+</pre></div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262893/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor262898"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Far better to use public-key signatures</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 19:30 UTC (Thu)
+                               by <b>smoogen</b> (subscriber, #97)
+                              [<a href="/Articles/262898/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment"><pre>
+One has to take into effect that when most times people say that it doesn't increase the work
+load they are talking about order of magnitude things... and that it doesn't increase the
+factor if certain factors are true. Finding a match between SHA1 and 'pull out unrelated of my
+butt' Hash might only extend the time to see it by months or years versus decades... and is
+not non-trivial.. may only be 'trivial' to the mathmetician who was testing it against a
+theoretical 10^20 years to find a match.
+</pre></div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262898/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+</details>
+<a name="CommAnchor262800"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">The backdooring of SquirrelMail</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 9:23 UTC (Thu)
+                               by <b>hickinbottoms</b> (subscriber, #14798)
+                              [<a href="/Articles/262800/">Link</a>] (4 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment"><pre>
+Wouldn't it be helpful if the &lt;a&gt; tag could include a hash/signature (I'll refrain from
+suggesting which one), that the browser could use to verify the download automatically?
+
+Whilst that wouldn't plug the hole completely (the attacker may be able to compromise both the
+web site and the tarball), from the reading of this article it would have meant all
+downloaders would have been alerted to the compromise.
+</pre></div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262800/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor262860"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">The backdooring of SquirrelMail</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 16:21 UTC (Thu)
+                               by <b>gerv</b> (guest, #3376)
+                              [<a href="/Articles/262860/">Link</a>] (2 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment"><pre>
+I've been proposing this for some years now - <a href="http://www.gerv.net/security/link-fingerprints/">http://www.gerv.net/security/link-fingerprints/</a>
+- and we even got as far as a draft RFC but it received a chilly reception from the IETF. :-(
+
+Gerv
+</pre></div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262860/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor263927"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">link fingerprints</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jan 4, 2008 23:32 UTC (Fri)
+                               by <b>roelofs</b> (guest, #2599)
+                              [<a href="/Articles/263927/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <FONT COLOR="#884400"><I>I've been proposing this for some years now - http://www.gerv.net/security/link-fingerprints/
+- and we even got as far as a draft RFC but it received a chilly reception from the IETF. :-(</I></FONT>
+
+<P>
+Why stop with the IETF?  This clearly falls equally under the W3C's purvue--at least, if you consider implementing it as additional attributes to the anchor tag rather than welding it to URI syntax.  It seems like an almost ideal XHTML or HTML4.x addition.
+
+<P>
+Greg
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/263927/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor263956"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">link fingerprints</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jan 5, 2008 12:18 UTC (Sat)
+                               by <b>gerv</b> (guest, #3376)
+                              [<a href="/Articles/263956/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment"><pre>
+I wanted to make it part of the URI syntax because then it could be used even in non-HTML
+contexts - for example, in plain-text emails. But yes, perhaps if that's not going to be
+achievable, we could get a significant proportion of the benefits by going via WHAT-WG or W3C
+and adding a new attribute to HTML.
+
+Gerv
+</pre></div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/263956/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+<a name="CommAnchor262911"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">link fingerprints</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 20:44 UTC (Thu)
+                               by <b>zooko</b> (guest, #2589)
+                              [<a href="/Articles/262911/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment"><pre>
+I uploaded a package this morning -- zfec v1.3.1.  If give the following hyperlink to the
+"easy_install" tool, as in:
+
+easy_install
+<a href="http://pypi.python.org/packages/source/z/zfec/zfec-1.3.1.tar.gz#md5=da2d63df29aa1466b49fd3298f404022">http://pypi.python.org/packages/source/z/zfec/zfec-1.3.1....</a>
+
+Then easy_install will check that the md5 fingerprint of the resulting tarball matches the one
+in the URL fragment and stop with an error message if they don't match.
+
+</pre></div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262911/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor262814"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">The backdooring of SquirrelMail</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 12:17 UTC (Thu)
+                               by <b>scarabaeus</b> (guest, #7142)
+                              [<a href="/Articles/262814/">Link</a>] (3 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <blockquote>there have been several attempts to compromise source distributions over the years. Many of them have succeeded in getting bad code into high-profile packages. But none of these attacks - so far as we know - have escaped detection for any significant period of time</blockquote>
+
+Well, yes - how <strong>do</strong> you know that no such thing exists?? Anybody who has done it will surely be careful not to cause alarm when exploiting it.</p>
+<p>BTW, it is also possible and likely that some <em>developer</em> somewhere has done a similar thing. I dimly remember one occasion a few years ago when such a developer backdoor was detected, can't remember any details though...
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262814/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor262854"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">The backdooring of SquirrelMail</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 15:30 UTC (Thu)
+                               by <b>NAR</b> (subscriber, #1313)
+                              [<a href="/Articles/262854/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment"><pre>
+Exactly. How do we know that someone didn't crack the workstation of an apache or firefox
+developer, didn't slip a backdoor into the code and currently isn't waiting for the highest
+bidder to sell the access to these computers? Yes, I know, there is peer review, but it
+obviously didn't work in the case of SquirrelMail...
+</pre></div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262854/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor262856"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">How do we know?</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 15:43 UTC (Thu)
+                               by <b>corbet</b> (editor, #1)
+                              [<a href="/Articles/262856/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      Peer review <i>did</i> work with SquirrelMail - somebody reviewed the checksum and raised the alarm.  There was no possibility for review to happan any earlier - that code did not go through the ordinary process.  The fact that almost all backdoor attempts have targeted the distribution point (the final tarball) rather than some point earlier in the process suggests that getting a backdoor in that way is hard.
+<p>
+In other cases where backdoors have actually made it into source repositories (interbase, for example, or <a rel="nofollow" href="http://lwn.net/Articles/22991/">the mICQ incident</a>), peer reviewers have caught the problem.  The interbase backdoor lasted for a year and a half, but I do not think it was being exploited.  It was something the developers left in by mistake.  I do not know of a case where a trojan was introduced into a free software project, then was exploited for any significant period of time before being found.
+<p>
+That, of course, does not say that no such compromise exists.  But I would be more concerned about long-term backdoors if there had been some cases of compromises which lasted for an intermediate period of time.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262856/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor263929"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">The backdooring of SquirrelMail</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jan 4, 2008 23:39 UTC (Fri)
+                               by <b>roelofs</b> (guest, #2599)
+                              [<a href="/Articles/263929/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <FONT COLOR="#880044"><I>BTW, it is also possible and likely that some </I>developer<I> somewhere has done a similar thing. I dimly remember one occasion a few years ago when such a developer backdoor was detected, can't remember any details though...</I></FONT>
+
+<P>
+Some Debian machines were compromised via a developer's account, if that's what you mean.  There was also a case of the kernel getting backdoored, but only via a CVS "mirror" of the main git or bitkeeper repository, not the master copy itself.
+
+<P>
+Those are the only two I recall offhand.  Then again, the old brain cell ain't what she used ter be...
+
+<P>
+Greg
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/263929/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor262830"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Worrying initial conclusion?</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 13:37 UTC (Thu)
+                               by <b>gnb</b> (subscriber, #5132)
+                              [<a href="/Articles/262830/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment"><pre>
+ The quoted section of the initial announcement is a little worrying: 
+compromising the release packages involved effort on someone's part and, 
+as a motivation for that effort, introducing an exploitable vulnerability 
+is a far, _far_ likelier goal that adding a random bug. So the initial 
+position should probably be to assume that whoever made the changes 
+intended them to be exploitable and therefore to act as though there 
+were a compromise introduced until those changes are fully understood. 
+That is, the healthy initial reaction is "what have I missed?" rather 
+than "this doesn't seem to do anything".
+</pre></div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262830/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor262887"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Checksums are next to the tar.gz files</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 20, 2007 18:56 UTC (Thu)
+                               by <b>addw</b> (guest, #1771)
+                              [<a href="/Articles/262887/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment"><pre>
+The trouble is that the checksums and source files tend to be on the same server -- so if you
+can 'fix' one, you can fix the other.
+
+However, as Jon says: most people don't bother to check check sums, if they were held on
+another machine then even fewer would bother. Whatever is done has to be easy to use.
+</pre></div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262887/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor262949"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Technology support</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 21, 2007 7:05 UTC (Fri)
+                               by <b>geertj</b> (guest, #4116)
+                              [<a href="/Articles/262949/">Link</a>] (2 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <p> The more I read about source code being compromised, the more I am convinced we need technology support (as opposed to procedural support) to prevent any such modifications from being trusted and/or used by anyone. Projects have become so big that manual audits of the source code to look for backdoors become increasingly less effective. For example, if in the case of this SquirrelMail compromise, the attacker had also updated the checksum, then it may have taken even longer for this to come out. </p>
+
+<p>  A good place for implementing such support would in my view be the version control system. </p>
+
+<p> The <a href="http://www.monotone.ca">Monotone</a> version control system identifies files and trees with a cryptographically secure fingerprints, and it uses digital signatures to assert arbitrary statements about versions and changes (such as: author so-and-so created this change on so-and-so date). The way I understand it, an attacker could add whatever he wants to a monotone repository, as long as the primary developers' public keys are not compromised, this will be completely harmless. A similar situation exists for a developer: you can pull whatever changes you want into your local repository database from whatever dodgy site on the net: as long as you have not assigned trust to a particular public key those changes will be harmless.</p> 
+
+<p> I am thinking of switching a few of my open source projects over to Monotone just to see how it works. </p>
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/262949/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor263032"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Technology support</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 21, 2007 20:00 UTC (Fri)
+                               by <b>giraffedata</b> (guest, #1954)
+                              [<a href="/Articles/263032/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <p>
+But that wouldn't be effective against what happened with Squirrelmail, since the code was changed after it came out of the source repository.
+<p>
+And it may not be effective against hackers who put code into source repositories either, because if you can get commit privilege on a Subversion server, you can probably also add a public key to a Monotone server or sign code as some authorized developer.
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/263032/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor263038"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">Technology support</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Dec 21, 2007 20:27 UTC (Fri)
+                               by <b>geertj</b> (guest, #4116)
+                              [<a href="/Articles/263038/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <p> <em>But that wouldn't be effective against what happened with Squirrelmail, since the code was changed after it came out of the source repository.</em> </p>
+
+<p> It would be effective if the users would pull the code directly from a Monotone netsync server using &quot;mtn sync&quot;. There is indeed no protection against modifying a tarfile after it is released from a monotone repository. </p>
+
+
+<p> <em>And it may not be effective against hackers who put code into source repositories either, because if you can get commit privilege on a Subversion server, you can probably also add a public key to a Monotone server or sign code as some authorized developer.</em> <p>
+
+<p> Being a distributed version control system, a typical way to deploy monotone is for all developers to have their own repository on their private workstations, and in addition to this one central netsync server connected to the Internet to which everybody synchronises. The development workstations can be behind a firewall and do not need to accept any incoming connection. The developers would normally store their private keys only on their workstations, hopefully protected by a passphrase. In this setup, a compromise of the netsync server (which is more likely than a compromise of a developer workstation because it is a public server) would not impact the security of the monotone sources hosted on it. The attacker can add anything to the repository he wants, but he has no access to a key that is trusted by the other developers with which he can certify the new revision. </p>
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/263038/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+</details>
+<a name="CommAnchor263998"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">The backdooring of SquirrelMail</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jan 6, 2008 7:15 UTC (Sun)
+                               by <b>voluspa</b> (guest, #49821)
+                              [<a href="/Articles/263998/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment"><pre>
+I was just in the process of updating a little project of mine, and had decided on an extra
+bit of security for the published hashes, when I took a break and read lwn.
+
+What I'll do with my project is to run a daily script comparing the remote pages (the ones
+containing hashes) with the local copies. Should a "diff" happen, all hell will break loose
+here and the remote tarballs pulled asap.
+
+Mats Johannesson
+
+</pre></div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/263998/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+
+</main></div> <!-- ArticleText -->
+</div> <!-- middlecolumn -->
+<div class="rightcol not-print">
+<ins data-revive-zoneid="12085" 
+data-revive-id="fa8c6c9da7f33852f7097c4a94da1070"></ins>
+<script async src="//servedby.aqua-adserver.com/asyncjs.php"></script>
+</div>
+</div> <!-- maincolumn -->
+
+            <br clear="all">
+            <center>
+            <P>
+            <span class="ReallySmall">
+            Copyright &copy; 2007, Eklektix, Inc.<BR>
+            This article may be redistributed under the terms of the
+              <a href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+              Commons CC BY-SA 4.0</a> license<br>
+            Comments and public postings are copyrighted by their creators.<br>
+            Linux  is a registered trademark of Linus Torvalds<br>
+            </span>
+            </center>
+            
+            </body></html>

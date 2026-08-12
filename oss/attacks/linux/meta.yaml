@@ -4,20 +4,26 @@
     An attacker attempted to insert a two-line backdoor into the Linux kernel's bk2cvs mirror
     by modifying kernel/exit.c outside the authoritative BitKeeper workflow.
   story: |
-    In November 2003, the Linux kernel was maintained in BitKeeper, with a separate CVS mirror available for developers who could not or would not use BitKeeper directly. An attacker modified the CVS-side `kernel/exit.c` history on kernel.bkbits.net instead of landing a real BitKeeper changeset. That distinction mattered: the poisoned revisions appeared in the mirror, but not in the authoritative development tree used for mainline integration.
+    In November 2003, the Linux kernel was maintained in BitKeeper, with a separate CVS mirror available for developers who could not or would not use BitKeeper directly. An attacker modified the CVS-side `kernel/exit.c` history instead of landing a real BitKeeper changeset; Larry McVoy could only narrow the entry point to someone who had touched the file "either on kernel.bkbits.net or managed to get in through the pserver." That distinction mattered: the poisoned revisions appeared in the mirror, but not in the authoritative development tree used for mainline integration.
 
-    The change was small enough to be read and large enough to matter. It lived in `kernel/exit.c`, in the wait path, and looked like an error check. The planted CVS revisions lacked normal BitKeeper logical-change backlinks, which made the source-control metadata as important as the C code.
+    The change was small enough to be read and large enough to matter. It lived in `kernel/exit.c`, in the wait path, and looked like an error check. The three forged revisions were stamped 2003/11/04 between 16:22 and 16:44 and logged under `author: davem`, borrowing the name of kernel maintainer David S. Miller, who denied making them. The planted CVS revisions lacked normal BitKeeper logical-change backlinks, which made the source-control metadata as important as the C code.
 
     The inserted code checked for `options == (__WCLONE|__WALL)` and then evaluated `current->uid = 0`, turning what looked like a comparison into an assignment that would make the caller root. BitMover's conversion checks caught the fraud quickly because normal CVS mirror entries carried logical-change backlinks to BitKeeper changesets, while the planted revisions did not. The incident became an early, concrete example of why source-control provenance matters as much as code review.
 
     The attack failed because the mirror was not the source of truth. That is the important distinction for this record: the code change was malicious, but the project workflow still had an authoritative history that let maintainers separate a forged mirror revision from a real kernel change.
-  start_date: 2003-11-05
+  pull_quote:
+    text: >-
+      The two-line change read as an error check, but `=` is not `==`. It was
+      caught without anyone reading the C: the forged CVS revisions lacked the
+      `(Logical change)` backlink every BitKeeper-generated revision carries.
+    caption: flagged by metadata, not by code
+    after: 2
+  start_date: 2003-11-04
   end_date: 2003-11-05
   target:
     name: linux
     kind: os
     website: https://www.kernel.org
-    repo: https://git.kernel.org
   actor:
     name: Unknown attacker
     kind: unknown
@@ -38,12 +44,14 @@
     value: current->uid = 0
   - kind: code
     value: options == (__WCLONE|__WALL)
+  - kind: commit_author
+    value: davem
   artifacts:
   - id: linux
     name: linux
     kind: revision_control_system
     website: https://bkbits.net
-    start_date: 2003-11-05
+    start_date: 2003-11-04
     end_date: 2003-11-05
     locations:
     - uri: http://vger.kernel.org/bkmirror/linux-2.6/
@@ -63,6 +71,17 @@
       value: kernel/exit.c
     - kind: code
       value: current->uid = 0
+    - kind: commit_author
+      value: davem
+    - kind: domain
+      value: kernel.bkbits.net
+    evidence:
+    - kind: patch
+      path: samples/linux/during/kernel-exit.c-injected-lines.patch
+      role: impacted_code_diff
+    - kind: document
+      path: samples/linux/during/lkml-bk2cvs-problem.html
+      role: contemporary_report_and_diff_source
   references:
   - url: https://blog.citp.princeton.edu/2013/10/09/the-linux-backdoor-attempt-of-2003/
     title: The Linux Backdoor Attempt of 2003

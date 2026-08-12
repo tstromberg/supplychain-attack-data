@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<!--[if IE 6]>
+<html id="ie6" lang="en-US">
+<![endif]-->
+<!--[if IE 7]>
+<html id="ie7" lang="en-US">
+<![endif]-->
+<!--[if IE 8]>
+<html id="ie8" lang="en-US">
+<![endif]-->
+<!--[if !(IE 6) | !(IE 7) | !(IE 8)  ]><!-->
+<html lang="en-US">
+<!--<![endif]-->
+<head>
+	<meta charset="UTF-8" />
+	<title>Backdoor found in OpenX open source version 2.8.10 &#8211; some thoughts | ClearMind Consulting</title>
+			
+	
+	<link rel="pingback" href="https://www.clearmind.cc/xmlrpc.php" />
+
+		<!--[if lt IE 9]>
+	<script src="https://www.clearmind.cc/wp-content/themes/Divi/js/html5.js" type="text/javascript"></script>
+	<![endif]-->
+
+	<script type="text/javascript">
+		document.documentElement.className = 'js';
+	</script>
+
+	<meta name='robots' content='max-image-preview:large' />
+<link rel='dns-prefetch' href='//www.clearmind.cc' />
+<link rel='dns-prefetch' href='//fonts.googleapis.com' />
+<link rel='dns-prefetch' href='//s.w.org' />
+<link rel="alternate" type="application/rss+xml" title="ClearMind Consulting &raquo; Feed" href="https://www.clearmind.cc/feed/" />
+<link rel="alternate" type="application/rss+xml" title="ClearMind Consulting &raquo; Comments Feed" href="https://www.clearmind.cc/comments/feed/" />
+<link rel="alternate" type="application/rss+xml" title="ClearMind Consulting &raquo; Backdoor found in OpenX open source version 2.8.10 &#8211; some thoughts Comments Feed" href="https://www.clearmind.cc/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/feed/" />
+		<script type="text/javascript">
+			window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/13.1.0\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/13.1.0\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/www.clearmind.cc\/wp-includes\/js\/wp-emoji-release.min.js?ver=5.8.3"}};
+			!function(e,a,t){var n,r,o,i=a.createElement("canvas"),p=i.getContext&&i.getContext("2d");function s(e,t){var a=String.fromCharCode;p.clearRect(0,0,i.width,i.height),p.fillText(a.apply(this,e),0,0);e=i.toDataURL();return p.clearRect(0,0,i.width,i.height),p.fillText(a.apply(this,t),0,0),e===i.toDataURL()}function c(e){var t=a.createElement("script");t.src=e,t.defer=t.type="text/javascript",a.getElementsByTagName("head")[0].appendChild(t)}for(o=Array("flag","emoji"),t.supports={everything:!0,everythingExceptFlag:!0},r=0;r<o.length;r++)t.supports[o[r]]=function(e){if(!p||!p.fillText)return!1;switch(p.textBaseline="top",p.font="600 32px Arial",e){case"flag":return s([127987,65039,8205,9895,65039],[127987,65039,8203,9895,65039])?!1:!s([55356,56826,55356,56819],[55356,56826,8203,55356,56819])&&!s([55356,57332,56128,56423,56128,56418,56128,56421,56128,56430,56128,56423,56128,56447],[55356,57332,8203,56128,56423,8203,56128,56418,8203,56128,56421,8203,56128,56430,8203,56128,56423,8203,56128,56447]);case"emoji":return!s([10084,65039,8205,55357,56613],[10084,65039,8203,55357,56613])}return!1}(o[r]),t.supports.everything=t.supports.everything&&t.supports[o[r]],"flag"!==o[r]&&(t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&t.supports[o[r]]);t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&!t.supports.flag,t.DOMReady=!1,t.readyCallback=function(){t.DOMReady=!0},t.supports.everything||(n=function(){t.readyCallback()},a.addEventListener?(a.addEventListener("DOMContentLoaded",n,!1),e.addEventListener("load",n,!1)):(e.attachEvent("onload",n),a.attachEvent("onreadystatechange",function(){"complete"===a.readyState&&t.readyCallback()})),(n=t.source||{}).concatemoji?c(n.concatemoji):n.wpemoji&&n.twemoji&&(c(n.twemoji),c(n.wpemoji)))}(window,document,window._wpemojiSettings);
+		</script>
+		<meta content="Divi v.2.3.1" name="generator"/><style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+	<link rel='stylesheet' id='wp-block-library-css'  href='https://www.clearmind.cc/wp-includes/css/dist/block-library/style.min.css?ver=5.8.3'  media='all' />
+<link rel='stylesheet' id='contact-form-7-css'  href='https://www.clearmind.cc/wp-content/plugins/contact-form-7/includes/css/styles.css?ver=5.5.4'  media='all' />
+<link rel='stylesheet' id='divi-fonts-css'  href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,800italic,400,300,700,800&#038;subset=latin,latin-ext'  media='all' />
+<link rel='stylesheet' id='divi-style-css'  href='https://www.clearmind.cc/wp-content/themes/Divi/style.css?ver=2.3.1'  media='all' />
+<link rel='stylesheet' id='et-shortcodes-css-css'  href='https://www.clearmind.cc/wp-content/themes/Divi/epanel/shortcodes/css/shortcodes.css?ver=3.0'  media='all' />
+<link rel='stylesheet' id='et-shortcodes-responsive-css-css'  href='https://www.clearmind.cc/wp-content/themes/Divi/epanel/shortcodes/css/shortcodes_responsive.css?ver=3.0'  media='all' />
+<script  src='https://www.clearmind.cc/wp-includes/js/jquery/jquery.min.js?ver=3.6.0' id='jquery-core-js'></script>
+<script  src='https://www.clearmind.cc/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.3.2' id='jquery-migrate-js'></script>
+<script  src='https://www.clearmind.cc/wp-content/plugins/js-support-ticket/includes/js/common.js?ver=5.8.3' id='commonjs-js'></script>
+<script  src='https://www.clearmind.cc/wp-content/plugins/js-support-ticket/includes/js/responsivetable.js?ver=5.8.3' id='responsivetablejs-js'></script>
+<script  src='https://www.clearmind.cc/wp-content/plugins/js-support-ticket/includes/js/jquery.form-validator.js?ver=5.8.3' id='jsst-formvalidator-js'></script>
+<script  id='jsst-formvalidator-js-after'>
+        jQuery.formUtils.LANG = {
+            errorTitle: "Form submission failed!",
+            requiredFields: "You have not answered all required fields",
+            badTime: "You have not given a correct time",
+            badEmail: "You have not given a correct e-mail address",
+            badTelephone: "You have not given a correct phone number",
+            badSecurityAnswer: "You have not given a correct answer to the security question",
+            badDate: "You have not given a correct date",
+            lengthBadStart: "The input value must be between ",
+            lengthBadEnd: " characters",
+            lengthTooLongStart: "The input value is longer than ",
+            lengthTooShortStart: "The input value is shorter than ",
+            notConfirmed: "Input values could not be confirmed",
+            badDomain: "Incorrect domain value",
+            badUrl: "The input value is not a correct URL",
+            badCustomVal: "The input value is incorrect",
+            badInt: "The input value was not a correct number",
+            badSecurityNumber: "Your social security number was incorrect",
+            badUKVatAnswer: "Incorrect UK VAT Number",
+            badStrength: "The password isn't strong enough",
+            badNumberOfSelectedOptionsStart: "You have to choose at least ",
+            badNumberOfSelectedOptionsEnd: " answers",
+            badAlphaNumeric: "The input value can only contain alphanumeric characters ",
+            badAlphaNumericExtra: " and ",
+            wrongFileSize: "The file you are trying to upload is too large",
+            wrongFileType: "The file you are trying to upload is of the wrong type",
+            groupCheckedRangeStart: "Please choose between ",
+            groupCheckedTooFewStart: "Please choose at least ",
+            groupCheckedTooManyStart: "Please choose a maximum of ",
+            groupCheckedEnd: " item(s)",
+            badCreditCard: "The credit card number is not correct",
+            badCVV: "The CVV number was not correct"
+        };
+        
+</script>
+<link rel="https://api.w.org/" href="https://www.clearmind.cc/wp-json/" /><link rel="alternate" type="application/json" href="https://www.clearmind.cc/wp-json/wp/v2/posts/106" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://www.clearmind.cc/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://www.clearmind.cc/wp-includes/wlwmanifest.xml" /> 
+<meta name="generator" content="WordPress 5.8.3" />
+<link rel="canonical" href="https://www.clearmind.cc/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/" />
+<link rel='shortlink' href='https://www.clearmind.cc/?p=106' />
+<link rel="alternate" type="application/json+oembed" href="https://www.clearmind.cc/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.clearmind.cc%2F2013%2F08%2Fbackdoor-found-in-openx-open-source-version-2-8-10-some-thoughts%2F" />
+<link rel="alternate" type="text/xml+oembed" href="https://www.clearmind.cc/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.clearmind.cc%2F2013%2F08%2Fbackdoor-found-in-openx-open-source-version-2-8-10-some-thoughts%2F&#038;format=xml" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />	<style>
+		a { color: #2EA3F2; }
+
+		body { color: #666666; }
+
+		.et_pb_counter_amount, .et_pb_featured_table .et_pb_pricing_heading, .et_quote_content, .et_link_content, .et_audio_content { background-color: #2EA3F2; }
+
+		#main-header, #main-header .nav li ul, .et-search-form, #main-header .et_mobile_menu { background-color: #ffffff; }
+
+		#top-header, #et-secondary-nav li ul { background-color: #2EA3F2; }
+
+		.woocommerce a.button.alt, .woocommerce-page a.button.alt, .woocommerce button.button.alt, .woocommerce-page button.button.alt, .woocommerce input.button.alt, .woocommerce-page input.button.alt, .woocommerce #respond input#submit.alt, .woocommerce-page #respond input#submit.alt, .woocommerce #content input.button.alt, .woocommerce-page #content input.button.alt, .woocommerce a.button, .woocommerce-page a.button, .woocommerce button.button, .woocommerce-page button.button, .woocommerce input.button, .woocommerce-page input.button, .woocommerce #respond input#submit, .woocommerce-page #respond input#submit, .woocommerce #content input.button, .woocommerce-page #content input.button, .woocommerce-message, .woocommerce-error, .woocommerce-info { background: #2EA3F2 !important; }
+
+		#et_search_icon:hover, .mobile_menu_bar:before, .footer-widget h4, .et-social-icon a:hover, .comment-reply-link, .form-submit input, .et_pb_sum, .et_pb_pricing li a, .et_pb_pricing_table_button, .et_overlay:before, .entry-summary p.price ins, .woocommerce div.product span.price, .woocommerce-page div.product span.price, .woocommerce #content div.product span.price, .woocommerce-page #content div.product span.price, .woocommerce div.product p.price, .woocommerce-page div.product p.price, .woocommerce #content div.product p.price, .woocommerce-page #content div.product p.price, .et_pb_member_social_links a:hover { color: #2EA3F2 !important; }
+
+		.woocommerce .star-rating span:before, .woocommerce-page .star-rating span:before, .et_pb_widget li a:hover, .et_pb_bg_layout_light .et_pb_promo_button, .et_pb_bg_layout_light .et_pb_more_button, .et_pb_filterable_portfolio .et_pb_portfolio_filters li a.active, .et_pb_filterable_portfolio .et_pb_portofolio_pagination ul li a.active, .et_pb_gallery .et_pb_gallery_pagination ul li a.active, .wp-pagenavi span.current, .wp-pagenavi a:hover, .et_pb_contact_submit, .et_password_protected_form .et_submit_button, .et_pb_bg_layout_light .et_pb_newsletter_button, .nav-single a, .posted_in a { color: #2EA3F2 !important; }
+
+		.et-search-form, .nav li ul, .et_mobile_menu, .footer-widget li:before, .et_pb_pricing li:before, blockquote { border-color: #2EA3F2; }
+
+		#main-footer { background-color: #222222; }
+
+		#top-menu a { color: #666666; }
+
+		#top-menu li.current-menu-ancestor > a, #top-menu li.current-menu-item > a, .bottom-nav li.current-menu-item > a { color: #2EA3F2; }
+
+		</style>
+<style type="text/css">.recentcomments a{display:inline !important;padding:0 !important;margin:0 !important;}</style></head>
+<body class="post-template-default single single-post postid-106 single-format-standard et_color_scheme_green et_fixed_nav et_cover_background et_secondary_nav_enabled osx et_right_sidebar chrome">
+	<div id="page-container">
+
+			<div id="top-header" class="et_nav_text_color_light">
+			<div class="container clearfix">
+
+			
+				<div id="et-secondary-menu">
+				<ul class="et-social-icons">
+
+	<li class="et-social-icon et-social-twitter">
+		<a href="https://twitter.com/jchpgh" class="icon">
+			<span>Twitter</span>
+		</a>
+	</li>
+	<li class="et-social-icon et-social-google-plus">
+		<a href="https://plus.google.com/115501446139830548500/about" class="icon">
+			<span>Google</span>
+		</a>
+	</li>
+	<li class="et-social-icon et-social-rss">
+		<a href="https://www.clearmind.cc/feed/" class="icon">
+			<span>RSS</span>
+		</a>
+	</li>
+
+</ul>				</div> <!-- #et-secondary-menu -->
+
+			</div> <!-- .container -->
+		</div> <!-- #top-header -->
+	
+		<header id="main-header" class="et_nav_text_color_dark">
+			<div class="container clearfix">
+							<a href="https://www.clearmind.cc/">
+					<img src="https://clearmind.cc/wp-content/uploads/2015/03/clearmind-logo-color.jpg" alt="ClearMind Consulting" id="logo" />
+				</a>
+
+				<div id="et-top-navigation">
+					<nav id="top-menu-nav">
+											<ul id="top-menu" class="nav">
+							
+							<li class="page_item page-item-121"><a href="https://www.clearmind.cc/blog/">Blog</a></li>
+<li class="page_item page-item-65"><a href="https://www.clearmind.cc/about-us/">Case Studies</a></li>
+<li class="page_item page-item-70"><a href="https://www.clearmind.cc/contact/">Start a Conversation</a></li>
+													</ul>
+										</nav>
+
+					
+					
+					<div id="et_mobile_nav_menu">
+			<a href="#" class="mobile_nav closed">
+				<span class="select_page">Select Page</span>
+				<span class="mobile_menu_bar"></span>
+			</a>
+		</div>				</div> <!-- #et-top-navigation -->
+			</div> <!-- .container -->
+		</header> <!-- #main-header -->
+
+		<div id="et-main-area">
+<div id="main-content">
+	<div class="container">
+		<div id="content-area" class="clearfix">
+			<div id="left-area">
+							
+				<article id="post-106" class="et_pb_post post-106 post type-post status-publish format-standard hentry category-uncategorized">
+					<h1>Backdoor found in OpenX open source version 2.8.10 &#8211; some thoughts</h1>
+
+				<p class="post-meta"> by <a href="https://www.clearmind.cc/author/clearmind/" title="Posts by clearmind" rel="author">clearmind</a> | Aug 8, 2013 | <a href="https://www.clearmind.cc/category/uncategorized/" rel="category tag">Uncategorized</a> | <span class="comments-number"><a href="https://www.clearmind.cc/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/#respond">0 comments</a></span></p>
+					
+					<div class="entry-content">
+					<p>Two days ago, Heise (the German news and IT firm) reported that a backdoor was found in the prominent advertising platform OpenX.  (<a href="http://www.heise.de/security/meldung/Achtung-Anzeigen-Server-OpenX-enthaelt-eine-Hintertuer-1929769.html">German link here</a>, and I leave translation to the reader.)  The backdoor itself was injected into a somewhat obscure flowplayer javascript file, with obfuscated php hiding the fact that it was a remote code execution bit of php.  With this code there, it would be trivial for a solid hacker to build a shell for the server and completely compromise it.</p>
+<p>The question which immediately came up for me was, Huh?  Since when is a webserver interpreting a javascript file as a php file?  I doubted that it is typical for web servers to be configured to have .js files interpreted by the .php interpreter first, then sent to the browser.  However, none of the technology reporting said anything about how the OpenX backdoor was getting the .js file to be executed as .php.</p>
+<p>A couple examples of the simple explanation that .js files just obviously might house some .php and invoke it:</p>
+<ul>
+<li><span style="line-height: 13px;"><a href="http://arstechnica.com/security/2013/08/backdoor-in-popular-ad-serving-software-opens-websites-to-remote-hijacking/">http://arstechnica.com/security/2013/08/backdoor-in-popular-ad-serving-software-opens-websites-to-remote-hijacking/</a><br />
+</span></li>
+<li><a href="http://nakedsecurity.sophos.com/2013/08/07/openx-ad-servers-pre-compromised-official-distro-contained-remote-code-backdoor/">http://nakedsecurity.sophos.com/2013/08/07/openx-ad-servers-pre-compromised-official-distro-contained-remote-code-backdoor/</a></li>
+</ul>
+<p>But web servers don&#8217;t do that.  So there must be something else in the OpenX code which allows javascript to be interpreted as php.  One clue was that the original Heise article said:</p>
+<blockquote><p>Die Datei wird durch einen Aufruf von <code>require_once()</code> aktiviert</p></blockquote>
+<p>which means, basically, that the rogue PHP function in the flowplayer js would be called and activated by a require_once() call.  But where is that call?</p>
+<p>The second clue is that there were actually three files involved in the intrusion, not one, and all three are critical to the intrusion.  The somewhat <a href="http://forum.openx.org/index.php?showtopic=503521628">unhelpful post from OpenX</a> says to md5sum the following files:</p>
+<blockquote><p>558c80e601fb996e5f6bbc99a9ee0051  plugins/deliveryLog/vastServeVideoPlayer/flowplayer/3.1.1/flowplayer-3.1.1.min.js<br />
+fa4991d5fd3bf4a947b6ab0b15ce10b2  plugins/deliveryLog/vastServeVideoPlayer/player.delivery.php<br />
+5014c31b479094c0b32221ae1f1473ac  lib/max/Delivery/common.php</p></blockquote>
+<p>The question then is: what is special about the other two files, and why would changing them be related to closing the backdoor?</p>
+<p>player.delivery.php ver 2.8.10 has this line:</p>
+<blockquote><p>MAX_commonReadFile( $pwd . &#8216;/&#8217; . $file_to_serve);</p></blockquote>
+<p>whereas vers 2.8.9 and 2.8.11 have:</p>
+<blockquote><p>echo file_get_contents( $pwd . &#8216;/&#8217; . $file_to_serve);</p></blockquote>
+<p>The latter would simply send the javascript without interpreting it.  But&#8230; what does MAX_commonReadFile do?</p>
+<p>Cue lib/max/Delivery/common.php:</p>
+<p>Versions 2.8.9 and 2.8.11 don&#8217;t have this function, so it was also injected.  Here is the function in 2.8.10, nestled between MAX_commonConvertEncoding and MAX_commonSendContentTypeHeader:</p>
+<blockquote><p>/**<br />
+* A function to read a contents of SWF file<br />
+* @param string $file The path to SWF file to read<br />
+*/<br />
+function MAX_commonReadFile($arg)<br />
+{<br />
+if($conf[&#8216;debug&#8217;][&#8216;read&#8217;]){<br />
+echo file_get_contents($arg);<br />
+}<br />
+require_once($arg);</p>
+<p>}</p></blockquote>
+<p>Bingo.  There is the invoker of the backdoor: require_once($arg), which in this case would be to the path.  All this stuff about &#8220;SWF file&#8221; is obfuscation &#8211; the attacker was actually doing a javascript read, and frankly, there never would be a reason to require_once a file if it is a non-php asset like a SWF.</p>
+<p>I&#8217;m puzzled currently about the [&#8216;debug&#8217;][&#8216;read&#8217;] item &#8211; it seems to be a way of throwing admins who are trying to trace problems with the site and thus who are in debug mode.  Anyone else have an idea?</p>
+<p>So, a few final thoughts:</p>
+<ul>
+<li><span style="line-height: 13px;">Currently we have no idea how the code got in there.  I am looking forward to the article which traces the evolution of the code tree and speculates about the account(s) involved in these three code updates.</span></li>
+<li>Javascript doesn&#8217;t invoke PHP, but it might be a convenient place to hide invokeable code in another language.  Think about all the other files which might contain backdoor code &#8211; an .HTML template?  A README file, or a documentation file in a usually uninteresting directory?  An image which is unused in the site but isn&#8217;t deleted, and so no one knows it is not displaying properly?  This case is of a static asset which was turned into backdoor code elsewhere by a sink (require_once).</li>
+<li>Heise articles suggest that OpenX might be involved in some issues for a long time, including before this event.  This backdoor was discovered only after 7 months.  +1 for the person who finds any more problems in the codebase.</li>
+</ul>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+					</div> <!-- .entry-content -->
+
+					
+					<!-- You can start editing here. -->
+
+<section id="comment-wrap">
+		   <div id="comment-section" class="nocomments">
+		  			 <!-- If comments are open, but there are no comments. -->
+
+		  	   </div>
+					<div id="respond" class="comment-respond">
+		<h3 id="reply-title" class="comment-reply-title"><span>Submit a Comment</span> <small><a rel="nofollow" id="cancel-comment-reply-link" href="/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/#respond" style="display:none;">Cancel reply</a></small></h3><form action="https://www.clearmind.cc/wp-comments-post.php" method="post" id="commentform" class="comment-form"><p class="comment-notes"><span id="email-notes">Your email address will not be published.</span> Required fields are marked <span class="required">*</span></p><p class="comment-form-comment"><label for="comment">Comment</label> <textarea id="comment" name="comment" cols="45" rows="8" maxlength="65525" required="required"></textarea></p><p class="comment-form-author"><label for="author">Name <span class="required">*</span></label> <input id="author" name="author" type="text" value="" size="30" maxlength="245" required='required' /></p>
+<p class="comment-form-email"><label for="email">Email <span class="required">*</span></label> <input id="email" name="email" type="text" value="" size="30" maxlength="100" aria-describedby="email-notes" required='required' /></p>
+<p class="comment-form-url"><label for="url">Website</label> <input id="url" name="url" type="text" value="" size="30" maxlength="200" /></p>
+<p class="comment-form-cookies-consent"><input id="wp-comment-cookies-consent" name="wp-comment-cookies-consent" type="checkbox" value="yes" /> <label for="wp-comment-cookies-consent">Save my name, email, and website in this browser for the next time I comment.</label></p>
+<p class="form-submit"><input name="submit" type="submit" id="submit" class="submit" value="Submit Comment" /> <input type='hidden' name='comment_post_ID' value='106' id='comment_post_ID' />
+<input type='hidden' name='comment_parent' id='comment_parent' value='0' />
+</p><p style="display: none;"><input type="hidden" id="akismet_comment_nonce" name="akismet_comment_nonce" value="840a64ab90" /></p><p style="display: none !important;"><label>&#916;<textarea name="ak_hp_textarea" cols="45" rows="8" maxlength="100"></textarea></label><input type="hidden" id="ak_js" name="ak_js" value="73"/><script>document.getElementById( "ak_js" ).setAttribute( "value", ( new Date() ).getTime() );</script></p></form>	</div><!-- #respond -->
+		</section>				</article> <!-- .et_pb_post -->
+
+										</div> <!-- #left-area -->
+
+				<div id="sidebar">
+		<div id="search-2" class="et_pb_widget widget_search"><form role="search" method="get" id="searchform" class="searchform" action="https://www.clearmind.cc/">
+				<div>
+					<label class="screen-reader-text" for="s">Search for:</label>
+					<input type="text" value="" name="s" id="s" />
+					<input type="submit" id="searchsubmit" value="Search" />
+				</div>
+			</form></div> <!-- end .et_pb_widget -->
+		<div id="recent-posts-2" class="et_pb_widget widget_recent_entries">
+		<h4 class="widgettitle">Recent Posts</h4>
+		<ul>
+											<li>
+					<a href="https://www.clearmind.cc/2015/02/ransomware-trends-all-towards-more-crime/">Ransomware trends &#8211; all towards more crime</a>
+									</li>
+											<li>
+					<a href="https://www.clearmind.cc/2013/11/cryptolocker-and-bitcoin/">CryptoLocker and Bitcoin</a>
+									</li>
+											<li>
+					<a href="https://www.clearmind.cc/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/" aria-current="page">Backdoor found in OpenX open source version 2.8.10 &#8211; some thoughts</a>
+									</li>
+											<li>
+					<a href="https://www.clearmind.cc/2013/07/adventures-in-live-linux-cds/">Adventures in Live Linux CDs</a>
+									</li>
+											<li>
+					<a href="https://www.clearmind.cc/2013/06/when-patents-attack-on-this-american-life/">&#8220;When Patents Attack!&#8221; on This American Life</a>
+									</li>
+					</ul>
+
+		</div> <!-- end .et_pb_widget --><div id="recent-comments-2" class="et_pb_widget widget_recent_comments"><h4 class="widgettitle">Recent Comments</h4><ul id="recentcomments"><li class="recentcomments"><span class="comment-author-link">Nathan Smith</span> on <a href="https://www.clearmind.cc/2007/12/logmein-good-stuff/#comment-72">LogMeIn: good stuff</a></li></ul></div> <!-- end .et_pb_widget --><div id="archives-2" class="et_pb_widget widget_archive"><h4 class="widgettitle">Archives</h4>
+			<ul>
+					<li><a href='https://www.clearmind.cc/2015/02/'>February 2015</a></li>
+	<li><a href='https://www.clearmind.cc/2013/11/'>November 2013</a></li>
+	<li><a href='https://www.clearmind.cc/2013/08/'>August 2013</a></li>
+	<li><a href='https://www.clearmind.cc/2013/07/'>July 2013</a></li>
+	<li><a href='https://www.clearmind.cc/2013/06/'>June 2013</a></li>
+	<li><a href='https://www.clearmind.cc/2013/04/'>April 2013</a></li>
+	<li><a href='https://www.clearmind.cc/2012/05/'>May 2012</a></li>
+	<li><a href='https://www.clearmind.cc/2008/11/'>November 2008</a></li>
+	<li><a href='https://www.clearmind.cc/2007/12/'>December 2007</a></li>
+	<li><a href='https://www.clearmind.cc/2007/11/'>November 2007</a></li>
+	<li><a href='https://www.clearmind.cc/2006/04/'>April 2006</a></li>
+	<li><a href='https://www.clearmind.cc/2005/04/'>April 2005</a></li>
+	<li><a href='https://www.clearmind.cc/2004/10/'>October 2004</a></li>
+	<li><a href='https://www.clearmind.cc/2004/04/'>April 2004</a></li>
+	<li><a href='https://www.clearmind.cc/2004/03/'>March 2004</a></li>
+	<li><a href='https://www.clearmind.cc/2004/01/'>January 2004</a></li>
+			</ul>
+
+			</div> <!-- end .et_pb_widget --><div id="categories-2" class="et_pb_widget widget_categories"><h4 class="widgettitle">Categories</h4>
+			<ul>
+					<li class="cat-item cat-item-2"><a href="https://www.clearmind.cc/category/computers-and-technology/">Computers and Technology</a>
+</li>
+	<li class="cat-item cat-item-6"><a href="https://www.clearmind.cc/category/security/">Security</a>
+</li>
+	<li class="cat-item cat-item-1"><a href="https://www.clearmind.cc/category/uncategorized/">Uncategorized</a>
+</li>
+			</ul>
+
+			</div> <!-- end .et_pb_widget --><div id="meta-2" class="et_pb_widget widget_meta"><h4 class="widgettitle">Meta</h4>
+		<ul>
+						<li><a href="https://www.clearmind.cc/wp-login.php">Log in</a></li>
+			<li><a href="https://www.clearmind.cc/feed/">Entries feed</a></li>
+			<li><a href="https://www.clearmind.cc/comments/feed/">Comments feed</a></li>
+
+			<li><a href="https://wordpress.org/">WordPress.org</a></li>
+		</ul>
+
+		</div> <!-- end .et_pb_widget -->	</div> <!-- end #sidebar -->
+		</div> <!-- #content-area -->
+	</div> <!-- .container -->
+</div> <!-- #main-content -->
+
+
+			<footer id="main-footer">
+				
+
+		
+				<div id="footer-bottom">
+					<div class="container clearfix">
+				
+						<p id="footer-info">&copy; 2018 ClearMind Consulting, LLC - 412-606-8929 - Pittsburgh PA</p>
+					</div>	<!-- .container -->
+				</div>
+			</footer> <!-- #main-footer -->
+		</div> <!-- #et-main-area -->
+
+
+	</div> <!-- #page-container -->
+
+	<link rel='stylesheet' id='jssupportticket-main-css-css'  href='https://www.clearmind.cc/wp-content/plugins/js-support-ticket/includes/css/style.css?ver=5.8.3'  media='all' />
+<style id='jssupportticket-main-css-inline-css' type='text/css'>
+
+
+/*BreadCrumbs*/
+	div.js-ticket-flat a:hover, div.js-ticket-flat a.active, div.js-ticket-flat a:hover::after, div.js-ticket-flat a.active::after{background-color:#2b2b2b;}
+	div.js-ticket-breadcrumb-wrp .breadcrumb li:first-child a{background-color:#2b2b2b;}
+	div.js-ticket-breadcrumb-wrp .breadcrumb li:first-child a:hover::after{background-color:transparent !important;}
+	div.js-ticket-breadcrumb-wrp .breadcrumb li:first-child a::after {border-left-color:#2b2b2b;}
+	div.js-ticket-breadcrumb-wrp .breadcrumb li a::after{border-left-color:#c9c9c9;}
+	div.js-ticket-breadcrumb-wrp .breadcrumb li a{color:#636363;}
+	div.js-ticket-breadcrumb-wrp .breadcrumb li a:hover{color:#2b2b2b;}
+/*BreadCrumbs*/
+
+/*Top Header*/
+	div#jsst-header{background-color:#4f6df5;}
+	a.js-ticket-header-links{color:#ffffff;}
+	a.js-ticket-header-links:hover{color: #ffffff;;}
+	div#jsst-header div#jsst-header-heading{color:#f5f2f5;}
+	div#jsst-header span.jsst-header-tab a.js-cp-menu-link{background:rgba(0,0,0,0.4);color:#ffffff;}
+	div#jsst-header span.jsst-header-tab a.js-cp-menu-link:hover{background:rgba(0,0,0,0.6);color:#ffffff;}
+	div#jsst-header span.jsst-header-tab.active a.js-cp-menu-link{background:#4f6df5;color:#ffffff;}
+	div#jsst_breadcrumbs_parent div.home a{background:#2b2b2b;}
+/*Top Header*/
+/* Error Message Page */
+    div.js-ticket-messages-data-wrapper span.js-ticket-messages-main-text {color:#636363;}
+    div.js-ticket-messages-data-wrapper span.js-ticket-messages-block_text {color:#636363;}
+    span.js-ticket-user-login-btn-wrp a.js-ticket-login-btn{background-color:#4f6df5;color:#ffffff;border: 1px solid #d1d1d1;}
+	span.js-ticket-user-login-btn-wrp a.js-ticket-login-btn:hover{border-color: #2b2b2b;}
+    span.js-ticket-user-login-btn-wrp a.js-ticket-register-btn{background-color:#2b2b2b;color:#ffffff;border: 1px solid #d1d1d1;}
+	span.js-ticket-user-login-btn-wrp a.js-ticket-register-btn:hover{border-color: #4f6df5;}
+	div.jsst_errors span.error{color:#871414;border:1px solid #871414;background-color: #ffd2d3;}
+/* Error Message Page */
+/* Feedbacks */
+	div.js-ticket-feedback-heading{border: 1px solid #d1d1d1;background-color: #2b2b2b;color: #ffffff;}
+	div.jsst-feedback-det-wrp  div.jsst-feedback-det-list {border:1px solid #d1d1d1;}
+	div.jsst-feedback-det-wrp  div.jsst-feedback-det-list div.jsst-feedback-det-list-top {border-bottom: 1px solid #d1d1d1;}
+	div.jsst-feedback-det-wrp  div.jsst-feedback-det-list div.jsst-feedback-det-list-top div.jsst-feedback-det-list-data-wrp div.jsst-feedback-det-list-data-top {}
+	div.jsst-feedback-det-wrp  div.jsst-feedback-det-list div.jsst-feedback-det-list-top div.jsst-feedback-det-list-data-wrp div.jsst-feedback-det-list-data-top div.jsst-feedback-det-list-data-top-title {color: #636363;}
+	div.jsst-feedback-det-wrp  div.jsst-feedback-det-list div.jsst-feedback-det-list-top div.jsst-feedback-det-list-data-wrp div.jsst-feedback-det-list-data-top div.jsst-feedback-det-list-data-top-val {color: #636363;}
+	div.jsst-feedback-det-wrp  div.jsst-feedback-det-list div.jsst-feedback-det-list-top div.jsst-feedback-det-list-data-wrp div.jsst-feedback-det-list-data-top div.jsst-feedback-det-list-data-top-val a.jsst-feedback-det-list-data-top-val-txt {color: #2b2b2b;}
+	div.jsst-feedback-det-wrp  div.jsst-feedback-det-list div.jsst-feedback-det-list-top div.jsst-feedback-det-list-data-wrp div.jsst-feedback-det-list-data-btm div.jsst-feedback-det-list-datea-btm-rec div.jsst-feedback-det-list-data-btm-title{color: #636363;}
+	div.jsst-feedback-det-wrp  div.jsst-feedback-det-list div.jsst-feedback-det-list-top div.jsst-feedback-det-list-data-wrp div.jsst-feedback-det-list-data-btm div.jsst-feedback-det-list-datea-btm-rec div.jsst-feedback-det-list-data-btm-val{color: #636363;}
+	div.jsst-feedback-det-wrp  div.jsst-feedback-det-list div.jsst-feedback-det-list-btm div.jsst-feedback-det-list-btm-title{color:#636363;}
+	div.jsst-feedback-det-wrp  div.jsst-feedback-det-list div.jsst-feedback-det-list-img-wrp{}
+/* Feedbacks */
+/* Existing colors */
+	div.js-ticket-body-data-elipses a{color:#2b2b2b;text-decoration:none;}
+	div.js-ticket-detail-wrapper div.js-ticket-openclosed{background:#e7e7e7;color:#636363;border-right:1px solid #d1d1d1;}
+	div#records div.jsst_userpages a.jsst_userlink:hover{background: #2b2b2b;color:#ffffff;}
+	span.jsst_userlink.selected{background: #2b2b2b;color: #ffffff;}
+	/* Pagination */
+	div.tablenav div.tablenav-pages{border:1px solid #f1f1fc;width:100%;}
+    div.tablenav div.tablenav-pages span.page-numbers.current{background: #fff;color: #2b2b2b;border: 1px solid #4f6df5;padding:11px 20px;line-height: initial;display: inline-block;}
+    div.tablenav div.tablenav-pages a.page-numbers:hover{background:#fff;color:#4f6df5;border: 1px solid #d1d1d1;text-decoration: none;}
+    div.tablenav div.tablenav-pages a.page-numbers{background: #ffffff; /* Old browsers */background: -moz-linear-gradient(top,  #ffffff 0%, #f2f2f2 100%); /* FF3.6+ */background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(100%,#f2f2f2)); /* Chrome,Safari4+ */background: -webkit-linear-gradient(top,  #ffffff 0%,#f2f2f2 100%); /* Chrome10+,Safari5.1+ */background: -o-linear-gradient(top,  #ffffff 0%,#f2f2f2 100%); /* Opera 11.10+ */background: -ms-linear-gradient(top,  #ffffff 0%,#f2f2f2 100%); /* IE10+ */background: linear-gradient(to bottom,  #ffffff 0%,#f2f2f2 100%); /* W3C */filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f2f2f2',GradientType=0 ); /* IE6-9 */color: #636363;border:1px solid #d1d1d1;padding:11px 20px;line-height: initial;display: inline-block;}
+    div.tablenav div.tablenav-pages a.page-numbers.next{background: #4f6df5;color: #ffffff;border: 1px solid #4f6df5;}
+	div.tablenav div.tablenav-pages a.page-numbers.prev{background: #2b2b2b;color: #ffffff;border: 1px solid #2b2b2b;}
+	/* Pagination */
+/* Existing colors */
+	/******** Widgets ***********/
+	div#jsst-widget-myticket-wrapper{background: #f5f2f5;border:1px solid #d1d1d1;}
+	div#jsst-widget-myticket-wrapper div.jsst-widget-myticket-topbar{border-bottom: 1px solid #d1d1d1;}
+	div#jsst-widget-myticket-wrapper div.jsst-widget-myticket-topbar span.jsst-widget-myticket-subject a{color:#2b2b2b;}
+	div#jsst-widget-myticket-wrapper div.jsst-widget-myticket-topbar span.jsst-widget-myticket-status{color:#FFFFFF;}
+	div#jsst-widget-myticket-wrapper div.jsst-widget-myticket-bottombar span.jsst-widget-myticket-priority{color: #FFFFFF;}
+	div#jsst-widget-myticket-wrapper div.jsst-widget-myticket-bottombar span.jsst-widget-myticket-from span.widget-from{color:#636363;}
+	div#jsst-widget-myticket-wrapper div.jsst-widget-myticket-bottombar span.jsst-widget-myticket-from span.widget-fromname{color:#636363;}
+	div#jsst-widget-mailnotification-wrapper{background:#f5f2f5;border:1px solid #d1d1d1;}
+	div#jsst-widget-mailnotification-wrapper img{}
+	div#jsst-widget-mailnotification-wrapper span.jsst-widget-mailnotification-upper{color:#636363;}
+	div#jsst-widget-mailnotification-wrapper span.jsst-widget-mailnotification-upper span.jsst-widget-mailnotification-created{color:#636363;}
+	div#jsst-widget-mailnotification-wrapper span.jsst-widget-mailnotification-upper span.jsst-widget-mailnotification-new{color:#0752AD;}
+	div#jsst-widget-mailnotification-wrapper span.jsst-widget-mailnotification-upper span.jsst-widget-mailnotification-replied{color:#ED6B6D;}
+	div.jsst-visitor-message-wrapper{border:1px solid #d1d1d1;}
+	div.jsst-visitor-message-wrapper img{border-right:1px solid #d1d1d1}
+	div.feedback-sucess-message{border:1px solid #d1d1d1;}
+	div.feedback-sucess-message span.feedback-message-text{border-top:1px solid #d1d1d1;}
+	div.js-ticket-thread-wrapper div.js-ticket-thread-upperpart a.ticket-edit-reply-button{border:1px solid #2b2b2b;background:#f5f2f5;color:#2b2b2b;}
+	div.js-ticket-thread-wrapper div.js-ticket-thread-upperpart a.ticket-edit-time-button{border:1px solid #d1d1d1;background:#f5f2f5;color:#636363;}
+	span.js-ticket-value.js-ticket-creade-via-email-spn{border:1px solid #d1d1d1;background:#f5f2f5;color:#636363;}
+
+    /* Social Login */
+    .js-ticket-sociallogin .js-ticket-sociallogin-heading {color: #636363;}
+
+
+	/*Custom Fields*/
+	input.custom_date{background-color:#ffffff;border: 1px solid #d1d1d1;}
+	select.js-ticket-custom-select{background-color:#f5f2f5;border: 1px solid #d1d1d1;}
+	div.js-ticket-custom-radio-box{background-color:#ffffff;border: 1px solid #d1d1d1;}
+	div.js-ticket-radio-box{border: 1px solid #d1d1d1;background-color:#ffffff;}
+	 .js-ticket-custom-textarea{border: 1px solid #d1d1d1;background-color:#ffffff;}
+	 span.js-attachment-file-box{border: 1px solid #d1d1d1;background-color:#ffffff;}
+
+	div.js-ticket-table-body div.js-ticket-data-row{border:1px solid  #d1d1d1;border-top:none}
+  	div.js-ticket-table-body div.js-ticket-data-row div.js-ticket-table-body-col{}
+	div.js-ticket-table-header{background-color:#ecf0f5;border:1px solid  #d1d1d1;}
+  	div.js-ticket-table-header div.js-ticket-table-header-col{}
+  	div.js-ticket-table-header div.js-ticket-table-header-col:last-child{border-right:none;}
+  	div.js-ticket-downloads-wrp div.js-ticket-downloads-heading-wrp{background-color: #2b2b2b;border:1px solid #d1d1d1;color: #ffffff;}
+
+    /* JS Support Ticket Woocommerce */
+  	.js-ticket-wc-order-box .js-ticket-wc-order-item .js-ticket-wc-order-item-title{
+        color: #4f6df5;
+    }
+    .js-ticket-wc-order-box .js-ticket-wc-order-link{
+        background-color: #2b2b2b;
+        color: #ffffff;
+    }
+    div.js-ticket-add-form-wrapper div.js-ticket-from-field-wrp div.js-ticket-from-field .js-ticket-custom-terms-and-condition-box{border: 1px solid #d1d1d1;background:#fff;color: #636363;}
+    div.js-ticket-add-form-wrapper div.js-ticket-from-field-wrp div.js-ticket-from-field .js-ticket-custom-terms-and-condition-box label {color: #636363;}
+    .termsandconditions_link_anchor {color: #636363;}
+
+    div.jsst-main-up-wrapper a.js-ticket-delete-attachment {color:#fff;text-decoration:none}
+    .js-ticket-recaptcha{background-color:#fff; border:1px solid #d1d1d1;color:#636363;}
+    /*responsive*/
+    @media (max-width: 782px){
+        div.js-ticket-wrapper div.js-ticket-data1 {border-top: 1px solid #d1d1d1;}
+    }
+    @media (max-width: 650px){
+        div.js-ticket-latest-tickets-wrp div.js-ticket-row div.js-ticket-first-left {
+            border-bottom: 0;
+        }
+    }
+
+
+                            div#js-ticket_screentag{opacity:1;position:fixed;top:30px;left:0px;right:auto;bottom:auto;padding:5px 10px 5px 20px;background:rgba(18, 17, 17, 0.5);z-index:9999;border-radius:0px 8px 8px 0px;}
+                            div#js-ticket_screentag img.js-ticket_screentag_image{margin-left:10px;display:inline-block;width:40px;height:40px;}
+                            div#js-ticket_screentag a.js-ticket_screentag_anchor{color:#ffffff;text-decoration:none;}
+                            div#js-ticket_screentag span.text{display:inline-block;font-family:sans-serif;font-size:15px;}
+                        
+</style>
+<link rel='stylesheet' id='jssupportticket-tablet-css-css'  href='https://www.clearmind.cc/wp-content/plugins/js-support-ticket/includes/css/style_tablet.css?ver=5.8.3'  media='(min-width: 668px) and (max-width: 782px)' />
+<link rel='stylesheet' id='jssupportticket-mobile-css-css'  href='https://www.clearmind.cc/wp-content/plugins/js-support-ticket/includes/css/style_mobile.css?ver=5.8.3'  media='(min-width: 481px) and (max-width: 667px)' />
+<link rel='stylesheet' id='jssupportticket-oldmobile-css-css'  href='https://www.clearmind.cc/wp-content/plugins/js-support-ticket/includes/css/style_oldmobile.css?ver=5.8.3'  media='(max-width: 480px)' />
+<script  src='https://www.clearmind.cc/wp-includes/js/jquery/ui/core.min.js?ver=1.12.1' id='jquery-ui-core-js'></script>
+<script  src='https://www.clearmind.cc/wp-includes/js/jquery/ui/accordion.min.js?ver=1.12.1' id='jquery-ui-accordion-js'></script>
+<script  src='https://www.clearmind.cc/wp-includes/js/dist/vendor/regenerator-runtime.min.js?ver=0.13.7' id='regenerator-runtime-js'></script>
+<script  src='https://www.clearmind.cc/wp-includes/js/dist/vendor/wp-polyfill.min.js?ver=3.15.0' id='wp-polyfill-js'></script>
+<script type='text/javascript' id='contact-form-7-js-extra'>
+/* <![CDATA[ */
+var wpcf7 = {"api":{"root":"https:\/\/www.clearmind.cc\/wp-json\/","namespace":"contact-form-7\/v1"}};
+/* ]]> */
+</script>
+<script  src='https://www.clearmind.cc/wp-content/plugins/contact-form-7/includes/js/index.js?ver=5.5.4' id='contact-form-7-js'></script>
+<script  src='https://www.clearmind.cc/wp-includes/js/comment-reply.min.js?ver=5.8.3' id='comment-reply-js'></script>
+<script  src='https://www.clearmind.cc/wp-content/themes/Divi/js/jquery.fitvids.js?ver=2.3.1' id='divi-fitvids-js'></script>
+<script  src='https://www.clearmind.cc/wp-content/themes/Divi/js/waypoints.min.js?ver=2.3.1' id='waypoints-js'></script>
+<script  src='https://www.clearmind.cc/wp-content/themes/Divi/js/jquery.magnific-popup.js?ver=2.3.1' id='magnific-popup-js'></script>
+<script type='text/javascript' id='divi-custom-script-js-extra'>
+/* <![CDATA[ */
+var et_custom = {"ajaxurl":"https:\/\/www.clearmind.cc\/wp-admin\/admin-ajax.php","images_uri":"https:\/\/www.clearmind.cc\/wp-content\/themes\/Divi\/images","et_load_nonce":"cc0779dc47","subscription_failed":"Please, check the fields below to make sure you entered the correct information.","fill":"Fill","field":"field","invalid":"Invalid email","captcha":"Captcha","prev":"Prev","previous":"Previous","next":"Next"};
+/* ]]> */
+</script>
+<script  src='https://www.clearmind.cc/wp-content/themes/Divi/js/custom.js?ver=2.3.1' id='divi-custom-script-js'></script>
+<script  src='https://www.clearmind.cc/wp-includes/js/wp-embed.min.js?ver=5.8.3' id='wp-embed-js'></script>
+</body>
+</html>

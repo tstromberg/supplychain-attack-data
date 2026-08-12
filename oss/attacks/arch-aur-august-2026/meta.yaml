@@ -1,0 +1,130 @@
+- id: arch-aur-august-2026
+  title: AUR adoption disabled after a second malicious commit wave
+  campaigns:
+    - atomic-arch-2026
+  synopsis: >-
+    A late-July 2026 wave of adopted AUR packages pushed malicious commits that dropped a validator
+    binary into the build path, running with sudo during the build. Arch disabled package adoption
+    on 2026-07-30 and paused all AUR pushes on 2026-08-01.
+  story: |
+    Six weeks after the Atomic Arch campaign, the Arch User Repository was hit
+    again by the same technique, and this time the project shut the door. On July
+    30, 2026, Robin Candau, posting as "Antiz" for the Arch Linux DevOps team,
+    told the distribution's mailing list that attackers were adopting neglected
+    packages and quietly injecting malicious code through follow-up commits. Arch
+    disabled AUR package adoption that day. On August 1 it paused AUR pushes
+    entirely while it investigated.
+
+    The pattern was a refinement of June's. Rather than adopting a package and
+    immediately rewriting its build script, the operators took ownership and waited,
+    then landed the malicious change in a later commit, where it read as ordinary
+    maintenance rather than the act of a new owner. Researchers corroborated at
+    least 89 package names, catalogued in three batches of 27, 42, and 19, spanning
+    security tooling, desktop utilities, and AI-themed packages. Named examples
+    included `openconnect-sso`, `i915-sriov-dkms`, `rtk-git`, `boringssl-git`,
+    `warp-terminal-git`, `weather-display`, and `astro-box`.
+
+    The `openconnect-sso` update was the clearest case. It introduced a binary
+    called `validator` into the package build path, which executed with sudo
+    privileges during the build. That is a step beyond the June waves, which pulled
+    a malicious npm dependency: here the executable went directly into the build
+    process, where AUR helpers already run with elevated privileges as a matter of
+    course. The second stage reused the Tor-backed delivery infrastructure from
+    Atomic Arch, which is what tied the two waves together.
+
+    Corgea's assessment was that package adoption itself now belongs in the threat
+    model, and that once malicious content reaches the build path the trusted
+    package name is mostly camouflage. Arch's response conceded the point. Halting
+    adoptions removes the mechanism the attackers were using, and pausing pushes
+    stopped the follow-up commits, but both are blunt instruments against a
+    repository whose model assumes that users read the build scripts they run.
+  start_date: 2026-07-30T00:00:00.000Z
+  end_date: 2026-08-01T00:00:00.000Z
+  target:
+    name: Arch User Repository
+    kind: package_repository
+    website: https://aur.archlinux.org/
+  actor:
+    name: Unknown
+    kind: group
+  language: Shell
+  method:
+    cause: orphaned_package_takeover
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+      - credential_theft
+      - backdoor
+      - remote_code_execution
+  locations:
+    - uri: https://aur.archlinux.org/
+      role: distribution
+  indicators:
+    - kind: file
+      value: validator
+    - kind: technique
+      value: malicious commit pushed after adoption rather than at adoption
+    - kind: technique
+      value: Tor-backed second stage shared with the Atomic Arch waves
+  notes:
+    - >-
+      Arch Linux disabled AUR package adoption on 2026-07-30 following the DevOps team announcement
+      by Robin Candau, and paused all AUR pushes on 2026-08-01 while investigating.
+    - >-
+      At least 89 package names were publicly corroborated, catalogued in three batches of 27, 42,
+      and 19. The list is community-assembled and was still growing at the time of reporting.
+    - >-
+      The delivery differs from the June waves. Instead of a malicious npm dependency installed
+      during the build, this wave placed a `validator` binary directly into the build path where it
+      executed with sudo privileges.
+    - >-
+      The shared Tor-backed second stage is the reported link to [[arch-aur-atomic-arch]]. No source
+      names the operator.
+  artifacts:
+    - id: openconnect-sso
+      name: openconnect-sso
+      package: openconnect-sso
+      ecosystem: aur
+      kind: package_build_script
+      start_date: 2026-07-30T00:00:00.000Z
+      end_date: 2026-08-01T00:00:00.000Z
+      locations:
+        - uri: https://aur.archlinux.org/packages/openconnect-sso
+          role: distribution
+      notes:
+        - >-
+          The malicious update introduced a `validator` binary into the build path that ran with
+          sudo privileges during the build.
+        - >-
+          The affected releases were recorded as a wildcard rather than enumerated, so this record
+          asserts no version list.
+    - id: aur-august-2026-packages
+      name: Additional hijacked AUR packages
+      ecosystem: aur
+      kind: package_build_script
+      start_date: 2026-07-30T00:00:00.000Z
+      end_date: 2026-08-01T00:00:00.000Z
+      locations:
+        - uri: https://aur.archlinux.org/
+          role: distribution
+      notes:
+        - >-
+          At least 89 package names were corroborated, including i915-sriov-dkms, rtk-git,
+          boringssl-git, warp-terminal-git, weather-display, and astro-box. The affected unit is
+          each package's PKGBUILD and committed build files rather than a versioned artifact.
+        - >-
+          The affected releases were recorded as a wildcard rather than enumerated, so this record
+          asserts no version list.
+  references:
+    - url: https://corgea.com/research/arch-aur-openconnect-sso-malware-wave-august-2026
+      title: 'Arch AUR''s August malware wave: openconnect-sso and 89 named packages - Corgea'
+    - url: https://www.phoronix.com/news/Arch-Linux-AUR-Adoptions-Halted
+      title: Arch Linux AUR Under Another Wave Of Malicious Packages, Package Adoptions Halted - Phoronix
+    - url: https://cybersecuritynews.com/arch-linux-disables-aur-package/
+      title: >-
+        Arch Linux Disables AUR Package Takeovers as Attackers Push Malicious Commits - Cyber
+        Security News
+    - url: https://www.hexnode.com/blogs/arch-linux-aur-malware-campaign/
+      title: Arch Linux AUR Malware Halts Adoption and Pushes - Hexnode

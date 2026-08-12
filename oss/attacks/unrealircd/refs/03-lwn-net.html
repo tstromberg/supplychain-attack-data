@@ -1,0 +1,481 @@
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><title>A backdoor in UnrealIRCd [LWN.net]</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="A backdoor in UnrealIRCd">
+<meta property="og:site_name" content="LWN.net">
+<meta property="og:type" content="article">
+<meta property="og:description" content=" The discovery and announcement of a backdoor in UnrealIRCd is embarrassing for the project, an [...]">
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="robots" CONTENT="noai, noimageai">
+        <link rel="icon" href="https://static.lwn.net/images/favicon.png"
+              type="image/png">
+        <link rel="alternate" type="application/rss+xml" title="LWN.net headlines" href="https://lwn.net/headlines/rss">
+        <link rel="stylesheet" href="/CSS/lwn-v1">
+<style>div.MakeALink { display: none }</style>
+
+        
+        </head>
+        <body>
+        <a name="t"></a>
+<div id="menu"><a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/logo/barepenguin-70.webp" class="logo"
+                 border="0" alt="LWN.net Logo">
+            <span class="logo">LWN<br>.net</span>
+            <span class="logobl">News from the source</span></a>
+            <a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/lcorner-ss.png" class="sslogo"
+                 border="0" alt="LWN"></a><div class="navmenu-container">
+           <ul class="navmenu">
+        <li><a class="navmenu" href="#t"><b>Content</b></a><ul><li><a href="/current/">Weekly Edition</a></li><li><a href="/Archives/">Archives</a></li><li><a href="/Search/">Search</a></li><li><a href="/Kernel/">Kernel</a></li><li><a href="/Security/">Security</a></li><li><a href="/Calendar/">Events calendar</a></li><li><a href="/Comments/unread">Unread comments</a></li><li><hr></li><li><a href="/op/FAQ.lwn">LWN FAQ</a></li><li><a href="/op/AuthorGuide.lwn">Write for us</a></li></ul></li>
+<li><a class="navmenu" href="#t"><b>Edition</b></a><ul><li><a href="/Articles/391867/">Return to the Security page</a></li></ul></li>
+</ul></div>
+</div> <!-- menu -->
+<div class="topnav-spacer"></div>
+<div class="top-banner not-print"><!-- no top ad served --></div>
+<div class="topnav-container">
+<div class="not-handset"><form action="https://lwn.net/Login/" method="post" name="loginform"
+                 class="loginform">
+        <label><b>User:</b> <input type="text" name="uname" value="" size="8" id="uc" /></label> 
+		<label><b>Password:</b> <input type="password" name="pword" size="8" id="pc" /></label> <input type="hidden" name="target" value="/Articles/392201/" /> <input type="submit" name="submit" value="Log in" /></form> |
+           <form action="https://lwn.net/subscribe/" method="post" class="loginform">
+           <input type="submit" name="submit" value="Subscribe" />
+           </form> |
+           <form action="https://lwn.net/Login/newaccount" method="post" class="loginform">
+           <input type="submit" name="submit" value="Register" />
+           </form>
+        </div>
+               <div class="handset-only">
+               <a href="/Login/"><b>Log in</b></a> /
+               <a href="/subscribe/"><b>Subscribe</b></a> /
+               <a href="/Login/newaccount"><b>Register</b></a>
+               </div>
+               </div><div class="maincolumn flexcol">
+<div class="middlecolumn">
+<div class="PageHeadline">
+<h1>A backdoor in UnrealIRCd</h1>
+</div>
+<div class="ArticleText"><main>
+<blockquote class="ad">
+<b>Benefits for LWN subscribers</b>
+<p>
+The primary benefit from <a href="/Promo/nst-nag5/subscribe">subscribing to LWN</a>
+       is helping to keep us publishing, but, beyond that, subscribers get
+       immediate access to all site content and access to a number of extra
+       site features.  Please sign up today!
+</blockquote>
+<div class="FeatureByline">
+           By <b>Jake Edge</b><br>June 16, 2010</br>
+           </div>
+<p>
+The discovery and <a
+href="http://www.unrealircd.com/txt/unrealsecadvisory.20100612.txt">announcement</a>
+of a backdoor in <a href="http://www.unrealircd.com/">UnrealIRCd</a> is
+embarrassing for the project, and is certainly a real live security
+vulnerability.  But it is hardly the "proof" that Linux is insecure, or
+less secure 
+than some other (proprietary) OS, as some <a
+href="http://blogs.computerworld.com/16316/think_linux_is_free_from_malware_think_again_its_been_hacked" rel="nofollow">pundits</a>
+would have it.  The problem is not Linux-specific, nor is it a problem with
+free software development, it is, instead, something that could
+happen&mdash;has happened&mdash;to any software project.
+</p>
+
+<p>
+UnrealIRCd is, as its name implies, an Internet Relay Chat (IRC) server.
+It runs on most platforms, and has added a <a
+href="http://www.unrealircd.com/about.php">number of features</a> that some
+folks find useful in an IRC server.  It is <i>not</i> related to the <a
+href="http://en.wikipedia.org/wiki/Unreal">Unreal</a> first-person shooter
+game as some reported, it is simply a server that can be run to host IRC
+channels for a wide variety of purposes.
+</p>
+
+<p>
+From what the project can tell, around November 10, 2009 the mirrors of the
+source distribution of version 3.2.8.1 of UnrealIRCd were replaced with a
+version that contained a backdoor.  That backdoor could be used by an
+attacker to run any command on a system running the compromised server.
+That command would, obviously, run with the privileges of the user that
+executed the server.  It took until June 12 for this swap to be noticed, so
+anyone who picked up a copy of the code in that seven month period may be
+vulnerable. 
+</p>
+
+<p>
+The <a href="http://seclists.org/fulldisclosure/2010/Jun/284">backdoor</a>
+was disguised to look like a debug statement in the code:
+<pre>
+    #ifdef DEBUGMODE3
+	   if (!memcmp(readbuf, DEBUGMODE3_INFO, 2))
+	       DEBUG3_LOG(readbuf);
+    #endif
+</pre>
+<tt>DEBUG3_LOG</tt> eventually resolves to a call to <tt>system()</tt>,
+while <tt>DEBUGMODE3_INFO</tt> is just the string "AB".  Thus commands sent
+to the server that start with "AB" will be handed off directly to
+<tt>system()</tt>.  Not a particularly sophisticated backdoor, but an
+effective one nevertheless.  As the advisory points out, even servers that
+are set up to require passwords from users, or even not allow any users at
+all, are still vulnerable because they still take input.
+</p>
+
+<p>
+The official Windows binaries were not affected by the backdoor, but there
+is no reason that they couldn't have been.  The problem is that the project
+didn't provide any means for verifying the integrity of downloads.  That
+allowed the switch to be made and remain undetected for so long.  Since
+then, the project has started <a
+href="http://forums.unrealircd.com/viewtopic.php?t=6566">signing its
+code</a> with GPG keys.
+</p>
+
+<p>
+The affected code did make it into Gentoo, which <a
+href="http://lwn.net/Articles/392099/">issued</a> an update on the
+14th. But the fact that "Linux" was "backdoored" brought out the usual
+suspects among web pundits eager to declare that it was a watershed moment
+for Linux security.  While it certainly was a black eye for UnrealIRCd, it
+clearly wasn't one for Linux as a whole.  First off, UnrealIRCd is
+installed on very few Linux systems&mdash;it can hardly be considered a
+core Linux program&mdash;and even those where it is installed
+are likely to be running it as a separate user (e.g. <tt>ircd</tt>) with
+fairly low privileges. 
+</p>
+
+<p>
+But, even users with low privileges often have enough to be useful to
+attackers.  One could imagine spammers and botnet herders finding ways to
+use the network capabilities of a basic Linux user account.  The storage on
+the system might be useful as well.  Unless the user is running the server
+as <tt>root</tt>, no direct system compromise should be possible, though it
+is important to note that a local privilege escalation in the kernel
+<i>could</i> be used to take the system over. 
+</p>
+
+<p>
+One of the more laughable claims about the flaw was Ed Bott's <a
+href="http://www.zdnet.com/blog/bott/linux-infection-proves-windows-malware-monopoly-is-over-gentoo-ships-backdoor-updated/2206" rel="nofollow">declaration</a>
+that Windows virus scanners would have detected the problem had it impacted
+those binaries.  Bott must be under the impression that virus scanners
+somehow magically recognize backdoors in executable code.  The truth, of
+course, is much more prosaic: some human finds the malware and updates the
+signatures that the virus scanners use.  Unless this exact vulnerability
+had already been injected into other Windows binaries&mdash;and thus a
+signature created&mdash;no virus scanner would pick it up.
+</p>
+
+<p>
+There are certainly lessons to be learned here&mdash;integrity checking is
+important for one&mdash;but not those that many of the Windows-centric
+columnists are pushing.  Windows is no more (or less) vulnerable than Linux
+to these 
+kinds of attacks; when attackers can control the code that you run, it is
+"game over" no matter what OS you run.  It is possible that
+SELinux, TOMOYO, or AppArmor could mitigate this kind of attack to some
+extent, but it is somewhat unlikely that anyone has (yet) tackled
+configuring any of those for a fairly obscure IRC server.
+</p>
+
+<p>
+It is another reminder that we need to be more vigilant about protecting
+our code distribution networks.  It may be somewhat less common these
+days&mdash;many folks get their new software from distribution
+repositories&mdash;but grabbing a tarball, untarring, and typing:
+<pre>
+    ./configure; make; make install
+</pre>
+is a longstanding tradition in the open source world.  In order to continue
+that, it would be very helpful to automatically check signatures when
+downloading, but the mechanism for doing so is, as yet, unclear.  For now, though,
+checking signatures manually, and 
+being very leery of unsigned code, is the prudent course.
+</p><br clear="all"><table class="IndexEntries">
+           <tr><th colspan=2>Index entries for this article</th></tr>
+           <tr><td><a href="/Security/Index/">Security</a></td><td><a href="/Security/Index/#Backdoors">Backdoors</a></td></tr>
+            </table><br clear="all">
+<hr width="60%%" align="left">
+            <form action="/Login/" method="post">
+            <input type="hidden" name="target" value="/Articles/392201/" />
+            <input type="submit" name="login" value="Log in" /> to post comments
+            <p>
+        <p><a name="Comments"></a>
+<a name="CommAnchor392346"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">A backdoor in UnrealIRCd</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jun 17, 2010 3:42 UTC (Thu)
+                               by <b>mhm</b> (guest, #45669)
+                              [<a href="/Articles/392346/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+"AB" seems to be short for Ac1dB1tch3z<br>
+<a href="http://seclists.org/dailydave/2010/q2/56">http://seclists.org/dailydave/2010/q2/56</a><br>
+<p>
+"Since it took months and months for the community to find the system() exploit, we still have a more complicated zerday unrealircd hack module. Please inquire when our website is finished."<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/392346/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor392384"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">A backdoor in UnrealIRCd</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jun 17, 2010 9:28 UTC (Thu)
+                               by <b>amtota</b> (subscriber, #4012)
+                              [<a href="/Articles/392384/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+./configure &amp;&amp; make &amp;&amp; make install<br>
+<p>
+Much better if you're not watching it do its stuff.<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/392384/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+<a name="CommAnchor392383"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">A backdoor in UnrealIRCd</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jun 17, 2010 9:30 UTC (Thu)
+                               by <b>ortalo</b> (guest, #4654)
+                              [<a href="/Articles/392383/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+That's an idea: why not make configure or make directly aware by default of the interest of signature, secure-hash or more automatic general security checks (like not building as root, etc.)? It could probably be tried behind-the-scene like most other checks and provide a final friendly report if security guarantees are achieved.<br>
+<p>
+If that small PR is sufficient to fuel adoption among developpers (it already occured for things like sudo) within some years --fail-on-no-security-check could become the default.<br>
+<p>
+BTW, ./configure &amp;&amp; make &amp;&amp; make install<br>
+is my prefered idiom.<br>
+<p>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/392383/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor392407"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">A backdoor in UnrealIRCd</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jun 17, 2010 11:44 UTC (Thu)
+                               by <b>nix</b> (subscriber, #2304)
+                              [<a href="/Articles/392407/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Not "./configure &amp;&amp; make -j WHATEVER &amp;&amp; make check &amp;&amp; sudo make install DESTDIR=/your/stow/directory/here"?<br>
+<p>
+(this is now way off topic)<br>
+<p>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/392407/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor392408"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">A backdoor in UnrealIRCd</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jun 17, 2010 11:52 UTC (Thu)
+                               by <b>richmoore</b> (guest, #53133)
+                              [<a href="/Articles/392408/">Link</a>] (3 responses)
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+<font class="QuotedText">&gt; Bott must be under the impression that virus scanners somehow magically recognize backdoors in executable code</font><br>
+<p>
+Whilst a signature based virus scanner would not have found this, most windows AV products will ask the user when a process tries to launch another, which would have highlighted this issue.<br>
+<p>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/392408/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor392412"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">A backdoor in UnrealIRCd</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jun 17, 2010 12:18 UTC (Thu)
+                               by <b>mpr22</b> (subscriber, #60784)
+                              [<a href="/Articles/392412/">Link</a>] (1 responses)
+      </p>
+      
+      </div>
+      </summary>
+      Three torrents of "allow execution" spam from a shell script later, the user becomes anaesthetized to such things.
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/392412/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    <a name="CommAnchor392416"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">A backdoor in UnrealIRCd</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jun 17, 2010 12:33 UTC (Thu)
+                               by <b>richmoore</b> (guest, #53133)
+                              [<a href="/Articles/392416/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+There's certainly an element of that.<br>
+<p>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/392416/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor392432"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">A backdoor in UnrealIRCd</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jun 17, 2010 13:59 UTC (Thu)
+                               by <b>tialaramex</b> (subscriber, #21167)
+                              [<a href="/Articles/392432/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+Also a lot of scanners these days are "heuristic" which means<br>
+<p>
+ They might have spotted an unsophisticated UnrealIRCd attack<br>
+ They often flag up minor third party programs which violated the heuristic but did not in fact do anything bad<br>
+<p>
+The result is that they're more likely to spot a genuine attack like this, but their users are inured to occasional false alarms and so unlikely to act on it. I scarcely use Windows, and yet I'm aware of several such false alarms from apparently uninteresting programs.<br>
+<p>
+Still, compiling the vulnerable code and running it inside a firewall is safe, any pundit who wants to make a big deal of this should try it and report how many (if any) AV products available six months ago actually spot this.<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/392432/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+</details>
+<a name="CommAnchor392598"></a>
+    <details class="CommentBox" open>
+      <summary><h3 class="CommentTitle">A backdoor in UnrealIRCd</h3>
+      <div class="AnnLine">
+      <p class="CommentPoster"> Posted Jun 18, 2010 5:30 UTC (Fri)
+                               by <b>etbe</b> (subscriber, #17516)
+                              [<a href="/Articles/392598/">Link</a>] 
+      </p>
+      
+      </div>
+      </summary>
+      <div class="FormattedComment">
+The ircd module in the SE Linux policy doesn't currently allow execution of shell_exec_t - so a system() call wouldn't work.  While the ircd.fc file in the policy source doesn't mention the UnrealIRCd, someone who wanted to run an IRC server on SE Linux would probably try running it with the ircd policy and as in terms of security requirements there is little variation between IRC servers it would probably just work.<br>
+<p>
+sesearch -A  -s ircd_t -c file -p execute<br>
+<p>
+If you run the above command on an SE Linux system with the ircd module loaded into the policy it will show the file types that can be executed.  That means shared objects in the current policy.<br>
+<p>
+Note that there have been many releases of the policy over the last 10 years and many per-distribution customisations.  So I can't claim that every SE Linux policy that was included in every distribution did the right thing in this regard.  But the sesearch command allows any SE Linux sysadmin to determine if their system does what they desire.<br>
+<p>
+But it does seem that someone who ran UnrealIRCd on a SE Linux system and who used the correct context for the executable would not be vulnerable to a problem that merely used the system() call.<br>
+<p>
+Of course there are lots of other things that an attacker could potentially do.<br>
+</div>
+
+      
+          <div class="CommentReplyButton">
+            <form action="/Articles/392598/comment" method="post">
+            <input type="submit" value="Reply to this comment">
+            </form>
+          </div>
+        
+     <p>
+     
+    </details>
+
+</main></div> <!-- ArticleText -->
+</div> <!-- middlecolumn -->
+<div class="rightcol not-print">
+<!-- no side ad served -->
+</div>
+</div> <!-- maincolumn -->
+
+            <br clear="all">
+            <center>
+            <P>
+            <span class="ReallySmall">
+            Copyright &copy; 2010, Eklektix, Inc.<BR>
+            This article may be redistributed under the terms of the
+              <a href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+              Commons CC BY-SA 4.0</a> license<br>
+            Comments and public postings are copyrighted by their creators.<br>
+            Linux  is a registered trademark of Linus Torvalds<br>
+            </span>
+            </center>
+            
+            </body></html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AsyncAPI npm releases carried a Miasma botnet loader</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>AsyncAPI npm releases carried a Miasma botnet loader</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> AsyncAPI · <a href="https://www.asyncapi.com/" target="_blank">website</a> · <a href="https://github.com/asyncapi/generator" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-07-14</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> ci_cd_exploit</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, remote_code_execution, backdoor, data_exfiltration</div>
+    <div class="meta-item"><strong>User Impact:</strong> 2900000</div>
+    <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
+    <div class="meta-item"><strong>Campaigns:</strong>
+      
+        <a href="/campaign/miasma-2026/">Miasma worm burrowed through npm for two months</a>
+      
+    </div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">An attacker exploited a pull_request_target workflow in the AsyncAPI generator repository to steal an npm publish token, then shipped four @asyncapi packages that fetched an encrypted Miasma second stage from IPFS on module import.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Four npm packages in the `@asyncapi` namespace shipped a multi-stage botnet
+loader on July 14, 2026, after an attacker stole the project&#39;s publishing
+token by way of a misconfigured GitHub Actions workflow. Together the affected
+packages account for roughly 2.9 million downloads a week.</p>
+    
+      <p>AsyncAPI is an open specification and toolchain for describing event-driven
+APIs, and its generator turns those specifications into code and
+documentation. Socket, which analyzed the releases, said the malicious
+versions were `@asyncapi/generator-helpers@1.1.1`,
+`@asyncapi/generator-components@0.7.1`, `@asyncapi/generator@3.3.1`, and
+`@asyncapi/specs` at 6.11.2 and 6.11.2-alpha.1, all published within minutes
+of each other.</p>
+    
+      <p>The entry point was a `pull_request_target` workflow in the generator
+repository. That trigger runs with the base repository&#39;s secrets available,
+including automation tokens, while checking out code a contributor controls.
+Aikido described the result as npm packages backdoored through the project&#39;s
+own release automation, which is why the poisoned versions arrived looking
+like ordinary releases.</p>
+    
+      <p>The loader did not use an install hook. Socket said the injected code ran when
+Node.js imported the module, then spawned a detached `node -e` process that
+pulled an 8.25 MB encrypted payload from IPFS and stored it in directories
+named to resemble Node.js runtime paths. Decrypted, that payload was Miasma: a
+modular cross-platform tasking framework with REST-based command and control,
+file listing and transfer, shell execution, payload update, and persistence
+through systemd user services. Because execution happened on import rather
+than on install, `npm install --ignore-scripts` offered no protection.
+Investigators were told to treat any machine that imported the packages as
+compromised and to watch for detached Node processes and IPFS gateway traffic.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>@asyncapi/generator-helpers</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-07-14</td>
+          <td>
+            
+              <code>1.1.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:34014776d3d3ff11bc4439b02fd7ac0f02a887eb3a052eeafff236e2f6db8ad1</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>@asyncapi/generator-components</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-07-14</td>
+          <td>
+            
+              <code>0.7.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:082d733db0687dcd768104972b065d4b58cb1e6043688c6c20fa3702337f36ab</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>@asyncapi/generator</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-07-14</td>
+          <td>
+            
+              <code>3.3.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:bfaeb987faa6de2b5a5eb63b1233d055215b09b0349a9394f2175fd7cdf385e4</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>@asyncapi/specs</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>2026-07-14</td>
+          <td>
+            
+              <code>6.11.2</code><br><code>6.11.2-alpha.1</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:9b2e65db653ca8575c9b10eefb9a80c6006404812c2ec212bf5675e3c690233b</code><br><code>sha256:d425e4583cc6185d41e95c45eda00550045a5d1919b9a012236a4520d009dbd7</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/org/asyncapi</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>malware_family:Miasma</code></li>
+    
+      <li><code>ipv4:85.137.53.71</code></li>
+    
+      <li><code>port:8080</code></li>
+    
+      <li><code>port:8081</code></li>
+    
+      <li><code>port:8091</code></li>
+    
+      <li><code>file:.miasma lock directory</code></li>
+    
+      <li><code>technique:systemd user service persistence</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://socket.dev/blog/asyncapi-supply-chain-attack" target="_blank">Compromised npm Packages in the AsyncAPI Namespace Deliver Miasma Botnet Loader - Socket</a></li>
+    
+      <li><a href="https://www.aikido.dev/blog/asyncapi-npm-packages-backdoored-via-github-actions" target="_blank">AsyncAPI npm packages backdoored via GitHub Actions - Aikido</a></li>
+    
+      <li><a href="https://thehackernews.com/2026/07/compromised-asyncapi-npm-packages.html" target="_blank">Compromised AsyncAPI npm Packages Deliver Multi-Stage Botnet Malware - The Hacker News</a></li>
+    
+      <li><a href="https://www.developer-tech.com/news/four-asyncapi-npm-packages-miasma-botnet-loader/" target="_blank">Four AsyncAPI npm packages carry Miasma botnet loader - Developer Tech</a></li>
+    
+      <li><a href="https://research.jfrog.com/post/miasma-worm-returns-to-npm/" target="_blank">Miasma Worm Returns to npm - JFrog Security Research</a></li>
+    
+      <li><a href="https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/" target="_blank">The npm Threat Landscape: Attack Surface and Mitigations - Unit 42</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

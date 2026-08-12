@@ -1,0 +1,154 @@
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><title>BK2CVS problem [LWN.net]</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="BK2CVS problem">
+<meta property="og:site_name" content="LWN.net">
+<meta property="og:type" content="article">
+<meta property="og:description" content=" From:     	      Larry McVoy &amp;lt;lm-AT-bitmover.com&amp;gt; To:     	      linux-kernel-AT-vger.ke [...]">
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="robots" CONTENT="noai, noimageai">
+        <link rel="icon" href="https://static.lwn.net/images/favicon.png"
+              type="image/png">
+        <link rel="alternate" type="application/rss+xml" title="LWN.net headlines" href="https://lwn.net/headlines/rss">
+        <link rel="stylesheet" href="/CSS/lwn-v1">
+<style>div.MakeALink { display: none }</style>
+
+        
+        </head>
+        <body>
+        <a name="t"></a>
+<div id="menu"><a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/logo/barepenguin-70.webp" class="logo"
+                 border="0" alt="LWN.net Logo">
+            <span class="logo">LWN<br>.net</span>
+            <span class="logobl">News from the source</span></a>
+            <a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/lcorner-ss.png" class="sslogo"
+                 border="0" alt="LWN"></a><div class="navmenu-container">
+           <ul class="navmenu">
+        <li><a class="navmenu" href="#t"><b>Content</b></a><ul><li><a href="/current/">Weekly Edition</a></li><li><a href="/Archives/">Archives</a></li><li><a href="/Search/">Search</a></li><li><a href="/Kernel/">Kernel</a></li><li><a href="/Security/">Security</a></li><li><a href="/Calendar/">Events calendar</a></li><li><a href="/Comments/unread">Unread comments</a></li><li><hr></li><li><a href="/op/FAQ.lwn">LWN FAQ</a></li><li><a href="/op/AuthorGuide.lwn">Write for us</a></li></ul></li>
+</ul></div>
+</div> <!-- menu -->
+<div class="topnav-spacer"></div>
+<div class="top-banner not-print"><!-- no top ad served --></div>
+<div class="topnav-container">
+<div class="not-handset"><form action="https://lwn.net/Login/" method="post" name="loginform"
+                 class="loginform">
+        <label><b>User:</b> <input type="text" name="uname" value="" size="8" id="uc" /></label> 
+		<label><b>Password:</b> <input type="password" name="pword" size="8" id="pc" /></label> <input type="hidden" name="target" value="/Articles/57137/" /> <input type="submit" name="submit" value="Log in" /></form> |
+           <form action="https://lwn.net/subscribe/" method="post" class="loginform">
+           <input type="submit" name="submit" value="Subscribe" />
+           </form> |
+           <form action="https://lwn.net/Login/newaccount" method="post" class="loginform">
+           <input type="submit" name="submit" value="Register" />
+           </form>
+        </div>
+               <div class="handset-only">
+               <a href="/Login/"><b>Log in</b></a> /
+               <a href="/subscribe/"><b>Subscribe</b></a> /
+               <a href="/Login/newaccount"><b>Register</b></a>
+               </div>
+               </div><div class="maincolumn flexcol">
+<div class="middlecolumn">
+<div class="PageHeadline">
+<h1>BK2CVS problem</h1>
+<div class="Byline">[Posted November 6, 2003 by corbet]
+               <p>
+               </div>
+</div>
+<div class="ArticleText"><main>
+<table>
+<tr><td valign="top"><b>From</b>:</td>
+    	     <td>&nbsp;</td><td valign="top">Larry McVoy &lt;lm-AT-bitmover.com&gt;</td></tr>
+<tr><td valign="top"><b>To</b>:</td>
+    	     <td>&nbsp;</td><td valign="top">linux-kernel-AT-vger.kernel.org</td></tr>
+<tr><td valign="top"><b>Subject</b>:</td>
+    	     <td>&nbsp;</td><td valign="top">BK2CVS problem</td></tr>
+<tr><td valign="top"><b>Date</b>:</td>
+    	     <td>&nbsp;</td><td valign="top">Wed, 5 Nov 2003 12:45:22 -0800</td></tr>
+</table><p>
+<pre>
+Somebody has modified the CVS tree on kernel.bkbits.net directly.  Dave looked
+at the machine and it looked like someone may have been trying to break in and
+do it.  
+
+We've fixed the file in question, the conversion is done back here at BitMover
+and after we transfer the files we check them and make sure they are OK and 
+this file got flagged.  
+
+The CVS tree is fine, you might want to remove and update exit.c to make sure
+you have the current version in your tree however.
+
+The problem file is kernel/exit.c which has a few extra entries like so:
+
+    revision 1.121
+    date: 2003/11/04 16:44:19;  author: davem;  state: Exp;  lines: +58 -0
+    Oops, I worked on the  the wrong file, fixed again.
+    ----------------------------
+    revision 1.120
+    date: 2003/11/04 16:42:00;  author: davem;  state: Exp;  lines: +0 -58
+    *** empty log message ***
+    ----------------------------
+    revision 1.119
+    date: 2003/11/04 16:22:47;  author: davem;  state: Exp;  lines: +2 -0
+    *** empty log message ***
+    ----------------------------
+    revision 1.118
+    date: 2003/10/27 19:50:03;  author: torvalds;  state: Exp;  lines: +11 -5
+    Fix ZOMBIE race with self-reaping threads.
+
+    exit_notify() used to leave a window open when a thread
+    died that made the thread visible as a ZOMBIE even though
+    the thread reaped itself. This closes that window by marking
+    the thread DEAD within the tasklist_lock.
+
+    (Logical change 1.14141)
+    ----------------------------
+
+Notice how the top 3 do not have the (Logical change X.YZ) at the end?
+That is a pointer so you can figure out the changeset boundaries and
+it is added back here during the conversion process.  The file here is
+fine which leads me to believe that someone modified the file either on
+kernel.bkbits.net or managed to get in through the pserver.  Dave swears
+up and down that it wasn't him so if anyone can step forward and claim
+responsibility that would be nice.
+
+It's not a big deal, we catch stuff like this, but it's annoying to the 
+CVS users.
+-- 
+---
+Larry McVoy              lm at bitmover.com          <a href="http://www.bitmover.com/lm">http://www.bitmover.com/lm</a>
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo-AT-vger.kernel.org
+More majordomo info at  <a href="http://vger.kernel.org/majordomo-info.html">http://vger.kernel.org/majordomo-info.html</a>
+Please read the FAQ at  <a href="http://www.tux.org/lkml/">http://www.tux.org/lkml/</a>
+
+</pre>
+<br clear="all"><hr width="60%%" align="left">
+            <form action="/Login/" method="post">
+            <input type="hidden" name="target" value="/Articles/57137/" />
+            <input type="submit" name="login" value="Log in" /> to post comments
+            <p>
+        <p><a name="Comments"></a>
+
+</main></div> <!-- ArticleText -->
+</div> <!-- middlecolumn -->
+<div class="rightcol not-print">
+<!-- no side ad served -->
+</div>
+</div> <!-- maincolumn -->
+
+            <br clear="all">
+            <center>
+            <P>
+            <span class="ReallySmall">
+            Copyright &copy; 2003, Eklektix, Inc.<BR>
+            
+            Comments and public postings are copyrighted by their creators.<br>
+            Linux  is a registered trademark of Linus Torvalds<br>
+            </span>
+            </center>
+            
+            </body></html>

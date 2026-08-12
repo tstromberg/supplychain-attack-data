@@ -6,7 +6,7 @@
   story: |
     The phpBB incident was a link replacement attack, not a phpBB codebase exploit. On January 26, 2018, two official download links pointed away from phpBB's normal files to malicious packages on a third-party server.
 
-    The affected artifacts were the phpBB 3.2.2 full package and the automatic updater from 3.2.1 to 3.2.2. The altered packages added code that attempted to load JavaScript from a remote source. phpBB later controlled the referenced domains, which neutralized that path.
+    The affected artifacts were the phpBB 3.2.2 full package and the automatic updater from 3.2.1 to 3.2.2. The altered packages added code that attempted to load JavaScript from a remote source. phpBB later controlled the referenced domains, which neutralized that path. Its final public update traced the redirects to its Cloudflare DNS configuration: an attacker used phpBB's unique Cloudflare API key to create a page rule for the two download URLs. phpBB said it had never used that API and did not store the key on its own servers, while Cloudflare found no compromise of its API-key system.
 
     The window was short: 12:02 to 15:03 UTC, or 181 minutes. phpBB removed the links, told users to verify SHA256 hashes against the official download page, and asked anyone who installed or updated from the malicious packages to file an incident report.
 
@@ -54,6 +54,17 @@
     notes:
     - phpBB estimated fewer than 500 downloads during the exposure window; the
       number of production installations was expected to be far lower.
+    - The malicious archive hash and injected filename were not published.
+    evidence:
+    - kind: sample
+      path: samples/phpbb-full-package/before/phpBB-3.2.1.zip
+      role: preceding_clean_release
+    - kind: sample
+      path: samples/phpbb-full-package/after/phpBB-3.2.2.zip
+      role: post_incident_clean_same_release_comparator
+    - kind: incident_source
+      path: samples/phpbb/during/phpbb-3.2.2-compromise-announcement.html
+      role: official_timeline_payload_description_and_cause
   - id: phpbb-automatic-updater
     name: phpBB 3.2.1 to 3.2.2 automatic updater
     kind: source_archive
@@ -76,9 +87,17 @@
     notes:
     - phpBB estimated fewer than 500 downloads across both malicious packages;
       the number is exposure context, not a confirmed victim count.
+    - The malicious archive hash and injected filename were not published.
+    evidence:
+    - kind: sample
+      path: samples/phpbb-automatic-updater/after/phpBB-3.2.1_to_3.2.2.zip
+      role: post_incident_clean_same_release_comparator
+    - kind: incident_source
+      path: samples/phpbb/during/phpbb-3.2.2-compromise-announcement.html
+      role: official_timeline_payload_description_and_cause
   references:
-  - url: https://www.phpbb.com/community/viewtopic.php?t=2473051
-    title: phpBB Security Incident
+  - url: https://www.phpbb.com/community/viewtopic.php?t=2456896
+    title: '[Security] phpBB 3.2.2 Packages Compromised'
   - url: 
       https://www.bleepingcomputer.com/news/security/hacker-compromised-official-phpbb-download-links/
     title: Hacker Compromised Official phpBB Download Links

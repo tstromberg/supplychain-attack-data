@@ -12,6 +12,13 @@
     The public guidance was practical and terse. Anyone who used those plugins and might have updated during the previous day was told to visit the updates page and install the latest clean versions. WordPress.org also forced password resets across WordPress.org, bbPress.org, and BuddyPress.org because the root cause was still under investigation.
 
     The event belongs next to, but separate from, the 2007 WordPress core archive compromise. In 2007 the official core download was altered; in 2011 the plugin repository carried malicious commits into specific third-party plugin releases. Both are official distribution failures, but the artifact scopes are different.
+  pull_quote:
+    text: >-
+      The WPtouch commit contained no `eval` and no encoded blob: it pulled
+      two strings out of a cookie with a `preg_match` and called the first as
+      a function with the second as its argument.
+    caption: the function name came in the cookie
+    after: 2
   start_date: 2011-06-21
   end_date: 2011-06-22
   target:
@@ -41,12 +48,22 @@
     website: https://wordpress.org/plugins/addthis/
     start_date: 2011-06-21
     end_date: 2011-06-22
+    versions:
+    - 2.1.3
+    fixed_versions:
+    - 2.2.0
     locations:
     - uri: https://wordpress.org/plugins/addthis/
       role: distribution
     indicators:
     - kind: observable
       value: Unauthorized suspicious commits containing disguised PHP backdoor code.
+    - kind: function
+      value: "@assert(wp_get_referer())"
+    evidence:
+    - kind: source_file
+      path: samples/addthis/during/addthis-r399310-addthis_social_widget.php
+      role: malicious_changes
   - id: wptouch
     name: WPtouch
     package: wptouch
@@ -55,12 +72,23 @@
     website: https://wordpress.org/plugins/wptouch/
     start_date: 2011-06-21
     end_date: 2011-06-22
+    versions:
+    - 1.9.27
+    - 1.9.28
+    fixed_versions:
+    - 1.9.29
     locations:
     - uri: https://wordpress.org/plugins/wptouch/
       role: distribution
     indicators:
     - kind: observable
       value: Unauthorized suspicious commits containing disguised PHP backdoor code.
+    - kind: function
+      value: "$matches[1]($matches[2])"
+    evidence:
+    - kind: source_file
+      path: samples/wptouch/during/wptouch-r399585-wptouch.php
+      role: malicious_changes
   - id: w3-total-cache
     name: W3 Total Cache
     package: w3-total-cache
@@ -69,15 +97,35 @@
     website: https://wordpress.org/plugins/w3-total-cache/
     start_date: 2011-06-21
     end_date: 2011-06-22
+    versions:
+    - 0.9.2.2
+    hashes:
+    - sha256:838cddd8e6f60fa21f7a122f743e8e7047e82406f7c91c4c8e220de2e2198ace
+    fixed_versions:
+    - 0.9.2.3
     locations:
     - uri: https://wordpress.org/plugins/w3-total-cache/
       role: distribution
     indicators:
     - kind: observable
       value: Unauthorized suspicious commits containing disguised PHP backdoor code.
+    - kind: function
+      value: "assert($_SERVER['HTTP_X_FORWARD_FOR'])"
+    evidence:
+    - kind: source_archive
+      path: samples/w3-total-cache/before/w3-total-cache.0.9.2.2.zip
+      role: clean_same_version_comparator
+    - kind: source_file
+      path: samples/w3-total-cache/during/w3-total-cache-r399585-PgCache.php
+      role: malicious_changes
+    - kind: source_archive
+      path: samples/w3-total-cache/after/w3-total-cache.0.9.2.3.zip
+      role: clean_remediation
   references:
   - url: https://wordpress.org/news/2011/06/passwords-reset/
     title: Passwords Reset
   - url: 
       https://www.theregister.com/security/2011/06/22/malicious-software-downloads-invade-wordpress/776699
     title: Malicious software downloads invade WordPress
+  - url: https://web.archive.org/web/20110625000000/http://adamharley.co.uk/2011/06/wordpress-plugin-backdoors/
+    title: Add This, W3 Total Cache, WPtouch backdoors

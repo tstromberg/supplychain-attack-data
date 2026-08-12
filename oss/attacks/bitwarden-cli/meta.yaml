@@ -10,7 +10,6 @@
     into the same TeamPCP supply-chain campaign that researchers at
     Checkmarx had been tracking across the JavaScript ecosystem that
     week.
-
     Bitwarden distributes its CLI as `@bitwarden/cli`, a tool used by
     developers and CI pipelines to script vault access. Version
     2026.4.0 of that package, published from Bitwarden's own build
@@ -41,7 +40,7 @@
   start_date: 2026-04-22
   end_date: 2026-04-23
   target:
-    name: bitwarden-cli
+    name: '@bitwarden/cli'
     kind: application
     repo: https://github.com/bitwarden/clients
   actor:
@@ -59,7 +58,8 @@
     - self_propagation
   artifacts:
   - id: bitwarden-cli
-    name: bitwarden-cli
+    name: '@bitwarden/cli npm package'
+    package: '@bitwarden/cli'
     ecosystem: npm
     kind: source_archive
     repo: https://github.com/bitwarden/clients
@@ -67,12 +67,20 @@
     end_date: 2026-04-23
     versions:
     - 2026.4.0
+    fixed_versions:
+    - 2026.4.1
+    hashes:
+    - sha256:99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f
     locations:
     - uri: https://www.npmjs.com/package/@bitwarden/cli/v/2026.4.0
       role: distribution
     indicators:
     - kind: file
       value: bw1.js
+    - kind: file_sha256
+      value: bw1.js 18f784b3bc9a0bcdcb1a8d7f51bc5f54323fc40cbd874119354ab609bef6e4cb
+    - kind: file_sha256
+      value: bw_setup.js f35475829991b303c5efc2ee0f343dd38f8614e8b5e69db683923135f85cf60d
     - kind: url
       value: https://audit.checkmarx.cx/v1/telemetry
     - kind: observable
@@ -83,8 +91,19 @@
       value: path:/tmp/_tmp_<Unix Epoch Timestamp>/
     - kind: file
       value: package-updated.tgz
+    - kind: observable
+      value: CVE-2026-42994
+    notes:
+    - Ossprey published SHA-256 99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f
+      for the complete original 2026.4.0 npm tarball. It does not match the
+      tree-equivalent synthetic archive documented in the sample manifest, so that local
+      file remains explicitly named RECONSTRUCTED.
   references:
   - url: https://socket.dev/blog/bitwarden-cli-compromised
     title: Bitwarden CLI compromised in ongoing Checkmarx supply chain campaign
   - url: https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/
     title: The npm threat landscape
+  - url: https://community.bitwarden.com/t/bitwarden-statement-on-checkmarx-supply-chain-incident/96127
+    title: Bitwarden Statement on Checkmarx Supply Chain Incident
+  - url: https://www.ossprey.com/blog/the-complete-teampcp-campaign
+    title: The Complete TeamPCP Campaign - Ossprey

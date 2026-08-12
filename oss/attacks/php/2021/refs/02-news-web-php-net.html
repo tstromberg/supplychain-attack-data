@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>php.internals: Update on git.php.net incident</title>
+  <link href="//fonts.googleapis.com/css?family=Fira+Sans|Source+Sans+Pro:300,400,600,400italic,600italic|Source+Code+Pro&amp;subset=latin,latin-ext" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css" type="text/css" />
+  <link rel="shortcut icon" href="//www.php.net/favicon.ico">
+ </head>
+ <body>
+  <header class="header">
+   <nav class="header-inner">
+    <a href="/" class="header-brand">
+      <img src="//www.php.net/images/logos/php-logo.svg" class="header-brand-img" alt="PHP" height="24" width="48">
+      <span class="header-brand-text">lists</span>
+    </a>
+    <ul class="header-menu">
+      <li class="header-menu-item">
+        <a class="header-menu-item-link" href="https://www.php.net/downloads.php">Downloads</a>
+      </li>
+      <li class="header-menu-item">
+        <a class="header-menu-item-link" href="https://www.php.net/docs.php">Documentation</a>
+      </li>
+      <li class="header-menu-item">
+        <a class="header-menu-item-link" href="https://www.php.net/get-involved.php">Get Involved</a>
+      </li>
+      <li class="header-menu-item mod-active">
+        <a class="header-menu-item-link" href="https://www.php.net/support.php">Help</a>
+      </li>
+     </ul>
+     <form class="search-form" action="https://www.php.net/search.php">
+      <input class="search-input" value="" name="pattern" placeholder="Search">
+     </form>
+    <div class="menu-icon" onclick="document.querySelector('.menu-mobile').classList.toggle('hide')">☰ MENU</div>
+     <ul class="menu-mobile hide">
+      <li class="menu-mobile-item">
+        <a class="menu-mobile-item-link" href="https://www.php.net/downloads.php">Downloads</a>
+      </li>
+      <li class="menu-mobile-item">
+        <a class="menu-mobile-item-link" href="https://www.php.net/docs.php">Documentation</a>
+      </li>
+      <li class="menu-mobile-item">
+        <a class="menu-mobile-item-link" href="https://www.php.net/get-involved.php">Get Involved</a>
+      </li>
+      <li class="menu-mobile-item mod-active">
+        <a class="menu-mobile-item-link" href="https://www.php.net/support.php">Help</a>
+      </li>
+     </ul>
+   </nav>
+  </header>
+    <nav class="secondary-nav"> <ul class="breadcrumbs">  <li class="breadcrumbs-item"><a class="breadcrumbs-item-link" href="/">PHP Mailing Lists</a></li>  <li class="breadcrumbs-item"><a class="breadcrumbs-item-link" href="/php.internals">php.internals</a></li>  <li class="breadcrumbs-item"><a class="breadcrumbs-item-link" href="/php.internals/113981">Update on git.php.net incident</a></li> </ul></nav><section class="content"><h1>Update on git.php.net incident</h1>
+  <blockquote>
+   <table class="standard">
+    <tr class="vcard">
+     <td class="headerlabel">From:</td>
+     <td class="headervalue"><a href="mailto:nikita+dot+ppv+at+gmail+dot+com" class="email fn n">Nikita&nbsp;Popov</a></td>
+     <td class="headerlabel">Date:</td>
+     <td class="headervalue">Tue,&nbsp;06&nbsp;Apr&nbsp;2021&nbsp;18:28:03&nbsp;+0000</td>
+    </tr>
+    <tr>
+     <td class="headerlabel">Subject:</td>
+     <td class="headervalue" colspan="3">Update on git.php.net incident</td>
+    </tr>
+    <tr>
+     <td class="headerlabel">Groups:</td>
+     <td class="headervalue" colspan="3"><a href="/php.doc">php.doc</a>&nbsp;<a href="/php.internals">php.internals</a>&nbsp;</td>
+    </tr>
+    <tr>
+     <td class="headerlabel">Request:</td>
+     <td class="headervalue" colspan="3">Send a blank email to <a href="mailto:internals+get-113981@lists.php.net">internals+get-113981@lists.php.net</a> to get a copy of this message</td>
+    </tr>
+    <tr>
+   </table>
+  </blockquote>
+  <blockquote>
+   <pre>
+Hi everyone,
+
+I would like to provide an update regarding the git.php.net security
+incident. To briefly summarize the most important information:
+
+ * We no longer believe the git.php.net server has been compromised.
+However, it is possible that the master.php.net user database leaked.
+ * master.php.net has been migrated to a new system main.php.net.
+ * All php.net passwords have been reset. Go to
+<a href="https://main.php.net/forgot.php">https://main.php.net/forgot.php</a> to set a new password.
+ * git.php.net and svn.php.net are both read-only now, but will remain
+available for the time being.
+
+The following is a more detailed explanation of what happened and which
+actions were taken.
+
+When the first malicious commit was made under Rasmus&apos; name, my initial
+reaction was to revert the change and revoke commit access for Rasmus&apos;
+account, on the assumption that this was an individual account compromise.
+In hindsight, this action didn&apos;t really make sense, because there was (at
+the time) no reason to believe that the push occurred through Rasmus&apos;
+account in particular. Any account with access to the php-src repository
+could have performed the push under a false name.
+
+When the second malicious commit was made under my own name, I reviewed the
+logs of our gitolite installation, in order to determine which account was
+actually used to perform the push. However, while all adjacent commits were
+accounted for, no git-receive-pack entries for the two malicious commits
+were present, which means that these two commits bypassed the gitolite
+infrastructure entirely. This was interpreted as likely evidence of a
+server compromise.
+
+Shortly after that, we made the decision to discontinue git.php.net and
+make GitHub our primary repository host instead. Retaining our own Git
+infrastructure would have required setting up a new git.php.net server
+after determining the root cause of the compromise. This would take a lot
+of time and disrupt PHP development in the meantime. A basic migration to
+GitHub could be performed much more quickly, as most repositories were
+already mirrored there. At this point, a lot of development was already
+going through GitHub anyway, and our own Git infrastructure was mostly a
+security liability and complication to the development workflow, so it was
+not a hard decision to make the switch.
+
+Something I was not aware of at the time is that git.php.net
+(intentionally) supported pushing changes not only via SSH (using the
+gitolite infrastructure and public key cryptography), but also via HTTPS.
+The latter did not use gitolite, and instead used git-http-backend behind
+Apache2 Digest authentication against the master.php.net user database. I&apos;m
+not sure why password-based authentication was supported in the first
+place, as it is much less secure than pubkey authentication.
+
+Based on access logs, we can determine that the commits were indeed pushed
+using HTTPS and password-based authentication. An excerpt of relevant log
+entries is shown below:
+
+[redacted] - rasmus@[redacted] [27/Mar/2021:19:19:23 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-upload-pack HTTP/1.1&quot; 401 941
+[redacted] - rasmus@[redacted] [27/Mar/2021:19:19:28 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-upload-pack HTTP/1.1&quot; 401 941
+[redacted] - rasmus [27/Mar/2021:20:56:51 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-receive-pack HTTP/1.1&quot; 200 125315
+[redacted] - rasmus [27/Mar/2021:20:58:13 -0700] &quot;POST
+/push/php-src.git/git-receive-pack HTTP/1.1&quot; 200 1080
+[redacted] - nikita.ppv [28/Mar/2021:09:09:15 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-upload-pack HTTP/1.1&quot; 401 941
+[redacted] - nikita.ppv [28/Mar/2021:09:09:18 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-upload-pack HTTP/1.1&quot; 401 941
+[redacted] - nikitappv [28/Mar/2021:09:09:35 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-upload-pack HTTP/1.1&quot; 401 941
+[redacted] - nikitappv [28/Mar/2021:09:09:36 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-upload-pack HTTP/1.1&quot; 401 941
+[redacted] - nikita [28/Mar/2021:09:09:50 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-upload-pack HTTP/1.1&quot; 401 941
+[redacted] - nikita [28/Mar/2021:09:09:53 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-upload-pack HTTP/1.1&quot; 401 941
+[redacted] - nikic [28/Mar/2021:09:11:31 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-receive-pack HTTP/1.1&quot; 401 941
+[redacted] - nikic [28/Mar/2021:09:11:31 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-receive-pack HTTP/1.1&quot; 401 941
+[redacted] - nikic [28/Mar/2021:09:13:28 -0700] &quot;GET
+/push/php-src.git/info/refs?service=git-receive-pack HTTP/1.1&quot; 200 123263
+[redacted] - nikic [28/Mar/2021:09:13:39 -0700] &quot;POST
+/push/php-src.git/git-receive-pack HTTP/1.1&quot; 200 1079
+
+It is notable that the attacker only makes a few guesses at usernames, and
+successfully authenticates once the correct username has been found. While
+we don&apos;t have any specific evidence for this, a possible explanation is
+that the user database of master.php.net has been leaked, although it is
+unclear why the attacker would need to guess usernames in that case.
+
+The master.php.net system, which is used for authentication and various
+management tasks, was running very old code on a very old operating system
+/ PHP version, so some kind of vulnerability would not be terribly
+surprising. We have made a number of changes to increase the security of
+this system:
+
+ * master.php.net was migrated to a new system (running PHP 8) and renamed
+to main.php.net at the same time. Among other things, the new system
+supports TLS 1.2, which means you should no longer see TLS version warnings
+when accessing this site.
+ * The implementation has been moved towards using parameterized queries,
+to be more confident that SQL injections cannot occur.
+ * Passwords are now stored using bcrypt.
+ * Existing passwords were reset (use main.php.net/forgot.php to generate a
+new one).
+
+Previously, passwords were stored in a format compatible with HTTP Digest
+authentication (essentially a plain md5 hash), which was required for HTTP
+authentication on git.php.net and svn.php.net. As git.php.net has been made
+read-only as a result of this incident, we decided to make svn.php.net
+read-only as well, and thus remove the need to store passwords in an
+insecure format. Only a small handful of PECL extensions were still using
+the SVN server. The following SVN repositories had semi-recent activity and
+have been migrated to GitHub:
+
+<a
+href="https://github.com/php/pecl-authentication-krb5">https://github.com/php/pecl-authentication-krb5</a>
+<a
+href="https://github.com/php/pecl-caching-varnish">https://github.com/php/pecl-caching-varnish</a>
+<a href="https://github.com/php/pecl-database-dbase">https://github.com/php/pecl-database-dbase</a>
+<a
+href="https://github.com/php/pecl-datetime-hrtime">https://github.com/php/pecl-datetime-hrtime</a>
+<a
+href="https://github.com/php/pecl-datetime-timezonedb">https://github.com/php/pecl-datetime-timezonedb</a>
+<a href="https://github.com/php/pecl-math-trader">https://github.com/php/pecl-math-trader</a>
+<a
+href="https://github.com/php/pecl-networking-geoip">https://github.com/php/pecl-networking-geoip</a>
+<a href="https://github.com/php/pecl-processing-rrd">https://github.com/php/pecl-processing-rrd</a>
+<a href="https://github.com/php/pecl-system-expect">https://github.com/php/pecl-system-expect</a>
+<a href="https://github.com/php/pecl-text-pdflib">https://github.com/php/pecl-text-pdflib</a>
+<a href="https://github.com/php/pecl-tools-svn">https://github.com/php/pecl-tools-svn</a>
+<a href="https://github.com/php/pecl-xml-xmldiff">https://github.com/php/pecl-xml-xmldiff</a>
+
+Please contact me at nikic@php.net if additional migrations or permission
+adjustments are needed. Please also report any issues you encounter with
+main.php.net -- it&apos;s likely that some things broke during the migration.
+
+Regards,
+Nikita
+<br><br>   </pre>
+  </blockquote>
+      <blockquote>
+        <h2>
+          Thread (1 message)
+        </h2>
+        <div class="list-tree"><ul><li><b><span class="author">Nikita&nbsp;Popov</span><span class="date"><time datetime="2021-04-06T18:28:03+00:00">Tue,&nbsp;06&nbsp;Apr&nbsp;2021&nbsp;18:28:03&nbsp;+0000</time></span></b></li></ul></div>      </blockquote>
+      <table class="standard">
+   <tr>
+    <th class="nav">     <a href="/php.internals/113980"><b>&laquo; <span>previous</span></b></a>    </th>
+    <th class="align-center">php.internals (#113981)</th>
+    <th class="nav align-right">     <a href="/php.internals/113982"><b><span>next</span> &raquo;</b></a>    </th>
+   </tr>
+  </table>
+</section>
+ <footer class="footer">
+    <ul class="footer-nav">
+     <li class="footer-nav-item">
+       <a class="footer-nav-item-link" href="https://www.php.net/copyright.php">
+         Copyright ©2001-2026 The PHP Group
+       </a>
+     </li>
+     <li class="footer-nav-item">
+       <a class="footer-nav-item-link" href="https://www.php.net/my.php">My PHP.net</a>
+     </li>
+     <li class="footer-nav-item">
+       <a class="footer-nav-item-link" href="https://www.php.net/contact.php">Contact</a>
+     </li>
+     <li class="footer-nav-item">
+       <a class="footer-nav-item-link" href="https://www.php.net/sites.php">Other PHP.net sites</a>
+     </li>
+     <li class="footer-nav-item">
+       <a class="footer-nav-item-link" href="https://www.php.net/privacy.php">Privacy policy</a>
+     </li>
+    </ul>
+ </footer>
+ </body>
+</html>
+    

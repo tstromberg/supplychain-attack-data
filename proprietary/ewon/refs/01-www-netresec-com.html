@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en">
+  <head>
+    <title>Full Disclosure of Havex Trojans</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta property="og:title" content="Full Disclosure of Havex Trojans" />
+    <meta property="og:site_name" content="Netresec" />
+    <meta property="og:type" content="article" />
+    <meta http-equiv="Content-Language" content="en" />
+    <meta name="msapplication-starturl" content="https://www.netresec.com" />
+    <meta name="description" content="I did a talk on SCADA Network Forensics at the 4SICS conference last week, where I disclosed the results from my analysis of the Havex RAT/backdoor. The Havex backdoor is developed and used by a hacker group called Dragonfly, who are also known as Energetic Bear and Crouching Yeti. Dragonfly is an A[...]" />
+    <meta property="og:description" content="I did a talk on SCADA Network Forensics at the 4SICS conference last week, where I disclosed the results from my analysis of the Havex RAT/backdoor. The Havex backdoor is developed and used by a hacker group called Dragonfly, who are also known as Energetic Bear and Crouching Yeti. Dragonfly is an A[...]" />
+    <meta name="keywords" content="Havex, Dragonfly, Energetic Bear, Crouching Yeti, ICS, SCADA, Trojan, MESA Imaging, SwissrangerSetup, eWON, Talk2M, eCatcher, eCatcherSetup.exe, eGrabIt, egrabitsetup.exe, MB Connect Line, mbCONFTOOL v1.0.1, setup_1.0.1.exe, mbCHECK v1.1.1, mbCHECK.exe, VCOM_LAN2, setupvcom_lan2.exe, 4SICS" />
+    <meta property="article:published_time" content="2014-10-27T11:11:00.0000000Z" />
+    <link rel="icon" sizes="192x192" href="/favicon-192x192.png" />
+    <link rel="icon" sizes="144x144" href="/favicon-144x144.png" />
+    <link rel="icon" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta name="msapplication-TileImage" content="https://media.netresec.com/images/Netresec_N_144x144.png" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="viewport" content="width=620, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="/style.css" />
+    <link rel="alternate" type="application/rss+xml" title="NETRESEC Network Security Blog" href="https://www.netresec.com/rss.ashx" />
+    <link rel="canonical" href="https://www.netresec.com/?page=Blog&amp;month=2014-10&amp;post=Full-Disclosure-of-Havex-Trojans" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@netresec" />
+    <meta name="twitter:creator" content="@netresec" />
+    <meta name="twitter:title" content="Full Disclosure of Havex Trojans" />
+    <meta name="twitter:description" content="I did a talk on SCADA Network Forensics at the 4SICS conference last week, where I disclosed the results from my analysis of the Havex RAT/backdoor. The Havex backdoor is developed and used by a hacker group called Dragonfly, who are also known as Energetic Bear and Crouching Yeti. Dragonfly is an A[...]" />
+    <meta name="fediverse:creator" content="@netresec@infosec.exchange" />
+    <meta name="twitter:url" content="https://www.netresec.com/?page=Blog&amp;month=2014-10&amp;post=Full-Disclosure-of-Havex-Trojans" />
+    <meta name="url" content="https://www.netresec.com/?page=Blog&amp;month=2014-10&amp;post=Full-Disclosure-of-Havex-Trojans" />
+    <meta property="og:url" content="https://www.netresec.com/?page=Blog&amp;month=2014-10&amp;post=Full-Disclosure-of-Havex-Trojans" />
+    <meta name="fediverse:creator" content="@netresec@infosec.exchange" />
+    <meta name="twitter:image" content="https://www.netresec.com/images/libMesaSR_installer_513x397.jpg" />
+    <meta property="og:image" content="https://www.netresec.com/images/libMesaSR_installer_513x397.jpg" />
+  </head>
+  <body>
+    <div class="middle">
+      <div id="pageHeader" style="min-height: 144px;">
+        <header>
+          <span style="align: right; float: right; vertical-align: top;">Experts in network security monitoring and network forensics</span>
+          <a href="https://www.netresec.com/">
+            <img src="/images/Netresec_Logo_550x140.png" width="275" height="70" alt="Netresec" style="margin-left: 16px" />
+          </a>
+        </header>
+        <nav>
+          <span>
+            <a href="/?page=Home">NETRESEC</a>|</span>
+          <span>
+            <a href="/?page=Products">Products</a>|</span>
+          <span>
+            <a href="/?page=Training">Training</a>|</span>
+          <span>
+            <a href="/?page=Resources">Resources</a>|</span>
+          <span>
+            <a href="/?page=Blog">Blog</a>|</span>
+          <span>
+            <a href="/?page=AboutNetresec">About Netresec</a>
+          </span>
+        </nav>
+        <span class="path">
+          <a href="/">NETRESEC</a>
+    »
+    <a href="/?page=Blog">Blog</a></span>
+      </div>
+      <div id="pageBody">
+        <div class="mainpane">
+          <div class="blogPost">
+            <article>
+              <div class="byline-name" style="float:left;">Erik Hjelmvik</div>
+              <div style="float:left;">, </div>
+              <div class="dateline" style="float:left;">Monday, 27 October 2014 11:11:00 (UTC/GMT)</div>
+              <br />
+              <h2>
+                <a class="blogPostTitle" href="/?page=Blog&amp;month=2014-10&amp;post=Full-Disclosure-of-Havex-Trojans">Full Disclosure of Havex Trojans</a>
+              </h2>
+              <!--      Full Disclosure of Software Trojanized with Havex Trojans-->
+              <p>
+        I did a talk on "SCADA Network Forensics"
+        at the <a href="http://4sics.se">4SICS conference</a> last week, where I disclosed the results from my analysis of the Havex RAT/backdoor.
+      </p>
+              <p>
+        The Havex backdoor is developed and used by a hacker group called Dragonfly, who are also known
+        as "Energetic Bear" and "Crouching Yeti". Dragonfly is an APT hacker group, who have
+        been reported to specifically target organizations in the energy sector as well as companies in other ICS sectors
+        such as industrial/machinery, manufacturing and pharmaceutical.
+      </p>
+              <p>
+        In my 4SICS talk I disclosed a previously unpublished comprehensive view of ICS software that has been trojanized
+        with the Havex backdoor, complete with screenshots, version numbers and checksums.
+      </p>
+              <p>
+        Dale Petersen, founder of Digital Bond, <a href="http://www.digitalbond.com/blog/2014/07/02/havex-hype-unhelpful-mystery/" rel="nofollow">expressed the following request</a> regarding the lack of public information
+        about the software trojanized with Havex:
+        <blockquote>
+          If the names of the vendors that unwittingly spread Havex were made public, the wide coverage would likely reach most of the affected asset owners.
+        </blockquote></p>
+              <p>
+        Following Dale's request we decided to publish the information presented at 4SICS also in this blog post, in order to reach as many affected asset owners as possible.
+        The information published here is based on our own sandbox executions of Havex malware samples, which we have obtained via
+        <a href="https://twitter.com/CodeAndSec">CodeAndSec</a> and
+        <a href="https://malwr.com/">malwr.com</a>.
+        In addition to what I presented at 4SICS, this blog post also includes new findings published by
+        Joel "<a href="http://twitter.com/scadahacker">scadahacker</a>" Langill in version 2.0 of his
+        <a href="http://info.belden.com/ab-cyber-security-dragonfly-bc-lp">Dragonfly white paper</a>, which was released just a couple of hours after my talk.
+      </p>
+              <p>
+        In Symantec's <a href="http://www.symantec.com/connect/blogs/dragonfly-western-energy-companies-under-sabotage-threat" rel="nofollow">blog post about Havex</a> they write:
+
+        <blockquote>
+          Three different ICS equipment providers were targeted and malware was inserted into the software bundles
+        </blockquote></p>
+              <br />
+              <p>
+                <b>Trojanized MESA Imaging driver</b>
+              </p>
+              <p>
+        The first vendor known to have their software trojanized by the Dragonfly group was the Swiss company MESA Imaging, who manufacture industrial grade cameras for range measurements.
+      </p>
+              <br />
+              <img src="https://www.netresec.com/images/libMesaSR_installer_513x397.jpg" alt="lib MESA SR Installer - SwissrangerSetup1.0.14.706.exe" border="0" style="clear: both;" />
+              <br />
+              <p>
+                <i>Image: Screenshot of trojanized MESA Imaging driver installer from our sandbox execution</i>
+              </p>
+              <table style="word-break: break-all;">
+                <tr>
+                  <th>Company:</th>
+                  <td>MESA Imaging</td>
+                </tr>
+                <tr>
+                  <th>Product:</th>
+                  <td>Swiss Ranger version 1.0.14.706 (libMesaSR)</td>
+                </tr>
+                <tr>
+                  <th>
+          Filename:</th>
+                  <td>SwissrangerSetup1.0.14.706.exe</td>
+                </tr>
+                <tr>
+                  <th>Exposure:</th>
+                  <td>Six weeks in June and July 2013 (source: Symantec)</td>
+                </tr>
+                <!--
+        <tr>
+          <th>First VirusTotal Submission:</th><td>2013-07-03</td>
+        </tr>
+        -->
+                <tr>
+                  <th>Backdoor:</th>
+                  <td>Sysmain RAT</td>
+                </tr>
+                <tr>
+                  <th>MD5:</th>
+                  <td>e027d4395d9ac9cc980d6a91122d2d83</td>
+                </tr>
+                <tr>
+                  <th>SHA256:</th>
+                  <td>398a69b8be2ea2b4a6ed23a55459e0469f657e6c7703871f63da63fb04cefe90</td>
+                </tr>
+                <!--
+        <tr>
+          <th></th>
+          <td></td>
+        </tr>
+        -->
+              </table>
+              <br />
+              <p>
+                <b>eWON / Talk2M</b>
+              </p>
+              <p>
+        The second vendor to have their software trojanized was the Belgian company
+        <a href="http://www.ewon.biz/" rel="nofollow">eWON</a>, who  provide a remote maintenance service for industrial control systems called “Talk2M”.
+      </p>
+              <p>
+        eWon published an
+        <a href="http://www.ewon.biz/en/talk2m-incident-report.html?cmp_id=7&amp;news_id=4860">incident report</a> in January 2014 and then a
+        <a href="http://www.ewon.biz/en/january-security-incident-follow-up-report.html?cmp_id=7&amp;news_id=4900">follow-up report</a> in July 2014 saying:
+      </p>
+              <blockquote>
+        Back in January 2014, the eWON commercial web site www.ewon.biz had been compromised.
+        A corrupted eCatcherSetup.exe file had been uploaded into the CMS (Content Management System) of www.ewon.biz web site.
+        eCatcher download hyperlinks were rerouted to this corrupted file.
+        The corrupted eCatcherSetup.exe contained a malware which could, under restricted conditions, compromise the Talk2M login of the infected user.
+      </blockquote>
+              <br />
+              <img src="https://www.netresec.com/images/eCatcher_installer_510x395.jpg" alt="eWON Talk2M eCatcher Installer - eCatcherSetup.exe" border="0" style="clear: both;" />
+              <br />
+              <p>
+                <i>Image: Screenshot of trojanized Talk2M eCatcher installer from our sandbox execution</i>
+              </p>
+              <table style="word-break: break-all;">
+                <tr>
+                  <th>Company:</th>
+                  <td>eWON</td>
+                </tr>
+                <tr>
+                  <th>Product:</th>
+                  <td>Talk2M eCatcher version 4.0.0.13073</td>
+                </tr>
+                <tr>
+                  <th>Filename:</th>
+                  <td>eCatcherSetup.exe</td>
+                </tr>
+                <tr>
+                  <th>Exposure:</th>
+                  <td>Ten days in January 2014, 250 copies downloaded (source: Symantec)</td>
+                </tr>
+                <tr>
+                  <th>Backdoor:</th>
+                  <td>Havex 038</td>
+                </tr>
+                <tr>
+                  <th>MD5:</th>
+                  <td>eb0dacdc8b346f44c8c370408bad4306</td>
+                </tr>
+                <tr>
+                  <th>SHA256:</th>
+                  <td>70103c1078d6eb28b665a89ad0b3d11c1cbca61a05a18f87f6a16c79b501dfa9</td>
+                </tr>
+                <!--
+        <tr>
+          <th></th>
+          <td></td>
+        </tr>
+        -->
+              </table>
+              <!--First VirusTotal submission: 2014-01-28-->
+              <p>
+        Prior to version 2.0 of Joel's Dragonfly report, eCatcher was the only product from eWON known to be infected with the Havex backdoor.
+        However, Joel's report also listed a product called “eGrabit”, which we managed to obtain a malware sample for via
+        <a href="https://malwr.com/analysis/ZTlhZmM5YjY5NTk2NDA1Nzg3ZDBkOTIyMzk1ZWNhZmU/" rel="nofollow">malwr.com</a>.
+      </p>
+              <br />
+              <img src="https://www.netresec.com/images/eGrabIt_setup_510x391.jpg" alt="eWON eGrabIt Installer - egrabitsetup.exe" border="0" style="clear: both;" />
+              <br />
+              <p>
+                <i>Image: Screenshot of trojanized eGrabIt installer from our sandbox execution</i>
+              </p>
+              <table style="word-break: break-all;">
+                <tr>
+                  <th>Company:</th>
+                  <td>eWON</td>
+                </tr>
+                <tr>
+                  <th>Product:</th>
+                  <td>eGrabIt 3.0.0.82 (version 3.0 Build 82)</td>
+                </tr>
+                <tr>
+                  <th>Filename:</th>
+                  <td>egrabitsetup.exe</td>
+                </tr>
+                <tr>
+                  <th>Exposure:</th>
+                  <td>unknown</td>
+                </tr>
+                <tr>
+                  <th>Backdoor:</th>
+                  <td>Havex RAT 038</td>
+                </tr>
+                <tr>
+                  <th>MD5:</th>
+                  <td>1080e27b83c37dfeaa0daaa619bdf478</td>
+                </tr>
+                <tr>
+                  <th>SHA256:</th>
+                  <td>0007ccdddb12491e14c64317f314c15e0628c666b619b10aed199eefcfe09705</td>
+                </tr>
+              </table>
+              <!--First VirusTotal submission: 2014-01-29-->
+              <br />
+              <p>
+                <b>MB Connect Line</b>
+              </p>
+              <p>
+        The most recent company known to have their software infected with the Havex backdoor was the German company
+        <a href="http://www.mbconnectline.com/index.php/en/" rel="nofollow">MB Connect Line GmbH</a>, who are known for their industrial router mbNET and VPN service mbCONNECT24.
+      </p>
+              <p>
+        MB Connect Line published a
+        <a href="http://mbconnectline.com/index.php/en/news2/item/abschlussbericht-zum-hacker-angriff-im-april-2014">report</a> about the Dragonfly intrusion in September 2014, where they write:
+      
+
+        <blockquote>
+          On 16th of April 2014 our website www.mbconnectline.com has been attacked by hackers.
+          The files mbCHECK (Europe), VCOM_LAN2 and mbCONFTOOL have been replaced with infected files.
+          These files were available from 16th of April 2014 to 23th of April 2014 for download from our website.
+          All of these files were infected with the known Trojan Virus Havex Rat.
+        </blockquote></p>
+              <br />
+              <img src="https://www.netresec.com/images/mbCONFTOOL_setup_513x396.jpg" alt="MB Connect Line mbCONFTOOL setup - setup_1.0.1.exe" border="0" style="clear: both;" />
+              <br />
+              <p>
+                <i>Image: Screenshot of trojanized mbCONFTOOL installer from our sandbox execution</i>
+              </p>
+              <table style="word-break: break-all;">
+                <tr>
+                  <th>Company:</th>
+                  <td>MB Connect Line GmbH</td>
+                </tr>
+                <tr>
+                  <th>Product:</th>
+                  <td>mbCONFTOOL V 1.0.1</td>
+                </tr>
+                <tr>
+                  <th>Filename:</th>
+                  <td>setup_1.0.1.exe</td>
+                </tr>
+                <tr>
+                  <th>Exposure:</th>
+                  <td>April 16 to April 23, 2014 (source: MB Connect Line)</td>
+                </tr>
+                <tr>
+                  <th>Backdoor:</th>
+                  <td>Havex RAT 043</td>
+                </tr>
+                <tr>
+                  <th>MD5:</th>
+                  <td>0a9ae7fdcd9a9fe0d8c5c106e8940701</td>
+                </tr>
+                <tr>
+                  <th>SHA256:</th>
+                  <td>c32277fba70c82b237a86e9b542eb11b2b49e4995817b7c2da3ef67f6a971d4a</td>
+                </tr>
+              </table>
+              <!--First VirusTotal submission: 2014-05-07-->
+              <br />
+              <img src="https://www.netresec.com/images/mbCHECK_V1-1-1_Havex_520x447.jpg" alt="MB Connect Line mbCHECK - mbCHECK.exe" border="0" style="clear: both;" />
+              <br />
+              <p>
+                <i>Image: Screenshot of trojanized mbCHECK application from our sandbox execution</i>
+              </p>
+              <table style="word-break: break-all;">
+                <tr>
+                  <th>Company:</th>
+                  <td>MB Connect Line GmbH</td>
+                </tr>
+                <tr>
+                  <th>Product:</th>
+                  <td>mbCHECK (EUROPE) V 1.1.1</td>
+                </tr>
+                <tr>
+                  <th>Filename:</th>
+                  <td>mbCHECK.exe</td>
+                </tr>
+                <tr>
+                  <th>Exposure:</th>
+                  <td>April 16 to April 23, 2014 (source: MB Connect Line)</td>
+                </tr>
+                <tr>
+                  <th>Backdoor:</th>
+                  <td>Havex RAT 043</td>
+                </tr>
+                <tr>
+                  <th>MD5:</th>
+                  <td>1d6b11f85debdda27e873662e721289e</td>
+                </tr>
+                <tr>
+                  <th>SHA256:</th>
+                  <td>0b74282d9c03affb25bbecf28d5155c582e246f0ce21be27b75504f1779707f5</td>
+                </tr>
+              </table>
+              <!--First VirusTotal submission: 2014-04-17-->
+              <p>
+        Notice how only mbCHECK for users in Europe was trojanized, there has been no report of the USA/CAN version of mbCHECK being infected with Havex.
+      </p>
+              <p>
+        We have not been able to get hold of a malware sample for the trojanized version of VCOM_LAN2. The screenshot below is therefore from a clean version of this software.
+      </p>
+              <br />
+              <img src="https://www.netresec.com/images/setupvcom_lan2-exe_513x398.jpg" alt="MB Connect Line VCOM_LAN2 setup - setupvcom_lan2.exe" border="0" style="clear: both;" />
+              <br />
+              <p>
+                <i>Image: Screenshot VCOM_LAN2 installer</i>
+              </p>
+              <table style="word-break: break-all;">
+                <tr>
+                  <th>Company:</th>
+                  <td>MB Connect Line GmbH</td>
+                </tr>
+                <tr>
+                  <th>Product:</th>
+                  <td>VCOM_LAN2</td>
+                </tr>
+                <tr>
+                  <th>Filename:</th>
+                  <td>setupvcom_lan2.exe</td>
+                </tr>
+                <tr>
+                  <th>Exposure:</th>
+                  <td>April 16 to April 23, 2014 (source: MB Connect Line)</td>
+                </tr>
+                <tr>
+                  <th>Backdoor:</th>
+                  <td>unknown</td>
+                </tr>
+                <tr>
+                  <th>MD5:</th>
+                  <td>unknown</td>
+                </tr>
+                <tr>
+                  <th>SHA256:</th>
+                  <td>unknown</td>
+                </tr>
+              </table>
+              <br />
+              <p>
+                <b>Conclusions on Havex Trojans</b>
+              </p>
+              <p>
+        The vendors who have gotten their software trojanized by Dragonfly are all European ICS companies (Switzerland, Belgium and Germany).
+        Additionally, only the mbCHECK version for users in Europe was infected with Havex, but not the one for US / Canada.
+        These facts indicate that the Dragonfly / Energetic Bear threat actor seems to primarily target ICS companies in Europe.
+      </p>
+              <br />
+              <p>
+                <b>Next: Detecting Havex with NSM</b>
+              </p>
+              <p>
+        Read our follow-up blog post <a href="https://netresec.com/?b=14BE342">Observing the Havex RAT</a>, which shows how to detect and analyze network traffic from ICS networks infected with Havex.
+      </p>
+              <p class="shadyText">
+          Posted by Erik Hjelmvik on Monday, 27 October 2014 11:11:00 (UTC/GMT)</p>
+              <p>
+          Tags: <span style="margin: 4px; display: inline-block;">
+      #<a href="/?page=Blog&amp;tag=Havex">Havex</a></span>​
+  <span style="margin: 4px; display: inline-block;">
+      #<a href="/?page=Blog&amp;tag=ICS">ICS</a></span>​
+  <span style="margin: 4px; display: inline-block;">
+      #<a href="/?page=Blog&amp;tag=SCADA">SCADA</a></span>​
+  <span style="margin: 4px; display: inline-block;">
+      #<a href="/?page=Blog&amp;tag=Trojan">Trojan</a></span>​
+  <span style="margin: 4px; display: inline-block;">
+      #<a href="/?page=Blog&amp;tag=4SICS">4SICS</a></span>​
+  </p>
+            </article>
+            <p>
+              <span>
+          Short URL:
+          <a href="https://netresec.com/?b=14ABDA4">
+            https://netresec.com/?b=14ABDA4</a></span>
+            </p>
+          </div>
+        </div>
+        <aside>
+          <h3>Recent Posts</h3>
+          <p>
+      » <a href="/?page=Blog&amp;month=2026-07&amp;post=PureLogs-PureRAT-and-misleading-zgRAT">PureLogs, PureRAT and misleading zgRAT</a></p>
+          <p>
+      » <a href="/?page=Blog&amp;month=2026-06&amp;post=Ping32-RMM-and-ValleyRAT">Ping32 RMM and ValleyRAT</a></p>
+          <p>
+      » <a href="/?page=Blog&amp;month=2026-06&amp;post=Maximizing-IOC-Impact">Maximizing IOC Impact</a></p>
+          <p>
+      » <a href="/?page=Blog&amp;month=2026-06&amp;post=PolarProxy-2-0-1-Released">PolarProxy 2.0.1 Released</a></p>
+          <p>
+      » <a href="/?page=Blog&amp;month=2026-05&amp;post=CapLoader-2-1-0-Released">CapLoader 2.1.0 Released</a></p>
+          <p>
+      » <a href="/?page=Blog&amp;month=2026-05&amp;post=PolarProxy-2-0-Released">PolarProxy 2.0 Released</a></p>
+          <p>
+      » <a href="/?page=Blog&amp;month=2026-05&amp;post=Remcos-Alerts-from-FlowCarp-in-EveBox">Remcos Alerts from FlowCarp in EveBox</a></p>
+          <p>
+      » <a href="/?page=Blog&amp;month=2026-05&amp;post=FlowCarp-Identifies-Protocols">FlowCarp Identifies Protocols</a></p>
+          <h3>Blog Archive</h3>
+          <p>
+      » <a href="?page=Blog&amp;year=2026">2026 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2025">2025 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2024">2024 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2023">2023 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2022">2022 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2021">2021 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2020">2020 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2019">2019 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2018">2018 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2017">2017 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2016">2016 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2015">2015 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2014">2014 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2013">2013 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2012">2012 Blog Posts
+      </a></p>
+          <p>
+      » <a href="?page=Blog&amp;year=2011">2011 Blog Posts
+      </a></p>
+          <p>
+            <a href="/?page=Blog&amp;blogPostList=true">List all blog posts</a>
+          </p>
+          <p>
+            <a href="/?page=Video">Video blog posts</a>
+          </p>
+          <h3>News Feeds</h3>
+          <p>
+          » <a href="https://feeds.feedburner.com/Netresec-Network-Security-Blog">FeedBurner</a></p>
+          <p>
+          » <a href="https://www.netresec.com/rss.ashx">RSS Feed</a></p>
+        </aside>
+        <div class="sidepane2">
+          <img src="/images/X_100x90.png" width="100" height="90" alt="X / twitter" />
+          <p>
+          𝕏:
+          <span class="h-card"><a rel="me" class="u-url" href="https://x.com/netresec">@netresec</a></span></p>
+          <hr />
+          <img src="/images/bluesky_100x88.png" width="100" height="88" alt="Bluesky" />
+          <p>
+          Bluesky:
+          <span class="h-card"><a rel="me" class="u-url" href="https://bsky.app/profile/netresec.com" style="word-break: break-all;">@netresec.com</a></span></p>
+          <hr />
+          <img src="/images/mastodon_100x107.png" width="100" height="107" alt="Mastodon" />
+          <p>
+          Mastodon:
+          <span class="h-card"><a rel="me" class="u-url" href="https://infosec.exchange/@netresec" style="word-break: break-all;">@netresec@infosec.exchange</a></span></p>
+        </div>
+      </div>
+      <footer>
+        <span>𝙽𝙴𝚃𝚁𝙴𝚂𝙴𝙲</span> |
+          <span><a href="/?page=AboutNetresec">Contact</a></span>
+          |
+          <span><a href="/?page=Privacy">Privacy</a></span>
+          |
+          <span><a rel="me" href="https://infosec.exchange/@netresec">Mastodon</a></span>
+          |
+          <span><a rel="me" href="https://bsky.app/profile/netresec.com">Bluesky</a></span>
+          |
+          <span><a rel="nofollow me" href="https://x.com/netresec">𝕏</a></span>
+          |
+          <span><a href="https://www.netresec.com/rss.ashx">RSS</a></span></footer>
+    </div>
+  </body>
+</html>

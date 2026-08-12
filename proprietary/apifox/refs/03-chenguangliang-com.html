@@ -1,0 +1,485 @@
+<!DOCTYPE html><html dir="ltr" lang="en" class="scroll-smooth"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any"><!-- Google AdSense (Auto Ads) --><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1237239169922070" crossorigin="anonymous"></script><script>
+      (adsbygoogle = window.adsbygoogle || []).push({
+        google_ad_client: "ca-pub-1237239169922070",
+        enable_page_level_ads: true
+      });
+    </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-GJJW5GJ7FL"></script><script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-GJJW5GJ7FL');
+    </script><link rel="canonical" href="https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/"><link rel="alternate" hreflang="en" href="https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/"><link rel="alternate" hreflang="zh-CN" href="https://chenguangliang.com/posts/blog105_apifox-supply-chain-attack/"><link rel="alternate" hreflang="x-default" href="https://chenguangliang.com/posts/blog105_apifox-supply-chain-attack/"><meta name="generator" content="Astro v6.3.1"><!-- Load Font --><style>@font-face{font-family:"Google Sans Code-de078a87b11e4a86";src:url("/_astro/fonts/ebe081c5cf2bc9bf.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:300;font-style:italic;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86";src:url("/_astro/fonts/ebe081c5cf2bc9bf.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:400;font-style:italic;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86";src:url("/_astro/fonts/ebe081c5cf2bc9bf.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:italic;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86";src:url("/_astro/fonts/ebe081c5cf2bc9bf.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:600;font-style:italic;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86";src:url("/_astro/fonts/ebe081c5cf2bc9bf.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:700;font-style:italic;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86";src:url("/_astro/fonts/dfc33a259d798962.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:300;font-style:normal;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86";src:url("/_astro/fonts/dfc33a259d798962.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:400;font-style:normal;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86";src:url("/_astro/fonts/dfc33a259d798962.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:500;font-style:normal;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86";src:url("/_astro/fonts/dfc33a259d798962.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:600;font-style:normal;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86";src:url("/_astro/fonts/dfc33a259d798962.woff2") format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-weight:700;font-style:normal;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86 fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:300;font-style:italic;size-adjust:99.9837%;ascent-override:96.6157%;descent-override:28.6047%;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86 fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:400;font-style:italic;size-adjust:99.9837%;ascent-override:96.6157%;descent-override:28.6047%;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86 fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:500;font-style:italic;size-adjust:99.9837%;ascent-override:96.6157%;descent-override:28.6047%;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86 fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:600;font-style:italic;size-adjust:99.9837%;ascent-override:96.6157%;descent-override:28.6047%;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86 fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:700;font-style:italic;size-adjust:99.9837%;ascent-override:96.6157%;descent-override:28.6047%;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86 fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:300;font-style:normal;size-adjust:99.9837%;ascent-override:96.6157%;descent-override:28.6047%;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86 fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:400;font-style:normal;size-adjust:99.9837%;ascent-override:96.6157%;descent-override:28.6047%;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86 fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:500;font-style:normal;size-adjust:99.9837%;ascent-override:96.6157%;descent-override:28.6047%;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86 fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:600;font-style:normal;size-adjust:99.9837%;ascent-override:96.6157%;descent-override:28.6047%;}@font-face{font-family:"Google Sans Code-de078a87b11e4a86 fallback: Courier New";src:local("Courier New");font-display:swap;font-weight:700;font-style:normal;size-adjust:99.9837%;ascent-override:96.6157%;descent-override:28.6047%;}:root{--font-google-sans-code:"Google Sans Code-de078a87b11e4a86","Google Sans Code-de078a87b11e4a86 fallback: Courier New",monospace;}</style><!-- General Meta Tags --><title>Apifox Supply Chain Attack Post-Mortem: Your SSH Keys May Already Be Compromised | Gerald Chen&#39;s Tech Blog</title><meta name="title" content="Apifox Supply Chain Attack Post-Mortem: Your SSH Keys May Already Be Compromised | Gerald Chen's Tech Blog"><meta name="description" content="In March 2026, the Apifox desktop client was hit by a supply chain attack: a JS file on the official CDN was replaced with a malicious version that stole users' SSH keys, Git credentials, and other sensitive data. A technical breakdown of the attack chain, blast radius, and how to check if you were affected."><meta name="author" content="Gerald Chen"><link rel="sitemap" href="/sitemap-index.xml"><!-- Open Graph / Facebook --><meta property="og:type" content="article"><meta property="og:site_name" content="Gerald Chen's Tech Blog"><meta property="og:locale" content="en_US"><meta property="og:title" content="Apifox Supply Chain Attack Post-Mortem: Your SSH Keys May Already Be Compromised | Gerald Chen's Tech Blog"><meta property="og:description" content="In March 2026, the Apifox desktop client was hit by a supply chain attack: a JS file on the official CDN was replaced with a malicious version that stole users' SSH keys, Git credentials, and other sensitive data. A technical breakdown of the attack chain, blast radius, and how to check if you were affected."><meta property="og:url" content="https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/"><meta property="og:image" content="https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/index.png"><!-- Article Published/Modified time --><meta property="article:published_time" content="2026-03-28T11:00:00.000Z"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/"><meta property="twitter:title" content="Apifox Supply Chain Attack Post-Mortem: Your SSH Keys May Already Be Compromised | Gerald Chen's Tech Blog"><meta property="twitter:description" content="In March 2026, the Apifox desktop client was hit by a supply chain attack: a JS file on the official CDN was replaced with a malicious version that stole users' SSH keys, Git credentials, and other sensitive data. A technical breakdown of the attack chain, blast radius, and how to check if you were affected."><meta property="twitter:image" content="https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/index.png"><!-- Google JSON-LD Structured data --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Apifox Supply Chain Attack Post-Mortem: Your SSH Keys May Already Be Compromised | Gerald Chen's Tech Blog","image":"https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/index.png","datePublished":"2026-03-28T11:00:00.000Z","author":[{"@type":"Person","name":"Gerald Chen","url":"https://chenguangliang.com/"}],"publisher":{"@type":"Organization","name":"陈广亮的技术博客","url":"https://chenguangliang.com/","logo":{"@type":"ImageObject","url":"https://chenguangliang.com/favicon.svg"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/"}}</script><!-- Enable RSS feed auto-discovery  --><!-- https://docs.astro.build/en/recipes/rss/#enabling-rss-feed-auto-discovery --><link rel="alternate" type="application/rss+xml" title="Gerald Chen's Tech Blog" href="https://chenguangliang.com/en/rss.xml"><meta name="theme-color" content=""><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.CAqDO0tx.js"></script><!-- Minimal inline script to prevent FOUC - sets theme immediately --><script>
+      (function () {
+        const initialColorScheme = ""; // "light" | "dark"
+        const currentTheme = localStorage.getItem("theme");
+
+        function getPreferTheme() {
+          if (currentTheme) return currentTheme;
+          if (initialColorScheme) return initialColorScheme;
+          return window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+        }
+
+        const themeValue = getPreferTheme();
+
+        // Set theme immediately to prevent flash
+        document.firstElementChild?.setAttribute("data-theme", themeValue);
+
+        // Export minimal API for external script
+        window.theme = {
+          themeValue: themeValue,
+          getTheme: () => window.theme.themeValue,
+          setTheme: val => {
+            window.theme.themeValue = val;
+          },
+        };
+      })();
+    </script><link rel="stylesheet" href="/_astro/Footer.CHt5ewzQ.css">
+<style>@keyframes astroFadeInOut{0%{opacity:1}to{opacity:0}}@keyframes astroFadeIn{0%{opacity:0;mix-blend-mode:plus-lighter}to{opacity:1;mix-blend-mode:plus-lighter}}@keyframes astroFadeOut{0%{opacity:1;mix-blend-mode:plus-lighter}to{opacity:0;mix-blend-mode:plus-lighter}}@keyframes astroSlideFromRight{0%{transform:translate(100%)}}@keyframes astroSlideFromLeft{0%{transform:translate(-100%)}}@keyframes astroSlideToRight{to{transform:translate(100%)}}@keyframes astroSlideToLeft{to{transform:translate(-100%)}}@media(prefers-reduced-motion){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}[data-astro-transition-scope]{animation:none!important}}
+.toc-container[data-astro-cid-xvrfupwn]{height:fit-content;max-height:calc(100vh - 200px);overflow-y:auto;padding:1.25rem;border:1px solid var(--color-border);border-radius:.5rem;background:var(--color-card)}.toc-wrapper[data-astro-cid-xvrfupwn]{width:100%}.toc-title[data-astro-cid-xvrfupwn]{font-size:14px;font-weight:600;margin-bottom:.75rem;color:var(--color-text-base)}.toc-list[data-astro-cid-xvrfupwn]{list-style:none;padding:0;margin:0}.toc-item[data-astro-cid-xvrfupwn]{margin:.2rem 0}.toc-level-2[data-astro-cid-xvrfupwn]{padding-left:0;font-size:14px}.toc-level-3[data-astro-cid-xvrfupwn]{padding-left:.75rem;font-size:13px}.toc-link[data-astro-cid-xvrfupwn]{display:block;padding:.15rem .4rem;color:var(--color-text-muted);text-decoration:none;border-left:2px solid transparent;transition:all .2s ease;line-height:1.3}.toc-link[data-astro-cid-xvrfupwn]:hover{color:var(--color-accent);border-left-color:var(--color-accent);background:var(--color-fill)}.toc-link[data-astro-cid-xvrfupwn].active{color:var(--color-accent);border-left-color:var(--color-accent);font-weight:500}.toc-container[data-astro-cid-xvrfupwn]::-webkit-scrollbar{width:4px}.toc-container[data-astro-cid-xvrfupwn]::-webkit-scrollbar-track{background:transparent}.toc-container[data-astro-cid-xvrfupwn]::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:2px}.toc-container[data-astro-cid-xvrfupwn]::-webkit-scrollbar-thumb:hover{background:var(--color-text-muted)}.related-posts[data-astro-cid-dpgbfi7r]{margin-top:2.5rem;margin-bottom:1rem;padding:1.5rem;border:1px solid var(--color-border);border-radius:.5rem;background:var(--color-card, var(--color-fill))}.related-title[data-astro-cid-dpgbfi7r]{font-size:1.1rem;font-weight:600;margin:0 0 1rem;color:var(--color-text-base)}.related-list[data-astro-cid-dpgbfi7r]{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.75rem}.related-item[data-astro-cid-dpgbfi7r]{margin:0}.related-link[data-astro-cid-dpgbfi7r]{display:flex;flex-direction:column;gap:.25rem;padding:.75rem;border-radius:.375rem;text-decoration:none;color:var(--color-text-base);transition:background .15s,transform .15s;border-left:3px solid transparent}.related-link[data-astro-cid-dpgbfi7r]:hover{background:var(--color-fill);border-left-color:var(--color-accent)}.related-post-title[data-astro-cid-dpgbfi7r]{font-weight:600;color:var(--color-accent);font-size:.95rem;line-height:1.4}.related-desc[data-astro-cid-dpgbfi7r]{font-size:.85rem;color:var(--color-text-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.post-layout[data-astro-cid-vj4tpspi]{position:relative;width:100%}.post-content[data-astro-cid-vj4tpspi]{width:100%;max-width:var(--app-layout-max-width, 1024px);margin:0 auto}.post-sidebar[data-astro-cid-vj4tpspi]{display:none}@media(min-width:1280px){.post-sidebar[data-astro-cid-vj4tpspi]{display:block;position:fixed;right:max(2rem,calc((100vw - var(--app-layout-max-width, 1024px)) / 2 - 300px));top:5rem;width:240px;max-height:calc(100vh - 8rem)}}@media(min-width:1536px){.post-sidebar[data-astro-cid-vj4tpspi]{right:max(2rem,calc((100vw - var(--app-layout-max-width, 1024px)) / 2 - 320px));width:260px}}@media(min-width:1920px){.post-sidebar[data-astro-cid-vj4tpspi]{right:max(3rem,calc((100vw - var(--app-layout-max-width, 1024px)) / 2 - 360px));width:280px}}
+</style><style>[data-astro-transition-scope="astro-pcwlacsx-1"] { view-transition-name: apifox-supply-chain-attack-post-mortem_3a-your-ssh-keys-may-already-be-compromised; }@layer astro { ::view-transition-old(apifox-supply-chain-attack-post-mortem_3a-your-ssh-keys-may-already-be-compromised) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(apifox-supply-chain-attack-post-mortem_3a-your-ssh-keys-may-already-be-compromised) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(apifox-supply-chain-attack-post-mortem_3a-your-ssh-keys-may-already-be-compromised) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(apifox-supply-chain-attack-post-mortem_3a-your-ssh-keys-may-already-be-compromised) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-pcwlacsx-1"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-pcwlacsx-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-pcwlacsx-1"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-pcwlacsx-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-pcwlacsx-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-pcwlacsx-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-pcwlacsx-1"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-pcwlacsx-1"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-2"] { view-transition-name: \5B89\5168; }@layer astro { ::view-transition-old(\5B89\5168) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\5B89\5168) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\5B89\5168) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\5B89\5168) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-2"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-2"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style><style>[data-astro-transition-scope="astro-36ssibgs-3"] { view-transition-name: \5F00\53D1\6548\7387; }@layer astro { ::view-transition-old(\5F00\53D1\6548\7387) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }::view-transition-new(\5F00\53D1\6548\7387) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back]::view-transition-old(\5F00\53D1\6548\7387) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back]::view-transition-new(\5F00\53D1\6548\7387) { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; } }[data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }[data-astro-transition=back][data-astro-transition-fallback="old"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="old"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeOut; }[data-astro-transition=back][data-astro-transition-fallback="new"] [data-astro-transition-scope="astro-36ssibgs-3"],
+			[data-astro-transition=back][data-astro-transition-fallback="new"][data-astro-transition-scope="astro-36ssibgs-3"] { 
+	animation-duration: 180ms;
+	animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+	animation-fill-mode: both;
+	animation-name: astroFadeIn; }</style></head> <body>  <a id="skip-to-content" href="#main-content" class="absolute start-16 -top-full z-50 bg-background px-3 py-2 text-accent backdrop-blur-lg transition-all focus:top-4">
+Skip to content
+</a> <header class="app-layout flex flex-col items-center justify-between sm:flex-row"> <div id="top-nav-wrap" class="py-4 sm:py-6 border-b border-border relative w-full bg-background flex items-baseline justify-between sm:items-center"> <a href="/en/" class="absolute py-1 text-xl leading-8 font-semibold whitespace-nowrap sm:static sm:my-auto sm:text-2xl sm:leading-none"> Gerald Chen&#39;s Tech Blog </a> <nav id="nav-menu" class="flex w-full flex-col items-center sm:ms-2 sm:flex-row sm:justify-end sm:space-x-4 sm:py-0"> <button id="menu-btn" class="focus-outline self-end p-2 sm:hidden" aria-label="Open Menu" aria-expanded="false" aria-controls="menu-items"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden" id="close-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-menu-deep" id="menu-icon"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 6h16" /><path d="M7 12h13" /><path d="M10 18h10" /></svg> </button> <ul id="menu-items" class="mt-4 grid w-44 grid-cols-2 place-content-center gap-2 [&#38;>li>a]:block [&#38;>li>a]:px-4 [&#38;>li>a]:py-3 [&#38;>li>a]:text-center [&#38;>li>a]:font-medium [&#38;>li>a]:hover:text-accent sm:[&#38;>li>a]:px-2 sm:[&#38;>li>a]:py-1 hidden sm:mt-0 sm:flex sm:w-auto sm:gap-x-5 sm:gap-y-0"> <li class="col-span-2"> <a href="/en/posts/" class="active-nav">
+Posts
+</a> </li> <li class="col-span-2"> <a href="/en/tags/">
+Tags
+</a> </li> <li class="col-span-2"> <a href="/en/about/">
+About
+</a> </li> <li class="col-span-2"> <a href="/en/archives/" title="Archives" aria-label="archives" class="group inline-flex items-center gap-1 hover:text-accent focus-outline flex justify-center p-3 sm:p-1">  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden sm:inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /><path d="M10 12l4 0" /></svg> <span class="sm:sr-only">Archives</span>  </a> </li> <li class="col-span-1 flex items-center justify-center"> <a href="/en/search/" title="Search" aria-label="search" class="group inline-flex items-center gap-1 hover:text-accent focus-outline flex p-3 sm:p-1">  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-search"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg> <span class="sr-only">Search</span>  </a> </li> <li class="col-span-2 flex items-center justify-center sm:col-span-1"> <a id="lang-toggle" href="/posts/blog105_apifox-supply-chain-attack/" data-target-lang="zh" title="切换到中文" aria-label="切换到中文" class="focus-outline whitespace-nowrap p-3 font-medium hover:text-accent sm:p-1 sm:text-sm"> 中文 </a> </li> <li class="col-span-1 flex items-center justify-center"> <button id="theme-btn" class="focus-outline relative size-12 p-4 sm:size-8 hover:[&>svg]:stroke-accent" title="Toggles light & dark" aria-label="auto" aria-live="polite"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-[50%] left-[50%] -translate-[50%] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z" /><path d="M6.343 17.657l-1.414 1.414" /><path d="M6.343 6.343l-1.414 -1.414" /><path d="M17.657 6.343l1.414 -1.414" /><path d="M17.657 17.657l1.414 1.414" /><path d="M4 12h-2" /><path d="M12 4v-2" /><path d="M20 12h2" /><path d="M12 20v2" /></svg> </button> </li> </ul> </nav> </div> </header> <script type="module">function c(){const e=document.querySelector("#menu-btn"),t=document.querySelector("#menu-items"),n=document.querySelector("#menu-icon"),o=document.querySelector("#close-icon");!e||!t||!n||!o||e.addEventListener("click",()=>{const a=e.getAttribute("aria-expanded")==="true";e.setAttribute("aria-expanded",a?"false":"true"),e.setAttribute("aria-label",a?"Open Menu":"Close Menu"),t.classList.toggle("hidden"),n.classList.toggle("hidden"),o.classList.toggle("hidden")})}c();function r(){const e=document.querySelector("#lang-toggle");e?.addEventListener("click",()=>{const t=e.dataset.targetLang;t&&(document.cookie=`preferred_lang=${t}; path=/; max-age=31536000; SameSite=Lax`)})}r();document.addEventListener("astro:after-swap",()=>{c(),r()});</script> <div class="app-layout flex items-center justify-start"><a id="back-button" href="/" class="group inline-flex items-center gap-1 hover:text-accent focus-outline -ms-2 mt-8 mb-2 hover:text-foreground/75"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 rtl:rotate-180"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg><span>Go back</span> </a></div><script type="module">function o(){const t=document.querySelector("#back-button"),e=sessionStorage.getItem("backUrl");e&&t&&(t.href=e)}document.addEventListener("astro:page-load",o);o();</script> <main id="main-content" class="app-layout pb-12" data-pagefind-body data-astro-cid-vj4tpspi> <div class="post-layout" data-astro-cid-vj4tpspi> <div class="post-content" data-astro-cid-vj4tpspi> <h1 class="inline-block text-2xl font-bold text-accent sm:text-3xl" data-astro-cid-vj4tpspi data-astro-transition-scope="astro-pcwlacsx-1"> Apifox Supply Chain Attack Post-Mortem: Your SSH Keys May Already Be Compromised </h1> <div class="my-2 flex items-center gap-2" data-astro-cid-vj4tpspi> <div class="flex items-center gap-x-2 opacity-80"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 min-w-5.5"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M7 14h.013" /><path d="M10.01 14h.005" /><path d="M13.01 14h.005" /><path d="M16.015 14h.005" /><path d="M13.015 17h.005" /><path d="M7.01 17h.005" /><path d="M10.01 17h.005" /></svg>  <time class="text-sm sm:text-base" datetime="2026-03-28T11:00:00.000Z">28 Mar, 2026</time> </div> <span aria-hidden="true" class="max-sm:hidden hidden" data-astro-cid-vj4tpspi>|</span>  </div> <article id="article" class="app-prose mt-8 w-full max-w-app prose-pre:bg-(--shiki-light-bg) dark:prose-pre:bg-(--shiki-dark-bg)" data-astro-cid-vj4tpspi> <p>On March 25, security researcher @ohyishi disclosed a serious incident on X: the Apifox desktop client had been hit by a supply chain attack. The SlowMist security team published a detailed analysis shortly after.</p>
+<p>If you used the Apifox desktop client between <strong>March 4 and March 22, 2026</strong> (Windows, macOS, and Linux are all affected), your SSH private keys, Git credentials, and shell history may already be in someone else’s hands.</p>
+<p>This isn’t a theoretical risk—users on V2EX have already confirmed they were compromised, finding anomalous GitHub login records that appeared while they were asleep.</p>
+<h2 id="what-happened">What Happened</h2>
+<p>Apifox is an Electron-based API collaboration platform that’s widely used among developers in China. On startup, its desktop client loads a JavaScript file from the official CDN:</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="--shiki-light:#24292eff;--shiki-dark:#d6deeb;--shiki-light-bg:#ffffff;--shiki-dark-bg:#011627; overflow-x: auto;--file-name-offset: -0.75rem;" tabindex="0" data-language="text"><code><span class="line"><span>https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js</span></span></code></pre>
+<p>This file was originally a legitimate analytics script, about 34KB in size. But starting March 4, it was intermittently replaced with a poisoned version that ballooned to 77KB—the extra bytes were the malicious code.</p>
+<p>The attacker appended heavily obfuscated malicious JavaScript to the end of the legitimate code. Because the file was hosted on Apifox’s own official CDN, every security check waved it through as a trusted resource.</p>
+<h2 id="breaking-down-the-attack">Breaking Down the Attack</h2>
+<p>The attack chain has four stages:</p>
+<h3 id="stage-1-missing-electron-sandbox">Stage 1: Missing Electron Sandbox</h3>
+<p>Apifox’s Electron desktop app didn’t strictly enable the sandbox option and exposed Node.js APIs to the renderer process. That means JavaScript running in the renderer could do more than manipulate the DOM—it could directly call Node.js system-level APIs like the filesystem and child processes.</p>
+<p>A properly configured Electron app should enable sandbox isolation, so renderer JS can only talk to the main process through a limited interface exposed by a preload script. Apifox skipped this layer of protection, which is what made the attack possible.</p>
+<h3 id="stage-2-cdn-resource-tampering">Stage 2: CDN Resource Tampering</h3>
+<p>The attacker tampered with the JS file on Apifox’s official CDN. This is the critical step—it wasn’t a poisoned npm package or a backdoor hidden in a GitHub repo. They directly modified a static asset on the CDN.</p>
+<p>That means the attacker either breached Apifox’s CDN management system or it was an insider job (there’s been plenty of debate about this on V2EX). Apifox is still investigating the root cause.</p>
+<p>The poisoned version didn’t fire on every load—it had a probabilistic trigger mechanism, which made the problem much harder to spot. Some users ran Apifox daily during the 18-day attack window and never got hit; others opened it once and were compromised.</p>
+<h3 id="stage-3-malicious-payload-execution">Stage 3: Malicious Payload Execution</h3>
+<p>Once loaded, the poisoned script fetched a second-stage payload from an attacker-controlled domain, <code>apifox[.]it[.]com</code>. The domain was deliberately named to look like apifox.com, hosted on Cloudflare, and stayed alive for 18 days.</p>
+<p>After execution, the payload would:</p>
+<ol>
+<li>
+<p><strong>Harvest sensitive data</strong>:</p>
+<ul>
+<li>Everything under <code>~/.ssh/</code> (including private keys)</li>
+<li><code>~/.git-credentials</code> (plaintext Git credentials)</li>
+<li><code>~/.zsh_history</code> and <code>~/.bash_history</code> (command history)</li>
+<li><code>~/.kube/*</code> (Kubernetes configs), <code>~/.npmrc</code> (npm tokens), <code>~/.zshrc</code> (environment variables)</li>
+<li><code>~/.subversion/*</code> (SVN credentials)</li>
+<li>The list of currently running processes</li>
+</ul>
+</li>
+<li>
+<p><strong>Exfiltrate the data</strong>: harvested data was Gzip-compressed, AES-256-GCM encrypted (hardcoded key), Base64-encoded, and sent to <code>apifox[.]it[.]com/event/0/log</code></p>
+</li>
+<li>
+<p><strong>Stay active</strong>: the malicious code had a built-in random timer (30 minutes to 3 hours), repeatedly collecting data and talking to C2 as long as Apifox stayed running. The C2 platform could in theory push arbitrary follow-up payloads, including backdoor installation and lateral movement, though none has been publicly confirmed so far</p>
+</li>
+</ol>
+<h3 id="stage-4-anti-detection-measures">Stage 4: Anti-Detection Measures</h3>
+<p>The attacker put serious effort into code obfuscation:</p>
+<ul>
+<li>Multiple layers of obfuscation applied with <code>javascript-obfuscator</code></li>
+<li>All strings encrypted with RC4 and decrypted dynamically at runtime</li>
+<li>Numeric constants replaced with multi-step arithmetic expressions to evade static analysis</li>
+<li>C2-delivered payloads encrypted with RSA, exfiltrated data encrypted with AES-256-GCM, layered to defeat traffic analysis</li>
+<li>Malicious code appended after legitimate code, exploiting CDN allowlisting to bypass security checks</li>
+</ul>
+<h2 id="blast-radius">Blast Radius</h2>
+<p><strong>Affected users</strong>:</p>
+<ul>
+<li>Everyone who used the Apifox <strong>public SaaS desktop client</strong> between March 4 and March 22, 2026</li>
+<li>All three platforms—Windows, macOS, and Linux—are affected</li>
+<li>The Apifox web version and self-hosted deployments are not affected</li>
+</ul>
+<p><strong>Potentially leaked data</strong>:</p>
+<ul>
+<li>SSH private keys (the <code>~/.ssh/</code> directory)</li>
+<li>Git credentials (<code>~/.git-credentials</code>)</li>
+<li>Shell command history (which may contain plaintext passwords, tokens, etc.)</li>
+<li>Apifox account accessToken</li>
+<li>System process information</li>
+</ul>
+<p>Note that macOS’s TCC mechanism protects user directories like Desktop, Documents, and Downloads, but hidden files like <code>~/.ssh/</code>, <code>~/.git-credentials</code>, and <code>~/.zsh_history</code> are <strong>not covered by TCC</strong>—any application can read them freely. So macOS users face essentially the same risk as Windows and Linux users. Don’t assume you’re safe.</p>
+<h2 id="how-to-check-if-you-were-hit">How to Check If You Were Hit</h2>
+<h3 id="method-1-check-leveldb-storage">Method 1: Check LevelDB Storage</h3>
+<p>The malicious script writes markers into Apifox’s local storage. Check for the <code>rl_mc</code> or <code>rl_headers</code> keys:</p>
+<p><strong>macOS</strong>:</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="--shiki-light:#24292eff;--shiki-dark:#d6deeb;--shiki-light-bg:#ffffff;--shiki-dark-bg:#011627; overflow-x: auto;--file-name-offset: -0.75rem;" tabindex="0" data-language="bash"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">grep</span><span style="--shiki-light:#2B5581;--shiki-dark:#82AAFF"> -arlE</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#ECC48D">rl_mc|rl_headers</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">"</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#C5E478">$HOME</span><span style="--shiki-light:#22863A;--shiki-dark:#ECC48D">/Library/Application Support/apifox/Local Storage/leveldb</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">"</span></span></code></pre>
+<p><strong>Windows (PowerShell)</strong>:</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="--shiki-light:#24292eff;--shiki-dark:#d6deeb;--shiki-light-bg:#ffffff;--shiki-dark-bg:#011627; overflow-x: auto;--file-name-offset: -0.75rem;" tabindex="0" data-language="powershell"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#7FDBCAFF">Select-String</span><span style="--shiki-light:#D32F2F;--shiki-dark:#C792EA"> -</span><span style="--shiki-light:#24292EFF;--shiki-dark:#D6DEEB">Path </span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">"</span><span style="--shiki-light:#22863A;--shiki-dark:#82AAFF">$</span><span style="--shiki-light:#1976D2;--shiki-dark:#82AAFF">env:</span><span style="--shiki-light:#22863A;--shiki-dark:#82AAFF">APPDATA</span><span style="--shiki-light:#22863A;--shiki-dark:#ECC48D">\apifox\Local Storage\leveldb\*</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">"</span><span style="--shiki-light:#D32F2F;--shiki-dark:#C792EA"> -</span><span style="--shiki-light:#24292EFF;--shiki-dark:#D6DEEB">Pattern </span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">"</span><span style="--shiki-light:#22863A;--shiki-dark:#ECC48D">rl_mc</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">"</span><span style="--shiki-light:#D32F2F;--shiki-dark:#7FDBCA">,</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">"</span><span style="--shiki-light:#22863A;--shiki-dark:#ECC48D">rl_headers</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">"</span><span style="--shiki-light:#D32F2F;--shiki-dark:#C792EA"> -</span><span style="--shiki-light:#24292EFF;--shiki-dark:#D6DEEB">List </span><span style="--shiki-light:#D32F2F;--shiki-dark:#7FDBCA">|</span><span style="--shiki-light:#6F42C1;--shiki-dark:#7FDBCAFF"> Select-Object</span><span style="--shiki-light:#24292EFF;--shiki-dark:#D6DEEB"> Path</span></span></code></pre>
+<p><strong>Linux</strong>:</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="--shiki-light:#24292eff;--shiki-dark:#d6deeb;--shiki-light-bg:#ffffff;--shiki-dark-bg:#011627; overflow-x: auto;--file-name-offset: -0.75rem;" tabindex="0" data-language="bash"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">grep</span><span style="--shiki-light:#2B5581;--shiki-dark:#82AAFF"> -arlE</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#ECC48D">rl_mc|rl_headers</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">"</span><span style="--shiki-light:#2B5581;--shiki-dark:#ECC48D"> ~/.config/apifox/Local</span><span style="--shiki-light:#24292EFF;--shiki-dark:#F78C6C">\ </span><span style="--shiki-light:#2B5581;--shiki-dark:#ECC48D">Storage/leveldb</span></span></code></pre>
+<p>If you get any output, you were <strong>confirmed compromised</strong>.</p>
+<h3 id="method-2-check-for-anomalous-connections">Method 2: Check for Anomalous Connections</h3>
+<p>Look for the malicious domain in Apifox’s network persistent state file:</p>
+<p><strong>macOS</strong>:</p>
+<pre class="astro-code astro-code-themes min-light night-owl" style="--shiki-light:#24292eff;--shiki-dark:#d6deeb;--shiki-light-bg:#ffffff;--shiki-dark-bg:#011627; overflow-x: auto;--file-name-offset: -0.75rem;" tabindex="0" data-language="bash"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">grep</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#ECC48D">apifox.it.com</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">"</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD"> "</span><span style="--shiki-light:#22863A;--shiki-dark:#C5E478">$HOME</span><span style="--shiki-light:#22863A;--shiki-dark:#ECC48D">/Library/Application Support/apifox/Network Persistent State</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">"</span></span></code></pre>
+<h3 id="method-3-check-for-system-anomalies">Method 3: Check for System Anomalies</h3>
+<ul>
+<li>Audit the last-access times on your <code>~/.ssh/</code> directory</li>
+<li>Check <code>crontab -l</code> (Linux/macOS) for unexpected scheduled jobs</li>
+<li>On macOS, check <code>~/Library/LaunchAgents/</code> for unknown plist files</li>
+<li>On Linux, check <code>/etc/systemd/system/</code> for anomalous services</li>
+</ul>
+<h2 id="remediation">Remediation</h2>
+<p>If you’ve confirmed compromise—or can’t rule it out—treat everything as leaked:</p>
+<ol>
+<li><strong>SSH keys</strong>: generate a new key pair, replace the public key on every server and Git platform (GitHub, GitLab), and revoke the old keys</li>
+<li><strong>Git credentials</strong>: reset Personal Access Tokens on all Git platforms</li>
+<li><strong>API keys</strong>: rotate every API key and password that ever appeared in your shell history. K8s users should reset kubeconfig; npm users should reset npm tokens</li>
+<li><strong>Apifox account</strong>: log out and back in to force-invalidate the old token, and change your password</li>
+<li><strong>Clear malicious data</strong>: run this in the Apifox developer tools console:
+<pre class="astro-code astro-code-themes min-light night-owl" style="--shiki-light:#24292eff;--shiki-dark:#d6deeb;--shiki-light-bg:#ffffff;--shiki-dark-bg:#011627; overflow-x: auto;--file-name-offset: -0.75rem;" tabindex="0" data-language="javascript"><code><span class="line"><span style="--shiki-light:#1976D2;--shiki-light-font-style:inherit;--shiki-dark:#7FDBCA;--shiki-dark-font-style:italic">localStorage</span><span style="--shiki-light:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">.</span><span style="--shiki-light:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">removeItem</span><span style="--shiki-light:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">'</span><span style="--shiki-light:#22863A;--shiki-dark:#ECC48D">_rl_headers</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">'</span><span style="--shiki-light:#24292EFF;--shiki-dark:#D6DEEB">);</span></span>
+<span class="line"><span style="--shiki-light:#1976D2;--shiki-light-font-style:inherit;--shiki-dark:#7FDBCA;--shiki-dark-font-style:italic">localStorage</span><span style="--shiki-light:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#C792EA;--shiki-dark-font-style:italic">.</span><span style="--shiki-light:#6F42C1;--shiki-light-font-style:inherit;--shiki-dark:#82AAFF;--shiki-dark-font-style:italic">removeItem</span><span style="--shiki-light:#24292EFF;--shiki-dark:#D6DEEB">(</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">'</span><span style="--shiki-light:#22863A;--shiki-dark:#ECC48D">_rl_mc</span><span style="--shiki-light:#22863A;--shiki-dark:#D9F5DD">'</span><span style="--shiki-light:#24292EFF;--shiki-dark:#D6DEEB">);</span></span></code></pre>
+</li>
+<li><strong>Upgrade the client</strong>: update to v2.8.19 or later</li>
+<li><strong>Network blocking</strong>: block <code>apifox.it.com</code> and all its subdomains at the firewall or DNS level</li>
+</ol>
+<h2 id="the-deeper-problems">The Deeper Problems</h2>
+<p>This incident exposes a few issues every developer should care about:</p>
+<h3 id="the-security-risk-of-electron-apps">The Security Risk of Electron Apps</h3>
+<p>A huge number of developer tools are built on Electron (VS Code, Postman, Slack, Discord…). Electron itself isn’t the problem—the problem is that many apps don’t configure their security policies correctly:</p>
+<ul>
+<li>Renderer sandbox not enabled (<code>sandbox: true</code>)</li>
+<li><code>nodeIntegration</code> not disabled</li>
+<li>No limits on what the <code>preload</code> script can do</li>
+<li>Loading uncontrolled remote resources</li>
+</ul>
+<p>A misconfigured Electron app is essentially a browser with system privileges—any JS that gets loaded can read and write files and execute commands.</p>
+<h3 id="a-broken-cdn-trust-chain">A Broken CDN Trust Chain</h3>
+<p>We habitually trust resources on the “official CDN.” But this attack proves the CDN itself can be compromised. Judging trustworthiness by domain alone isn’t enough—you need SRI (Subresource Integrity) checks and content signing on top.</p>
+<h3 id="probabilistic-triggering-makes-detection-harder">Probabilistic Triggering Makes Detection Harder</h3>
+<p>The attacker deliberately made the malicious behavior fire only some of the time, which dramatically extended the time to discovery. A security team running routine checks might just happen to not trigger it; a user who occasionally hits something weird might chalk it up to network issues.</p>
+<h3 id="was-this-really-a-supply-chain-attack">Was This Really a “Supply Chain Attack”?</h3>
+<p>Plenty of developers on V2EX and elsewhere have questioned whether this qualifies as a “supply chain attack” at all. Strictly speaking, a supply chain attack means an upstream link in the trust chain was compromised (a poisoned npm package, a hijacked CI/CD pipeline). Here, it was Apifox’s own CDN that got tampered with—which looks more like a direct breach or an internal issue. The community has criticized Apifox’s “supply chain attack” framing as deflecting blame.</p>
+<p>For end users, though, it doesn’t matter which category the attack falls into. The impact is the same: software you trusted became the attack vector.</p>
+<h2 id="takeaways-for-developers">Takeaways for Developers</h2>
+<ol>
+<li><strong>Principle of least privilege</strong>: developer tools don’t need full disk access—macOS users shouldn’t grant permissions casually</li>
+<li><strong>Key hygiene</strong>: protect SSH private keys with a passphrase, and use a password manager (1Password, Bitwarden) instead of plaintext files</li>
+<li><strong>Rotate credentials regularly</strong>: even without a security incident, critical credentials should be rotated on a schedule</li>
+<li><strong>Watch security advisories</strong>: subscribe to the security notification channels of the tools you use</li>
+<li><strong>Consider alternatives</strong>: if your API testing needs are simple, curl + jq, Hoppscotch (open source), and Bruno (local-first) are all solid options</li>
+</ol>
+<p>Every desktop app you install is a potential attack surface. Apifox won’t be the last.</p>
+<p>One interesting detail: security researchers found that the Stage-1 entry code used 7 layers of obfuscation, but the Stage-2 payload delivered by C2 retained full Chinese comments (including tutorial-style notes like “the salt must also be provided”). The attacker poured effort into obfuscating the front end but left the back end in plaintext—an OPSEC inconsistency that’s either sloppiness in a team operation, or something else entirely.</p>
+<hr>
+<p><strong>IoC (Indicators of Compromise)</strong>:</p>
+<ul>
+<li>Malicious domain: <code>apifox[.]it[.]com</code> and its subdomains</li>
+<li>Tampered file: <code>cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js</code> (the 77KB version)</li>
+<li>SHA256: <code>91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1</code></li>
+</ul>
+<p><strong>References</strong>:</p>
+<ul>
+<li><a href="https://slowmist.medium.com/security-alert-supply-chain-attack-on-apifox-desktop-client-via-compromised-official-cdn-script-bc3870992564">SlowMist security team analysis</a></li>
+<li><a href="https://mp.weixin.qq.com/s/GpACQdnhVNsMn51cm4hZig">Apifox official announcement</a></li>
+<li><a href="https://www.v2ex.com/t/1201146">V2EX community discussion</a></li>
+</ul> </article> <section class="related-posts" data-pagefind-ignore data-astro-cid-dpgbfi7r><h2 class="related-title" data-astro-cid-dpgbfi7r>Related Posts</h2><ul class="related-list" data-astro-cid-dpgbfi7r><li class="related-item" data-astro-cid-dpgbfi7r><a href="/en/posts/blog199_glm-5-2-cyber-benchmark-scenario-specific-breakthrough/" class="related-link" data-astro-cid-dpgbfi7r><span class="related-post-title" data-astro-cid-dpgbfi7r>GLM 5.2 Beats Claude on a Cyber Benchmark: Is China&#39;s &#39;Scenario-Specific Superiority&#39; the New Inflection Point?</span><span class="related-desc" data-astro-cid-dpgbfi7r>Zhipu&#39;s GLM 5.2 hit 39% F1 on Semgrep&#39;s IDOR vulnerability detection benchmark, beating every Claude Code Opus version at roughly 1/6 the per-finding cost — while still trailing about 2 points on aggregate benchmarks. Kimi and Qwen reproduce the same pattern. Is &quot;scenario-specific superiority&quot; the 2026 inflection point for Chinese models?</span></a></li><li class="related-item" data-astro-cid-dpgbfi7r><a href="/en/posts/blog176_electron-private-key-storage/" class="related-link" data-astro-cid-dpgbfi7r><span class="related-post-title" data-astro-cid-dpgbfi7r>How Electron Desktop Wallets Should Store Private Keys: safeStorage Isn&#39;t Enough — Learn from MetaMask and Phantom</span><span class="related-desc" data-astro-cid-dpgbfi7r>A few days ago I wrote a teardown of safeStorage — the conclusion was that it&#39;s fine for ordinary API keys. But what if you need to store a wallet private key worth tens of thousands of dollars? safeStorage falls short. This post looks at how real desktop wallets like MetaMask and Phantom do it, and why the trio of &quot;encryption + master password + short-lived unlock&quot; is unavoidable.</span></a></li><li class="related-item" data-astro-cid-dpgbfi7r><a href="/en/posts/blog175_claude-code-trading-bot-dogfooding/" class="related-link" data-astro-cid-dpgbfi7r><span class="related-post-title" data-astro-cid-dpgbfi7r>Letting Claude Code Touch My Real-Money Trading Code: The Lines I Refused to Cross</span><span class="related-desc" data-astro-cid-dpgbfi7r>I&#39;ve spent 10 months using Claude Code on a real-money futures trading project. This is an honest retrospective: the AI never touched the money directly (I&#39;m not that bold), but it did write code on the critical order/stop-loss/close-position paths. Here are the boundaries I held, where AI genuinely helped, and the moments I had to take over.</span></a></li></ul></section> <hr class="my-8 border-dashed" data-astro-cid-vj4tpspi>  <ul class="mt-4 mb-8 flex flex-wrap gap-4 sm:my-8" data-astro-cid-vj4tpspi> <li> <a href="/tags/安全/" class="flex items-center gap-0.5 border-b-2 border-dashed border-foreground hover:-mt-0.5 hover:border-accent hover:text-accent focus-visible:border-none focus-visible:text-accent text-sm" data-astro-transition-scope="astro-36ssibgs-2"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-80 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg> 安全 </a> </li><li> <a href="/tags/开发效率/" class="flex items-center gap-0.5 border-b-2 border-dashed border-foreground hover:-mt-0.5 hover:border-accent hover:text-accent focus-visible:border-none focus-visible:text-accent text-sm" data-astro-transition-scope="astro-36ssibgs-3"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-80 size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 9l14 0" /><path d="M5 15l14 0" /><path d="M11 4l-4 16" /><path d="M17 4l-4 16" /></svg> 开发效率 </a> </li> </ul> <div id="btt-btn-container" class="fixed end-4 bottom-8 z-50 md:sticky md:end-auto md:float-end md:me-1 translate-y-14 opacity-0 transition duration-500"> <button data-button="back-to-top" class="group relative bg-background px-2 py-1 size-14 rounded-full shadow-xl md:h-8 md:w-fit md:rounded-md md:shadow-none md:focus-visible:rounded-none md:bg-background/35 md:bg-clip-padding md:backdrop-blur-lg"> <span id="progress-indicator" class="absolute inset-0 -z-10 block size-14 scale-110 rounded-full bg-transparent md:hidden md:h-8 md:rounded-md"></span> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block rotate-90 md:hidden"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <span class="sr-only text-sm group-hover:text-accent md:not-sr-only"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-4"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 5l0 14" /><path d="M16 9l-4 -4" /><path d="M8 9l4 -4" /></svg>
+Back To Top
+</span> </button> </div> <script data-astro-rerun>
+  /** Scrolls the document to the top when
+   * the "Back to Top" button is clicked. */
+  function backToTop() {
+    const rootElement = document.documentElement;
+    const btnContainer = document.querySelector("#btt-btn-container");
+    const backToTopBtn = document.querySelector("[data-button='back-to-top']");
+    const progressIndicator = document.querySelector("#progress-indicator");
+
+    if (!rootElement || !btnContainer || !backToTopBtn || !progressIndicator)
+      return;
+
+    // Attach click event handler for back-to-top button
+    backToTopBtn.addEventListener("click", () => {
+      document.body.scrollTop = 0; // For Safari
+      document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    });
+
+    // Handle button visibility according to scroll position
+    let lastVisible = null;
+    function handleScroll() {
+      const scrollTotal = rootElement.scrollHeight - rootElement.clientHeight;
+      const scrollTop = rootElement.scrollTop;
+      const scrollPercent = Math.floor((scrollTop / scrollTotal) * 100);
+
+      progressIndicator.style.setProperty(
+        "background-image",
+        `conic-gradient(var(--accent), var(--accent) ${scrollPercent}%, transparent ${scrollPercent}%)`
+      );
+
+      const isVisible = scrollTop / scrollTotal > 0.3;
+
+      if (isVisible !== lastVisible) {
+        btnContainer.classList.toggle("opacity-100", isVisible);
+        btnContainer.classList.toggle("translate-y-0", isVisible);
+        btnContainer.classList.toggle("opacity-0", !isVisible);
+        btnContainer.classList.toggle("translate-y-14", !isVisible);
+        lastVisible = isVisible;
+      }
+    }
+
+    let ticking = false;
+    document.addEventListener("scroll", () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+  }
+  backToTop();
+</script> <div class="flex flex-none flex-col items-center justify-center gap-1 md:items-start"><span class="italic">Share this post on:</span><div class="text-center"><a href="https://wa.me/?text=https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/" title="Share this post via WhatsApp" class="group inline-flex items-center gap-1 hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" /><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" /></svg><span class="sr-only">Share this post via WhatsApp</span> </a><a href="https://www.facebook.com/sharer.php?u=https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/" title="Share this post on Facebook" class="group inline-flex items-center gap-1 hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3" /></svg><span class="sr-only">Share this post on Facebook</span> </a><a href="https://x.com/intent/post?url=https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/" title="Share this post on X" class="group inline-flex items-center gap-1 hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg><span class="sr-only">Share this post on X</span> </a><a href="https://t.me/share/url?url=https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/" title="Share this post via Telegram" class="group inline-flex items-center gap-1 hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4" /></svg><span class="sr-only">Share this post via Telegram</span> </a><a href="https://pinterest.com/pin/create/button/?url=https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/" title="Share this post on Pinterest" class="group inline-flex items-center gap-1 hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M8 20l4 -9" /><path d="M10.7 14c.437 1.263 1.43 2 2.55 2c2.071 0 3.75 -1.554 3.75 -4a5 5 0 1 0 -9.7 1.7" /><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /></svg><span class="sr-only">Share this post on Pinterest</span> </a><a href="mailto:?subject=See%20this%20post&#38;body=https://chenguangliang.com/en/posts/blog105_apifox-supply-chain-attack/" title="Share this post via email" class="group inline-flex items-center gap-1 hover:text-accent scale-90 p-2 hover:rotate-6 sm:p-1"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg><span class="sr-only">Share this post via email</span> </a></div></div> <hr class="my-6 border-dashed" data-astro-cid-vj4tpspi> <!-- Previous/Next Post Buttons --> <div data-pagefind-ignore class="grid grid-cols-1 gap-6 sm:grid-cols-2" data-astro-cid-vj4tpspi> <a href="/en/posts/blog109_flash-moe-local-inference/" class="flex w-full gap-1 hover:opacity-75" data-astro-cid-vj4tpspi> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none rtl:rotate-180" data-astro-cid-vj4tpspi="true"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 6l-6 6l6 6" /></svg> <div data-astro-cid-vj4tpspi> <span data-astro-cid-vj4tpspi>Previous Post</span> <div class="text-sm text-accent/85" data-astro-cid-vj4tpspi>Flash-MoE: Running a 397B-Parameter Model on a MacBook at 4.4 token/s</div> </div> </a> <a href="/en/posts/blog101_github-squad-multi-agent/" class="flex w-full justify-end gap-1 text-end hover:opacity-75 sm:col-start-2" data-astro-cid-vj4tpspi> <div data-astro-cid-vj4tpspi> <span data-astro-cid-vj4tpspi>Next Post</span> <div class="text-sm text-accent/85" data-astro-cid-vj4tpspi>GitHub Squad: Drop an AI Dev Team Straight into Your Repo</div> </div> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block flex-none rtl:rotate-180" data-astro-cid-vj4tpspi="true"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 6l6 6l-6 6" /></svg> </a> </div> </div> <!-- Table of Contents Sidebar --> <div class="post-sidebar" data-astro-cid-vj4tpspi> <aside class="toc-container" data-astro-cid-xvrfupwn><div class="toc-wrapper" data-astro-cid-xvrfupwn><h2 class="toc-title" data-astro-cid-xvrfupwn>Table of Contents</h2><nav class="toc-nav" data-astro-cid-xvrfupwn><ul class="toc-list" data-astro-cid-xvrfupwn><li class="toc-item toc-level-2" data-astro-cid-xvrfupwn><a href="#what-happened" class="toc-link" data-heading-id="what-happened" data-astro-cid-xvrfupwn>What Happened</a></li><li class="toc-item toc-level-2" data-astro-cid-xvrfupwn><a href="#breaking-down-the-attack" class="toc-link" data-heading-id="breaking-down-the-attack" data-astro-cid-xvrfupwn>Breaking Down the Attack</a></li><li class="toc-item toc-level-3" data-astro-cid-xvrfupwn><a href="#stage-1-missing-electron-sandbox" class="toc-link" data-heading-id="stage-1-missing-electron-sandbox" data-astro-cid-xvrfupwn>Stage 1: Missing Electron Sandbox</a></li><li class="toc-item toc-level-3" data-astro-cid-xvrfupwn><a href="#stage-2-cdn-resource-tampering" class="toc-link" data-heading-id="stage-2-cdn-resource-tampering" data-astro-cid-xvrfupwn>Stage 2: CDN Resource Tampering</a></li><li class="toc-item toc-level-3" data-astro-cid-xvrfupwn><a href="#stage-3-malicious-payload-execution" class="toc-link" data-heading-id="stage-3-malicious-payload-execution" data-astro-cid-xvrfupwn>Stage 3: Malicious Payload Execution</a></li><li class="toc-item toc-level-3" data-astro-cid-xvrfupwn><a href="#stage-4-anti-detection-measures" class="toc-link" data-heading-id="stage-4-anti-detection-measures" data-astro-cid-xvrfupwn>Stage 4: Anti-Detection Measures</a></li><li class="toc-item toc-level-2" data-astro-cid-xvrfupwn><a href="#blast-radius" class="toc-link" data-heading-id="blast-radius" data-astro-cid-xvrfupwn>Blast Radius</a></li><li class="toc-item toc-level-2" data-astro-cid-xvrfupwn><a href="#how-to-check-if-you-were-hit" class="toc-link" data-heading-id="how-to-check-if-you-were-hit" data-astro-cid-xvrfupwn>How to Check If You Were Hit</a></li><li class="toc-item toc-level-3" data-astro-cid-xvrfupwn><a href="#method-1-check-leveldb-storage" class="toc-link" data-heading-id="method-1-check-leveldb-storage" data-astro-cid-xvrfupwn>Method 1: Check LevelDB Storage</a></li><li class="toc-item toc-level-3" data-astro-cid-xvrfupwn><a href="#method-2-check-for-anomalous-connections" class="toc-link" data-heading-id="method-2-check-for-anomalous-connections" data-astro-cid-xvrfupwn>Method 2: Check for Anomalous Connections</a></li><li class="toc-item toc-level-3" data-astro-cid-xvrfupwn><a href="#method-3-check-for-system-anomalies" class="toc-link" data-heading-id="method-3-check-for-system-anomalies" data-astro-cid-xvrfupwn>Method 3: Check for System Anomalies</a></li><li class="toc-item toc-level-2" data-astro-cid-xvrfupwn><a href="#remediation" class="toc-link" data-heading-id="remediation" data-astro-cid-xvrfupwn>Remediation</a></li><li class="toc-item toc-level-2" data-astro-cid-xvrfupwn><a href="#the-deeper-problems" class="toc-link" data-heading-id="the-deeper-problems" data-astro-cid-xvrfupwn>The Deeper Problems</a></li><li class="toc-item toc-level-3" data-astro-cid-xvrfupwn><a href="#the-security-risk-of-electron-apps" class="toc-link" data-heading-id="the-security-risk-of-electron-apps" data-astro-cid-xvrfupwn>The Security Risk of Electron Apps</a></li><li class="toc-item toc-level-3" data-astro-cid-xvrfupwn><a href="#a-broken-cdn-trust-chain" class="toc-link" data-heading-id="a-broken-cdn-trust-chain" data-astro-cid-xvrfupwn>A Broken CDN Trust Chain</a></li><li class="toc-item toc-level-3" data-astro-cid-xvrfupwn><a href="#probabilistic-triggering-makes-detection-harder" class="toc-link" data-heading-id="probabilistic-triggering-makes-detection-harder" data-astro-cid-xvrfupwn>Probabilistic Triggering Makes Detection Harder</a></li><li class="toc-item toc-level-3" data-astro-cid-xvrfupwn><a href="#was-this-really-a-supply-chain-attack" class="toc-link" data-heading-id="was-this-really-a-supply-chain-attack" data-astro-cid-xvrfupwn>Was This Really a “Supply Chain Attack”?</a></li><li class="toc-item toc-level-2" data-astro-cid-xvrfupwn><a href="#takeaways-for-developers" class="toc-link" data-heading-id="takeaways-for-developers" data-astro-cid-xvrfupwn>Takeaways for Developers</a></li></ul></nav></div></aside><script type="module">function l(){const o=document.querySelectorAll(".toc-link"),c=document.querySelectorAll("h2[id], h3[id]");if(o.length===0||c.length===0)return;function s(){let e=null;const r=window.scrollY+100;c.forEach(t=>{const n=t.offsetTop;r>=n&&(e=t)}),o.forEach(t=>{t.classList.remove("active"),e&&t.getAttribute("data-heading-id")===e.id&&t.classList.add("active")})}o.forEach(e=>{e.addEventListener("click",r=>{r.preventDefault();const t=e.getAttribute("href")?.slice(1);if(t){const n=document.getElementById(t);n&&(n.scrollIntoView({behavior:"smooth",block:"start"}),history.pushState(null,"",`#${t}`))}})});let i=!1;window.addEventListener("scroll",()=>{i||(window.requestAnimationFrame(()=>{s(),i=!1}),i=!0)}),s()}document.addEventListener("DOMContentLoaded",l);document.addEventListener("astro:page-load",l);</script> </div> </div> </main> <footer class="app-layout mt-auto" data-astro-cid-vj4tpspi="true"> <div class="py-6 sm:py-4 border-t border-border flex flex-col items-center justify-between sm:flex-row-reverse"> <div class="flex flex-wrap items-center gap-1"> <a href="https://github.com/geraldchen890806/blog" title="陈广亮的技术博客 on GitHub" class="group inline-flex items-center gap-1 hover:text-accent p-2 hover:rotate-6 sm:p-1">  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" /></svg> <span class="sr-only">陈广亮的技术博客 on GitHub</span>  </a><a href="https://x.com/geraldchen89" title="陈广亮的技术博客 on X" class="group inline-flex items-center gap-1 hover:text-accent p-2 hover:rotate-6 sm:p-1">  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg> <span class="sr-only">陈广亮的技术博客 on X</span>  </a><a href="https://www.linkedin.com/in/%E5%B9%BF%E4%BA%AE-%E9%99%88-297182102/" title="陈广亮的技术博客 on LinkedIn" class="group inline-flex items-center gap-1 hover:text-accent p-2 hover:rotate-6 sm:p-1">  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M8 11v5" /><path d="M8 8v.01" /><path d="M12 16v-5" /><path d="M16 16v-3a2 2 0 1 0 -4 0" /><path d="M3 7a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4z" /></svg> <span class="sr-only">陈广亮的技术博客 on LinkedIn</span>  </a><a href="mailto:geraldchen890806@gmail.com" title="Send an email to 陈广亮的技术博客" class="group inline-flex items-center gap-1 hover:text-accent p-2 hover:rotate-6 sm:p-1">  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block size-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" /><path d="M3 7l9 6l9 -6" /></svg> <span class="sr-only">Send an email to 陈广亮的技术博客</span>  </a> </div> <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row"> <span>Copyright &#169; 2026</span> <span class="hidden sm:inline">&nbsp;|&nbsp;</span> <span>All rights reserved.</span> <span class="hidden sm:inline">&nbsp;|&nbsp;</span> <a href="/en/privacy-policy/" class="hover:text-accent underline decoration-dashed underline-offset-4">Privacy Policy</a> <span class="hidden sm:inline">&nbsp;|&nbsp;</span> <a href="/en/contact/" class="hover:text-accent underline decoration-dashed underline-offset-4">Contact</a> </div> </div> </footer>  <!-- Load full theme logic --> <script type="module">const d="theme",r="light",m="dark";function i(){const e=localStorage.getItem(d);return e||(window.matchMedia("(prefers-color-scheme: dark)").matches?m:r)}let t=window.theme?.themeValue??i();function c(){localStorage.setItem(d,t),o()}function o(){document.firstElementChild?.setAttribute("data-theme",t),document.querySelector("#theme-btn")?.setAttribute("aria-label",t);const e=document.body;if(e){const n=window.getComputedStyle(e).backgroundColor;document.querySelector("meta[name='theme-color']")?.setAttribute("content",n)}}window.theme?(window.theme.setPreference=c,window.theme.reflectPreference=o):window.theme={themeValue:t,setPreference:c,reflectPreference:o,getTheme:()=>t,setTheme:e=>{t=e}};o();function s(){o(),document.querySelector("#theme-btn")?.addEventListener("click",()=>{t=t===r?m:r,window.theme?.setTheme(t),c()})}s();document.addEventListener("astro:after-swap",s);document.addEventListener("astro:before-swap",e=>{const a=e,n=document.querySelector("meta[name='theme-color']")?.getAttribute("content");n&&a.newDocument.querySelector("meta[name='theme-color']")?.setAttribute("content",n)});window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",({matches:e})=>{t=e?m:r,window.theme?.setTheme(t),c()});</script> </body> </html>  <script data-astro-rerun>
+  /** Create a progress indicator
+   *  at the top */
+  function createProgressBar() {
+    // Create the main container div
+    const progressContainer = document.createElement("div");
+    progressContainer.className =
+      "progress-container fixed top-0 z-10 h-1 w-full bg-background";
+
+    // Create the progress bar div
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar h-1 w-0 bg-accent";
+    progressBar.id = "myBar";
+
+    // Append the progress bar to the progress container
+    progressContainer.appendChild(progressBar);
+
+    // Append the progress container to the document body or any other desired parent element
+    document.body.appendChild(progressContainer);
+  }
+  createProgressBar();
+
+  /** Update the progress bar
+   *  when user scrolls */
+  function updateScrollProgress() {
+    document.addEventListener("scroll", () => {
+      const winScroll =
+        document.body.scrollTop || document.documentElement.scrollTop;
+      const height =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      if (document) {
+        const myBar = document.getElementById("myBar");
+        if (myBar) {
+          myBar.style.width = scrolled + "%";
+        }
+      }
+    });
+  }
+  updateScrollProgress();
+
+  /** Attaches links to headings in the document,
+   *  allowing sharing of sections easily */
+  function addHeadingLinks() {
+    const headings = Array.from(
+      document.querySelectorAll("h2, h3, h4, h5, h6")
+    );
+    for (const heading of headings) {
+      heading.classList.add("group");
+      const link = document.createElement("a");
+      link.className =
+        "heading-link ms-2 no-underline opacity-75 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100";
+      link.href = "#" + heading.id;
+
+      const span = document.createElement("span");
+      span.ariaHidden = "true";
+      span.innerText = "#";
+      link.appendChild(span);
+      heading.appendChild(link);
+    }
+  }
+  addHeadingLinks();
+
+  /** Attaches copy buttons to code blocks in the document,
+   * allowing users to copy code easily. */
+  function attachCopyButtons() {
+    const copyButtonLabel = "Copy";
+    const codeBlocks = Array.from(document.querySelectorAll("pre"));
+
+    for (const codeBlock of codeBlocks) {
+      const wrapper = document.createElement("div");
+      wrapper.style.position = "relative";
+
+      // Check if --file-name-offset custom property exists
+      const computedStyle = getComputedStyle(codeBlock);
+      const hasFileNameOffset =
+        computedStyle.getPropertyValue("--file-name-offset").trim() !== "";
+
+      // Determine the top positioning class
+      const topClass = hasFileNameOffset
+        ? "top-(--file-name-offset)"
+        : "-top-3";
+
+      const copyButton = document.createElement("button");
+      copyButton.className = `copy-code absolute end-3 ${topClass} rounded bg-muted border border-muted px-2 py-1 text-xs leading-4 text-foreground font-medium`;
+      copyButton.innerHTML = copyButtonLabel;
+      codeBlock.setAttribute("tabindex", "0");
+      codeBlock.appendChild(copyButton);
+
+      // wrap codebock with relative parent element
+      codeBlock?.parentNode?.insertBefore(wrapper, codeBlock);
+      wrapper.appendChild(codeBlock);
+
+      copyButton.addEventListener("click", async () => {
+        await copyCode(codeBlock, copyButton);
+      });
+    }
+
+    async function copyCode(block, button) {
+      const code = block.querySelector("code");
+      const text = code?.innerText;
+
+      await navigator.clipboard.writeText(text ?? "");
+
+      // visual feedback that task is completed
+      button.innerText = "Copied";
+
+      setTimeout(() => {
+        button.innerText = copyButtonLabel;
+      }, 700);
+    }
+  }
+  attachCopyButtons();
+
+  /* Go to page start after page swap */
+  document.addEventListener("astro:after-swap", () =>
+    window.scrollTo({ left: 0, top: 0, behavior: "instant" })
+  );
+
+  /* Mark post as read */
+  function markPostAsRead() {
+    // Remove trailing slash to match data-post-path format
+    const postId = window.location.pathname.replace(/\/$/, '');
+    const readPosts = JSON.parse(localStorage.getItem('readPosts') || '[]');
+    
+    if (!readPosts.includes(postId)) {
+      readPosts.push(postId);
+      localStorage.setItem('readPosts', JSON.stringify(readPosts));
+    }
+  }
+  
+  // Mark as read after a short delay (user has started reading)
+  setTimeout(markPostAsRead, 3000);
+</script>

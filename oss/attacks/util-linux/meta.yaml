@@ -4,20 +4,28 @@
     The util-linux 2.9g source archive was replaced on an official distribution site during
     the same 1999 advisory window as the tcp-wrappers compromise.
   story: |
-    In January 1999, the util-linux 2.9g source archive on `ftp.win.tue.nl` was found to be a trojaned replacement. The report came days after the tcp-wrappers compromise on the same server. The trusted FTP host, not a random mirror, was the failed boundary.
+    On January 24, 1999, the util-linux 2.9g source archive on `ftp.win.tue.nl` was found to be a trojaned replacement; CERT later placed the trojan on the server between January 22 and January 24. The report came days after the tcp-wrappers compromise on the same server. The trusted FTP host, not a random mirror, was the failed boundary.
 
-    The modified archive changed `login-utils/login.c`. A new `checkname()` path ran during login. If the supplied username began with `#!`, the code built `/bin/<name>` and executed it. That turned an ordinary login prompt into a command trigger for anyone who knew the convention.
+    The modified archive changed `login-utils/login.c`, and the published diff also touched `install-sh` and the `disk-utils` and `misc-utils` Makefiles. A new `checkname()` path ran on the supplied username before any password was checked. If that username began with `#!`, the code built `/bin/<name>` and executed it. CERT put the consequence plainly: the change gave anyone with access to a login prompt the capability of executing commands. Brouwer was blunter. Anybody who logged in with the name `#!sh` got a root shell, no credentials required.
 
     The same function also forked a reporting process. It resolved `mail.hotmail.com`, spoke SMTP, and sent host and UID data to a Hotmail address. It left `/var/tmp/.fmlock0` as a marker and exposed `HELO 127.0.0.1` as a simple detection string.
 
     The maintainer restored a clean 2.9g archive and warned that nothing on the compromised machine should be trusted. CERT later folded util-linux into CA-1999-02 and advised users to move to util-linux 2.9h with signature verification. The lesson was plain: timestamps and familiar paths were not integrity.
-  start_date: 1999-01-21
-  end_date: 1999-01-22
+  pull_quote:
+    text: >-
+      The trojaned `util-linux-2.9g.tar.gz` matched the original's size and
+      timestamp, so the FTP listing looked untouched. CERT's check was
+      `strings /bin/login | grep HELO`, run on the binary you had already
+      installed.
+    caption: same size, same timestamp
+    after: 3
+  start_date: 1999-01-22
+  end_date: 1999-01-24
   target:
     name: util-linux
-    kind: application
-    website: https://ftp.win.tue.nl
     repo: https://github.com/util-linux/util-linux
+    kind: application
+    website: https://www.kernel.org/pub/linux/utils/util-linux/
   actor:
     name: Unknown attacker
     kind: unknown
@@ -36,18 +44,19 @@
   - id: util-linux
     name: util-linux
     kind: source_archive
-    website: https://ftp.win.tue.nl
-    repo: https://github.com/util-linux/util-linux
-    start_date: 1999-01-21
-    end_date: 1999-01-22
+    website: https://www.kernel.org/pub/linux/utils/util-linux/
+    start_date: 1999-01-22
+    end_date: 1999-01-24
     versions:
     - 2.9g
     locations:
-    - uri: https://github.com/util-linux/util-linux
+    - uri: ftp://ftp.win.tue.nl/pub/linux/utils/util-linux/util-linux-2.9g.tar.gz
+      role: distribution
+    - uri: https://seclists.org/bugtraq/1999/Jan/286
       role: mirror
     indicators:
     - kind: observable
-      value: ftp://ftp.win.tue.nl/pub/linux-local/utils/util-linux-2.9g.tar.gz
+      value: ftp://ftp.win.tue.nl/pub/linux/utils/util-linux/util-linux-2.9g.tar.gz
     - kind: file
       value: login-utils/login.c
     - kind: function
@@ -58,6 +67,20 @@
       value: /var/tmp/.fmlock0
     - kind: domain
       value: mail.hotmail.com
+    - kind: email
+      value: xul@hotmail.com
+    - kind: email
+      value: wlogain@hotmail.com
+    notes:
+    - The trojaned login.c mailed to `wlogain@hotmail.com` (RCPT TO) from a forged
+      `xul@hotmail.com` (MAIL FROM) after `HELO 127.0.0.1`.
+    - Andries Brouwer published MD5 ab409a6ac5a775a4b04b8e27f6c86933 for the clean
+      util-linux-2.9g.tar.gz he restored. That digest is a known-good baseline, not an
+      attack indicator; neither Brouwer nor CERT published a hash for the trojaned archive.
+    - Brouwer's announcement gave the download path as
+      ftp://ftp.win.tue.nl/pub/linux/util/util-linux-2.9g.tar.gz, while CERT CA-1999-02
+      cited pub/linux/utils/util-linux/ for the 2.9h replacement. The CERT form is used
+      here.
   references:
   - url: https://seclists.org/bugtraq/1999/Jan/286
     title: 'Bugtraq: Re: util-linux compromised'
