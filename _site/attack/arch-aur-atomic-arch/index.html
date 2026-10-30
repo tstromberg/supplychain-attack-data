@@ -25,7 +25,7 @@
     <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
     <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration, backdoor</div>
-    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
     <div class="meta-item"><strong>Campaigns:</strong>
       
@@ -35,7 +35,7 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">Starting 2026-06-11 attackers used the AUR&#39;s orphaned-package adoption process to take over abandoned packages, then rewrote their PKGBUILDs to npm install atomic-lockfile during the build. The Rust payload harvested credentials and loaded an eBPF rootkit.</p>
+  <p class="synopsis">Starting 2026-06-11 attackers used the AUR&#39;s orphaned-package adoption process to take over abandoned packages, then added a pacman install scriptlet that npm-installed atomic-lockfile as root at install time. The Rust payload stole credentials and loaded an eBPF rootkit.</p>
 
   
   <h2>Story</h2>
@@ -57,12 +57,20 @@ That is what the attackers used. No credential theft, no forged commits, no
 compromised infrastructure. They requested packages that already had years of
 accumulated trust, and the AUR handed them over.</p>
     
-      <p>The modified <code>PKGBUILD</code> files ran <code>npm install atomic-lockfile minimist chalk</code>
-during the build, which kept the payload out of the script a cautious user
-would actually read. A second wave on June 12 swapped in <code>js-digest</code> and
-<code>lockfile-js</code>, the latter delivered through Bun. Sonatype tracked
-<code>atomic-lockfile</code> as Sonatype-2026-003775 at CVSS 8.7 and the second-wave
-packages as Sonatype-2026-003808.</p>
+      <p>The <code>PKGBUILD</code> edits were small enough to pass a glance. Most add two lines
+and nothing else: an <code>install=</code> pointing at a new <code>&lt;package&gt;-deps.install</code>
+scriptlet, and a JavaScript runtime added to <code>depends</code> so the scriptlet is
+guaranteed something to run. The payload sits in the scriptlet, whose
+<code>post_install()</code> runs <code>npm install atomic-lockfile minimist chalk</code> or
+<code>bun add</code> against the attacker's packages. The timing is the point: a pacman
+install scriptlet runs as root when the package is installed, not as the
+building user during <code>makepkg</code>, so the credential stealer starts with root
+on any machine that installs the package. A minority of the hijacked
+<code>PKGBUILD</code> files invoke the installer during the build instead. A second
+wave on June 12 swapped in <code>js-digest</code> and <code>lockfile-js</code>, the latter
+delivered through Bun. Sonatype tracked <code>atomic-lockfile</code> as
+Sonatype-2026-003775 at CVSS 8.7 and the second-wave packages as
+Sonatype-2026-003808.</p>
     
       <p>The bundled Linux executable was written in Rust. It collected GitHub
 credentials, SSH keys, HashiCorp Vault tokens, browser cookies, and session
@@ -142,6 +150,58 @@ involved, and published a checklist of affected packages. Arch's official
           <td>
             
               <code>sha1:25dc63fac83bcc50520f9584e99fcea38ce538a2</code><br><code>sha512:ee081ace3cf31a347f65e94056f97d06bcb41740cc0c795d67dede17720f94b06e4ba65334eded8e6f142ff7797d7657e53ccc1bf7591766026eb3eb2e07df5c</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>lockfile-js</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>Wed Jun 10 2026 20:00:00 GMT-0400 (Eastern Daylight Time)<br>to Thu Jun 11 2026 20:00:00 GMT-0400 (Eastern Daylight Time)</td>
+          <td>
+            
+              <code>1.4.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:db8382ec55803edbc9348dc53ec693295cc8266f</code><br><code>sha256:e68571a0c5cf878442115f6f1f6805cf8e09caa49682239ad9e1241d592618a4</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>atomic-lockfile</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            
+          </td>
+          <td>Wed Jun 10 2026 20:00:00 GMT-0400 (Eastern Daylight Time)<br>to Thu Jun 11 2026 20:00:00 GMT-0400 (Eastern Daylight Time)</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
             
           </td>
         </tr>

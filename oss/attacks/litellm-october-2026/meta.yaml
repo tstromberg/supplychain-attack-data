@@ -1,0 +1,57 @@
+- id: litellm-october-2026
+  title: LiteLLM release pipeline shipped Python startup malware
+  synopsis: >-
+    An attacker used stolen release credentials to publish LiteLLM 1.107.0 on October 21. Its wheels
+    and container image carried Python startup hooks that stole secrets and loaded remote code.
+  start_date: '2026-10-10'
+  target:
+    name: LiteLLM
+    kind: library
+    repo: https://github.com/BerriAI/litellm
+  method:
+    phase: ci_cd
+  artifacts:
+    - id: litellm
+      name: litellm
+      package: litellm
+      ecosystem: pypi
+      kind: binary_archive
+      versions:
+        - 1.107.0
+      hashes:
+        - sha256:462d0c9f67ca522d9e0e4acd245e90b36ce0d5353604a66bb7c43a1ec4a6fcf7
+      notes:
+        - >-
+          The recorded digest identifies the manylinux_2_28_x86_64 wheel. All seven published wheels
+          were reported malicious.
+    - id: litellm-container
+      name: ghcr.io/berriai/litellm
+      ecosystem: docker
+      kind: container_image
+      versions:
+        - v1.107.0
+      locations:
+        - uri: https://github.com/BerriAI/litellm/pkgs/container/litellm
+          role: distribution
+  references:
+    - url: https://socket.dev/blog/litellm-compromise
+      title: LiteLLM PyPI Package and Docker Images Compromised to Steal Cloud and AI Credentials
+    - url: https://socket.dev/blog/litellm-attack-timeline
+      title: New Evidence Shows LiteLLM Secret-Stealing Workflows Ran 11 Days Before Supply Chain Attack
+  language: Python
+  impact:
+    types:
+      - credential_theft
+      - remote_code_execution
+  story: >
+    Secret-stealing workflows ran in the upstream repository on October 10 and 12. Later vendor
+    findings linked a stolen GitHub token to approval of the October 21 release.
+
+
+    Container provenance recorded Berri-AI/litellm as its source, rather than the legitimate BerriAI
+    organization. The malicious build included cook.pth, cook.py, and sitecustomize.py.
+
+
+    The installed startup hooks collected cloud and AI credentials and could execute remotely
+    supplied Python. Floating container tags also resolved to the affected image. This incident is
+    separate from the March LiteLLM compromise.

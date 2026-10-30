@@ -13,7 +13,14 @@ incident.
 
 ## Repository layout
 
-Samples live beside their attack description:
+The durable local artifact tree lives at `~/data/supplychain-attack-data`
+(`/Users/t/data/supplychain-attack-data` on this workstation). `make artifacts`
+builds it from the records and acquisition staging files. `make sync` publishes
+the verified tree to `r2:isotope13-compendium`, preserving displaced objects in
+`r2:isotope13-compendium-bak`.
+
+Metadata, manifests, and digest-keyed provenance are kept in Git. Collectors stage
+payload bytes beside the attack description in ignored files:
 
 ```text
 <attack>/

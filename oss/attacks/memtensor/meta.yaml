@@ -1,0 +1,51 @@
+- id: memtensor
+  title: MemTensor releases bundled a credential-stealing Go payload
+  synopsis: >-
+    An attacker published modified MemTensor packages to npm and PyPI. Bundled Go binaries ran
+    during plugin use or Python import and searched developer home directories for secrets.
+  start_date: '2026-09-23'
+  target:
+    name: MemTensor
+    kind: project_organization
+    repo: https://github.com/MemTensor/MemOS
+  method:
+    phase: source
+  artifacts:
+    - id: memos-cloud-openclaw-plugin
+      name: '@memtensor/memos-cloud-openclaw-plugin'
+      package: '@memtensor/memos-cloud-openclaw-plugin'
+      ecosystem: npm
+      kind: source_archive
+      versions:
+        - 0.1.21
+        - 0.1.23
+        - 0.1.25
+    - id: memoryos
+      name: MemoryOS
+      package: MemoryOS
+      ecosystem: pypi
+      kind: source_archive
+      versions:
+        - 2.0.34
+  references:
+    - url: https://socket.dev/blog/memtensor-compromise
+      title: MemTensor npm and PyPI Packages Compromised in Credential-Stealing Supply Chain Attack
+    - url: https://www.stepsecurity.io/blog/sckit-supply-chain-worm-hits-memtensor-npm-pypi-scopes
+      title: Sckit Supply Chain Worm Hits MemTensor npm & PyPi scopes
+  language: Go
+  impact:
+    types:
+      - credential_theft
+  story: >
+    Malicious changes appeared in both MemTensor repositories before publication. The npm plugin and
+    Python package bundled platform-specific sckit executables. Socket could not establish the
+    initial access mechanism.
+
+
+    The plugin launched the executable on gateway startup and memory recall. The Python package
+    launched it when memos was imported.
+
+
+    The payload searched for package-registry, source-control, cloud, Vault, and SSH credentials.
+    Its configuration named servers under skyleen.fr. Intervening npm releases 0.1.22 and 0.1.24
+    reverted the malicious content, but later poisoned releases followed.

@@ -8,6 +8,43 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func TestUnknownIncidentFactsMayBeOmitted(t *testing.T) {
+	entry := Entry{
+		ID: "example", Title: "Example release distributed a credential stealer",
+		Synopsis:   "The official release contained a credential stealer.",
+		Target:     Party{Name: "Example", Kind: "library"},
+		Method:     Method{Phase: "distribution"},
+		Impact:     Impact{Types: []string{"credential_theft"}},
+		Artifacts:  []Artifact{{ID: "example", Name: "Example", Kind: "source_archive"}},
+		References: []Reference{{URL: "https://example.org/advisory", Title: "Advisory"}},
+	}
+	if got := validateEntry(entry, nil); len(got) != 0 {
+		t.Fatalf("unknown facts should be omitted, got: %+v", got)
+	}
+	entry.StartDate = "2026-13-40"
+	if got := validateEntry(entry, nil); len(got) == 0 {
+		t.Fatal("a supplied invalid date must still fail validation")
+	}
+	entry.StartDate = ""
+	entry.Target.Name = ""
+	if got := validateEntry(entry, nil); len(got) == 0 {
+		t.Fatal("the attacked entity must still be identified")
+	}
+}
+
+func TestComposerDevelopmentVersions(t *testing.T) {
+	for _, version := range []string{"dev-main", "dev-nova4support", "dev-using-inertia", "dev-nova5"} {
+		if got := validateVersions("meta.yaml", "example", "versions", []string{version}); len(got) != 0 {
+			t.Errorf("valid Composer identifier %q: %+v", version, got)
+		}
+	}
+	for _, version := range []string{"dev-", "dev-main was compromised", "package@dev-main", ">=dev-main"} {
+		if got := validateVersions("meta.yaml", "example", "versions", []string{version}); len(got) == 0 {
+			t.Errorf("invalid identifier %q passed validation", version)
+		}
+	}
+}
+
 func TestHashListUnmarshalYAML(t *testing.T) {
 	tests := []struct {
 		name string

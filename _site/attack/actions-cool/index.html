@@ -17,7 +17,7 @@
   
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> actions-cool · <a href="https://github.com/actions-cool" target="_blank">repo</a></div>
-    <div class="meta-item"><strong>Date:</strong> 2026-05-18</div>
+    <div class="meta-item"><strong>Date:</strong> 2026-05-18 to 2026-09-25 (130 days)</div>
     <div class="meta-item"><strong>Actor:</strong> TeamPCP (group)</div>
     <div class="meta-item"><strong>Target Kind:</strong> organization</div>
     <div class="meta-item"><strong>Language:</strong> JavaScript</div>
@@ -35,23 +35,17 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">TeamPCP re-pointed all 53 issues-helper tags and all 15 maintain-one-comment tags to a single dangling imposter commit on 2026-05-18. The injected step downloaded Bun, scraped Runner.Worker memory for masked secrets, and exfiltrated them to t.m-kosche.com.</p>
+  <p class="synopsis">Attackers rewrote version tags for two actions-cool GitHub Actions to run secret-stealing code. GitHub disabled the repositories in May, but the same malicious tags became available again in September.</p>
 
   
   <h2>Story</h2>
   <div class="story">
     
-      <p>On the evening of May 18, 2026, an attacker calling itself TeamPCP quietly rewrote every version tag on two widely used GitHub Actions, redirecting thousands of automated workflows to malicious code designed to steal whatever secrets the runner could touch.</p>
-      <figure class="pull-quote">
-        <blockquote>The attacker generated a unique imposter commit for each of the 53 tags, every one messaged &quot;Build action for vX.Y.Z&quot; to mimic the maintainer. All were dangling, reachable only through the rewritten tags.</blockquote>
-        <figcaption>one fake commit per tag</figcaption>
-      </figure>
+      <p>On May 18, 2026, attackers redirected version tags for actions-cool/issues-helper and actions-cool/maintain-one-comment to malicious commits. Consumers pinned to affected tags received the injected action on their next workflow run.</p>
     
-      <p>The targets, <code>actions-cool/issues-helper</code> and <code>actions-cool/maintain-one-comment</code>, handle routine issue and comment triage. Issues-helper alone was referenced by roughly 3,000 public workflow configurations at the time of the compromise, according to the cloud security firm StepSecurity, which published the first detailed account of the incident. Between 19:10:24 and 19:13:40 UTC, the attacker re-pointed all 53 version tags on issues-helper to attacker-controlled commits, a distinct one for each tag, and all 15 tags on maintain-one-comment moved within a 39-second window. Tag <code>v3.8.0</code> was moved to commit <code>1c9e803c80cc7fed000022d4c94f4b5bc2e90062</code>, and <code>v3.3.0</code> on maintain-one-comment to <code>7f6120bb10c870b9fde146961a18e5bf0b3d4401</code>. The destination commits, labeled &quot;Build action for vX.Y.Z&quot; to mimic a normal release marker, were orphans: they sat on no branch and could only be reached through the rewritten tags. Workflows that pinned the actions by tag would pick up the malicious code on their next run. Workflows that pinned by full commit SHA were unaffected.</p>
+      <p>The injected step downloaded Bun and read the GitHub Actions Runner.Worker process memory to extract workflow secrets. It sent captured credentials to t.m-kosche.com. The operation overlapped with other compromises attributed to TeamPCP.</p>
     
-      <p>The malicious <code>action.yaml</code> step downloaded the Bun JavaScript runtime to <code>/home/runner/.bun/bin/bun</code>, then spawned a Python process that read <code>/proc/&lt;PID&gt;/mem</code> of the GitHub Actions <code>Runner.Worker</code> process, the part of the runner that holds workflow secrets in decrypted form. StepSecurity researchers said the script filtered runner memory for the <code>&quot;isSecret&quot;:true</code> marker that GitHub uses to flag protected values, extracted the workflow's <code>GITHUB_TOKEN</code>, ran <code>gh auth token</code> as a backup, and used <code>sudo python3</code> where passwordless sudo was permitted. Everything went out over HTTPS to <code>t.m-kosche.com</code>, a domain the same attacker used the same day in the @antv npm wave, the durabletask PyPI publish, and the Nx Console extension compromise.</p>
-    
-      <p>StepSecurity said its Harden-Runner product caught the imposter commits and the runner-memory reads in real time, added the C2 host to a global block list, and shipped a policy to keep customers from executing the affected refs. GitHub subsequently disabled both repositories outright, an unusual step that suggests it treated the entire actions-cool namespace as untrusted; that blocks the malicious tags from new clones but does not retroactively protect workflows that already cached the bad commit SHAs. The incident appears to have been the opening move in a 24-hour spree the security firm Wiz later attributed to TeamPCP, running about five hours before the @antv npm wave began at 01:56 UTC the following morning. The Actions tokens harvested here are a plausible source of the credentials that fed the same-day compromises tracked separately as [[nx-console]] and [[durabletask-pypi]]. The cross-ecosystem aggregate sits on [[shai-hulud-here-we-go-again]]; this record holds the GitHub Actions evidence.</p>
+      <p>GitHub disabled both repositories. They became available again with the malicious tags on September 16, then were disabled again on September 25. The September activity renewed distribution of the May compromise; it does not establish a second initial intrusion.</p>
     
   </div>
   
@@ -79,7 +73,7 @@
             
             
           </td>
-          <td>2026-05-18</td>
+          <td>2026-05-18<br>to 2026-09-25</td>
           <td>
             
               N/A
@@ -92,7 +86,7 @@
           </td>
           <td>
             
-              <code>sha1:1c9e803c80cc7fed000022d4c94f4b5bc2e90062</code>
+              N/A
             
           </td>
         </tr>
@@ -105,7 +99,7 @@
             
             
           </td>
-          <td>2026-05-18</td>
+          <td>2026-05-18<br>to 2026-09-25</td>
           <td>
             
               N/A
@@ -118,7 +112,7 @@
           </td>
           <td>
             
-              <code>sha1:7f6120bb10c870b9fde146961a18e5bf0b3d4401</code>
+              N/A
             
           </td>
         </tr>
@@ -192,6 +186,10 @@
       <li><a href="https://thehackernews.com/2026/05/github-actions-supply-chain-attack.html" target="_blank">Popular GitHub Action Tags Redirected to Imposter Commit to Steal CI/CD Credentials - The Hacker News</a></li>
     
       <li><a href="https://pumasecurity.io/resources/blog/teampcp-github-actions-supply-chain/" target="_blank">TeamPCP: GitHub Action Scanning, Pinning, and Version Management - Puma Security</a></li>
+    
+      <li><a href="https://socket.dev/blog/mini-shai-hulud-actions" target="_blank">Re-Enabled GitHub Actions Expose Thousands of Repositories to Mini Shai-Hulud</a></li>
+    
+      <li><a href="https://safedep.io/mini-shai-hulud-reinfection-github-repositories/" target="_blank">September upstream reinfections</a></li>
     
   </ul>
   

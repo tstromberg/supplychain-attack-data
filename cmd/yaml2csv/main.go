@@ -311,7 +311,7 @@ var (
 	fullDatePattern = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
 	hashPattern     = regexp.MustCompile(`^(md5|sha1|sha256|sha384|sha512):([0-9a-fA-F]+)$`)
 	partialDate     = regexp.MustCompile(`^\d{4}(-\d{2})?$`)
-	versionPattern  = regexp.MustCompile(`^v?[0-9][0-9A-Za-z._+-]*$`)
+	versionPattern  = regexp.MustCompile(`^(v?[0-9][0-9A-Za-z._+-]*|dev-[A-Za-z0-9][A-Za-z0-9._/-]*)$`)
 	versionRange    = regexp.MustCompile(`^v?[0-9][0-9A-Za-z._+-]* - v?[0-9][0-9A-Za-z._+-]*$`)
 	// A compact range names two version numbers, so the upper bound is digits and
 	// separators only. Letters after the hyphen mean a prerelease tag such as
@@ -569,27 +569,20 @@ func datesOverlap(a, b Entry) bool {
 func validateEntry(entry Entry, campaignIDs map[string]bool) []issue {
 	var issues []issue
 	required := map[string]string{
-		"id":            entry.ID,
-		"title":         entry.Title,
-		"synopsis":      entry.Synopsis,
-		"start_date":    entry.StartDate,
-		"end_date":      entry.EndDate,
-		"target.name":   entry.Target.Name,
-		"target.kind":   entry.Target.Kind,
-		"actor.name":    entry.Actor.Name,
-		"actor.kind":    entry.Actor.Kind,
-		"method.cause":  entry.Method.Cause,
-		"method.phase":  entry.Method.Phase,
-		"method.motive": entry.Method.Motive,
+		"id":           entry.ID,
+		"title":        entry.Title,
+		"synopsis":     entry.Synopsis,
+		"target.name":  entry.Target.Name,
+		"target.kind":  entry.Target.Kind,
+		"method.phase": entry.Method.Phase,
 	}
 	for field, value := range required {
 		if strings.TrimSpace(value) == "" {
 			issues = append(issues, issue{"error", field, "", entry.SourcePath, entry.ID, "required field is empty"})
 		}
 	}
-	if entry.Method.Transitive == nil {
-		issues = append(issues, issue{"error", "method.transitive", "", entry.SourcePath, entry.ID, "required field is empty"})
-	}
+	// The research rules require unknown facts to be omitted. Missing attribution,
+	// dates, cause, motive, or transitivity must not force fabricated values.
 	if !slugPattern.MatchString(entry.ID) {
 		issues = append(issues, issue{"error", "id", entry.ID, entry.SourcePath, entry.ID, "use a stable lowercase slug"})
 	}

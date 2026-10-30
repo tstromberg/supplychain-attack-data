@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A virus that infected Delphi itself, then everything Delphi built</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>A virus that infected Delphi itself, then everything Delphi built</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> Borland Delphi</div>
+    <div class="meta-item"><strong>Date:</strong> 2009-08-18 to 2009-08-23 (5 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> application</div>
+    <div class="meta-item"><strong>Language:</strong> Pascal</div>
+    <div class="meta-item"><strong>Cause:</strong> build_system_compromise</div>
+    <div class="meta-item"><strong>Motive:</strong> self_propagation</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> self_propagation, malware_distribution</div>
+    
+    <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">W32/Induc-A rewrote SysConst.pas in a Delphi installation and recompiled it, so every program subsequently built on that machine carried the virus. Software houses shipped it to customers in signed, legitimate products for months before anyone noticed.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>In August 2009 antivirus vendors started flagging popular Windows utilities as
+infected, and the vendors of those utilities insisted their code was clean. Both were
+right.</p>
+    
+      <p>The virus, W32/Induc-A, did not target the applications. On a machine it reached, it
+looked for a Delphi installation, and if it found one it wrote malicious source into
+<code>SysConst.pas</code>, compiled that to <code>SysConst.dcu</code>, and moved the original aside as
+<code>SysConst.bak</code>. <code>SysConst</code> is a unit almost every Delphi program links. From then on,
+every application compiled on that machine embedded the virus, and the developer's own
+source code contained nothing unusual at all.</p>
+    
+      <p>That made the developers themselves the distribution channel. Sophos collected over
+3,000 distinct infected programs from the wild, and ESET counted more than four
+thousand samples by 19 August. Users caught it by downloading ordinary Delphi software:
+the chat client QIP, the media player AIMP, Tidy Favorites, Any TV Free. The vendors
+had shipped it without knowing, because their build machines had been infected first.</p>
+    
+      <p>Induc carried no payload beyond spreading. No botnet, no theft, nothing destructive —
+which is why it circulated undetected for months, and also why it reads today as a
+demonstration rather than a crime. It is the Thompson compiler attack occurring in the
+wild, at a smaller scale than XcodeGhost six years later and with a mechanism a reader
+can hold in their head: infect the compiler's standard unit, and the compiler does the
+rest.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>Delphi SysConst</strong>
+            
+            <br><span>developer toolchain · source_code</span>
+            
+            
+          </td>
+          <td>2009-08-18<br>to 2009-08-23</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>Light Alloy</strong>
+            
+            <br><span>windows · application</span>
+            
+            
+          </td>
+          <td>2009-08-18<br>to 2009-08-23</td>
+          <td>
+            
+              <code>4.4.0.7948</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>[object Object]</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>AIMP2</strong>
+            
+            <br><span>windows · application</span>
+            
+            
+          </td>
+          <td>2009-08-18<br>to 2009-08-23</td>
+          <td>
+            
+              <code>2.6.0.462</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>[object Object]</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>malware:W32/Induc-A</code></li>
+    
+      <li><code>file:SysConst.pas</code></li>
+    
+      <li><code>file:SysConst.dcu</code></li>
+    
+      <li><code>file:SysConst.bak</code></li>
+    
+      <li><code>technique:compiler standard unit infected so every build embeds the virus</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://www.welivesecurity.com/2009/08/23/w32induc-a-faq/" target="_blank">W32/Induc.A FAQ - ESET</a></li>
+    
+      <li><a href="https://nakedsecurity.sophos.com/2009/08/20/sophos-false-alarming-delphi-induc-virus/" target="_blank">Sophos is not false alarming on the Delphi Induc virus - Naked Security</a></li>
+    
+      <li><a href="https://blog.marcocantu.com/blog/virus_attacks_delphi.html" target="_blank">Virus W32/Induc-A Attacks Delphi SysConst.pas - Marco Cantu</a></li>
+    
+      <li><a href="https://www.theregister.com/2009/08/19/delphi_malware/" target="_blank">Delphi compiler infected with malware - The Register</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>
