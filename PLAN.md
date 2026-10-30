@@ -392,10 +392,29 @@ already there, so a rebuild after a metadata-only change costs no bulk I/O.
 
 ## Sync
 
-`rclone sync` the artifact tree to R2, **with object versioning enabled**. Re-phasing moves
-an object, so keys are mutable; versioning keeps old references resolvable and makes a
-destructive sync recoverable. The README must state that **the digest, not the path, is
-the citable identity**.
+`make sync` pushes the artifact tree to R2 (`isotope13-compendium`). The README must state
+that **the digest, not the path, is the citable identity**, because keys are mutable:
+re-phasing a sample or correcting a version moves an object.
+
+This plan originally called for object versioning. **R2 does not have it** — the closest
+features are object lifecycles and bucket locks, and a bucket lock forbids overwriting,
+which would block republishing the generated files the tree regenerates on every build. So
+the guarantee is assembled from three buckets instead of switched on:
+
+| bucket | holds | written by |
+|---|---|---|
+| `isotope13-compendium` | the live tree | `make sync` |
+| `isotope13-compendium-bak` | every object a sync displaced, under the timestamp of the run | `make sync --backup-dir` |
+| `isotope13-compendium-attic` | a frozen full copy, taken once | `make snapshot`, by hand |
+
+The first two cover a bad publish: `verify-store` gates the sync so a half-built tree
+cannot displace a good one, and anything a sync does replace or delete is moved rather
+than dropped. The third covers losing the live bucket itself, which no amount of care
+during publishing protects against.
+
+This is recoverable rather than version-addressable: an old object is found by the run that
+retired it, not by asking the bucket for a key's history. `make snapshot` is deliberately
+not part of `make sync` — a snapshot refreshed on every publish is not a snapshot.
 
 Partial fetch works naturally: `rclone copy r2:corpus/<record-id>/` pulls one record, and
 the git manifest verifies it. Prefix copy is straightforward precisely because the tree is
@@ -417,9 +436,16 @@ Steps 1–4 touch nothing that exists and are fully reversible.
    collapsing 1,912 identical acquisitions and leaving 0 samples without provenance. 136
    records belonging to auxiliary files and 2 genuine orphans were reported and left in
    place. Eleven tools now write through `tools/provenance-store.js`.)*
-6. `git rm -r --cached` the payload paths; add ignores.
-7. `rclone sync` to R2 with versioning on.
+6. `git rm -r --cached` the payload paths; add ignores. *(Done: 10,829 paths untracked —
+   9,189 payloads and 1,640 node_modules — and pushed. No payload bytes remain tracked.)*
+7. `make sync` to R2. *(Done: `isotope13-compendium`, 20,463 objects, 8.9 GiB, with
+   `isotope13-compendium-bak` for displaced objects and a one-time `make snapshot` into
+   `isotope13-compendium-attic`.)*
 8. Repoint `isomer` at the artifact tree and `pairs.yaml`; delete its inference code.
+   *(Done: 1,109 → 748 lines; 1,594 artifacts and 3,848 comparisons, up from ~249
+   artifacts. The inference it replaced — `pick`, `version_affinity`, `file_form`,
+   `baseline_chain`, and a hand-rolled YAML parser kept only to check the real one —
+   is gone.)*
 
 ## Open decisions
 
@@ -429,7 +455,7 @@ hash. Worth it if the repository is meant to be widely cloned; skip it otherwise
 
 **Historical reproduction.** R2 holds one live tree; git holds history. Checking out an old
 commit does not give the tree as it was. Digests always allow *verifying* whatever is
-fetched, but reconstructing a past layout needs R2 versioning plus `by-digest.tsv`. If
+fetched, but reconstructing a past layout needs the backup bucket plus `by-digest.tsv`. If
 exact historical reproduction matters more than browsability, the alternative is
 content-addressed storage with the browsable tree generated locally — that trade should be
 made deliberately now rather than discovered later.

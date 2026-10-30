@@ -16,6 +16,7 @@ const errors = [];
 // ids are deliberate evidence holders, and declaring them is a record-structure
 // decision rather than a repair.
 const undeclared = [];
+let evidence = 0;
 let manifests = 0;
 let samples = 0;
 let reconstructions = 0;
@@ -58,9 +59,25 @@ for (const sampleRoot of sampleRoots) for (const manifestFile of walk(sampleRoot
       continue;
     }
     referenced.add(file);
+    /*
+     * `scope: incident` says the sample is evidence about the event rather than a release
+     * of any one artifact: a report-derived indicator fragment, a vendor's published
+     * blacklist script, a backdoor diff. Those have no artifact to be declared under, and
+     * they are correctly not counted as coverage of one.
+     *
+     * The distinction has to be stated, not guessed. When every undeclared id looked the
+     * same, fifteen deliberate ones hid seven real mistakes -- four AccessPress plugins
+     * and three mailparser packages the records simply never declared, each one a sample
+     * the corpus held and counted for nothing.
+     */
     if (declared && sample.artifact_id && !declared.has(sample.artifact_id)) {
-      undeclared.push(`${manifestFile}: ${sample.artifact_id} is not declared in meta.yaml, ` +
-        `so this sample is not counted as coverage`);
+      if (String(sample.scope || "") === "incident") {
+        evidence += 1;
+      } else {
+        undeclared.push(`${manifestFile}: ${sample.artifact_id} is not declared in meta.yaml, ` +
+          `so this sample is not counted as coverage. If it is evidence about the event ` +
+          `rather than a release, mark it scope: incident`);
+      }
     }
     // A `during` sample is the artifact as the attack left it. A clean file filed there
     // is not that, and it would be counted as coverage, reporting an artifact as covered
@@ -83,6 +100,26 @@ for (const sampleRoot of sampleRoots) for (const manifestFile of walk(sampleRoot
           `in the vocabulary; put the particulars in verification.evidence instead ` +
           `(tools/normalize-basis.js lists the terms)`);
       }
+    }
+
+    /*
+     * Zero bytes is not a capture. Two npm tarballs were recorded as `probable_exact`
+     * captures from registry.npmjs.org after the registry returned nothing for an
+     * unpublished package: `measured_sha256` was true -- the digest of no bytes was
+     * measured correctly -- and the sample counted as coverage for an artifact whose
+     * malicious release had never been obtained.
+     *
+     * An empty file can still be the real artifact: several AUR packages ship an empty
+     * .gitignore. What separates those is that something other than our own measurement
+     * proves it, so the basis has to carry a proof of identity rather than of arrival.
+     */
+    const PROVES_EMPTY = ["git_object_id_verified", "publisher_digest_reproduced"];
+    if (sample.size === 0 &&
+        !(sample.verification?.basis || []).some(term => PROVES_EMPTY.includes(term))) {
+      errors.push(`${file}: zero bytes, and nothing but our own measurement says that is ` +
+        `the artifact; an empty capture is a failed fetch unless a publisher digest or ` +
+        `git object id proves the file is empty`);
+      continue;
     }
 
     /*
@@ -282,6 +319,7 @@ if (errors.length) {
 } else {
   const parts = [];
   if (reconstructions) parts.push(`${reconstructions} reconstructed from recovered sources`);
+  if (evidence) parts.push(`${evidence} incident-scoped evidence sample(s)`);
   const note = parts.length ? `; ${parts.join("; ")}` : "";
   process.stdout.write(`OK: ${samples} samples in ${manifests} manifests; hashes, sizes, paths, and provenance records verified${note}\n`);
   if (undeclared.length) {

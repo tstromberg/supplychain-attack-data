@@ -736,6 +736,19 @@ async function fetchTarget(target, options, ordinal, total) {
   }
 
   const files = findDownloadedFiles(tempDir);
+  /*
+   * A fetch that produced nothing is a failure, whatever the exit code said. The npm
+   * registry answers an unpublished coordinate with an empty body, and two of those were
+   * stored as probable_exact captures in August 2026 -- the digest of zero bytes measured
+   * correctly, so nothing downstream objected, and both counted as coverage for malicious
+   * releases that had never been obtained.
+   */
+  if (result.code === 0 && files.length === 1 && fs.statSync(files[0]).size === 0) {
+    attempts.push(`${target.url || target.purl}: the source returned an empty body; ` +
+      `an empty file is not a capture.`);
+    fs.rmSync(tempDir, { recursive: true, force: true });
+    return { status: "unavailable", target, attempts };
+  }
   if (result.code === 0 && files.length === 1) {
     const entry = recordSuccess(target, files[0]);
     fs.rmSync(tempDir, { recursive: true, force: true });
@@ -791,6 +804,11 @@ async function fetchBatch(targets, options, startOrdinal, total) {
     const target = byPurl.get(purlKey(purl));
     if (!target || claimed.has(target)) continue;
     claimed.add(target);
+    if (fs.statSync(file).size === 0) {
+      results.push({ status: "unavailable", target,
+        attempts: [`${purl}: the source returned an empty body; an empty file is not a capture.`] });
+      continue;
+    }
     results.push({ status: "downloaded", target, entry: recordSuccess(target, file) });
   }
 

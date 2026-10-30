@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /*
- * Collects the remediated WordPress.org release an artifact names as its fix.
+ * Collects the WordPress.org release either side of a compromised one.
  *
  * WordPress.org keeps every version a theme or plugin has published, including for
  * projects that were later closed, so the release that ended an incident is normally
@@ -14,9 +14,18 @@
  * and an archive that does not declare the fixed version this record names is refused
  * rather than stored.
  *
- * Clean bytes belong in `after`, never in `during` -- see tools/verify-oss-samples.js.
+ * The same check makes it safe to guess. A record names the version that was compromised
+ * but rarely the one before it, and the API that would list a project's releases is gone
+ * for exactly the projects this corpus cares about -- wordpress.org closes a plugin after
+ * an incident, and api.wordpress.org then answers 404 while downloads.wordpress.org still
+ * serves every file. So `--phase before` walks the version number down a step at a time
+ * and keeps the first archive that declares itself to be that release. A wrong guess
+ * cannot be stored: it either 404s or fails to declare the version asked for.
  *
- *   node tools/acquire-wordpress-release.js [--only ID] [--dry-run]
+ * Clean bytes belong in `before` or `after`, never in `during` -- see
+ * tools/verify-oss-samples.js.
+ *
+ *   node tools/acquire-wordpress-release.js [--phase before|after] [--only ID] [--dry-run]
  */
 
 "use strict";
@@ -56,7 +65,33 @@ function records() {
 }
 
 // candidates finds artifacts naming a fix on wordpress.org that no after sample covers.
-function candidates(only) {
+/*
+ * predecessors walks a version number down, lowest component first: 3.2.1 gives 3.2.0,
+ * then 3.1.9 and 3.0.9 as the fallbacks for a project that skipped a release. Three steps
+ * is enough to cross a gap without wandering into a different minor series, and every
+ * candidate still has to declare itself before it is kept.
+ */
+function predecessors(version) {
+  const parts = String(version).split(".");
+  if (!parts.every(part => /^\d+$/.test(part))) return [];
+  const out = [];
+  let current = parts.map(Number);
+  for (let step = 0; step < 3 && current; step += 1) {
+    const next = current.slice();
+    let index = next.length - 1;
+    while (index >= 0 && next[index] === 0) {
+      next[index] = 9;
+      index -= 1;
+    }
+    if (index < 0) break;
+    next[index] -= 1;
+    out.push(next.join("."));
+    current = next;
+  }
+  return out;
+}
+
+function candidates(only, phase) {
   const out = [];
   for (const dir of records()) {
     if (only && !dir.toLowerCase().includes(only)) continue;
@@ -65,14 +100,25 @@ function candidates(only) {
     const manifest = fs.existsSync(manifestFile)
       ? yaml.load(fs.readFileSync(manifestFile, "utf8")) || {} : {};
     const covered = new Set((manifest.samples || [])
-      .filter(s => s.phase === "after").map(s => s.artifact_id));
+      .filter(s => s.phase === phase).map(s => s.artifact_id));
     for (const entry of doc) {
       for (const artifact of entry.artifacts || []) {
         if (String(artifact.ecosystem || "").toLowerCase() !== "wordpress") continue;
-        const fixed = (artifact.fixed_versions || []).map(String);
-        if (!fixed.length || covered.has(artifact.id)) continue;
-        out.push({ dir, incident: entry.id, artifact: artifact.id,
-                   slug: String(artifact.package || artifact.id), version: fixed[0] });
+        if (covered.has(artifact.id)) continue;
+        const slug = String(artifact.package || artifact.id);
+        if (phase === "after") {
+          const fixed = (artifact.fixed_versions || []).map(String);
+          if (!fixed.length) continue;
+          out.push({ dir, incident: entry.id, artifact: artifact.id, slug, versions: [fixed[0]] });
+        } else {
+          const affected = (artifact.versions || []).map(String);
+          if (!affected.length) continue;
+          const versions = predecessors(affected[0]);
+          if (versions.length) {
+            out.push({ dir, incident: entry.id, artifact: artifact.id, slug, versions,
+                       affected: affected[0] });
+          }
+        }
       }
     }
   }
@@ -136,40 +182,62 @@ function main() {
   const dryRun = argv.includes("--dry-run");
   const onlyAt = argv.indexOf("--only");
   const only = onlyAt >= 0 ? String(argv[onlyAt + 1] || "").toLowerCase() : "";
+  const phaseAt = argv.indexOf("--phase");
+  const phase = phaseAt >= 0 ? String(argv[phaseAt + 1] || "") : "after";
+  if (phase !== "before" && phase !== "after") usage(2);
 
-  const targets = candidates(only);
-  process.stderr.write(`${targets.length} artifact(s) name a wordpress.org fix with no after sample\n`);
+  const targets = candidates(only, phase);
+  process.stderr.write(`${targets.length} wordpress artifact(s) with no ${phase} sample and a ` +
+    `version to look for\n`);
   let stored = 0;
   let refused = 0;
   let missing = 0;
 
   for (const target of targets) {
-    const { dir, artifact, slug, version } = target;
-    const name = `${slug}.${version}.zip`;
-    const temporary = path.join(os.tmpdir(), `wp-${process.pid}-${name}`);
-    const urls = [
-      `https://downloads.wordpress.org/theme/${name}`,
-      `https://downloads.wordpress.org/plugin/${name}`,
-    ];
+    const { dir, artifact, slug } = target;
+    // Each candidate has to arrive as a zip and say it is the release asked for. The first
+    // that does is the answer; the rest are versions the project never published.
+    let version = null;
     let url = null;
-    for (const candidate of urls) {
-      if (fetch(candidate, temporary) && isZip(temporary)) {
-        url = candidate;
-        break;
+    let declaredIn = null;
+    let temporary = null;
+    let sawArchive = false;
+    for (const attempt of target.versions) {
+      const name = `${slug}.${attempt}.zip`;
+      const scratch = path.join(os.tmpdir(), `wp-${process.pid}-${name}`);
+      let got = null;
+      for (const candidate of [`https://downloads.wordpress.org/theme/${name}`,
+                               `https://downloads.wordpress.org/plugin/${name}`]) {
+        if (fetch(candidate, scratch) && isZip(scratch)) {
+          got = candidate;
+          break;
+        }
       }
+      if (!got) continue;
+      sawArchive = true;
+      const declared = declaresVersion(scratch, slug, attempt);
+      if (!declared) {
+        fs.unlinkSync(scratch);
+        continue;
+      }
+      version = attempt;
+      url = got;
+      declaredIn = declared;
+      temporary = scratch;
+      break;
     }
-    if (!url) {
-      missing += 1;
-      process.stderr.write(`  no release  ${slug}@${version}\n`);
+    if (!version) {
+      if (sawArchive) {
+        refused += 1;
+        process.stderr.write(`  REFUSED     ${slug}: ${target.versions.join(", ")} served an ` +
+          `archive that does not declare that version\n`);
+      } else {
+        missing += 1;
+        process.stderr.write(`  no release  ${slug}: tried ${target.versions.join(", ")}\n`);
+      }
       continue;
     }
-    const declaredIn = declaresVersion(temporary, slug, version);
-    if (!declaredIn) {
-      refused += 1;
-      fs.unlinkSync(temporary);
-      process.stderr.write(`  REFUSED     ${slug}@${version}: archive does not declare this version\n`);
-      continue;
-    }
+    const name = `${slug}.${version}.zip`;
     const body = fs.readFileSync(temporary);
     const digest = crypto.createHash("sha256").update(body).digest("hex");
     process.stderr.write(`  ok          ${slug}@${version} ${body.length} bytes (declared in ${declaredIn})\n`);
@@ -178,7 +246,7 @@ function main() {
       continue;
     }
 
-    const destinationDir = path.join(dir, "samples", artifact, "after");
+    const destinationDir = path.join(dir, "samples", artifact, phase);
     fs.mkdirSync(destinationDir, { recursive: true });
     const destination = path.join(destinationDir, name);
     if (fs.existsSync(destination)) fs.chmodSync(destination, 0o644);
@@ -200,7 +268,7 @@ function main() {
     manifest.unresolved ||= [];
     const entry = {
       artifact_id: artifact,
-      phase: "after",
+      phase,
       classification: "clean",
       coordinate: `pkg:wordpress/${slug}@${version}`,
       version,
@@ -211,8 +279,13 @@ function main() {
       source: { url, retrieved_at: retrievedAt, kind: "distribution" },
       verification: verificationFrom("probable_exact",
         ["official_distribution_endpoint", "archive_declares_version", "measured_sha256"]),
-      notes: [`The remediated release this record names as the fix, served by wordpress.org, whose ` +
-              `${path.basename(declaredIn)} declares version ${version}.`],
+      notes: [phase === "after"
+        ? `The remediated release this record names as the fix, served by wordpress.org, whose ` +
+          `${path.basename(declaredIn)} declares version ${version}.`
+        : `The release preceding the compromised ${target.affected}. wordpress.org no longer ` +
+          `lists this project through its API, so the version was found by walking the number ` +
+          `down from ${target.affected} and keeping the first archive whose ` +
+          `${path.basename(declaredIn)} declares itself to be that release.`],
     };
     const key = item => [item.artifact_id, item.phase, item.filename].join(" ");
     manifest.samples = manifest.samples.filter(item => key(item) !== key(entry));

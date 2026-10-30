@@ -124,6 +124,54 @@ function distributedFrom(sample, artifactLocations) {
  */
 const UNVERSIONED = "unversioned";
 
+/*
+ * Ecosystems whose unit of distribution is a single archive. The distinction decides what
+ * "complete" can mean: an AUR package is a set of files, so its PKGBUILD is the artifact,
+ * while an npm release is one tarball, so a loose .js from inside it is a member and a
+ * dropped .dll is not the package in any state.
+ *
+ * Thirteen samples were filed as complete releases when they were payloads or members --
+ * a dropped sdd.dll standing in for the coa tarball, the build.js the attacker added to
+ * eslint-scope. None of them produced a single comparison, so the corpus looked better
+ * collected than it was and no benchmark was better for it.
+ */
+const ARCHIVE_ECOSYSTEMS = new Set(["npm", "pypi", "rubygems", "crates", "maven", "nuget",
+  "packagist", "composer", "go", "hex", "cocoapods", "conda", "cpan"]);
+const ARCHIVE_FORMS = new Set(["gzip", "zip", "bzip2", "xz", "zstd", "tar", "7z", "rar"]);
+
+/*
+ * fileForm is a cheap content form, used to keep a comparison honest. Two files are only
+ * comparable when they are the same kind of thing: a differential detector handed a
+ * package archive and a single loose source file will report the entire archive as new,
+ * which is a finding about the pairing rather than about the attack.
+ *
+ * Magic wins over the suffix because recovery renames files -- a recovered archive is
+ * often stored content-addressed as `.sample` -- and the bytes do not care. The suffix
+ * stays as the fallback for source text, where a few header bytes identify nothing.
+ */
+const SIGNATURES = [
+  [Buffer.from("1f8b", "hex"), "gzip"],
+  [Buffer.from("fd377a585a00", "hex"), "xz"],
+  [Buffer.from("425a68", "hex"), "bzip2"],
+  [Buffer.from("28b52ffd", "hex"), "zstd"],
+  [Buffer.from("504b0304", "hex"), "zip"],
+  [Buffer.from("377abcaf271c", "hex"), "7z"],
+  [Buffer.from("52617221 1a07".replace(/ /g, ""), "hex"), "rar"],
+  [Buffer.from("7f454c46", "hex"), "elf"],
+  [Buffer.from("4d5a", "hex"), "pe"],
+];
+const MACHO = new Set(["feedface", "cefaedfe", "feedfacf", "cffaedfe", "cafebabe"]);
+
+function fileForm(body, name) {
+  const head = body.subarray(0, 512);
+  for (const [magic, form] of SIGNATURES) {
+    if (head.subarray(0, magic.length).equals(magic)) return form;
+  }
+  if (head.length >= 262 && head.subarray(257, 262).toString("latin1") === "ustar") return "tar";
+  if (MACHO.has(head.subarray(0, 4).toString("hex"))) return "macho";
+  return path.extname(String(name)).toLowerCase() || "(none)";
+}
+
 function releasesOf(sample) {
   const { version, commit } = sample;
   // A list means the identical bytes shipped in each release, so the file belongs to all.
@@ -199,44 +247,106 @@ function compareVersions(a, b) {
  * Only complete artifacts are paired: a fragment against a full archive is not a
  * comparison, it is a mistake.
  */
-function derivePairs(subject, phases) {
+function derivePairs(subject, phases, unmatched) {
   const sorted = phase => (phases[phase] || [])
     .slice()
     .sort((a, b) => compareVersions(a.version, b.version));
   const before = sorted("before");
   const during = sorted("during");
   const after = sorted("after");
+  // classification travels with the side: `affected` or `carrier` is weaker evidence than
+  // `malicious`, and a consumer judging a comparison needs to see that without the manifest.
   const ref = (phase, item) => ({
-    subject, phase, version: item.version || null, file: item.name, sha256: item.sha256,
+    subject, phase, version: item.version || null, file: item.name,
+    classification: item.classification || null, sha256: item.sha256,
   });
+  // Only like compares with like. Without this the corpus states comparisons such as a
+  // plugin's single .php file against the plugin's zip, or a wheel against a dropped
+  // .scr, and every consumer has to relearn the same guard.
+  const comparable = (a, b) => a && b && a.form === b.form;
   const pairs = [];
 
   // The before closest below a compromised release is the honest comparator for it.
   for (const bad of during) {
-    const prior = before.filter(b => compareVersions(b.version, bad.version) < 0);
-    const good = prior.length ? prior[prior.length - 1] : before[before.length - 1];
-    if (good) pairs.push({ kind: "attack", expect: "detect", old: ref("before", good), new: ref("during", bad) });
+    const like = before.filter(b => comparable(b, bad));
+    const prior = like.filter(b => compareVersions(b.version, bad.version) < 0);
+    const good = prior.length ? prior[prior.length - 1] : like[like.length - 1];
+    if (good) {
+      pairs.push({ kind: "attack", expect: "detect", old: ref("before", good), new: ref("during", bad) });
+    } else if (unmatched && before.length) {
+      /*
+       * The corpus holds a clean release for this subject but cannot compare it: the
+       * files are different kinds of thing, and a loose payload against a package archive
+       * is not a comparison. Worth reporting, because unlike a missing `before` it is
+       * usually fixable -- acquire the clean release in the form the compromised one is
+       * held in, or extract the compromised member from its archive.
+       *
+       * A subject with no clean release at all is the corpus's ordinary coverage gap;
+       * `tools/missing-samples.js` is where that is tracked, and repeating thousands of
+       * them here would bury this.
+       */
+      unmatched.push(`${subject}@${bad.version || "unversioned"}: held as ${bad.form}, ` +
+        `but the clean releases are ${[...new Set(before.map(b => b.form))].join(", ")}`);
+    }
   }
   for (const bad of during) {
-    const fix = after.find(a => compareVersions(a.version, bad.version) > 0) || after[0];
+    const like = after.filter(a => comparable(a, bad));
+    const fix = like.find(a => compareVersions(a.version, bad.version) > 0) || like[0];
     if (fix) pairs.push({ kind: "remediation", expect: "no-detect", old: ref("during", bad), new: ref("after", fix) });
   }
   if (before.length && after.length) {
-    pairs.push({ kind: "net", expect: "no-detect",
-      old: ref("before", before[before.length - 1]), new: ref("after", after[after.length - 1]) });
+    const newest = before[before.length - 1];
+    const fixed = after.filter(a => comparable(a, newest)).pop();
+    if (fixed) {
+      pairs.push({ kind: "net", expect: "no-detect", old: ref("before", newest), new: ref("after", fixed) });
+    }
   }
-  // Adjacent clean releases are upgrades a real user performed; flagging one is a false positive.
-  for (let i = 1; i < before.length; i += 1) {
-    pairs.push({ kind: "baseline", expect: "no-detect",
-      old: ref("before", before[i - 1]), new: ref("before", before[i]) });
+  // Adjacent clean releases are upgrades a real user performed; flagging one is a false
+  // positive. Adjacent within one form: an sdist and a wheel of the same release are two
+  // distributions of one version, not an upgrade from one to the next.
+  const byForm = new Map();
+  for (const item of before) {
+    if (!byForm.has(item.form)) byForm.set(item.form, []);
+    byForm.get(item.form).push(item);
+  }
+  for (const chain of byForm.values()) {
+    for (let i = 1; i < chain.length; i += 1) {
+      pairs.push({ kind: "baseline", expect: "no-detect",
+        old: ref("before", chain[i - 1]), new: ref("before", chain[i]) });
+    }
   }
   return pairs;
 }
 
+/*
+ * Every path this run is responsible for, whether or not its bytes had to be rewritten.
+ * The sweep at the end removes everything else, which is the only thing that makes the
+ * tree a function of the records rather than an accumulation of every build that ever
+ * ran: a record that loses a comparison, a sample that is renamed or re-phased, a record
+ * that is deleted outright.
+ */
+const emitted = new Set();
+
 function write(file, body, apply) {
+  emitted.add(path.resolve(file));
   if (!apply) return;
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, body);
+}
+
+// sweep deletes what this run did not produce, and any directory left empty by that.
+function sweep(dir, removed = { files: 0 }) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const file = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      sweep(file, removed);
+      if (!fs.readdirSync(file).length) fs.rmdirSync(file);
+    } else if (!emitted.has(path.resolve(file))) {
+      fs.rmSync(file);
+      removed.files += 1;
+    }
+  }
+  return removed.files;
 }
 
 function main() {
@@ -246,6 +356,9 @@ function main() {
   const byDigest = new Map();
   const fidelity = [];
   const problems = [];
+  const unmatched = [];
+  const notArchives = [];
+  const formsHeld = Object.create(null);
 
   for (const dir of records()) {
     const recordDir = path.relative(ROOT, dir);
@@ -258,9 +371,11 @@ function main() {
     const entry = doc.find(item => item && item.artifacts) || doc[0] || {};
     const recordId = String(entry.id || path.basename(dir));
     const artifactLocations = new Map();
+    const ecosystems = new Map();
     for (const item of doc) {
       for (const artifact of (item && item.artifacts) || []) {
         artifactLocations.set(artifact.id, artifact.locations || item.locations || []);
+        ecosystems.set(artifact.id, String(artifact.ecosystem || "").toLowerCase());
       }
     }
 
@@ -325,10 +440,20 @@ function main() {
         if (fs.existsSync(destination) && fs.statSync(destination).size === body.length) {
           needed = sha256(fs.readFileSync(destination)) !== digest;
         }
+        // Recorded either way: unchanged bytes are still this run's output.
+        emitted.add(path.resolve(destination));
         if (needed) write(destination, body, options.apply);
 
         stats.files += 1;
         if (complete) stats.complete += 1; else stats.parts += 1;
+
+        if (complete && ARCHIVE_ECOSYSTEMS.has(ecosystems.get(sample.artifact_id)) &&
+            !ARCHIVE_FORMS.has(fileForm(body, name))) {
+          notArchives.push({ recordId, subject, phase, name,
+            form: fileForm(body, name), ecosystem: ecosystems.get(sample.artifact_id) });
+        }
+        (formsHeld[`${recordId}\u0000${subject}\u0000${phase}`] ||= new Set())
+          .add(fileForm(body, name));
 
         const relative = path.join(recordId, subject, phase, release, `${prefix}${name}`);
         if (!byDigest.has(digest)) byDigest.set(digest, relative);
@@ -350,6 +475,8 @@ function main() {
         };
         // The release is the directory this sidecar sits in; the header states it once.
         if (sample.commit) record.commit = String(sample.commit);
+        // Evidence about the event rather than a release of this subject.
+        if (String(sample.scope || "") === "incident") record.scope = "incident";
         if (source.retrieved_at) record.recovered_at = String(source.retrieved_at);
         if ((sample.notes || []).length) record.notes = sample.notes;
         if (source.reconstruction) record.reconstruction = source.reconstruction;
@@ -360,7 +487,9 @@ function main() {
           if (!completeBySubject.has(subject)) completeBySubject.set(subject, {});
           const slots = completeBySubject.get(subject);
           (slots[phase] ||= []).push({
-            name, version: release === UNVERSIONED ? null : release, sha256: digest });
+            name, version: release === UNVERSIONED ? null : release,
+            classification: sample.classification || null,
+            form: fileForm(body, name), sha256: digest });
         }
       }
 
@@ -373,7 +502,9 @@ function main() {
     }
 
     const pairs = [];
-    for (const [subject, phases] of completeBySubject) pairs.push(...derivePairs(subject, phases));
+    for (const [subject, phases] of completeBySubject) {
+      pairs.push(...derivePairs(subject, phases, unmatched));
+    }
     if (pairs.length) {
       stats.pairs += pairs.length;
       write(path.join(options.out, recordId, "pairs.yaml"),
@@ -385,6 +516,15 @@ function main() {
   }
 
   const out = process.stdout;
+  /*
+   * A loose member is only a problem when nothing can be compared with it. Where another
+   * phase of the same subject holds the same form -- rand-user-agent keeps the clean and
+   * malicious index.js side by side -- the record is deliberately comparing members, which
+   * is a sound differential test and often the only one the incident allows.
+   */
+  const stranded = notArchives.filter(item => !["before", "during", "after"]
+    .some(phase => phase !== item.phase &&
+      (formsHeld[`${item.recordId}\u0000${item.subject}\u0000${phase}`] || new Set()).has(item.form)));
   out.write(`${stats.records} records, ${stats.files} files ` +
     `(${stats.complete} complete, ${stats.parts} parts)\n`);
   out.write(`  renamed to mark a reassembly: ${stats.renamed}\n`);
@@ -392,6 +532,8 @@ function main() {
   out.write(`  samples whose bytes are missing: ${stats.missing}\n`);
   out.write(`  distinct digests: ${byDigest.size}\n`);
   out.write(`  comparisons stated in pairs.yaml: ${stats.pairs}\n`);
+  out.write(`  compromised releases whose clean side is a different form: ${unmatched.length}\n`);
+  out.write(`  filed as a release, not an archive, nothing to compare: ${stranded.length}\n`);
 
   if (options.apply) {
     write(path.join(options.out, "by-subject.tsv"), `${[...new Set(bySubject)].sort().join("\n")}\n`, true);
@@ -404,9 +546,30 @@ function main() {
       built_from: commit, built_at: new Date().toISOString(),
       tool: "tools/build-artifacts.js", records: stats.records, files: stats.files,
     }, { noRefs: true, sortKeys: false }), true);
-    out.write(`\nwrote ${options.out}\n`);
+    // Only a complete build knows what the whole tree should contain.
+    const stale = options.only ? 0 : sweep(options.out);
+    out.write(`\nwrote ${options.out}` +
+      (options.only ? " (partial build; stale files left in place)\n"
+                    : `, removed ${stale} stale file(s)\n`));
   } else {
     out.write(`\nreport only; pass --apply to write to ${options.out}\n`);
+  }
+
+  if (stranded.length) {
+    out.write(`\n${stranded.length} sample(s) filed as a complete release that are neither the ` +
+      `distribution form of their ecosystem nor comparable with another phase:\n`);
+    for (const item of stranded.slice(0, 15)) {
+      out.write(`  ${item.recordId}/${item.subject}/${item.phase}/${item.name}: ` +
+        `${item.ecosystem} distributes archives and this is ${item.form}\n`);
+    }
+    if (stranded.length > 15) out.write(`  … ${stranded.length - 15} more\n`);
+  }
+
+  if (unmatched.length) {
+    out.write(`\n${unmatched.length} compromised release(s) held in a form none of their ` +
+      `clean releases share:\n`);
+    for (const line of unmatched.slice(0, 20)) out.write(`  ${line}\n`);
+    if (unmatched.length > 20) out.write(`  … ${unmatched.length - 20} more\n`);
   }
 
   if (problems.length) {

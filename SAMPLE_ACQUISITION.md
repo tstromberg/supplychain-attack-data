@@ -356,6 +356,55 @@ bytes.
 - Samples are stored uncompressed, under the filename they were distributed with. There
   is no size threshold and no storage container; see "Storage form".
 
+## A payload is not a release
+
+`verification.status` answers two questions at once, and the second is easy to lose:
+how confident are we in these bytes, and *are these bytes the whole distributed artifact?*
+`exact` answers the first. It does not answer the second, and using it for a file that is
+not a release makes the corpus look better collected than it is.
+
+The test is what the ecosystem distributes. npm, PyPI, RubyGems, crates and the rest ship
+one archive per release, so anything that is not that archive -- a dropped `.dll`, the
+`build.js` an attacker added, a single `index.js` lifted from inside the tarball -- is
+`payload_only`, however exactly its bytes are known. An AUR package is a set of files, so
+its `PKGBUILD` *is* the artifact and `exact` is right.
+
+Thirteen samples were filed the wrong way until 2026-09-11: `sdd.dll` standing in for the
+coa tarball, `jsextension.exe` for uaparser-js, `python-install.scr` for two PyPI packages.
+Each made a record look as though the compromised release had been recovered. None of them
+produced a single comparison, so nothing was lost by correcting them -- the comparison
+count was 3,520 before and after.
+
+There is a real exception. Where the corpus holds the *same member* in two phases -- the
+clean and malicious `index.js` of rand-user-agent -- comparing member with member is a
+sound differential test, and often the only one the incident allows. `build-artifacts.js`
+reports a loose file filed as a release only when no other phase holds the same form, so a
+deliberate member-level comparison is not flagged and a stranded payload is.
+
+## Evidence about the event, not a release
+
+Most samples are an artifact in one of its three states. Some are not: a report-derived
+indicator fragment, a vendor's published blacklist script, a backdoor diff quoted from an
+advisory. These describe the incident rather than any one package, and there is no
+artifact for them to be filed under.
+
+Mark those `scope: incident` on the sample. They keep their `artifact_id` -- by convention
+the record id, or the record id with a suffix -- and `make samples-verify` reports them
+separately instead of flagging the id as undeclared:
+
+```text
+OK: 14019 samples in 293 manifests; … ; 15 incident-scoped evidence sample(s)
+```
+
+State it rather than leaving it to be inferred from the id. While every undeclared
+artifact id looked alike, fifteen deliberate ones hid seven genuine omissions -- four
+AccessPress plugins named in the NY State advisory and three packages the mailparser
+record's own synopsis names -- and each of those was a sample the corpus held and counted
+for nothing.
+
+An incident-scoped sample is never coverage for an artifact, so it can never make a record
+look better collected than it is.
+
 ## Storage form
 
 A sample is stored as the bytes that were distributed: real file, original filename, no
