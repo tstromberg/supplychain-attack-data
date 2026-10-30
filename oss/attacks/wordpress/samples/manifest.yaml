@@ -15,12 +15,16 @@ samples:
     verification:
       status: exact
       basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
         - official_published_md5
         - official_published_sha1
         - measured_sha256
     relates_to:
       - phase: during
         version: 2.1.1
+    subject: wordpress
   - artifact_id: wordpress
     phase: during
     classification: malicious
@@ -36,12 +40,16 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - contemporary_discoverer_code_listing
         - measured_sha256
     notes:
       - >-
         This preserves Ivan Fratric's contemporary report and exact listings of both injected
         fragments, not the poisoned release archive.
+    subject: wordpress
   - artifact_id: wordpress
     phase: during
     classification: malicious
@@ -57,6 +65,9 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - exact_injected_fragment
         - contemporary_discoverer_code_listing
         - measured_sha256
@@ -64,6 +75,7 @@ samples:
       - >-
         The ellipsis is the discoverer's omission marker; no surrounding feed.php context was
         invented.
+    subject: wordpress
   - artifact_id: wordpress
     phase: during
     classification: malicious
@@ -79,6 +91,9 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - exact_injected_fragment
         - contemporary_discoverer_code_listing
         - measured_sha256
@@ -86,6 +101,7 @@ samples:
       - >-
         The ellipsis is the discoverer's omission marker; no surrounding theme.php context was
         invented.
+    subject: wordpress
   - artifact_id: wordpress
     phase: after
     classification: clean
@@ -101,6 +117,9 @@ samples:
     verification:
       status: exact
       basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
         - official_published_md5
         - official_published_sha1
         - measured_sha256
@@ -109,6 +128,7 @@ samples:
         Upstream filename wordpress-2.1.1.zip was renamed to distinguish the restored clean bytes
         currently served at the formerly mutable download URL.
       - Its official MD5 and SHA-1 differ from both malicious hashes recorded in meta.yaml.
+    subject: wordpress
   - artifact_id: wordpress
     phase: after
     classification: remediated
@@ -124,16 +144,102 @@ samples:
     verification:
       status: exact
       basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
         - official_published_md5
         - official_published_sha1
         - measured_sha256
     relates_to:
       - phase: during
         version: 2.1.1
+    subject: wordpress
+  - artifact_id: wordpress
+    phase: during
+    classification: malicious
+    version: 2.1
+    filename: feed-backdoored.php
+    path: wordpress/during/feed-backdoored.php
+    sha256: a8ac5088a48bcda7a9d4c9d3af5fa8bd2c8e37e75a6d690febacab40dd1fb46b
+    size: 4595
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: evidence_fragment_spliced_into_release_member
+        base:
+          path: wordpress/before/wordpress-2.1.zip
+          sha256: 6006357b482baa08a8b5ac797ea50fa9a34039d63beeaddb494718acc13b718c
+          member: wp-includes/feed.php
+        overlay:
+          path: wordpress/during/wp-includes-feed-backdoor.php.fragment
+          sha256: 8610ec2a317b57c36113cc6b0bc7effd7b5723c5bf79092a51ab44304883717d
+          operation: apply
+          hunks: 1
+    verification:
+      status: payload_only
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - rebuilt_from_release_member_and_preserved_evidence_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        The preserved eval helper and its request-triggered call, placed beside comment_text_rss in
+        the file the discoverer names.
+      - >-
+        The preserved evidence alone is not loadable source. This is wp-includes/feed.php as the
+        victim would have received it, so the payload is analysable in the file that gives it
+        effect.
+      - >-
+        Only this member is carried: the incident altered no other file, and the rest of the release
+        is already represented by the clean baseline in this manifest.
+    subject: wordpress
+  - artifact_id: wordpress
+    phase: before
+    classification: clean
+    version: 2.1
+    filename: feed.php
+    path: wordpress/before/feed.php
+    sha256: eb970376521da934a2726acff05d8c4108490998d9cd7c50e2632b4d5039d526
+    size: 4465
+    source:
+      url: https://wordpress.org/wordpress-2.1.zip
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: official_distribution_member
+      container:
+        path: wordpress/before/wordpress-2.1.zip
+        sha256: 6006357b482baa08a8b5ac797ea50fa9a34039d63beeaddb494718acc13b718c
+        member: wp-includes/feed.php
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - extracted_from_the_official_release_archive_held_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        wp-includes/feed.php exactly as the official release ships it, carried as its own sample so
+        the backdoored counterpart can be diffed against it directly.
+      - >-
+        The bytes were taken from wordpress/before/wordpress-2.1.zip, which is held in this manifest
+        and verified against the release URL below; they were not fetched separately.
+      - Pairs with feed-backdoored.php in the during phase.
+    subject: wordpress
 unresolved:
   - artifact_id: wordpress
     phase: during
     status: poisoned_release_archive_unavailable_fragments_recovered
+    attempts:
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'
   - artifact_id: wordpress
     phase: during
     coordinate: md5:9b2e021b99f71846a99db1f3975e108d
@@ -145,7 +251,18 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for 9b2e021b99f71846a99db1f3975e108d:
         hash_not_found; triage: Triage has no file analysis for MD5
         9b2e021b99f71846a99db1f3975e108d; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:57:09.660Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:17:30.607-04:00 level=ERROR msg="command failed"
+        error="hash 9b2e021b99f71846a99db1f3975e108d unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for 9b2e021b99f71846a99db1f3975e108d: hash_not_found; triage: triage has no file analysis
+        for MD5 9b2e021b99f71846a99db1f3975e108d; malshare: download returned status 404"
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'
   - artifact_id: wordpress
     phase: during
     coordinate: sha1:43e08637c4b60b9208ee160483f4e9241241bc5e
@@ -157,4 +274,16 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for 43e08637c4b60b9208ee160483f4e9241241bc5e:
         hash_not_found; triage: Triage has no file analysis for SHA1
         43e08637c4b60b9208ee160483f4e9241241bc5e; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:57:12.624Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:17:34.900-04:00 level=ERROR msg="command failed"
+        error="hash 43e08637c4b60b9208ee160483f4e9241241bc5e unavailable from configured sources:
+        hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has
+        no sample for 43e08637c4b60b9208ee160483f4e9241241bc5e: hash_not_found; triage: triage has
+        no file analysis for SHA1 43e08637c4b60b9208ee160483f4e9241241bc5e; malshare: download
+        returned status 404"
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'

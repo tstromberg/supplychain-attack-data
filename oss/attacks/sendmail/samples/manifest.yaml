@@ -19,10 +19,14 @@ samples:
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - contemporary_advisory_md5_73e18ea78b2386b774963c8472cbd309
         - measured_sha256
     notes:
       - The official archive is the clean same-version original, not the trojanized FTP response.
+    subject: sendmail
   - artifact_id: sendmail
     phase: during
     classification: malicious
@@ -38,12 +42,15 @@ samples:
     verification:
       status: payload_only
       basis:
+        - measured_sha256
+      evidence:
         - securityfocus_incident_record
         - decoded_payload_preserved
         - source_diff_preserved
         - measured_sha256
     notes:
       - This evidence preserves the decoded script and libsm/t-shm.c diff, not the original tarball.
+    subject: sendmail
   - artifact_id: sendmail
     phase: during
     classification: malicious
@@ -59,12 +66,15 @@ samples:
     verification:
       status: payload_only
       basis:
+        - measured_sha256
+      evidence:
         - exact_diff_section_after_crlf_normalization
         - measured_sha256
     notes:
       - >-
         Extracted from sendmail-8.12.6-trojan-evidence.txt; line endings were normalized from CRLF
         to LF.
+    subject: sendmail
   - artifact_id: sendmail
     phase: during
     classification: malicious
@@ -80,18 +90,105 @@ samples:
     verification:
       status: payload_only
       basis:
+        - measured_sha256
+      evidence:
         - decoded_payload_section_after_crlf_normalization
         - measured_sha256
     notes:
       - >-
         Extracted from sendmail-8.12.6-trojan-evidence.txt; line endings were normalized and a
         trailing blank line omitted.
+    subject: sendmail
+  - artifact_id: sendmail
+    phase: during
+    classification: malicious
+    version: 8.12.6
+    filename: libsm-t-shm-backdoored.c
+    path: sendmail/during/libsm-t-shm-backdoored.c
+    sha256: 1bcb114e93258588a397e2b9f119aec6f0e806e58c56d141e2ad07f5a70f1a4f
+    size: 11046
+    source:
+      url: https://www.exploit-db.com/raw/21919
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: reconstructed_distribution
+      reconstruction:
+        method: patch_application_on_official_release_member
+        tool: patch(1), default context-diff mode, no fuzz and no rejects
+        base:
+          path: sendmail/before/sendmail.8.12.6.tar.gz
+          sha256: 02701c7cbb1ce5bdbcc6acb699ad562a5e048dd8446010217b327653d78f60be
+          member: sendmail-8.12.6/libsm/t-shm.c
+          member_sha256: 02dc6c4b704cb4e65369df7a2083cd5ae2526d9bb79f1b6dbb51f37c1500d817
+        overlay:
+          path: sendmail/during/libsm-t-shm-backdoor.patch
+          sha256: 60d0a8d8bc41bb40d383fb95bf2579c2b0f3c44157c5550bf25838a203a5e5da
+          operation: apply
+          hunks: 3
+    verification:
+      status: payload_only
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - rebuilt_from_exact_official_release_member_and_preserved_diff
+        - all_three_hunks_applied_without_fuzz
+        - measured_sha256
+    notes:
+      - >-
+        The trojanized libsm/t-shm.c as it stood in the replaced tarball, rebuilt from the two
+        artifacts already held here. The diff alone is unparseable source; this is the file the
+        victim would have compiled.
+      - >-
+        It carries all three of the trojan's parts: the 3820-character uuencoded sm_base64_data
+        array, the hand-rolled six-bit DEC/ENC codec that writes it to ./test, and the system("sh
+        ./test 2>/dev/null") that runs it during make check.
+    subject: sendmail
+  - artifact_id: sendmail
+    phase: before
+    classification: clean
+    version: 8.12.6
+    filename: libsm-t-shm.c
+    path: sendmail/before/libsm-t-shm.c
+    sha256: 02dc6c4b704cb4e65369df7a2083cd5ae2526d9bb79f1b6dbb51f37c1500d817
+    size: 4314
+    source:
+      url: https://ftp.sendmail.org/past-releases/sendmail.8.12.6.tar.gz
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: official_distribution_member
+      container:
+        path: sendmail/before/sendmail.8.12.6.tar.gz
+        sha256: 02701c7cbb1ce5bdbcc6acb699ad562a5e048dd8446010217b327653d78f60be
+        member: libsm/t-shm.c
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - extracted_from_the_official_release_archive_held_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        libsm/t-shm.c exactly as the official release ships it, carried as its own sample so the
+        backdoored counterpart can be diffed against it directly.
+      - >-
+        The bytes were taken from sendmail/before/sendmail.8.12.6.tar.gz, which is held in this
+        manifest and verified against the release URL below; they were not fetched separately.
+      - Pairs with libsm-t-shm-backdoored.c in the during phase.
+    subject: sendmail
 unresolved:
   - artifact_id: sendmail
     phase: during
     version: 8.12.6
     hash: md5:9a7cc87790451590c2e9eb1a8c9df102
     status: original_distribution_unavailable_payload_recovered
+    attempts:
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'
   - artifact_id: sendmail
     phase: during
     coordinate: md5:9a7cc87790451590c2e9eb1a8c9df102
@@ -103,4 +200,15 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for 9a7cc87790451590c2e9eb1a8c9df102:
         hash_not_found; triage: Triage has no file analysis for MD5
         9a7cc87790451590c2e9eb1a8c9df102; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:56:55.740Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:16:17.447-04:00 level=ERROR msg="command failed"
+        error="hash 9a7cc87790451590c2e9eb1a8c9df102 unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for 9a7cc87790451590c2e9eb1a8c9df102: hash_not_found; triage: triage has no file analysis
+        for MD5 9a7cc87790451590c2e9eb1a8c9df102; malshare: download returned status 404"
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'

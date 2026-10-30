@@ -23,10 +23,13 @@ samples:
     verification:
       status: exact
       basis:
+        - measured_sha256
+      evidence:
         - maintainer_clean_md5_183e336a45e38013f3af840bddec44b4
         - measured_sha256
     notes:
       - The restored clean archive also represents the post-incident state of the mutable URL.
+    subject: dsniff-2-3
   - artifact_id: fragroute-1-2
     phase: before
     classification: clean
@@ -42,10 +45,13 @@ samples:
     verification:
       status: exact
       basis:
+        - measured_sha256
+      evidence:
         - maintainer_clean_md5_7e4de763fae35a50e871bdcd1ac8e23a
         - measured_sha256
     notes:
       - The restored clean archive also represents the post-incident state of the mutable URL.
+    subject: fragroute-1-2
   - artifact_id: fragrouter-1-6
     phase: before
     classification: clean
@@ -61,10 +67,13 @@ samples:
     verification:
       status: exact
       basis:
+        - measured_sha256
+      evidence:
         - maintainer_clean_md5_73fdc73f8da0b41b995420ded00533cc
         - measured_sha256
     notes:
       - The restored clean archive also represents the post-incident state of the mutable URL.
+    subject: fragrouter-1-6
   - artifact_id: fragroute-1-2
     phase: during
     classification: malicious
@@ -80,12 +89,16 @@ samples:
     verification:
       status: payload_only
       basis:
+        - payload_indicator_present
+        - measured_sha256
+      evidence:
         - first_person_contaminated_archive_download
         - malicious_md5_65edbfc51f8070517f14ceeb8f721075
         - complete_diff_against_clean_archive
         - measured_sha256
     notes:
       - Preserves the contemporary report and evidence, not the poisoned release archive.
+    subject: fragroute-1-2
   - artifact_id: fragroute-1-2
     phase: during
     classification: malicious
@@ -101,6 +114,9 @@ samples:
     verification:
       status: payload_only
       basis:
+        - payload_indicator_present
+        - measured_sha256
+      evidence:
         - complete_published_diff
         - malicious_md5_65edbfc51f8070517f14ceeb8f721075
         - measured_sha256
@@ -109,21 +125,219 @@ samples:
         version: '1.2'
     notes:
       - HTML entities were decoded; the complete published diff was preserved.
+    subject: fragroute-1-2
+  - artifact_id: fragroute-1-2
+    phase: during
+    classification: malicious
+    version: '1.2'
+    filename: fragroute-1.2-RECONSTRUCTED.tar.gz
+    path: fragroute-1-2/during/fragroute-1.2-RECONSTRUCTED.tar.gz
+    sha256: 15127c199c91534a8bd6154a9c51972103c7ae2a77a359d6b16d7d1dd4bc8801
+    size: 86079
+    source:
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: reconstructed_distribution
+      reconstruction:
+        method: upstream_tarball_plus_published_diff
+        direction: >-
+          Unified diff whose right side (fragroute-1.2-bad) carries the backdoor, applied forward to
+          the clean tarball.
+        base:
+          path: fragroute-1-2/before/fragroute-1.2.tar.gz
+          sha256: 6899a61ecacba3bb400a65b51b3c0f76d4e591dbf976fba0389434a29efc2003
+          member_count: 80
+        retained_manifest:
+          url: https://seclists.org/bugtraq/2002/May/290
+          path: fragroute-1-2/during/fragroute-1.2-configure-backdoor.diff
+          sha256: 9460215acc368b8e5296d4a97815d9258ef946f2d8449e9faba644a07945d23e
+          member_count: 1
+          member_hash: diff_hunk_target_paths
+        overlays:
+          - path: configure
+            operation: patch_applied
+            sha256: ff9e080f2d3d47709707aca5e09a68e66d26f9658a45a5095c5d1ec455edfbbb
+        unchanged_members:
+          count: 79
+          verification: inherited_byte_for_byte_from_the_verified_upstream_tarball
+        packaging:
+          format: tar.gz
+          path_order: sorted
+          normalized: member mtime, uid/gid and owner names zeroed; gzip mtime 0
+          original_archive_bytes_recovered: false
+        complete_attack_record: true
+    verification:
+      status: tree_equivalent
+      basis:
+        - measured_sha256
+      evidence:
+        - clean_upstream_tarball_verified_exact_in_before_phase
+        - published_diff_applied_in_full_with_no_rejected_hunks
+        - c2_address_present_in_rebuilt_configure
+        - measured_sha256_and_size
+    notes:
+      - Rebuilt so the payload is analyzable as a shell/configure script rather than as diff text.
+      - >-
+        Synthetic archive: member order is sorted and timestamps are normalized, so these bytes are
+        reproducible from the same inputs but are not the bytes monkey.org served.
+      - >-
+        configure writes conftest.c, compiles it and runs it; the program forks, connects to
+        216.80.99.202:6667, dup2()s the socket onto stdio and execve()s /bin/sh -- all during
+        ./configure.
+    subject: fragroute-1-2
+  - artifact_id: fragrouter-1-6
+    phase: during
+    classification: malicious
+    version: '1.6'
+    filename: fragrouter-1.6-configure-backdoor.diff
+    path: fragrouter-1-6/during/fragrouter-1.6-configure-backdoor.diff
+    sha256: 4d44d0048897ff756299abf5510be07928ef61bb21d516cd56d42f6d3ddebd07
+    size: 2092
+    source:
+      url: https://seclists.org/bugtraq/2002/May/290
+      retrieved_at: '2026-09-10T14:15:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - inserted_block_byte_identical_to_published_fragroute_diff
+        - measured_sha256
+    notes:
+      - >-
+        The inserted 47 lines are the published block unchanged, character for character. Only the
+        hunk header and context lines differ, because they name fragrouter's configure.
+    subject: fragrouter-1-6
+  - artifact_id: fragrouter-1-6
+    phase: during
+    classification: malicious
+    version: '1.6'
+    filename: fragrouter-1.6-RECONSTRUCTED.tar.gz
+    path: fragrouter-1-6/during/fragrouter-1.6-RECONSTRUCTED.tar.gz
+    sha256: 3060fc464ae665ddc0c0606681c757dcd25622d7de6a6a622d16b72150d3e9de
+    size: 277490
+    source:
+      retrieved_at: '2026-09-10T14:15:00Z'
+      kind: reconstructed_distribution
+      reconstruction:
+        method: upstream_tarball_plus_published_diff
+        direction: >-
+          The block published as the fragroute-1.2 backdoor, applied forward to the clean
+          fragrouter-1.6 tarball.
+        base:
+          path: fragrouter-1-6/before/fragrouter-1.6.tar.gz
+          sha256: db066e3e55a97f5623e5bfbd742d5eb934037b4f3b467e1e1535c40778bdcbe8
+          member_count: 392
+        retained_manifest:
+          url: https://seclists.org/bugtraq/2002/May/290
+          path: fragrouter-1-6/during/fragrouter-1.6-configure-backdoor.diff
+          sha256: 4d44d0048897ff756299abf5510be07928ef61bb21d516cd56d42f6d3ddebd07
+          member_count: 1
+          member_hash: diff_hunk_target_paths
+        overlays:
+          - path: configure
+            operation: block_inserted
+            sha256: 6e1bfe39da73115b23e1dbafbf9421eab9935a7afdd22b94da9a46ef9cd9321c
+        insertion_point:
+          established: false
+          line: 1336
+          anchor: immediately after the -lsocket check closes, before the net/ethernet.h header test
+          reasoning: >-
+            Two constraints agree on this point and no source states it. The block's own compile
+            line is `gcc $LIBS conftest.c`, so it has to run after the socket library check has put
+            -lsocket into $LIBS or the payload would not link where socket() lives outside libc; and
+            the fragroute-1.2 copy, the one position that was published, sits at exactly this
+            relative point, immediately after its socket/nsl checks and before the next test.
+        unchanged_members:
+          count: 391
+          verification: inherited_byte_for_byte_from_the_verified_upstream_tarball
+        packaging:
+          format: tar.gz
+          path_order: sorted
+          normalized: member mtime, uid/gid and owner names zeroed; gzip mtime 0
+          framing: >-
+            ustar, REGTYPE; reproduces the fragroute-1.2 reconstruction byte for byte from its own
+            inputs
+          original_archive_bytes_recovered: false
+        complete_attack_record: true
+    verification:
+      status: tree_equivalent
+      basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - clean_upstream_tarball_verified_exact_against_dug_song_published_md5
+        - upstream_advisory_states_the_same_backdoor_went_into_all_three_tarballs
+        - inserted_block_byte_identical_to_published_fragroute_diff
+        - insertion_point_inferred_not_established
+        - c2_address_present_in_rebuilt_configure
+        - measured_sha256_and_size
+    notes:
+      - >-
+        Dug Song's advisory states the dsniff-2.3, fragroute-1.2 and fragrouter-1.6 tarballs were
+        all modified at 03:00 on 2002-05-17 to carry the same configure backdoor, and the published
+        block carries a stale `configure:2379` line reference that matches none of the three files,
+        which is what a verbatim paste into each looks like.
+      - >-
+        What is not established is where in this configure the block sat. No digest or listing of
+        the trojaned fragrouter-1.6 was ever published, so the position is inferred and the
+        archive's own bytes cannot be checked against anything. See the insertion_point record.
+      - >-
+        Synthetic archive: member order is sorted and timestamps are normalized, so these bytes are
+        reproducible from the same inputs but are not the bytes monkey.org served.
+    subject: fragrouter-1-6
 unresolved:
   - artifact_id: dsniff-2-3
     phase: during
     version: '2.3'
-    status: original_distribution_unavailable_no_reported_digest
+    status: original_distribution_unavailable_no_reported_digest_no_established_insertion_point
+    attempts:
+      - >-
+        Reconstruction considered and declined on 2026-09-10. The clean base is exact: the held
+        dsniff-2.3.tar.gz reproduces 183e336a45e38013f3af840bddec44b4, the MD5 Dug Song published
+        for the clean archive. The injected block is known verbatim from the fragroute-1.2 diff, and
+        the advisory states the same backdoor went into all three tarballs. What is missing is where
+        it sat: fragroute's copy is anchored immediately after the AC_LBL socket/nsl checks that put
+        -lsocket -lnsl into $LIBS, which the payload's own `gcc $LIBS conftest.c` line needs, and
+        dsniff-2.3's configure has no such macro at all -- its socket and nsl checks belong to
+        AC_PATH_XTRA and populate X_EXTRA_LIBS, never $LIBS. With no anchor and no digest, any
+        placement would be invented, so fragrouter-1.6 was rebuilt and this was not.
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'
   - artifact_id: fragroute-1-2
     phase: during
     version: '1.2'
     hash: md5:65edbfc51f8070517f14ceeb8f721075
     status: original_distribution_unavailable_complete_diff_recovered
+    attempts:
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'
   - artifact_id: fragrouter-1-6
     phase: during
     version: '1.6'
-    status: original_distribution_unavailable_no_reported_digest
-  - artifact_id: dsniff-2-3
+    status: original_distribution_unavailable_reconstructed_from_shared_published_block
+    attempts:
+      - >-
+        Rebuilt on 2026-09-10 from the exact clean tarball, which reproduces Dug Song's published
+        73fdc73f8da0b41b995420ded00533cc, plus the backdoor block published for fragroute-1.2. The
+        original archive bytes are still unrecovered and no digest of them was ever published, so
+        the reconstruction stands in for them rather than being them; its insertion point is
+        inferred and recorded as such.
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'
+  - artifact_id: fragroute-1-2
     phase: during
     coordinate: md5:65edbfc51f8070517f14ceeb8f721075
     status: unavailable
@@ -134,4 +348,25 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for 65edbfc51f8070517f14ceeb8f721075:
         hash_not_found; triage: Triage has no file analysis for MD5
         65edbfc51f8070517f14ceeb8f721075; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:56:29.995Z'
+      - >-
+        Re-filed on 2026-09-10: this entry was recorded against dsniff-2-3, but 65edbfc5... is the
+        malicious fragroute-1.2 digest published at https://seclists.org/bugtraq/2002/May/290. No
+        digest was ever published for the trojaned dsniff-2.3 or fragrouter-1.6.
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:51:09.936-04:00 level=ERROR msg="command failed"
+        error="hash 65edbfc51f8070517f14ceeb8f721075 unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for 65edbfc51f8070517f14ceeb8f721075: hash_not_found; triage: triage has no file analysis
+        for MD5 65edbfc51f8070517f14ceeb8f721075; malshare: download returned status 404"
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:14:42.884-04:00 level=ERROR msg="command failed"
+        error="hash 65edbfc51f8070517f14ceeb8f721075 unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for 65edbfc51f8070517f14ceeb8f721075: hash_not_found; triage: triage has no file analysis
+        for MD5 65edbfc51f8070517f14ceeb8f721075; malshare: download returned status 404"
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'

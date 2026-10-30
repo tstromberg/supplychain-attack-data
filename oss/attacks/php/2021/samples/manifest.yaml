@@ -1,0 +1,123 @@
+schema_version: 1
+interpretation:
+  - >-
+    The affected distribution was the php-src revision-control tree itself; no release tarball ever
+    carried the backdoor. The unit of collection is therefore the immutable git object: the
+    backdoored ext/zlib/zlib.c blob and the two commits that introduced it.
+  - >-
+    Both malicious commits produce the same ext/zlib/zlib.c blob (git 6964407837cb), so a single
+    file covers the state after either one. The second commit is a revert of a revert that restored
+    the identical content.
+samples:
+  - artifact_id: php
+    phase: before
+    classification: clean
+    filename: zlib.c
+    path: php/before/zlib.c
+    sha256: 53d0f3322efe1f4a17d09a5249e6916118930848402851ce89338afb04edda29
+    size: 44696
+    source:
+      url: >-
+        https://raw.githubusercontent.com/php/php-src/92aeda524b0b99ab0c861bcba62e5a471ba805e6/ext/zlib/zlib.c
+      retrieved_at: '2026-09-02T12:07:00Z'
+      kind: immutable_source_file
+    verification:
+      status: exact
+      basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: c730aa26bd52829a49f2ad284b181b7e82a68d7d
+    notes:
+      - >-
+        Parent of the first malicious commit; git blob 02fb4dd207a2, the pre-image named by both
+        malicious patches.
+    subject: php
+    commit: 92aeda524b0b99ab0c861bcba62e5a471ba805e6
+  - artifact_id: php
+    phase: during
+    classification: malicious
+    filename: zlib.c
+    path: php/during/zlib.c
+    sha256: 723cceb381399d537d7036b2f045f70e994092fdd6986856119e4db87b2145ad
+    size: 45157
+    source:
+      url: >-
+        https://raw.githubusercontent.com/php/php-src/c730aa26bd52829a49f2ad284b181b7e82a68d7d/ext/zlib/zlib.c
+      retrieved_at: '2026-09-02T12:07:09Z'
+      kind: immutable_source_file
+    verification:
+      status: exact
+      basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - patch_declared_blob_6964407837cb
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: 92aeda524b0b99ab0c861bcba62e5a471ba805e6
+    notes:
+      - >-
+        Backdoored php_zlib_output_compression_start reads HTTP_USER_AGENTT and calls
+        zend_eval_string on the value after "zerodium".
+      - >-
+        Identical to the blob at 2b0f239b211c7544ebc7a4cd2c977a5b7a11ed8a; that revision is covered
+        by this file and by 2b0f239.patch.
+    subject: php
+    commit: c730aa26bd52829a49f2ad284b181b7e82a68d7d
+  - artifact_id: php
+    phase: during
+    classification: malicious
+    filename: c730aa2.patch
+    path: php/during/c730aa2.patch
+    sha256: f83cf7d42314f716a24c0665e5142e450e25e377ca53a6ec57f8bd092089c485
+    size: 1099
+    source:
+      url: https://github.com/php/php-src/commit/c730aa26bd52829a49f2ad284b181b7e82a68d7d.patch
+      retrieved_at: '2026-09-02T12:07:09Z'
+      kind: immutable_repository_revision
+    verification:
+      status: exact
+      basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - measured_sha256
+    notes:
+      - >-
+        The first malicious push, forged as Rasmus Lerdorf with the message "[skip-ci] Fix typo".
+        Names blobs 02fb4dd207a2 to 6964407837cb, which binds the before and during files above.
+    subject: php
+    commit: c730aa26bd52829a49f2ad284b181b7e82a68d7d
+  - artifact_id: php
+    phase: during
+    classification: malicious
+    filename: 2b0f239.patch
+    path: php/during/2b0f239.patch
+    sha256: 78d304e7bfd5c26b5c3cfdda11429311ed5f4ffa6024f96302ad1952b470c30b
+    size: 1109
+    source:
+      url: https://github.com/php/php-src/commit/2b0f239b211c7544ebc7a4cd2c977a5b7a11ed8a.patch
+      retrieved_at: '2026-09-02T12:07:10Z'
+      kind: immutable_repository_revision
+    verification:
+      status: exact
+      basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - measured_sha256
+    notes:
+      - >-
+        The second malicious push, forged as Nikita Popov and disguised as a revert of the revert
+        that had removed the first commit. Reintroduces the identical blob.
+    subject: php
+    commit: 2b0f239b211c7544ebc7a4cd2c977a5b7a11ed8a

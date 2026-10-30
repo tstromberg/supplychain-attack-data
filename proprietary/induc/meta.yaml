@@ -1,0 +1,142 @@
+- id: induc
+  title: A virus that infected Delphi itself, then everything Delphi built
+  synopsis: >-
+    W32/Induc-A rewrote SysConst.pas in a Delphi installation and recompiled it, so every program
+    subsequently built on that machine carried the virus. Software houses shipped it to customers
+    in signed, legitimate products for months before anyone noticed.
+  story: |
+    In August 2009 antivirus vendors started flagging popular Windows utilities as
+    infected, and the vendors of those utilities insisted their code was clean. Both were
+    right.
+
+    The virus, W32/Induc-A, did not target the applications. On a machine it reached, it
+    looked for a Delphi installation, and if it found one it wrote malicious source into
+    `SysConst.pas`, compiled that to `SysConst.dcu`, and moved the original aside as
+    `SysConst.bak`. `SysConst` is a unit almost every Delphi program links. From then on,
+    every application compiled on that machine embedded the virus, and the developer's own
+    source code contained nothing unusual at all.
+
+    That made the developers themselves the distribution channel. Sophos collected over
+    3,000 distinct infected programs from the wild, and ESET counted more than four
+    thousand samples by 19 August. Users caught it by downloading ordinary Delphi software:
+    the chat client QIP, the media player AIMP, Tidy Favorites, Any TV Free. The vendors
+    had shipped it without knowing, because their build machines had been infected first.
+
+    Induc carried no payload beyond spreading. No botnet, no theft, nothing destructive —
+    which is why it circulated undetected for months, and also why it reads today as a
+    demonstration rather than a crime. It is the Thompson compiler attack occurring in the
+    wild, at a smaller scale than XcodeGhost six years later and with a mechanism a reader
+    can hold in their head: infect the compiler's standard unit, and the compiler does the
+    rest.
+  start_date: 2009-08-18
+  end_date: 2009-08-23
+  target:
+    name: Borland Delphi
+    kind: application
+  actor:
+    name: Unknown
+    kind: unknown
+  language: Pascal
+  method:
+    cause: build_system_compromise
+    phase: ci_cd
+    motive: self_propagation
+    transitive: true
+  impact:
+    types:
+    - self_propagation
+    - malware_distribution
+  indicators:
+  - kind: malware
+    value: W32/Induc-A
+  - kind: file
+    value: SysConst.pas
+  - kind: file
+    value: SysConst.dcu
+  - kind: file
+    value: SysConst.bak
+  - kind: technique
+    value: compiler standard unit infected so every build embeds the virus
+  artifacts:
+  - id: induc-delphi-sysconst
+    name: Delphi SysConst
+    ecosystem: developer toolchain
+    kind: source_code
+    start_date: 2009-08-18
+    end_date: 2009-08-23
+    notes:
+    - >-
+      The infected artifact is a file inside each developer's own Delphi installation, not a
+      distributed release, so there is no version or download location to name.
+    - >-
+      Sophos collected more than 3,000 distinct infected programs and ESET more than four thousand
+      samples by 2009-08-19; no list of affected products was ever published.
+  - id: light-alloy
+    name: Light Alloy
+    ecosystem: windows
+    kind: application
+    start_date: 2009-08-18
+    end_date: 2009-08-23
+    versions:
+    - 4.4.0.7948
+    locations:
+    - uri: http://www.softella.com/
+      role: distribution
+    hashes:
+    - sha256: ef66ca202f1f0998c13d8d350bf26bd8206c0979bfb5e84ef511ff2adb58403b
+      of: archive
+      role: malicious
+      note: >-
+        An infected Light Alloy build, measured 2026-09-10 from the VX Heaven 2010 collection,
+        where it is classified Virus.Win32.Induc.c.
+    notes:
+    - >-
+      A shipped product carrying the virus rather than the toolchain that produced it. Its version
+      resource names Light Alloy 4.4.0.7948 by Softella, a Delphi-built multimedia player.
+    - >-
+      Induc infected only programs compiled on a machine whose Delphi SysConst it had rewritten, so
+      an infected build of a released application had to come from the vendor's own build machine.
+  - id: aimp2
+    name: AIMP2
+    ecosystem: windows
+    kind: application
+    start_date: 2009-08-18
+    end_date: 2009-08-23
+    versions:
+    - 2.6.0.462
+    locations:
+    - uri: http://www.aimp.ru/
+      role: distribution
+    hashes:
+    - sha256: 685203131a66fa0ee1815352d145babf8e425573340a2d88df35871cfc876335
+      of: archive
+      role: malicious
+      note: >-
+        An infected AIMP2 Core library, measured 2026-09-11 from the VX Heaven 2010 collection,
+        where it is classified Virus.Win32.Induc.a.
+    notes:
+    - >-
+      The media player this record's own notes name among the products found shipping infected
+      builds. Its version resource reads AIMP2: Core 2.6.0.462, AIMP DevTeam, Artem Izmaylov.
+    - >-
+      A Delphi-built application, which is what made it a carrier: the virus infected only what a
+      compromised Delphi installation compiled.
+  notes:
+  - >-
+    Named products found shipping infected builds include the chat client QIP, the media player
+    AIMP, Tidy Favorites and Any TV Free. Their source code was never modified.
+  - >-
+    The virus has no payload beyond propagation, which is likely why it circulated for months
+    before anyone connected the reports.
+  - >-
+    Induc is the wild instance of the attack described in unix-c-compiler-bell-labs-experiment, and
+    the same shape as xcodeghost: compromise the toolchain and every artifact inherits it.
+  references:
+  - url: https://www.welivesecurity.com/2009/08/23/w32induc-a-faq/
+    title: W32/Induc.A FAQ - ESET
+  - url: https://nakedsecurity.sophos.com/2009/08/20/sophos-false-alarming-delphi-induc-virus/
+    title: Sophos is not false alarming on the Delphi Induc virus - Naked Security
+  - url: https://blog.marcocantu.com/blog/virus_attacks_delphi.html
+    title: Virus W32/Induc-A Attacks Delphi SysConst.pas - Marco Cantu
+  - url: https://www.theregister.com/2009/08/19/delphi_malware/
+    title: Delphi compiler infected with malware - The Register

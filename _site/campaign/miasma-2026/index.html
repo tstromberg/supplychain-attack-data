@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Miasma worm burrowed through npm for two months</title>
+  <title>Miasma worm rode a build-config file through npm</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
   <div class="container">
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
-  <h1>Miasma worm burrowed through npm for two months</h1>
+  <h1>Miasma worm rode a build-config file through npm</h1>
 
   <div class="metadata-grid">
     <div class="meta-item"><strong>Campaign:</strong> miasma-2026</div>
@@ -39,21 +39,25 @@ poisoned versions of whatever packages it could reach. Red Hat, the
 AsyncAPI project, and the voice-AI vendor Vapi were among the names it
 burned through.</p>
     
-      <p>Miasma&#39;s first widely reported outing came on May 29, 2026, when an
-attacker used a Red Hat employee&#39;s GitHub account to inject a malicious
-preinstall script into packages in the `@redhat-cloud-services` npm
+      <p>Miasma's first widely reported outing came on May 29, 2026, when an
+attacker used a Red Hat employee's GitHub account to inject a malicious
+preinstall script into packages in the <code>@redhat-cloud-services</code> npm
 namespace. Red Hat said the account had itself been compromised by a
 malicious VS Code extension, which is a reminder that the worm did not
 need to break npm to get npm publish rights.</p>
     
       <p>Five days later the operators changed how the code fired. On June 3,
 StepSecurity documented a wave it called &quot;Phantom Gyp,&quot; in which the
-payload abandoned `preinstall` and `postinstall` hooks entirely and
-instead hid execution inside a 157-byte `binding.gyp` file. Because
-`node-gyp` evaluates shell commands in that file during dependency
-installation, the code ran on `npm install` without ever appearing in a
+payload abandoned <code>preinstall</code> and <code>postinstall</code> hooks entirely and
+instead hid execution inside a 157-byte <code>binding.gyp</code> file. Because
+<code>node-gyp</code> evaluates shell commands in that file during dependency
+installation, the code ran on <code>npm install</code> without ever appearing in a
 lifecycle-script scanner. Snyk counted 57 affected packages and more than
 300 malicious versions.</p>
+      <figure class="pull-quote">
+        <blockquote>The package.json declared no install scripts at all; the mere presence of a <code>binding.gyp</code> made npm run node-gyp, and gyp's <code>&lt;!(...)</code> command expansion executed the attacker's shell at configure time.</blockquote>
+        <figcaption>no install script to find</figcaption>
+      </figure>
     
       <p>The July 14 AsyncAPI compromise moved the trigger again, this time to
 module import. Socket said the loader fetched an 8.25 MB encrypted second
@@ -101,11 +105,13 @@ then reinvested in the next round of publishing.</p>
   <h2>Notes</h2>
   <ul>
     
-      <li>The three waves recorded here differ in execution trigger rather than in payload goal. May 29 used a preinstall script, June 3 used binding.gyp evaluation during node-gyp dependency installation, and July 14 used module import. Detection tooling that keyed on lifecycle scripts missed the second and third.</li>
+      <li>The three waves recorded here differ in execution trigger rather than payload goal: May 29 used a preinstall script, June 3 used binding.gyp during node-gyp installation, July 14 used module import. Lifecycle-script detection missed two.</li>
     
-      <li>The 2026-06-24 wave recorded at [[leoplatform-rstreams]] carried the campaign outside npm for the first time, reaching a Verana Blockchain Go module. Researchers use Mini Shai-Hulud, Miasma, and Hades for overlapping parts of this family.</li>
+      <li>The 2026-06-24 wave recorded at [[leoplatform-rstreams]] carried the campaign outside npm for the first time, reaching a Verana Blockchain Go module. Researchers use Mini Shai-Hulud, Miasma and Hades for overlapping parts.</li>
     
-      <li>Miasma is distinct from the TeamPCP Mini Shai-Hulud lineage tracked under [[shai-hulud-here-we-go-again]], though both are credential-harvesting npm worms active in the same period and both abuse npm trusted publishing to self-propagate. No public source attributes them to the same operator.</li>
+      <li>&quot;Mini Shai-Hulud&quot; names two different things: JFrog, Socket and Aikido use it for the May 2026 TeamPCP wave, while Red Hat&#39;s advisory uses it for Miasma itself, calling the kit &quot;&#39;Miasma&#39; (also referred to as &#39;Mini Shai-Hulud&#39;)&quot;.</li>
+    
+      <li>Red Hat describes Miasma as an open-source malware kit, so shared code does not imply a shared operator.</li>
     
   </ul>
   

@@ -89,27 +89,22 @@
   - kind: malware_family
     value: ChainDrop
   notes:
-  - The malicious versions carry valid provenance. The attacker pushed to the main branch
-    and cut releases through GitHub Actions rather than publishing with a stolen npm token,
-    so provenance attestation does not distinguish them from legitimate releases.
-  - Counts vary slightly by source and collection time. StepSecurity reported 444 packages
-    and 2,212 versions in under four hours; other trackers reported 2,234 to 2,236 versions
-    and 400-plus packages as the campaign continued.
-  - 'npm registry publish times for the three recorded carriers: keyv 6.0.0 at 09:35:00Z,
-    flat-cache 6.1.24 at 10:10:55Z, and file-entry-cache 11.1.6 at 10:13:02Z on 2026-08-04.
-    keyv 6.0.0-rc.1 was published at 19:21:08Z on 2026-08-03, before the reported window;
-    no source classifies it, so it is not recorded as malicious. It also remains served by
-    the registry, while the three recorded carriers return 404, which is consistent with
-    leaving it unclassified.'
-  - keyv 6.0.0, flat-cache 6.1.24, and file-entry-cache 11.1.6 were removed from npm and
-    now return 404, so no sample of the malicious tarballs could be acquired. Their
-    immediate predecessors, flat-cache 6.1.23 and keyv 5.5.3, are still served.
-  - The Ethereum dead-drop lets the operator rotate exfiltration infrastructure without
-    redeploying malware. Researchers observed a full C2 reconfiguration through a single
-    transaction late on 2026-08-04.
-  - Wiz assessed the payload as a descendant of the Mini Shai-Hulud family, sharing
-    characteristics with the TeamPCP and AntV campaigns recorded under
-    [[shai-hulud-here-we-go-again]].
+  - >-
+    The malicious versions carry valid provenance. The attacker pushed to main and cut releases
+    through GitHub Actions rather than publishing with a stolen npm token, so attestation does
+    not distinguish them from legitimate releases.
+  - >-
+    Counts vary by source and collection time: StepSecurity reported 444 packages and 2,212
+    versions in under four hours; other trackers reported 2,234 to 2,236 versions and 400-plus
+    packages as the campaign continued.
+  - >-
+    npm publish times: keyv 6.0.0 at 09:35:00Z, flat-cache 6.1.24 at 10:10:55Z, file-entry-cache
+    11.1.6 at 10:13:02Z on 2026-08-04. keyv 6.0.0-rc.1 predates the window, is unclassified by
+    every source, and is still served.
+  - >-
+    The three carriers now return 404. Socket member manifests and Forager gave verified
+    member-tree reconstructions for flat-cache and file-entry-cache and six of nine for keyv;
+    the synthetic archives stay named RECONSTRUCTED.
   artifacts:
   - id: keyv
     name: keyv
@@ -124,11 +119,14 @@
     - uri: https://www.npmjs.com/package/keyv
       role: distribution
     hashes:
+    - sha1:0f18da4e81443285c3ee7e96eb3adc3803b2487e
     - sha512:37f9f847e9c3e520b47d83a9029e199dbc30c6a195a1d80467d0fb1a6fd5068728ad4d1a422995ca578359263afdac5d3b4fed7a6b9befad27de19cca6966952
     notes:
     - Reported at more than 150 million weekly downloads.
     - Socket mapped the SHA-512 checksum to the complete keyv-6.0.0.tgz npm
       distribution archive.
+    - OSSF MAL-2026-11524 maps the SHA-1 checksum to that same complete
+      keyv-6.0.0.tgz archive.
   - id: flat-cache
     name: flat-cache
     package: flat-cache
@@ -141,8 +139,12 @@
     locations:
     - uri: https://www.npmjs.com/package/flat-cache
       role: distribution
+    hashes:
+    - sha1:807498bafd6f951580938f8ee22cb66a6615c119
     notes:
     - Reported at roughly 149.9 million weekly downloads.
+    - StepSecurity preserved npm's shasum for the complete flat-cache-6.1.24.tgz
+      distribution archive.
   - id: file-entry-cache
     name: file-entry-cache
     package: file-entry-cache
@@ -184,3 +186,17 @@
     title: 'keyv and cacheable npm compromise: 400+ packages - SafeDep'
   - url: https://github.com/ossf/malicious-packages
     title: OSSF malicious-packages database
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/keyv/MAL-2026-11524.json
+    title: OSSF MAL-2026-11524 package-integrity record for keyv 6.0.0
+  - url: https://socket.dev/npm/package/keyv/files/6.0.0
+    title: Socket retained member manifest for malicious keyv 6.0.0
+  - url: https://socket.dev/npm/package/keyv/files/5.5.3
+    title: Socket retained member manifest for adjacent clean keyv 5.5.3
+  - url: https://socket.dev/npm/package/flat-cache/files/6.1.24
+    title: Socket retained member manifest for malicious flat-cache 6.1.24
+  - url: https://socket.dev/npm/package/file-entry-cache/files/11.1.6
+    title: Socket retained member manifest for malicious file-entry-cache 11.1.6
+  - url: https://registry.npmjs.org/keyv/6.0.0-rc.1
+    title: npm registry version metadata for checksum-verified keyv 6.0.0-rc.1 reconstruction input
+  - url: https://github.com/jaredwray/keyv/commit/f97eabcdd057105f1fce3f05d6c029dac3f2ac78
+    title: Exact retained malicious keyv 6.0.0 release source commit

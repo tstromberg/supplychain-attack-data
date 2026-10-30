@@ -1,0 +1,196 @@
+schema_version: 1
+interpretation:
+  - >-
+    The malicious Better MC uploads were archived on CurseForge the moment they were published,
+    which is what hid them from the web UI at the time, and they are not served now: the file page
+    404s, the forgecdn paths refuse listing, and the site API returns nothing for the project. None
+    of the three modpack files could be acquired.
+  - >-
+    The malware they carried could be. fractureiser's stage 0 survives in a public sandbox corpus
+    and matches the SHA-1 the investigation team published, and the team's own decompilation of
+    stage 1 is retained beside it. Together they are the executable content of the incident, held
+    under their own artifact rather than presented as a modpack file.
+  - >-
+    Modrinth independently retained the legitimate DungeonZ 1.0.1 build for Minecraft 1.19.2,
+    published two days before the infected jar's build timestamp. It matches the embedded identity
+    of the infected jar and provides a complete clean comparator for the stage-0 carrier.
+samples:
+  - artifact_id: fractureiser-stage0
+    phase: before
+    classification: clean
+    coordinate: pkg:modrinth/dungeonz@1.0.1?loader=fabric&minecraft=1.19.2
+    version: 1.0.1
+    filename: dungeonz-1.0.1.jar
+    path: fractureiser-stage0/before/dungeonz-1.0.1.jar
+    sha256: a76034f678bfbe254ba6045b2e5715deb978b7a7c956853c71b6335378bb60ca
+    size: 912736
+    source:
+      url: https://cdn.modrinth.com/data/11jwniuC/versions/Ukjd4XYm/dungeonz-1.0.1.jar
+      retrieved_at: '2026-09-07T01:51:00Z'
+      kind: distribution
+    verification:
+      status: exact
+      basis:
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - modrinth_version_api_sha1_467c1f54483330a9e0ecb17937da6f0f2113bf7e
+        - modrinth_version_api_sha512
+        - embedded_mod_id_version_and_minecraft_target_match_infected_jar
+        - measured_sha256
+    notes:
+      - >-
+        Complete legitimate jar, not reconstructed. Its DungeonzMain.class differs from the infected
+        jar and contains none of the stage-0 injection.
+    subject: fractureiser-stage0
+  - artifact_id: fractureiser-stage0
+    phase: during
+    classification: malicious
+    filename: dungeonz-4551100.jar
+    path: fractureiser-stage0/during/dungeonz-4551100.jar
+    sha256: 511418fde9900f917055cf854c9a16078700a4031d746d151a5cdeda10c07b86
+    size: 898408
+    source:
+      url: https://tria.ge/api/v0/samples/
+      original_url: https://legacy.curseforge.com/minecraft/mc-mods/dungeonx/files/4551100
+      retrieved_at: '2026-09-02T12:57:30Z'
+      kind: malware_sandbox
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - investigation_team_reported_sha1_2db855a7f40c015f8c9ca7cbab69e1f1aafa210b
+        - measured_sha1_matches
+        - measured_sha256
+    notes:
+      - >-
+        Dungeonz, one of the seed mods uploaded by the single-use "fractureiser" account and the
+        kind of upload a Luna Pixel Studios developer tested, which is how the studio's machine and
+        then the Better MC packs were infected.
+      - >-
+        This is a seed mod, not a Better MC file. It is kept because it is the same stage 0 the
+        modpacks shipped: an inserted static method in the mod's main class that builds a
+        URLClassLoader over http://85.217.144.130:8080/dl, loads a class named Utility, and calls
+        run() with a per-mod tracking string.
+      - >-
+        The sandbox stored it under its detection name; it is renamed here to the CurseForge file it
+        was distributed as, with the bytes unchanged and the rename recorded in the sidecar.
+    subject: fractureiser-stage0
+    commit: '4551100'
+  - artifact_id: fractureiser-stage0
+    phase: during
+    classification: malicious
+    filename: Utility-decompiled.java
+    path: fractureiser-stage0/during/Utility-decompiled.java
+    sha256: cd283c6ab90fa53ef98989822d88b34d13a27395502d0360d692cc18ccf61394
+    size: 19095
+    source:
+      url: >-
+        https://raw.githubusercontent.com/fractureiser-investigation/fractureiser/fc8b27b9ced4bd93570448e290021fff7482620f/decomp/Utility.java
+      retrieved_at: '2026-09-02T13:12:00Z'
+      kind: contemporary_research_archive
+    verification:
+      status: payload_only
+      basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - measured_sha256
+    notes:
+      - >-
+        Stage 1, the class the jar above fetches at load time, as decompiled by the fractureiser
+        investigation team with CFR 0.151. It is a decompilation, not the distributed bytecode.
+    subject: fractureiser-stage0
+    commit: fc8b27b9ced4bd93570448e290021fff7482620f
+  - artifact_id: fractureiser-stage0
+    phase: during
+    classification: affected
+    coordinate: sha1:2db855a7f40c015f8c9ca7cbab69e1f1aafa210b
+    filename: Trojan.Java.Fractureiser.B.jar
+    path: fractureiser-stage0/during/Trojan.Java.Fractureiser.B.jar
+    sha256: 511418fde9900f917055cf854c9a16078700a4031d746d151a5cdeda10c07b86
+    size: 898408
+    source:
+      url: https://tria.ge/api/v0/samples/250613-v8q1xahk4w/sample
+      retrieved_at: '2026-09-02T15:36:31.361797Z'
+      kind: malware_sandbox
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - reported_sha1
+        - measured_sha256
+    subject: fractureiser-stage0
+  - artifact_id: better-mc-forge-bmc3
+    phase: before
+    classification: clean
+    coordinate: pkg:generic/curseforge/better-mc-forge-bmc3@v15?file_id=4566078
+    version: v15
+    filename: Better MC [FORGE] 1.19.2 v15.zip
+    path: better-mc-forge-bmc3/before/Better MC [FORGE] 1.19.2 v15.zip
+    sha256: 51e0ee60ccfeeb8429a927ea2b4ad0a2c5c74bb0ca2e60e06629953af1282de5
+    size: 65785385
+    source:
+      url: https://www.curseforge.com/api/v1/mods/550864/files/4566078/download
+      kind: official_distribution
+      retrieved_at: '2026-09-10T12:15:16Z'
+    verification:
+      status: probable_exact
+      basis:
+        - measured_sha256
+      evidence:
+        - curseforge_file_record_4566078_length_65785385_matches_measured_size
+        - measured_sha256
+    notes:
+      - >-
+        CurseForge project 550864 (Better MC [FORGE] - BMC3). Uploaded 2023-06-04T04:34:27Z, the
+        last file that survives before the infected upload CurseForge deleted; the next surviving
+        file is v16 of 2023-07-22. Its manifest.json lists 257 mod files and no overrides jars, and
+        none of them is Luna Pixel Studios' Skyblock Core.
+      - >-
+        Selected as the chronological predecessor. No digest was published for it; the size matches
+        CurseForge's file record.
+    subject: better-mc-forge-bmc3
+unresolved:
+  - artifact_id: better-mc-forge-bmc3
+    phase: during
+    version: v18
+    filename: Better MC [Forge] BMC3 v18
+    status: unavailable
+    notes:
+      - >-
+        CurseForge file 4477460. Archived at upload time and no longer retrievable; the same is true
+        of the BMC2 v7 and Fabric v10 uploads, whose file ids the incident record does not carry.
+    attempts:
+      - curseforge.com file page: 404
+      - edge.forgecdn.net and mediafilez.forgecdn.net: 404 and 403 without an exact filename.
+      - curseforge.com/api/v1 mod search and file listing: no data returned.
+      - >-
+        MalwareBazaar, Triage, Malshare: the Luna Pixel Studios Skyblock Core jar (SHA-1
+        33677ca0e4c565b1f34baa74a79c09a3b690bf41) and the Floating Damage jar are not held by any of
+        them.
+  - artifact_id: skyblock-core
+    phase: during
+    coordinate: sha1:33677ca0e4c565b1f34baa74a79c09a3b690bf41
+    status: unavailable
+    attempts:
+      - >-
+        CurseForge, 2026-09-10: file 4570565 is no longer served. The api/v1 download path returns
+        404 and both legacy.curseforge.com and mediafilez.forgecdn.net answer 403 behind Cloudflare.
+      - >-
+        Modrinth, 2026-09-10: the project is not mirrored there; a catalogue search returns
+        unrelated skyblock projects only.
+      - >-
+        HonbraDev/fractureiser-samples, 2026-09-10: the repository holds the fractureiser stage 0-3
+        jars but no Skyblock Core file.
+      - >-
+        Digest sweep, 2026-09-10: the 1 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'

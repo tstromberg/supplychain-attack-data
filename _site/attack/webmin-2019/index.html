@@ -18,7 +18,7 @@
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> webmin · <a href="https://webmin.com" target="_blank">website</a></div>
     <div class="meta-item"><strong>Date:</strong> 2018-04-01 to 2019-08-17 (503 days)</div>
-    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> daemon</div>
     <div class="meta-item"><strong>Language:</strong> Perl</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
@@ -36,11 +36,15 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>Webmin&#39;s 2019 backdoor was not born in the public Git tree. The project later explained that its development build server had been compromised in April 2018 and that `password_change.cgi` was modified there. The timestamp was set back, so the poisoned local build file did not appear as a suspicious Git diff.</p>
+      <p>Webmin's 2019 backdoor was not born in the public Git tree. The project later explained that its development build server had been compromised in April 2018 and that <code>password_change.cgi</code> was modified there. The timestamp was set back, so the poisoned local build file did not appear as a suspicious Git diff.</p>
     
       <p>The first affected release, Webmin 1.890, shipped with a root command execution backdoor that was exploitable in a default install. The vulnerable file was later reverted from GitHub, but in July 2018 the attacker modified it again. This second version reached Webmin 1.900 through 1.920, where exploitation required the expired-password-change feature to be enabled.</p>
+      <figure class="pull-quote">
+        <blockquote>Webmin built releases from a local directory kept in sync with GitHub rather than from checked-in code; the attacker set the modified <code>password_change.cgi</code> timestamp back, and Webmin says it never showed up in a Git diff.</blockquote>
+        <figcaption>the timestamp that hid the diff</figcaption>
+      </figure>
     
-      <p>The malicious line was short. In the password-change path, attacker-controlled input reached Perl command execution through a `qx/.../` expression. Because Webmin commonly runs as root, a remote command reached the operating system with root privileges.</p>
+      <p>The malicious line was short. In the password-change path, attacker-controlled input reached Perl command execution through a <code>qx/.../</code> expression. Because Webmin commonly runs as root, a remote command reached the operating system with root privileges.</p>
     
       <p>The compromise survived a build-server replacement in September 2018 because the old build directory was restored from backup onto the new host. A public exploit release in August 2019 disclosed the issue. Webmin removed the code, released 1.930, rotated secrets from the old build system, and changed the build process to use checked-in GitHub code instead of a synced local directory.</p>
     
@@ -107,7 +111,7 @@
     
       <li><a href="https://pentest.com.tr/exploits/DEFCON-Webmin-1920-Unauthenticated-Remote-Command-Execution.html" target="_blank">DEFCON Webmin 1.920 Unauthenticated Remote Command Execution</a></li>
     
-      <li><a href="https://www.webmin.com/exploit.html" target="_blank">Webmin 1.890 Exploit - What Happened</a></li>
+      <li><a href="https://webmin.com/security/" target="_blank">Webmin 1.890 Exploit - What Happened</a></li>
     
       <li><a href="https://webmin.com/security/#remote-command-execution-cve-2019-15231" target="_blank">Webmin Security: Remote Command Execution CVE-2019-15231</a></li>
     

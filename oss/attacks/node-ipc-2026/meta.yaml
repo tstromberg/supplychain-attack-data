@@ -6,13 +6,20 @@
     obfuscated payload harvested developer, cloud, SSH, and CI/CD secrets and exfiltrated
     them over DNS TXT queries.
   story: |
-    Four years after a maintainer of the widely used `node-ipc` npm package sabotaged it in protest over the war in Ukraine, the project was hit again on May 14, 2026, this time by an outside attacker who hijacked a dormant co-maintainer's account through an expired email domain and shipped a new credential stealer to users in a span of 56 seconds.
+    Four years after a maintainer of the widely used `node-ipc` npm package sabotaged it in protest over the war in Ukraine, the project was hit again on May 14, 2026, this time by an outside attacker who hijacked a dormant co-maintainer's account through an expired email domain and shipped a new credential stealer to users in a span of 55 seconds.
 
     `node-ipc` is a node.js inter-process communication library that recorded more than 800,000 weekly downloads at the time of the compromise. Three new versions appeared on the npm registry in quick succession: 12.0.1 at 14:25:30 UTC, 9.2.3 at 14:26:01, and 9.1.6 at 14:26:25, all signed by `atiertant`, a dormant co-maintainer account. Researchers at Socket said the attacker had re-registered the lapsed domain that backed the maintainer's email, run a standard npm password reset, and reached publish without touching the project's GitHub repository or any active maintainer's machine. Socket's scanner flagged the releases within three minutes. This was a separate event from the 2022 protestware incident associated with the project's original author.
 
-    A static comparison against the prior release showed the main ESM file unchanged. According to Socket, all three tarballs carried an identical 80 KB block of obfuscated JavaScript appended to `node-ipc.cjs` after the legitimate exports, meaning CommonJS consumers, the more common path, were the ones that would execute it. The payload fired via `setImmediate()` during module load, exposed itself under the export `__ntRun`, and forked a detached child marked with the environment variable `__ntw=1`, which served as both a re-execution lock and a process tag. The collector enumerated 113 paths on Linux and 127 on macOS, including SSH keys, AWS, Azure, and GCP credential files, `.npmrc`, `.env` files, Kubernetes and Docker configurations, npm tokens, database connection strings, and configurations for AI tooling such as `.claude.json` and `.kiro/settings/mcp.json`, along with the full process environment and host details from `uname` and `/etc/hosts`.
+    A static comparison against the prior release showed the main ESM file unchanged. According to Socket, all three tarballs carried an identical 80 KB block of obfuscated JavaScript appended to `node-ipc.cjs` after the legitimate exports, meaning CommonJS consumers, the more common path, were the ones that would execute it. The payload fired via `setImmediate()` during module load, exposed itself under the export `__ntRun`, and forked a detached child marked with the environment variable `__ntw=1`, which served as both a re-execution lock and a process tag. The collector enumerated 113 patterns on macOS and 127 on Linux, including SSH keys, AWS, Azure, and GCP credential files, `.npmrc`, `.env` files, Kubernetes and Docker configurations, npm tokens, database connection strings, and configurations for AI tooling such as `.claude.json` and `.kiro/settings/mcp.json`, along with the full process environment and host details from `uname` and `/etc/hosts`.
 
-    Output staged under `<tmpdir>/nt-<pid>/`. According to Socket, the collector tarred the staged data with every file timestamped to October 26, 1985, HMAC-signed the archive with an embedded key, and exfiltrated it over DNS TXT queries against the `bt.node.js` zone using a custom base-16 reversed-nibble scheme, with bootstrap name resolution through `sh.azurestaticprovider.net`, a domain built to pass as Azure infrastructure. The choice of DNS was deliberate: most CI egress filters would have caught an outbound HTTPS POST. Outwardly the package still looked like `node-ipc`, with name, repository metadata, README, certificates, and API files intact. The break was in the registry distribution channel itself, where a fresh install or a permissive semver range could resolve to the malicious release without any downstream code review, and the `latest` dist-tag pointed at 12.0.1, so unversioned installs picked up the malicious build until npm pulled the releases.
+    Output staged under `<tmpdir>/nt-<pid>/`. According to Socket, every file in the published tarballs is timestamped October 26, 1985, which Socket offers as a package-level indicator for cached tarballs and registry mirrors, HMAC-signed the archive with an embedded key, and exfiltrated it over DNS TXT queries against the `bt.node.js` zone using a custom base-16 reversed-nibble scheme, with bootstrap name resolution through `sh.azurestaticprovider.net`, a domain built to pass as Azure infrastructure. The choice of DNS was deliberate: most CI egress filters would have caught an outbound HTTPS POST. Outwardly the package still looked like `node-ipc`, with name, repository metadata, README, certificates, and API files intact. The break was in the registry distribution channel itself, where a fresh install or a permissive semver range could resolve to the malicious release without any downstream code review, and the `latest` dist-tag pointed at 12.0.1, so unversioned installs picked up the malicious build until npm pulled the releases.
+  pull_quote:
+    text: >-
+      `node-ipc` listed twelve npm maintainers. The attacker needed only the
+      dormant one, whose lapsed email domain could be re-registered and
+      pointed at a standard password reset.
+    caption: twelve maintainers, one dormant
+    after: 2
   start_date: 2026-05-14
   end_date: 2026-05-14
   target:
@@ -65,6 +72,7 @@
     - sha1:fe5d107b9d285327af579259a32977c4f475fa26
     - sha1:58ae7338960ef525d7c655023d7c81e3ddb283d6
     - sha1:f5974a9774a22a863728b960543f68e7009099ef
+    - sha512:3daac9800f2b3016b5080bfa4050d9633671b0db261d62f6e116a94d255b641f6a544f9d0bb9873700e3e6071df3be1b2a38e4ef0d2923f58c62bc7d4f153b9d
     indicators:
     - kind: file
       value: node-ipc.cjs
@@ -108,20 +116,33 @@
       value: Obfuscated 80 KB block appended to the CommonJS bundle after legitimate exports;
         ESM entry unchanged.
     - kind: observable
-      value: Collector enumerates 113 paths on Linux and 127 on macOS covering SSH, cloud,
+      value: Collector enumerates 113 patterns on macOS and 127 on Linux covering SSH, cloud,
         Kubernetes, npm, database, and AI tool credentials.
     notes:
-    - npm registry publish times were 2026-05-14T14:25:30Z for 12.0.1, 2026-05-14T14:26:01Z
-      for 9.2.3, and 2026-05-14T14:26:25Z for 9.1.6.
-    - The impact user count stores npm's last-week download count for node-ipc, reported
-      for 2026-05-06 through 2026-05-12; it is exposure context, not confirmed victim count.
-    - As of the registry snapshot used for this record, dist-tags pointed latest to 12.0.1,
-      unpublished to 9.2.3, and legacy-9.1 to 9.1.6.
-    - 'Socket attributes the entry to expired email domain takeover against the
-      `atiertant` co-maintainer account: the attacker re-registered the lapsed domain
-      and ran a standard npm password reset to take publish authority.'
-    - ESM-only consumers using `import` are not exposed unless another dependency loads
-      node-ipc.cjs; CommonJS `require("node-ipc")` is the affected path.
+    - >-
+      npm publish times were 14:25:30Z for 12.0.1, 14:26:01Z for 9.2.3 and 14:26:25Z for 9.1.6
+      on 2026-05-14. At the registry snapshot used here, dist-tags pointed latest to 12.0.1,
+      unpublished to 9.2.3 and legacy-9.1 to 9.1.6.
+    - >-
+      The impact user count stores npm's last-week download count for node-ipc, reported for
+      2026-05-06 through 2026-05-12; it is exposure context, not a confirmed victim count.
+    - >-
+      Socket attributes entry to expired email domain takeover against the atiertant
+      co-maintainer account: the attacker re-registered the lapsed domain and ran a standard npm
+      password reset to take publish authority.
+    - >-
+      ESM-only consumers using import are not exposed unless another dependency loads
+      node-ipc.cjs; CommonJS require("node-ipc") is the affected path. StepSecurity and OSSF map
+      the SHA-256 and SHA-1 values above to the three npm archives.
+  notes:
+  - >-
+    The expired-domain vector is credited by Socket to independent researcher Ian Ahl of
+    Permiso, and Socket hedges it as "the likely vector", assuming the account recovery email
+    was hosted on the lapsed domain.
+  - >-
+    Download figures conflict: SafeDep reports about 822,000 weekly, StepSecurity over 10
+    million. StepSecurity also reports a targeting gate in 12.0.1 that Socket's identical-file
+    finding contradicts. Unreconciled.
   references:
   - url: https://socket.dev/blog/node-ipc-package-compromised
     title: node-ipc npm Package Compromised in Supply Chain Attack
@@ -131,3 +152,7 @@
     title: Malicious node-ipc npm Compromise - SafeDep
   - url: https://registry.npmjs.org/node-ipc
     title: node-ipc npm registry metadata
+  - url: https://socket.dev/npm/package/node-ipc/files/12.0.1
+    title: Socket retained file tree for node-ipc 12.0.1
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/node-ipc/MAL-2026-3744.json
+    title: OSSF MAL-2026-3744 package-integrity record for node-ipc 9.1.6

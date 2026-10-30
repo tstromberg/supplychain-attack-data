@@ -22,12 +22,16 @@ samples:
     verification:
       status: source_snapshot
       basis:
+        - payload_indicator_present
+        - measured_sha256
+      evidence:
         - github_commit_a0d127c
         - package_json_version_0_1_0
         - no_malicious_dependency_or_loader_present
         - measured_sha256_and_size
     notes:
       - This is the clean upstream source snapshot, not the removed npm tarball.
+    subject: flatmap-stream
   - artifact_id: event-stream
     phase: before
     classification: clean
@@ -44,11 +48,15 @@ samples:
     verification:
       status: exact
       basis:
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
         - npm_registry_sha1
         - npm_registry_sha512
         - measured_sha256
     notes:
       - The npm SHA-1 is 4ab4c9a0f5a54db9338b4c34d86bfce8f4b35571.
+    subject: event-stream
   - artifact_id: event-stream
     phase: during
     classification: carrier
@@ -74,6 +82,9 @@ samples:
     verification:
       status: probable_exact
       basis:
+        - git_object_id_verified
+        - independent_preservation_agreement
+      evidence:
         - hopper_content_address
         - embedded_npm_name_and_version
         - independently_curated_malicious_corpus
@@ -85,6 +96,7 @@ samples:
       - >-
         The content-addressed local filename is used because the Hopper row has no provenance
         sidecar; its indexed original filename is retained in source.chain.
+    subject: event-stream
   - artifact_id: flatmap-stream
     phase: during
     classification: malicious
@@ -110,6 +122,10 @@ samples:
     verification:
       status: disputed
       basis:
+        - git_object_id_verified
+        - payload_indicator_present
+        - reported_digest_matched
+      evidence:
         - hopper_content_address
         - embedded_npm_name_and_version
         - malicious_index_min_js_present
@@ -121,6 +137,34 @@ samples:
       - >-
         The content-addressed local filename is used because the Hopper row has no provenance
         sidecar; its indexed original filename is retained in source.chain.
+    subject: flatmap-stream
+  - artifact_id: event-stream
+    phase: after
+    classification: clean
+    coordinate: pkg:npm/event-stream@4.0.0
+    version: 4.0.0
+    filename: event-stream-4.0.0.tgz
+    path: event-stream/after/event-stream-4.0.0.tgz
+    sha256: 515810c9089ee41448def64724c9349e8156d602683e29ced8676f4a695090c5
+    size: 14222
+    source:
+      url: https://registry.npmjs.org/event-stream/-/event-stream-4.0.0.tgz
+      retrieved_at: '2026-09-11T00:08:26.050Z'
+      kind: distribution
+    verification:
+      status: exact
+      basis:
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - registry_sha512_integrity
+        - measured_sha256
+    notes:
+      - >-
+        The release that removed the malicious dependency: 4.0.0's package.json lists duplexer,
+        from, map-stream, pause-stream, split, stream-combiner and through, with no flatmap-stream.
+      - Reproduces the dist.integrity npm publishes for this version.
+    subject: event-stream
 unresolved:
   - artifact_id: flatmap-stream
     phase: before
@@ -132,15 +176,29 @@ unresolved:
       - Hopper has no matching package/version.
       - The Maven WebJar mirrors checked returned 404.
       - A clean GitHub source snapshot for 0.1.0 is retained above, but it is not an npm tarball.
+      - >-
+        Remediation lane, 2026-09-10: flatmap-stream has no fixed version to collect. npm replaced
+        the whole package with a 0.0.1-security holding package and every mirror synced that
+        replacement; OSV's GHSA-9x64-5r7x-2q53 names 0.1.1 affected with no fix, and MAL-2025-20690
+        marks the package malicious at every version. A fixed_versions of 0.1.2 previously recorded
+        here was removed as unsupported.
+    last_attempted_at: '2026-09-11T00:08:26Z'
   - artifact_id: flatmap-stream
     phase: during
     status: hash_mapping_required
     attempts:
       - MalwareBazaar returned hash_not_found for the reported SHA-256 on 2026-08-08.
       - Triage returned no file analysis for the reported SHA-256 on 2026-08-08.
+      - >-
+        Remediation lane, 2026-09-10: flatmap-stream has no fixed version to collect. npm replaced
+        the whole package with a 0.0.1-security holding package and every mirror synced that
+        replacement; OSV's GHSA-9x64-5r7x-2q53 names 0.1.1 affected with no fix, and MAL-2025-20690
+        marks the package malicious at every version. A fixed_versions of 0.1.2 previously recorded
+        here was removed as unsupported.
     note: >-
       Determine which evidence object the SHA-1 and SHA-256 in meta.yaml identify and whether an
       exact original npm tarball can still be recovered.
+    last_attempted_at: '2026-09-11T00:08:26Z'
   - artifact_id: flatmap-stream
     phase: during
     coordinate: sha256:a9c97713c80d0ceb8f28038890af2a0d5f28a037726ed98e46cfa5e851ffec0d
@@ -163,7 +221,23 @@ unresolved:
         Triage has no file analysis for SHA256
         a9c97713c80d0ceb8f28038890af2a0d5f28a037726ed98e46cfa5e851ffec0d; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:01.802Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:13:15.286-04:00 level=ERROR msg="command failed"
+        error="hash a9c97713c80d0ceb8f28038890af2a0d5f28a037726ed98e46cfa5e851ffec0d unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/a9c97713c80d0ceb8f28038890af2a0d5f28a037726ed98e46cfa5e851ffec0d;
+        malwarebazaar: MalwareBazaar has no sample for
+        a9c97713c80d0ceb8f28038890af2a0d5f28a037726ed98e46cfa5e851ffec0d: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        a9c97713c80d0ceb8f28038890af2a0d5f28a037726ed98e46cfa5e851ffec0d; malshare: download
+        returned status 404"
+      - >-
+        Remediation lane, 2026-09-10: flatmap-stream has no fixed version to collect. npm replaced
+        the whole package with a 0.0.1-security holding package and every mirror synced that
+        replacement; OSV's GHSA-9x64-5r7x-2q53 names 0.1.1 affected with no fix, and MAL-2025-20690
+        marks the package malicious at every version. A fixed_versions of 0.1.2 previously recorded
+        here was removed as unsupported.
+    last_attempted_at: '2026-09-11T00:08:26Z'
   - artifact_id: flatmap-stream
     phase: after
     coordinate: pkg:npm/flatmap-stream@0.1.2
@@ -174,7 +248,13 @@ unresolved:
         Forager batch: time=2026-08-10T17:16:13.181-04:00 level=ERROR msg="download failed"
         target=pkg:npm/flatmap-stream@0.1.2 error="socket.dev: no files listed for
         flatmap-stream@0.1.2"
-    last_attempted_at: '2026-08-10T21:16:14.264Z'
+      - >-
+        Remediation lane, 2026-09-10: flatmap-stream has no fixed version to collect. npm replaced
+        the whole package with a 0.0.1-security holding package and every mirror synced that
+        replacement; OSV's GHSA-9x64-5r7x-2q53 names 0.1.1 affected with no fix, and MAL-2025-20690
+        marks the package malicious at every version. A fixed_versions of 0.1.2 previously recorded
+        here was removed as unsupported.
+    last_attempted_at: '2026-09-11T00:08:26Z'
   - artifact_id: flatmap-stream
     phase: during
     coordinate: sha1:10084752f5c006eb49b4abff6ff57d3a8abb5246
@@ -186,4 +266,17 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for 10084752f5c006eb49b4abff6ff57d3a8abb5246:
         hash_not_found; triage: Triage has no file analysis for SHA1
         10084752f5c006eb49b4abff6ff57d3a8abb5246; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:56:04.422Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:13:02.461-04:00 level=ERROR msg="command failed"
+        error="hash 10084752f5c006eb49b4abff6ff57d3a8abb5246 unavailable from configured sources:
+        hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has
+        no sample for 10084752f5c006eb49b4abff6ff57d3a8abb5246: hash_not_found; triage: triage has
+        no file analysis for SHA1 10084752f5c006eb49b4abff6ff57d3a8abb5246; malshare: download
+        returned status 404"
+      - >-
+        Remediation lane, 2026-09-10: flatmap-stream has no fixed version to collect. npm replaced
+        the whole package with a 0.0.1-security holding package and every mirror synced that
+        replacement; OSV's GHSA-9x64-5r7x-2q53 names 0.1.1 affected with no fix, and MAL-2025-20690
+        marks the package malicious at every version. A fixed_versions of 0.1.2 previously recorded
+        here was removed as unsupported.
+    last_attempted_at: '2026-09-11T00:08:26Z'

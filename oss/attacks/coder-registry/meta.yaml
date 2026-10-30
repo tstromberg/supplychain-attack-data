@@ -1,0 +1,162 @@
+- id: coder-registry
+  title: Coder module registry served credential-stealing Terraform modules
+  synopsis: >-
+    An attacker added unauthorized IPs to the Cloudflare pool behind registry.coder.com, which
+    served modified Terraform modules for fourteen hours on 2026-08-31. The modules ran a script
+    that gathered provisioner secrets, OIDC tokens and SSH keys and sent them to coder-infra.com.
+  story: |
+    Coder never lost control of its source code. On August 31, 2026, an attacker reached the
+    Cloudflare infrastructure in front of registry.coder.com and added IP addresses of its own to
+    the pool that answers for the module registry. Those addresses ran a copy of the registry.
+    For fourteen hours, some fraction of requests for Coder's Terraform modules were answered by
+    a server Coder did not own, and the modules it returned were not the ones in the repository.
+
+    The window ran from 07:35 to 21:45 UTC. A Coder deployment fetches registry modules when a
+    template is created or updated, when a template build is dry-run, and during workspace
+    creation on templates where module caching is turned off. Deployments that fetched in that
+    window cached what the rogue servers returned. The modified modules carried a Terraform
+    `data "external" "telemetry"` block that executed a shell script shipped alongside the module,
+    named `dlp.sh` or `dlp-docker.sh`. The script was tailored per module: the advisory lists
+    separate SHA-256 values for the common, aider, rstudio-server, windows-rdp and zed variants.
+
+    What the script collected depended on when it ran. On a template upload, update or dry run,
+    the provisioner holds no user data, so the exposure was the provisioner's own environment
+    variables and secrets. On a workspace build, the provisioner also receives the user's OIDC
+    token, the user's SSH key where one is configured, and single-use tokens for any external
+    auth provider the template uses. Coder noted that deployments running the provisioner inside
+    coderd rather than as a separate service would additionally have exposed coder configuration,
+    including the database password. The script sent what it found to www.coder-infra.com, a
+    domain registered three days before the attack, at 199.91.220.205.
+
+    Coder published advisory GHSA-vx42-ghc9-gw65 on September 1 and shipped fixes in 2.37.0,
+    2.36.4, 2.35.7 and 2.34.9. It also published SQL queries that identify cached modules fetched
+    inside the window and delete them, because a poisoned module persists in a deployment's cache
+    after the registry is restored. Coder said it has no indication that customer data it
+    maintains was affected, and stated plainly that it cannot determine which users were hit: the
+    server that took the stolen credentials was not Coder's, so Coder has no logs of it. Users are
+    advised to treat any credential reachable by a provisioner as exposed and rotate it.
+  start_date: 2026-08-31T07:35:00Z
+  end_date: 2026-08-31T21:45:00Z
+  target:
+    name: registry.coder.com
+    kind: package_repository
+    website: https://registry.coder.com
+    repo: https://github.com/coder/registry
+  actor:
+    name: unattributed
+    kind: unknown
+  language: HCL
+  method:
+    cause: compromised_infrastructure
+    phase: distribution
+    motive: credential_theft
+    transitive: false
+  impact:
+    types:
+    - credential_theft
+    - data_exfiltration
+  locations:
+  - uri: https://registry.coder.com
+    role: distribution
+  indicators:
+  - kind: domain
+    value: www.coder-infra.com
+  - kind: ip
+    value: 199.91.220.205
+  - kind: url
+    value: http://www.coder-infra.com/cli/check
+  - kind: http_header
+    value: 'X-CLI-Token: your-secret-token'
+  - kind: technique
+    value: Terraform data "external" "telemetry" block invoking ${path.module}/dlp-docker.sh
+  - kind: file_sha256
+    value: dlp-docker.sh 7190a17c593276d7fd71c4863a4bc0b6c957ed14249288e6f64c5540e2c49398
+  - kind: file_sha256
+    value: dlp.sh (common) a7f4fa5f7e33b2a6f6488cf28444584caa449144d246b083de919162f5514247
+  - kind: commit
+    value: dd1aa88914 migration to delete identified modules (#28798), superseded
+  - kind: commit
+    value: 10fd510ada purge identified terraform modules via dbpurge (#28802)
+  - kind: observable
+    value: cached module archives are files rows with mimetype application/x-tar and created_by 
+      00000000-0000-0000-0000-000000000000
+  - kind: observable
+    value: coder-infra.com registered 2026-08-28T07:05:09Z via Fewmoretaps OU d/b/a Trustname.com
+  - kind: observable
+    value: 199.91.220.205 announced by BL Networks (US)
+  - kind: ip
+    value: 104.21.10.65
+  - kind: ip
+    value: 172.67.144.184
+  notes:
+  - >-
+    No affected module version is named anywhere. The rogue servers answered for whatever version a
+    deployment asked for, so this record carries no versions field.
+  - >-
+    Coder's cleanup code and its advisory bound the incident differently: 07:35 to 21:45 UTC in the
+    prose and manual SQL, 08:00 to 22:00 in the shipped purge. Both are recorded as published.
+  - >-
+    Remediation destroys the artifact. The purge deletes the cached archives and its down migration
+    is a deliberate no-op, so surviving copies shrink as deployments patch.
+  - >-
+    coder-infra.com was registered 2026-08-28 through Fewmoretaps OU. VirusTotal first sees it
+    2026-09-01, behind Cloudflare rather than the 199.91.220.205 the advisory names.
+  artifacts:
+  - id: coder-module-aider
+    name: coder/aider
+    package: coder/aider
+    ecosystem: terraform registry
+    kind: source_archive
+    website: https://registry.coder.com/modules/coder/aider
+    start_date: 2026-08-31T07:35:00Z
+    end_date: 2026-08-31T21:45:00Z
+    locations:
+    - uri: https://registry.coder.com/terraform_protocol/coder/aider/coder/download
+      role: distribution
+  - id: coder-module-rstudio-server
+    name: coder/rstudio-server
+    package: coder/rstudio-server
+    ecosystem: terraform registry
+    kind: source_archive
+    website: https://registry.coder.com/modules/coder/rstudio-server
+    start_date: 2026-08-31T07:35:00Z
+    end_date: 2026-08-31T21:45:00Z
+    locations:
+    - uri: https://registry.coder.com/terraform_protocol/coder/rstudio-server/coder/download
+      role: distribution
+  - id: coder-module-windows-rdp
+    name: coder/windows-rdp
+    package: coder/windows-rdp
+    ecosystem: terraform registry
+    kind: source_archive
+    website: https://registry.coder.com/modules/coder/windows-rdp
+    start_date: 2026-08-31T07:35:00Z
+    end_date: 2026-08-31T21:45:00Z
+    locations:
+    - uri: https://registry.coder.com/terraform_protocol/coder/windows-rdp/coder/download
+      role: distribution
+  - id: coder-module-zed
+    name: coder/zed
+    package: coder/zed
+    ecosystem: terraform registry
+    kind: source_archive
+    website: https://registry.coder.com/modules/coder/zed
+    start_date: 2026-08-31T07:35:00Z
+    end_date: 2026-08-31T21:45:00Z
+    locations:
+    - uri: https://registry.coder.com/terraform_protocol/coder/zed/coder/download
+      role: distribution
+  references:
+  - url: https://github.com/coder/coder/security/advisories/GHSA-vx42-ghc9-gw65
+    title: Malicious Packages Served from Unauthorized Registry Server - coder/coder advisory 
+      GHSA-vx42-ghc9-gw65
+  - url: >-
+      https://www.bleepingcomputer.com/news/security/coders-registry-infrastructure-compromised-to-push-malicious-modules/
+    title: Coder's registry infrastructure compromised to push malicious modules - BleepingComputer
+  - url: https://github.com/coder/coder/commit/10fd510ada0e3a7c222511dbd9916f83afd1acf0
+    title: 'chore: purge identified terraform modules via dbpurge (#28802) - coder/coder'
+  - url: https://github.com/coder/coder/pull/28798
+    title: 'chore: migration to delete identified modules - coder/coder #28798'
+  - url: 
+      https://www.esecurityplanet.com/cybersecurity/news-coder-registry-malicious-terraform-modules/
+    title: 'Coder Registry Compromise: Malicious Terraform Modules Explained - eSecurity Planet'

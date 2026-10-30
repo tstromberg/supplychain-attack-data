@@ -30,17 +30,21 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">The irssi.org server was cracked, and the official Irssi 0.8.4 source distribution served a modified configure script for about two months.</p>
+  <p class="synopsis">The irssi.org server was cracked, and `irssi-0.8.4.tar.gz` served a modified configure script for about two months. The bzip2 archive of the same release was untouched.</p>
 
   
   <h2>Story</h2>
   <div class="story">
     
-      <p>In March 2002, irssi.org was cracked and the Irssi 0.8.4 source distribution was altered through its `configure` script. For roughly two months, users building from the official source archive could execute attacker-added C code before they ever ran the IRC client. The project disclosed the compromise on May 25 and noted that binaries were not affected.</p>
+      <p>In March 2002, irssi.org was cracked and <code>irssi-0.8.4.tar.gz</code> was altered through its <code>configure</code> script. Only that one file was hit: the project's advisory records that the <code>.tar.bz2</code> of the same release, CVS, the nightly snapshots, the Debian sources and every binary were clean, which is why the FreeBSD port escaped by fetching the bzip2 archive. For roughly two months, users building from the official source archive could execute attacker-added C code before they ever ran the IRC client. GLib sources fetched from irssi.org during the build carried the same block, so the reach was not limited to Irssi's own code. The project disclosed the compromise on May 25.</p>
     
-      <p>The delivery point was the build system. The archive still looked like Irssi source, but `configure` carried the hostile logic. That made the user&#39;s normal compile step the execution point, before package install, service startup, or IRC traffic.</p>
+      <p>The delivery point was the build system. The archive still looked like Irssi source, but <code>configure</code> carried the hostile logic. That made the user's normal compile step the execution point, before package install, service startup, or IRC traffic.</p>
+      <figure class="pull-quote">
+        <blockquote>Only <code>irssi-0.8.4.tar.gz</code> was backdoored; the <code>.bz2</code> of the same release was clean, which is why the FreeBSD port escaped. GLib sources fetched from irssi.org during the build carried the same block.</blockquote>
+        <figcaption>gzip backdoored, bzip2 clean</figcaption>
+      </figure>
     
-      <p>The injected code looked like a small autoconf test, but it forked, opened a TCP connection to 204.120.36.206 on port 6667, and duped standard input, output, and error to that socket. The practical detection advice was equally direct: grep the source tree for `SOCK_STREAM` in `configure`, replace the source, and verify future releases with the author&#39;s GPG key.</p>
+      <p>The injected code looked like a small autoconf test, but it forked, opened a TCP connection to 204.120.36.206 on port 6667, and duped standard input, output, and error to that socket. The practical detection advice was equally direct: grep the source tree for <code>SOCK_STREAM</code> in <code>configure</code>, replace the source, and verify future releases with the author's GPG key.</p>
     
       <p>The cleanup question was therefore about provenance, not configuration. Anyone who built Irssi 0.8.4 from the affected source window had to treat the build host as exposed, even if the installed IRC client itself looked normal or had never connected to a server.</p>
     
@@ -83,7 +87,7 @@
           </td>
           <td>
             
-              N/A
+              <code>[object Object]</code>
             
           </td>
         </tr>
@@ -105,7 +109,9 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://seclists.org/bugtraq/2002/Aug/333" target="_blank">Debian DSA-157-1: signed checksums for the clean Irssi 0.8.4 source archive</a></li>
+      <li><a href="https://web.archive.org/web/20021213094217/http://www.irssi.org/?page=backdoor" target="_blank">Irssi project advisory on the backdoored 0.8.4 tarball</a></li>
+    
+      <li><a href="https://seclists.org/bugtraq/2002/Aug/333" target="_blank">Debian DSA-157-1: an unrelated irssi-text denial-of-service advisory, cited only because it publishes the clean 0.8.4 MD5</a></li>
     
       <li><a href="https://irssi.org/2002/05/25/irssi.org-cracked-irssis-configure-backdoored-for-past-two-months/" target="_blank">irssi.org cracked, irssi&#39;s configure backdoored for past two months</a></li>
     

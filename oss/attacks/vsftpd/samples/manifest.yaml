@@ -1,9 +1,14 @@
 schema_version: 1
 interpretation:
   - >-
-    The exact poisoned distribution tarball remains unavailable. The recovered infection.diff
-    preserves the two malicious source modifications from a research repository's immutable first
-    commit, so it is classified as payload-only evidence rather than as the original archive.
+    The exact poisoned distribution tarball is held: Software Heritage had archived it by content
+    hash, and it was recovered on 2026-09-03 and re-measured against the digest this record cites.
+    Its gzip mtime is 2011-06-30 14:17:36 and str.c line 572 carries the ':)' trigger. The
+    infection.diff and the tree_equivalent reconstruction are kept alongside it: the diff isolates
+    the two source changes, and the reconstruction remains a reproducible check that the diff and
+    the clean predecessor account for the tarball. Earlier passes recorded this artifact as
+    unavailable because the hash lanes they asked -- Hopper, MalwareBazaar, Triage, Malshare --
+    index malware repositories, and none of them indexes a source-code archive.
   - >-
     Slackware's preserved 2.3.4 source tarball is the clean original release. Its measured SHA-256,
     SHA-1, MD5, and size all match the Slackware mirror index, and the SHA-256 is independently
@@ -25,6 +30,9 @@ samples:
     verification:
       status: exact
       basis:
+        - distribution_mirror
+        - measured_sha256
+      evidence:
         - slackware_mirror_sha256_b466edf96437afa2b2bea6981d4ab8b0204b83ca0a2ac94bef6b62b42cc71a5a
         - slackware_mirror_sha1_b774cc6b4c50e20f4fe9ca7f6aa74169ce7fe5ea
         - slackware_mirror_md5_2ea5d19978710527bb7444d93b67767a
@@ -32,6 +40,7 @@ samples:
         - measured_hashes_and_size
     notes:
       - This is the clean archive released before the official download was replaced in place.
+    subject: vsftpd
   - artifact_id: vsftpd
     phase: during
     classification: malicious
@@ -48,6 +57,9 @@ samples:
     verification:
       status: payload_only
       basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
         - immutable_research_repository_first_commit
         - git_blob_sha1_976e49e3400192232b35cbb595c81d9722cef0e6
         - matches_published_str_c_and_sysdeputil_c_backdoor
@@ -56,27 +68,98 @@ samples:
       - >-
         The diff direction removes the malicious code from the compromised tree; its deleted lines
         therefore preserve the smiley trigger and port-6200 shell listener.
-unresolved:
+    subject: vsftpd
   - artifact_id: vsftpd
     phase: during
+    classification: malicious
+    version: 2.3.4
+    filename: vsftpd-2.3.4-RECONSTRUCTED.tar.gz
+    path: vsftpd/during/vsftpd-2.3.4-RECONSTRUCTED.tar.gz
+    sha256: 82669a79e3d6b31a5577487bd052d5bc2247d9591efb3b09c29b2bacf26d368f
+    size: 179891
+    source:
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: reconstructed_distribution
+      reconstruction:
+        method: upstream_tarball_plus_published_diff
+        direction: >-
+          The published diff runs trojaned -> clean: its left side is dated 2011-06-30, the day the
+          backdoored 2.3.4 was served, and its right side is the 2008 upstream. It is therefore
+          applied in reverse to the clean tarball to produce the trojaned tree.
+        base:
+          path: vsftpd/before/vsftpd-2.3.4.tar.gz
+          sha256: b466edf96437afa2b2bea6981d4ab8b0204b83ca0a2ac94bef6b62b42cc71a5a
+          member_count: 158
+        retained_manifest:
+          url: >-
+            https://raw.githubusercontent.com/DoctorKisow/vsftpd-2.3.4/240f33c36ed8d9e7d3e59280fb0cd7dfbf6fee29/infection.diff
+          path: vsftpd/during/infection.diff
+          sha256: 785dd7a463377c3ae70a3490d5e2c392adbbe06cd3ab4a025bc731621a98d1b1
+          member_count: 2
+          member_hash: diff_hunk_target_paths
+        overlays:
+          - path: str.c
+            operation: reverse_patch_applied
+            sha256: c0c8af3bf68d527b53202e2d62c7f13afc4b93671be6b359748e7bbef2d82f8f
+          - path: sysdeputil.c
+            operation: reverse_patch_applied
+            sha256: 5628311a4c2acebba840511c78c2660069b87ba777780157e72166804e66c603
+        unchanged_members:
+          count: 140
+          verification: inherited_byte_for_byte_from_the_verified_upstream_tarball
+        packaging:
+          format: tar.gz
+          path_order: sorted
+          normalized: member mtime, uid/gid and owner names zeroed; gzip mtime 0
+          original_archive_bytes_recovered: false
+        complete_attack_record: true
+    verification:
+      status: tree_equivalent
+      basis:
+        - measured_sha256
+      evidence:
+        - clean_upstream_tarball_verified_exact_in_before_phase
+        - published_diff_applied_in_full_with_no_rejected_hunks
+        - backdoor_entry_point_present_in_rebuilt_tree
+        - measured_sha256_and_size
+    notes:
+      - >-
+        Rebuilt so the payload is analyzable as C source. The corpus's only during-phase payload for
+        this incident is the diff, which static analyzers type as plain text, leaving every C rule
+        inapplicable.
+      - >-
+        Synthetic archive: member order is sorted and timestamps are normalized, so these bytes are
+        reproducible from the same inputs but are not the bytes vsftpd.beasts.org served.
+      - >-
+        A ':)' sequence in a username reaches vsf_sysutil_extra(), which binds port 6200, accepts,
+        dup2()s the socket onto stdio and execs /bin/sh.
+    subject: vsftpd
+  - artifact_id: vsftpd
+    phase: during
+    classification: malicious
     coordinate: sha256:2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5
-    status: unavailable
-    attempts:
-      - >-
-        Forager PURL/SHA-256: time=2026-08-08T20:33:10.002-04:00 level=ERROR msg="command failed"
-        error="SHA-256 2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5 unavailable
-        from configured sources: hopper: unexpected status code 404 from
-        http://10.9.8.5:8081/api/file/2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5;
-        malwarebazaar: MalwareBazaar has no sample for
-        2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5: hash_not_found; triage:
-        Triage has no file analysis for SHA-256
-        2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5"
-      - >-
-        Forager PURL/SHA-256: time=2026-08-10T13:57:06.617-04:00 level=ERROR msg="command failed"
-        error="hash 2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5 unavailable
-        from configured sources: malwarebazaar: MalwareBazaar has no sample for
-        2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5: hash_not_found; triage:
-        Triage has no file analysis for SHA256
-        2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5; malshare: download
-        returned status 404"
-    last_attempted_at: '2026-08-10T17:57:07.975Z'
+    version: 2.3.4
+    filename: vsftpd-2.3.4.tar.gz
+    path: vsftpd/during/vsftpd-2.3.4.tar.gz
+    sha256: 2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5
+    size: 273294
+    source:
+      url: >-
+        https://archive.softwareheritage.org/api/1/content/sha256:2a4bb16562e0d594c37b4dd3b426cb012aa8457151d4718a5abd226cef9be3a5/raw/
+      original_url: ftp://vsftpd.beasts.org/users/cevans/vsftpd-2.3.4.tar.gz
+      kind: source_archive
+      retrieved_at: '2026-09-03T13:13:45Z'
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - reported_sha256
+        - measured_sha256
+        - gzip_mtime_matches_the_incident_date
+        - backdoor_trigger_present_in_str_c
+    notes:
+      - The poisoned distribution tarball as served on 2011-06-30, recovered from Software Heritage.
+    subject: vsftpd
+unresolved: []

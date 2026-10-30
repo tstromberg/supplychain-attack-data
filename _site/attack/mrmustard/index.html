@@ -36,9 +36,9 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>A malicious release of `mrmustard`, the photonic quantum computing library
+      <p>A malicious release of <code>mrmustard</code>, the photonic quantum computing library
 published by Xanadu, appeared on PyPI on July 23, 2026. Anyone who ran
-`import mrmustard` from version 0.7.4 had their SSH private keys, AWS
+<code>import mrmustard</code> from version 0.7.4 had their SSH private keys, AWS
 credentials, and Kubernetes configuration read off disk and sent to an
 attacker-controlled server.</p>
     
@@ -51,18 +51,32 @@ single infected laptop.</p>
     
       <p>The mismatch between PyPI and GitHub gave the incident away. Version 0.7.4
 exists on PyPI with no corresponding tag, release, or commit in the
-`XanaduAI/MrMustard` repository, whose tags stop at v0.7.3. StepSecurity and
-SafeDep, which both analyzed the release, described an attacker who took over a
-maintainer&#39;s GitHub account, used the project&#39;s own CI to obtain its publishing
-token, and then uploaded the poisoned artifact straight to the index, skipping
-the repository entirely.</p>
+<code>XanaduAI/MrMustard</code> repository, whose tags stop at v0.7.3. StepSecurity and
+SafeDep, which both analyzed the release, traced the route in. Two commits
+were pushed on July 23 through the account of <code>ziofil</code>, the project's original
+author, both on throwaway branches since deleted. The first deleted seven
+legitimate workflow files and added one that ran <code>whoami</code> on the project's
+self-hosted runners, which is reconnaissance and nothing else. The second added
+a workflow that read <code>PIPY_TOKEN</code> and <code>CODECOV_TOKEN</code> out of Actions secrets,
+base64 encoded them, and curled them to a webhook.site collection URL. With the
+publishing token in hand the attacker uploaded the poisoned artifact straight to
+the index, skipping the repository entirely.</p>
     
       <p>Execution happened at import rather than at install, so the code ran the first
-time a researcher used the library rather than when pip finished. Three
-separate persistence mechanisms kept a stealer running after the package was
-uninstalled, which is the part that turns a bad afternoon into an incident
-response. Anyone who imported the affected version was told to treat the host
-as compromised and rotate every credential that had been present on it.</p>
+time a researcher used the library rather than when pip finished, and it sat
+out any run where CI variables or a container were detected. The collected
+data went to <code>https://metrics.femboy.energy/v1/collect</code>, a URL the payload
+kept XOR obfuscated under the key <code>tf_compat_v2</code> rather than in plaintext.
+The payload then compiled a copy of itself to <code>~/.cache/.tf_cache/hw_probe.pyc</code>
+and pointed three independent persistence hooks at it: a cron job every
+fifteen minutes, a line in <code>~/.bashrc</code> or <code>~/.zshrc</code> disguised as a
+<code># tensorflow hardware compatibility check</code>, and an <code>mmcompat.pth</code> file in
+site-packages. The last of those is the worst of the three. Python executes
+<code>.pth</code> files on every interpreter start, so the stealer ran on any <code>python</code>
+invocation, survived <code>pip uninstall mrmustard</code>, and on a shared HPC login
+node ran for every user who started Python there. Anyone who imported the
+affected version was told to treat the host as compromised and rotate every
+credential that had been present on it.</p>
     
   </div>
   
@@ -129,6 +143,30 @@ as compromised and rotate every credential that had been present on it.</p>
       <li><code>file:mrmustard/__init__.py</code></li>
     
       <li><code>function:_check_tf_compatibility</code></li>
+    
+      <li><code>url:https://metrics.femboy.energy/v1/collect</code></li>
+    
+      <li><code>domain:metrics.femboy.energy</code></li>
+    
+      <li><code>url:https://webhook.site/710babde-6ace-47fe-83f4-9688e6548df9</code></li>
+    
+      <li><code>file:~/.cache/.tf_cache/hw_probe.pyc</code></li>
+    
+      <li><code>path:~/.cache/.tf_cache/</code></li>
+    
+      <li><code>file:mmcompat.pth</code></li>
+    
+      <li><code>command:*/15 * * * * /usr/bin/env python3 ~/.cache/.tf_cache/hw_probe.pyc</code></li>
+    
+      <li><code>marker:# tensorflow hardware compatibility check</code></li>
+    
+      <li><code>code:tf_compat_v2</code></li>
+    
+      <li><code>account:ziofil</code></li>
+    
+      <li><code>commit:2ebfe28</code></li>
+    
+      <li><code>commit:80aba72</code></li>
     
       <li><code>technique:execution on import rather than install</code></li>
     

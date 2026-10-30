@@ -5,7 +5,8 @@
   synopsis: >-
     In late June 2026 the Miasma worm republished 23 LeoPlatform and RStreams npm packages
     with a malicious binding.gyp, then reached the Verana Blockchain Go module. It was the
-    campaign's first move outside npm and into the Go ecosystem.
+    campaign's first move outside npm, though Socket notes the execution path is not
+    Go-native.
   story: |
     A late-June 2026 wave of the Miasma worm poisoned 23 npm packages belonging to
     the LeoPlatform and RStreams data-streaming projects, along with three packages
@@ -38,6 +39,13 @@
     machine and auditing repositories for injected workflows, unexpected branches,
     and `.claude/` or `.github/` configuration files. Researchers track the family
     under the overlapping names Mini Shai-Hulud, Miasma, and Hades.
+  pull_quote:
+    text: >-
+      The Verana Go module carried the payload but never executed it as Go.
+      The observed trigger was a VS Code folder-open task running `node
+      .claude/setup.mjs`.
+    caption: not a go compromise
+    after: 1
   start_date: 2026-06-24
   end_date: 2026-06-26
   target:
@@ -79,20 +87,21 @@
   - kind: account
     value: 'npm: llxlr'
   notes:
-  - This wave is the Miasma campaign's first move outside npm. The Verana Blockchain Go
-    module is a separate project from LeoPlatform and is recorded here as an artifact of
-    the same wave because published reporting treats them together and the Verana-specific
-    evidence is limited to compromise indicators.
-  - Sources differ on timing. The Hacker News places the npm releases on 2026-06-24, while
+  - >-
+    This wave is the Miasma campaign's first move outside npm. Socket cautions that normal Go
+    module resolution and build logic do not appear to execute the payload, so this is not a
+    Go-native compromise.
+  - >-
+    Sources differ on timing. The Hacker News places the npm releases on 2026-06-24, while
     Socket describes all compromised versions being published within a 30-second window on
     2026-06-26. Both dates are retained in the range.
-  - The affected package count is 23 across LeoPlatform and RStreams, plus three packages
-    published by the llxlr account. Socket enumerated the package names and the single
-    malicious version published for each, which are recorded on the artifacts here. Three
-    of the 23 are hexo, prism, and solo-nav packages rather than LeoPlatform or RStreams
-    ones, matching the separately reported llxlr activity.
-  - Researchers use Mini Shai-Hulud, Miasma, and Hades for overlapping parts of this family.
-    The binding.gyp delivery matches the 2026-06-03 wave recorded at [[vapi-server-sdk]].
+  - >-
+    23 packages across LeoPlatform and RStreams are affected, plus three hexo, prism and
+    solo-nav packages published by the llxlr account. Socket enumerated the names and the single
+    malicious version for each.
+  - >-
+    Researchers use Mini Shai-Hulud, Miasma and Hades for overlapping parts of this family. The
+    binding.gyp delivery matches the 2026-06-03 wave recorded at [[vapi-server-sdk]].
   artifacts:
   - id: hexo-deployer-wrangler
     name: hexo-deployer-wrangler
@@ -346,9 +355,13 @@
       role: distribution
     hashes:
     - sha1:24a0d9e496ec07ca978fab602d5f5e0b39fa03a0
+    - sha256:3967738a03a83d6e526f59256233ff2539d90c7093a5c50692c51bc8db301304
     - sha512:6d4d679fe5e90f68d4e7db7c1daa5ca216531f017068860a71abc812ed3671520d234c39bcbfe68a5709e2321f369c14e4446474a6d7dae10ba04044a327adc5
     notes:
-    - OSSF MAL-2026-6429 maps these checksums to the complete leo-logger-1.0.8.tgz npm archive.
+    - >-
+      OSSF MAL-2026-6429 maps the SHA-1 and SHA-512 to the complete leo-logger-1.0.8.tgz npm
+      archive. Both match the StepSecurity-captured bytes; the SHA-256 was measured from that
+      verified archive.
     indicators:
     - kind: file_sha256
       value: index.js 57ba86f6f0caaa580c1dccdf4ed7873d1470e5ea2f8e9ca7a989dc04899f13c0
@@ -521,3 +534,9 @@
     title: Shai-Hulud Miasma Supply Chain Attack On LeoPlatform - CyberSecureFox
   - url: https://github.com/ossf/malicious-packages
     title: OSSF malicious-packages database
+  - url: https://github.com/actions-security-demo/compromised-packages/blob/f48593aaba546179817e2531f44cd6ca3b30f7fe/.github/workflows/main.yml
+    title: Immutable StepSecurity workflow that captured leo-logger 1.0.8 with npm pack
+  - url: https://github.com/actions-security-demo/compromised-packages/actions/runs/28148212692
+    title: Successful StepSecurity leo-logger capture run
+  - url: https://api.github.com/repos/actions-security-demo/compromised-packages/actions/artifacts/7869265804
+    title: GitHub Actions metadata for the retained leo-logger-tarballs artifact

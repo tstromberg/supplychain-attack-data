@@ -37,30 +37,30 @@
   <div class="story">
     
       <p>On April 7, 2026, an attacker pushed a malicious release of
-`@velora-dex/sdk`, the JavaScript toolkit used to integrate with the
+<code>@velora-dex/sdk</code>, the JavaScript toolkit used to integrate with the
 VeloraDEX decentralized exchange, directly to npm without ever touching
 the corresponding GitHub repository. The compromised version, 9.4.1, was
-a registry-only attack: developers reviewing the project&#39;s default
+a registry-only attack: developers reviewing the project's default
 branch would have seen nothing wrong.</p>
     
-      <p>Aikido researcher Charlie Eriksen reported the package on the project&#39;s
+      <p>Aikido researcher Charlie Eriksen reported the package on the project's
 GitHub tracker, and StepSecurity published a teardown. The diff in the
-tarball was small. `package.json` carried the version bump, and
-`dist/index.js` gained three prepended lines that base64-decoded a shell
-command and ran it through `child_process.exec()` as soon as application
+tarball was small. <code>package.json</code> carried the version bump, and
+<code>dist/index.js</code> gained three prepended lines that base64-decoded a shell
+command and ran it through <code>child_process.exec()</code> as soon as application
 code imported the SDK. The command used curl to pull
-`install.sh` from `89.36.224.5`, suppressing all output.</p>
+<code>install.sh</code> from <code>89.36.224.5</code>, suppressing all output.</p>
     
-      <p>On macOS, the script created `~/Library/Application Support/com.apple.Terminal/`,
-fetched either an ARM64 or Intel build of a binary named `profiler` from
+      <p>On macOS, the script created <code>~/Library/Application Support/com.apple.Terminal/</code>,
+fetched either an ARM64 or Intel build of a binary named <code>profiler</code> from
 the same host, made it executable, and registered it as a persistent
-user service through `launchctl submit -l zsh.profiler`. The naming
-borrowed from Apple&#39;s own bundle conventions to blend into a developer
+user service through <code>launchctl submit -l zsh.profiler</code>. The naming
+borrowed from Apple's own bundle conventions to blend into a developer
 laptop.</p>
     
-      <p>The trigger here was not an npm lifecycle hook. Passing `--ignore-scripts`,
-a common defense against malicious `postinstall` payloads, did nothing,
-because the malicious code ran at `require(&#39;@velora-dex/sdk&#39;)` time.
+      <p>The trigger here was not an npm lifecycle hook. Passing <code>--ignore-scripts</code>,
+a common defense against malicious <code>postinstall</code> payloads, did nothing,
+because the malicious code ran at <code>require('@velora-dex/sdk')</code> time.
 StepSecurity told downstream operators to pin to 9.4.0 or earlier,
 remove the launchctl service and the dropped binary, and rotate any
 secret reachable from an affected machine.</p>
@@ -133,6 +133,12 @@ secret reachable from an affected machine.</p>
       <li><a href="https://corgea.com/research/velora-dex-sdk-npm-minirat-macos-backdoor" target="_blank">@velora-dex/sdk 9.4.1 loaded a macOS MINIRAT backdoor on import - Corgea</a></li>
     
       <li><a href="https://securityonline.info/velora-dex-sdk-npm-supply-chain-attack-macos-backdoor/" target="_blank">Malicious VeloraDEX SDK Compromises Developer Machines via npm - Security Online</a></li>
+    
+      <li><a href="https://api.github.com/repos/actions-security-demo/compromised-packages/actions/runs/24107839213" target="_blank">StepSecurity analysis workflow run metadata for @velora-dex/sdk 9.4.1</a></li>
+    
+      <li><a href="https://api.github.com/repos/actions-security-demo/compromised-packages/actions/runs/24107839213/artifacts" target="_blank">Expired velora-dex-sdk-tarballs artifact metadata</a></li>
+    
+      <li><a href="https://raw.githubusercontent.com/actions-security-demo/compromised-packages/364f7779da98dd36405e729394df04f2b2610c2f/.github/workflows/velora-dex-sdk.yaml" target="_blank">Exact workflow that packed and archived @velora-dex/sdk 9.4.1 and 9.4.0</a></li>
     
   </ul>
   

@@ -1,0 +1,243 @@
+schema_version: 1
+interpretation:
+  - >-
+    Adform replaced trackpoint-async.js in place, so no versioned coordinate names the malicious
+    state. The Internet Archive crawls s2.adform.net several times a day, and four captures fall
+    inside the 2026-07-26 to 2026-07-27 window: one clean and three tampered.
+  - >-
+    meta.yaml recorded that no archived copy had been located. That is corrected here: the archive
+    holds three, and they are different from each other. The attacker rotated the payload during the
+    window, growing it from 2174 to 3610 to 6945 appended bytes in the two hours between 22:29 UTC
+    on the 26th and 00:41 UTC on the 27th.
+  - >-
+    Every tampered capture begins with the 82727 bytes of the 2026-07-25 clean file, byte for byte,
+    and the 2026-07-30 capture is identical to that clean file again. The compromise is therefore
+    bracketed on both sides by the archive alone, without relying on any report.
+samples:
+  - artifact_id: trackpoint-async-js
+    phase: before
+    classification: clean
+    filename: trackpoint-async.js
+    path: trackpoint-async-js/before/trackpoint-async.js
+    sha256: 59938868870ce60b8576506d0211346d8a85329a9d54997c39d921389c493b34
+    size: 82727
+    source:
+      url: >-
+        https://web.archive.org/web/20260725005000id_/https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      original_url: https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      retrieved_at: '2026-09-02T14:43:00Z'
+      kind: wayback
+    verification:
+      status: probable_exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - exact_wayback_capture
+        - byte_identical_to_20260730_capture
+        - prefix_of_all_three_tampered_captures
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: '20260727000038'
+    notes:
+      - The day before the window, and the same bytes the tracker served again on 2026-07-30.
+    subject: trackpoint-async-js
+    commit: '20260725005000'
+  - artifact_id: trackpoint-async-js
+    phase: during
+    classification: malicious
+    filename: trackpoint-async.js@20260726232903
+    path: trackpoint-async-js/during/trackpoint-async.js@20260726232903
+    sha256: c03567cac86046a9aa1c1c4b43e0c6de7703b43cf01b3d8229978314afc6e9da
+    size: 84901
+    source:
+      url: >-
+        https://web.archive.org/web/20260726232903id_/https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      original_url: https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      retrieved_at: '2026-09-02T14:43:00Z'
+      kind: wayback
+    verification:
+      status: probable_exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - exact_wayback_capture
+        - capture_inside_incident_window
+        - clean_prefix_plus_appended_payload
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: '20260725005000'
+    notes:
+      - >-
+        The first tampered capture, 2026-07-26T23:29Z. 2174 bytes appended, with the XOR decoder and
+        key [0x4d,0x33,0x77,0x54,0x77,0x30] the other two variants also use.
+      - >-
+        The filename carries the capture timestamp because three distinct files share one upstream
+        name; the upstream name is preserved in the manifest and the sidecar.
+    subject: trackpoint-async-js
+    commit: '20260726232903'
+  - artifact_id: trackpoint-async-js
+    phase: during
+    classification: malicious
+    filename: trackpoint-async.js@20260727000038
+    path: trackpoint-async-js/during/trackpoint-async.js@20260727000038
+    sha256: 0674a58b224cca2ce840153d6c8d474f29f126f7af5054350ba1572c33233aa3
+    size: 86337
+    source:
+      url: >-
+        https://web.archive.org/web/20260727000038id_/https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      original_url: https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      retrieved_at: '2026-09-02T14:43:00Z'
+      kind: wayback
+    verification:
+      status: probable_exact
+      basis:
+        - web_archive_replay
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - exact_wayback_capture
+        - capture_inside_incident_window
+        - clean_prefix_plus_appended_payload
+        - decodes_to_the_reported_wallet_substitution
+        - measured_sha256
+    notes:
+      - >-
+        The second variant, 31 minutes later, with 3610 appended bytes. This is the one whose
+        literals decode cleanly, and they are the three wallet addresses the incident is about,
+        which independently confirms the file is the reported attack.
+    subject: trackpoint-async-js
+    commit: '20260727000038'
+  - artifact_id: trackpoint-async-js
+    phase: during
+    classification: malicious
+    filename: trackpoint-async.js@20260727004110
+    path: trackpoint-async-js/during/trackpoint-async.js@20260727004110
+    sha256: a04461bbdccb15378182cdf77281ec29628f1c1386ae0fe89b62f359471fdeb6
+    size: 89672
+    source:
+      url: >-
+        https://web.archive.org/web/20260727004110id_/https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      original_url: https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      retrieved_at: '2026-09-02T14:43:00Z'
+      kind: wayback
+    verification:
+      status: probable_exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - exact_wayback_capture
+        - capture_inside_incident_window
+        - clean_prefix_plus_appended_payload
+        - measured_sha256
+    notes:
+      - >-
+        The third and largest variant, 6945 appended bytes, containing both the earlier literal
+        forms. It is the last tampered capture; by 2026-07-27T18:33Z the file is back to its
+        ordinary size.
+    subject: trackpoint-async-js
+    commit: '20260727004110'
+  - artifact_id: trackpoint-async-js
+    phase: during
+    classification: malicious
+    filename: appended-payload@20260726232903.js
+    path: trackpoint-async-js/during/appended-payload@20260726232903.js
+    sha256: 7fffe64acf3eb1abd582574819dd6ad54f144f21c024b1e5092c0c0e5fcffa14
+    size: 2174
+    source:
+      url: >-
+        https://web.archive.org/web/20260726232903id_/https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      retrieved_at: '2026-09-02T14:43:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - byte_range_of_the_retained_capture
+        - measured_sha256
+    notes:
+      - The injected code alone, verbatim from the end of the first tampered capture.
+    subject: trackpoint-async-js
+    commit: '20260726232903'
+  - artifact_id: trackpoint-async-js
+    phase: during
+    classification: malicious
+    filename: appended-payload@20260727000038.js
+    path: trackpoint-async-js/during/appended-payload@20260727000038.js
+    sha256: 88fc57cdbf3e1006e0f28425a4f040851d1d728769f3d19c72c7221ececd7050
+    size: 3610
+    source:
+      url: >-
+        https://web.archive.org/web/20260727000038id_/https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      retrieved_at: '2026-09-02T14:43:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - byte_range_of_the_retained_capture
+        - measured_sha256
+    notes:
+      - The injected code alone, verbatim from the end of the second tampered capture.
+    subject: trackpoint-async-js
+    commit: '20260727000038'
+  - artifact_id: trackpoint-async-js
+    phase: during
+    classification: malicious
+    filename: appended-payload@20260727004110.js
+    path: trackpoint-async-js/during/appended-payload@20260727004110.js
+    sha256: 4b3c1eaf5f1cb8d1ca7bc19f883cc8558dae7a3190408674da9f19dab1ba4c45
+    size: 6945
+    source:
+      url: >-
+        https://web.archive.org/web/20260727004110id_/https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      retrieved_at: '2026-09-02T14:43:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - byte_range_of_the_retained_capture
+        - measured_sha256
+    notes:
+      - The injected code alone, verbatim from the end of the third tampered capture.
+    subject: trackpoint-async-js
+    commit: '20260727004110'
+  - artifact_id: trackpoint-async-js
+    phase: during
+    classification: malicious
+    filename: decoded-strings@20260727000038.txt
+    path: trackpoint-async-js/during/decoded-strings@20260727000038.txt
+    sha256: e7b6212e033f3a9d90574839db3e14600a8f8bf8f8bc15508a330f28dbe6c7c9
+    size: 120
+    source:
+      url: >-
+        https://web.archive.org/web/20260727000038id_/https://s2.adform.net/banners/scripts/st/trackpoint-async.js
+      retrieved_at: '2026-09-02T14:43:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: verification_material
+      basis:
+        - measured_sha256
+      evidence:
+        - total_reversible_transform_of_the_retained_payload
+        - measured_sha256
+    notes:
+      - >-
+        The attacker's three replacement wallets, recovered by XORing the payload's own literals
+        against the key declared beside them: bc1qmplgt0hcg62jc2guz86wn2sms7tqrsulkkrrls (Bitcoin),
+        0xE7983E69df17079ADb0aD7b3458488Cac0dBc573 (Ethereum), and TW4AgGnDc2Pk6YAynCtjCKzoKYWPg7nJe
+        (TRON).
+      - >-
+        Arithmetic on integer literals, not execution. The same arrays in the 2026-07-26 and the
+        largest variant use hexadecimal literals and do not decode cleanly with the same offsets, so
+        only this variant's strings are recorded.
+    subject: trackpoint-async-js
+    commit: '20260727000038'

@@ -1,0 +1,142 @@
+schema_version: 1
+interpretation:
+  - >-
+    Nothing in the three plugins changed. What changed was JavaScript served from Awesome Motive's
+    CDN to sites that embed it, for twenty-five minutes on 2026-06-12 between 22:17 and 22:42 UTC
+    for the OptinMonster and TrustPulse objects.
+  - >-
+    The Internet Archive holds no capture of a.omappapi.com or a.trustpulse.com at all, and none of
+    clientcdn.pushengage.com inside the window; the C2 host tidio.cc is not archived either. The
+    served bytes are therefore not recoverable, and what survives of the payload is the indicator
+    set Sansec published.
+samples:
+  - artifact_id: optinmonster
+    phase: during
+    classification: detection_evidence
+    filename: sansec-indicators.txt
+    path: optinmonster/during/sansec-indicators.txt
+    sha256: 7df281104def43079aa48d95c9cff977e3dac89a5a156b5bb2317afba477d659
+    size: 926
+    source:
+      url: https://sansec.io/research/optinmonster-supply-chain-attack
+      retrieved_at: '2026-09-02T13:00:00Z'
+      kind: original_incident_report_fragment
+    verification:
+      status: verification_material
+      basis:
+        - measured_sha256
+      evidence:
+        - retained_report_page_refs_01_sansec_io_html
+        - measured_sha256
+    notes:
+      - >-
+        Sansec's indicator block, extracted verbatim from the retained report page. It names the C2
+        (tidio.cc at 84.201.6.54, registered 2026-04-28), the separate exfil and payload-generation
+        paths for the OptinMonster/TrustPulse and PushEngage variants, the XOR key jX9kM2nP4qR6sT8v,
+        the backdoor shell's UI string, the fixed rogue account developer_api1, and the rotating
+        plugin disguises.
+      - >-
+        This is the identifier set to match against, not the payload. It is what would let a future
+        capture of the served script be recognised as the malicious one.
+      - >-
+        Recorded under the non-version version label "Thu Jun 11 2026 20:00:00 GMT-0400 (Eastern
+        Daylight Time)" before release identities were normalized; the label is retained here
+        because it is not derivable from the version or commit.
+    subject: optinmonster
+  - artifact_id: optinmonster
+    phase: during
+    classification: affected
+    coordinate: pkg:wordpress/optinmonster@2.16.24
+    version: 2.16.24
+    filename: optinmonster.2.16.24.zip
+    path: optinmonster/during/optinmonster.2.16.24.zip
+    sha256: f1f1d80cb48db9c793b0e54c7d64f447d6d2bdee1c3dce751f77bb9ba3ec9fc6
+    size: 12656686
+    source:
+      url: https://downloads.wordpress.org/plugin/optinmonster.2.16.24.zip
+      kind: official_repository_archive
+      retrieved_at: '2026-09-10T12:15:16Z'
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_wordpress_org_archive
+        - measured_sha256
+    notes:
+      - >-
+        Release of 2026-05-22, the version current when the CDN-hosted SDK was modified on
+        2026-06-12. The plugin embeds the vendor's remote script; the attacker content lived on the
+        CDN, not in this archive, so it is recorded as affected.
+    subject: optinmonster
+  - artifact_id: trustpulse
+    phase: during
+    classification: affected
+    coordinate: pkg:wordpress/trustpulse-api@1.2.5
+    version: 1.2.5
+    filename: trustpulse-api.1.2.5.zip
+    path: trustpulse/during/trustpulse-api.1.2.5.zip
+    sha256: ec1a76d2260af28b8603c5b8dd0895d0d7a9c1ae06036ccd0ea24e151b760462
+    size: 5027556
+    source:
+      url: https://downloads.wordpress.org/plugin/trustpulse-api.1.2.5.zip
+      kind: official_repository_archive
+      retrieved_at: '2026-09-10T12:15:16Z'
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_wordpress_org_archive
+        - measured_sha256
+    notes:
+      - >-
+        Release of 2025-08-11, the version current on 2026-06-12. Loads TrustPulse's CDN-hosted SDK;
+        the archive itself carries no attacker content.
+    subject: trustpulse
+  - artifact_id: pushengage
+    phase: during
+    classification: affected
+    coordinate: pkg:wordpress/pushengage@4.2.5
+    version: 4.2.5
+    filename: pushengage.4.2.5.zip
+    path: pushengage/during/pushengage.4.2.5.zip
+    sha256: 55646d667ef09bf351aae1136b7d5cbf9d033ddfea979251932ace13ae194502
+    size: 7822699
+    source:
+      url: https://downloads.wordpress.org/plugin/pushengage.4.2.5.zip
+      kind: official_repository_archive
+      retrieved_at: '2026-09-10T12:15:16Z'
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_wordpress_org_archive
+        - measured_sha256
+    notes:
+      - >-
+        Release of 2026-06-02, the version current on 2026-06-12 (4.2.6 followed on 2026-06-24).
+        Loads PushEngage's CDN-hosted SDK; the archive itself carries no attacker content.
+    subject: pushengage
+unresolved:
+  - artifact_id: optinmonster
+    phase: during
+    version: 2026-06-12T00:00:00.000Z
+    filename: served CDN JavaScript
+    status: unavailable
+    notes:
+      - >-
+        The malicious objects were served for a 25-minute window and then reverted, and the vendor
+        CDN hosts are not archived. No digest was published for them, so even a later copy could not
+        be verified as exact.
+    attempts:
+      - Internet Archive CDX for a.omappapi.com and a.trustpulse.com: no captures.
+      - >-
+        Internet Archive CDX for clientcdn.pushengage.com: 36 captures between 2026-06-12 and
+        2026-06-14 were enumerated and the retrievable SDK and service-worker builds checked for
+        tidio.cc, the cdn-cgi/pe- paths, and the XOR key; none matched.
+      - Internet Archive CDX for tidio.cc: no captures.

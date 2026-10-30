@@ -83,38 +83,22 @@
   - kind: account
     value: atool (npm)
   notes:
-  - Compromised maintainer was the shared npm account `atool` per Socket. Wiz tracked
-    the same account's GitHub credentials being reused to enter the
-    microsoft/durabletask-python repository later the same day.
-  - The per-package version lists here were derived from npm's own publication times
-    rather than from a published table. Publication stamps for the affected scopes fall
-    into two tight bursts, 283 releases at 01:56 UTC and 283 more at 02:05 to 02:06 UTC,
-    one per package in each. Those 566 versions across 283 packages are recorded as
-    affected, against Socket's count of 639 across 323. The shortfall is packages whose
-    npm records are gone entirely, leaving no publication time to read. Spot checks
-    against StepSecurity's published examples agree exactly.
-  - Three releases on the same day fall outside the bursts, at 01:44, 01:47, and 01:49
-    UTC, and are still served by npm. Their archives were downloaded and contain none of
-    the campaign's files and no reference to its collection host, so they are recorded as
-    clean pre-attack baselines rather than affected versions. A window drawn from the
-    01:39 start time some reports give would have swept them in.
-  - Socket's count of 639 weaponized versions across 323 unique packages is the most
-    inclusive published number. Lower counts elsewhere (SafeDep 637/314, StepSecurity
-    500+, Wiz 400+ @antv) reflect earlier or scope-limited tallies. The atool account
-    maintained 547 packages total. The broader same-day Mini Shai-Hulud total per
-    Socket was 1,055 versions across 502 unique packages spanning npm, PyPI, and
-    Composer.
-  - 'Publishing windows reported differ slightly: SafeDep places the two automated
-    waves at 01:39 to 02:06 UTC; Socket places overall publish activity at 01:56
-    to 02:56 UTC. Both agree on the May 19 date and the two-wave structure.'
-  - Compromised maintainer was the shared `atool` npm account, email i@hust.cc,
-    associated with @antv, @lint-md, @openclaw-cn, @starmind scopes plus a long
-    tail of standalone JavaScript and tooling packages.
-  - SafeDep notes the payload is identical to the Mini Shai-Hulud toolkit used in the
-    earlier SAP compromise the same week.
-  - Wiz also reported same-day compromises of the GitHub Actions actions-cool/issues-helper
-    and actions-cool/maintain-one-comment using shared infrastructure, plus the
-    nrwl.angular-console VS Code extension v18.95.0 (tracked separately as nx-console).
+  - >-
+    The compromised maintainer was the shared npm account atool, email i@hust.cc, covering the
+    @antv, @lint-md, @openclaw-cn and @starmind scopes. Wiz tracked the same account's GitHub
+    credentials entering microsoft/durabletask-python that day.
+  - >-
+    Version lists here were derived from npm publication times, not a published table: 283
+    releases at 01:56 UTC and 283 more at 02:05 to 02:06. That is 566 versions across 283
+    packages, against Socket's 639; the rest have no npm record left.
+  - >-
+    Three same-day releases at 01:44, 01:47 and 01:49 UTC sit outside the bursts and are still
+    served. Their archives contain none of the campaign's files, so they are recorded as clean
+    baselines rather than affected versions.
+  - >-
+    The complete @antv/g2 5.5.8 archive was recovered from Huawei Cloud's historical npm mirror.
+    Its SHA-256 and size match the values published by AntV and it includes the previously
+    missing malicious index.js.
   artifacts:
   - id: antv-a8
     name: '@antv/a8'
@@ -1764,9 +1748,16 @@
     versions:
     - 5.5.8
     - 5.6.8
+    hashes:
+    - sha256:1f9bb122788e582369731c91c9de13f6f69c37435ca93d487fa6b38178cc0dd7
     locations:
     - uri: https://www.npmjs.com/package/@antv/g2
       role: distribution
+    notes:
+    - >-
+      The SHA-256 applies specifically to 5.5.8. GitHub issue 7394 records the measured
+      2,306,515-byte npm tarball and its digest; npm now returns 404. MalwareBazaar, Triage and
+      Malshare held no bytes under that digest on 2026-08-13.
   - id: antv-g2-brush
     name: '@antv/g2-brush'
     package: '@antv/g2-brush'
@@ -3804,3 +3795,12 @@
       Ecosystem - StepSecurity
   - url: https://socket.dev/blog/antv-packages-compromised
     title: '@antv Packages Compromised - Socket'
+  - url: https://github.com/antvis/G2/issues/7394
+    title: '@antv/g2 5.5.8 malicious release report with measured tarball checksum'
+  - url: https://socket.dev/npm/package/@antv/g2/files/5.5.8
+    title: '@antv/g2 5.5.8 retained package member listing - Socket'
+  - url: >-
+      https://www.microsoft.com/en-us/security/blog/2026/05/20/mini-shai-hulud-compromised-antv-npm-packages-enable-ci-cd-credential-theft/
+    title: Mini Shai-Hulud compromised AntV npm packages enable CI/CD credential theft - Microsoft
+  - url: https://research.jfrog.com/post/shai-hulud-here-we-go-again-may19/
+    title: Shai-Hulud Here We Go Again - JFrog Security Research

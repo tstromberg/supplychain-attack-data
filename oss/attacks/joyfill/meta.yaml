@@ -79,22 +79,21 @@
   - kind: technique
     value: persistence by injection into VS Code and npm
   notes:
-  - Both malicious releases are prerelease versions. Consumers pinning to a stable range
-    would not have received them, but anyone tracking beta or release-candidate channels
-    would.
-  - Execution occurs at module import, so `npm install --ignore-scripts` does not prevent
-    it. The implant is appended after the legitimate package code rather than replacing it.
-  - Socket reported the RAT stage at 77 KB and the Python credential stealer at 82,457
-    bytes. No install or download count for the malicious versions has been published.
-  - The npm registry records four further prereleases on the same day that no source
-    classifies. On layouts, 0.1.2-2773.beta.1 at 13:57:01Z and 0.1.2-2773.beta.2 at
-    15:16:43Z. On components, 4.0.0-rc24-2773-beta.5 at 14:01:19Z and
-    4.0.0-rc24-2773-beta.6 at 15:21:29Z. Socket named only beta.0 and beta.4 as malicious,
-    so the later prereleases are left unrecorded rather than assumed either way.
-  - Both malicious prereleases were removed from npm and now return 404, so no sample of
-    the published tarballs could be acquired.
-  - SafeDep tracks the blockchain dead-drop loader carried in the production bundles as
+  - >-
+    Both malicious releases are prereleases. Consumers pinning to a stable range would not have
+    received them, but anyone tracking beta or release-candidate channels would. Both were
+    removed from npm and now return 404, so no sample exists.
+  - >-
+    Execution occurs at module import, so npm install --ignore-scripts does not prevent it. The
+    implant is appended after the legitimate package code rather than replacing it.
+  - >-
+    Socket reported the RAT stage at 77 KB and the Python credential stealer at 82,457 bytes.
+    SafeDep tracks the blockchain dead-drop loader carried in the production bundles as
     PolinRider.
+  - >-
+    npm records four further prereleases that day that no source classifies: layouts
+    0.1.2-2773.beta.1 and beta.2, components 4.0.0-rc24-2773-beta.5 and beta.6. Socket named
+    only beta.0 and beta.4, so these are left unrecorded.
   artifacts:
   - id: joyfill-layouts
     name: '@joyfill/layouts'
@@ -132,10 +131,17 @@
       role: distribution
     hashes:
     - sha256:bcc93dc55bc7daedf4ca57254f0e7a7f1c40e09851eab98fe10cde801982db17
+    - sha1:47e24f0b16ec226ec75249a91db29fdba6ec30e4
+    - sha512:becf02cc53573624aaa5077aec039d2a9b371b6d8262d519ec9e791688f9ddc70b59fd0fd7f893bb4796cc056e9cd89674d71dd789f5e3e23612bdf1df293de2
     notes:
     - Published 2026-07-28 at 11:03:59 UTC.
     - Socket identifies this SHA-256 as the complete npm archive for
       `@joyfill/components@4.0.0-rc24-2773-beta.4`.
+    - OSSF MAL-2026-11160 maps the SHA-1 and SHA-512 checksums to the complete
+      components-4.0.0-rc24-2773-beta.4.tgz npm archive.
+    - The components archive remains unavailable; the samples directory retains a shared
+      report-derived blockchain-loader fragment for both Joyfill beta releases as payload-only
+      evidence, without reconstructing the encrypted clientCode payload.
   references:
   - url: https://socket.dev/blog/joyfill-npm-beta-releases-compromised
     title: Two Joyfill npm Beta Releases Compromised to Deliver DEV#POPPER Remote Access
@@ -148,3 +154,5 @@
       Hacker News
   - url: https://safedep.io/joyfill-npm-blockchain-c2-supply-chain/
     title: Joyfill npm Packages Compromised with Blockchain C2 Loader - SafeDep
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/@joyfill/components/MAL-2026-11160.json
+    title: OSSF MAL-2026-11160 package-integrity record for @joyfill/components

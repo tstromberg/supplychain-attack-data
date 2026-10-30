@@ -16,8 +16,8 @@
   <h1>util-linux source archive trojanized</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> util-linux · <a href="https://ftp.win.tue.nl" target="_blank">website</a> · <a href="https://github.com/util-linux/util-linux" target="_blank">repo</a></div>
-    <div class="meta-item"><strong>Date:</strong> 1999-01-21 to 1999-01-22 (1 day)</div>
+    <div class="meta-item"><strong>Target:</strong> util-linux · <a href="https://www.kernel.org/pub/linux/utils/util-linux/" target="_blank">website</a> · <a href="https://github.com/util-linux/util-linux" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 1999-01-22 to 1999-01-24 (2 days)</div>
     <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
     <div class="meta-item"><strong>Language:</strong> C</div>
@@ -36,11 +36,15 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>In January 1999, the util-linux 2.9g source archive on `ftp.win.tue.nl` was found to be a trojaned replacement. The report came days after the tcp-wrappers compromise on the same server. The trusted FTP host, not a random mirror, was the failed boundary.</p>
+      <p>On January 24, 1999, the util-linux 2.9g source archive on <code>ftp.win.tue.nl</code> was found to be a trojaned replacement; CERT later placed the trojan on the server between January 22 and January 24. The report came days after the tcp-wrappers compromise on the same server. The trusted FTP host, not a random mirror, was the failed boundary.</p>
     
-      <p>The modified archive changed `login-utils/login.c`. A new `checkname()` path ran during login. If the supplied username began with `#!`, the code built `/bin/&lt;name&gt;` and executed it. That turned an ordinary login prompt into a command trigger for anyone who knew the convention.</p>
+      <p>The modified archive changed <code>login-utils/login.c</code>, and the published diff also touched <code>install-sh</code> and the <code>disk-utils</code> and <code>misc-utils</code> Makefiles. A new <code>checkname()</code> path ran on the supplied username before any password was checked. If that username began with <code>#!</code>, the code built <code>/bin/&lt;name&gt;</code> and executed it. CERT put the consequence plainly: the change gave anyone with access to a login prompt the capability of executing commands. Brouwer was blunter. Anybody who logged in with the name <code>#!sh</code> got a root shell, no credentials required.</p>
     
-      <p>The same function also forked a reporting process. It resolved `mail.hotmail.com`, spoke SMTP, and sent host and UID data to a Hotmail address. It left `/var/tmp/.fmlock0` as a marker and exposed `HELO 127.0.0.1` as a simple detection string.</p>
+      <p>The same function also forked a reporting process. It resolved <code>mail.hotmail.com</code>, spoke SMTP, and sent host and UID data to a Hotmail address. It left <code>/var/tmp/.fmlock0</code> as a marker and exposed <code>HELO 127.0.0.1</code> as a simple detection string.</p>
+      <figure class="pull-quote">
+        <blockquote>The trojaned <code>util-linux-2.9g.tar.gz</code> matched the original's size and timestamp, so the FTP listing looked untouched. CERT's check was <code>strings /bin/login | grep HELO</code>, run on the binary you had already installed.</blockquote>
+        <figcaption>same size, same timestamp</figcaption>
+      </figure>
     
       <p>The maintainer restored a clean 2.9g archive and warned that nothing on the compromised machine should be trusted. CERT later folded util-linux into CA-1999-02 and advised users to move to util-linux 2.9h with signature verification. The lesson was plain: timestamps and familiar paths were not integrity.</p>
     
@@ -67,10 +71,10 @@
             <strong>util-linux</strong>
             
             <br><span>source_archive</span>
-            <br><a href="https://ftp.win.tue.nl" target="_blank">https://ftp.win.tue.nl</a>
-            <br><a href="https://github.com/util-linux/util-linux" target="_blank">https://github.com/util-linux/util-linux</a>
+            <br><a href="https://www.kernel.org/pub/linux/utils/util-linux/" target="_blank">https://www.kernel.org/pub/linux/utils/util-linux/</a>
+            
           </td>
-          <td>1999-01-21<br>to 1999-01-22</td>
+          <td>1999-01-22<br>to 1999-01-24</td>
           <td>
             
               <code>2.9g</code>

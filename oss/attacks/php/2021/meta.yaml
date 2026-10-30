@@ -11,6 +11,14 @@
     The first response treated the event as likely PHP-hosted Git infrastructure compromise. A later update changed the picture. Access logs showed the malicious commits were pushed over HTTPS using password authentication through `git-http-backend`, outside gitolite's SSH path. The project no longer believed the `git.php.net` server itself had been compromised, but considered it possible that the old `master.php.net` user database had leaked.
 
     The response was architectural. PHP made GitHub the primary repository host, made `git.php.net` and `svn.php.net` read-only, migrated `master.php.net` to `main.php.net`, reset all php.net passwords, moved password storage to bcrypt, and removed the need to keep HTTP Digest-compatible MD5 password material. The backdoor did not become a stable release; its importance is structural. One accepted commit in the language source tree could have put hostile behavior inside every downstream build.
+  pull_quote:
+    text: >-
+      git.php.net also accepted pushes over HTTPS, through git-http-backend
+      and Apache Digest auth against the master.php.net user database, a path
+      gitolite never saw. The missing git-receive-pack log entries were first
+      read as evidence of a compromised server.
+    caption: the push path gitolite never logged
+    after: 2
   start_date: 2021-03-28
   end_date: 2021-03-28
   target:
@@ -79,5 +87,3 @@
   - url: 
       https://www.bleepingcomputer.com/news/security/phps-git-server-hacked-to-add-backdoors-to-php-source-code/
     title: PHP's Git server hacked to add backdoors to PHP source code
-  - url: https://github.com/php/php-src/issues/6900
-    title: php-src issue 6900

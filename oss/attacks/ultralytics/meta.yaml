@@ -11,6 +11,13 @@
     The attacker used that path to publish compromised PyPI releases. Versions 8.3.41, 8.3.42, 8.3.45, and 8.3.46 carried cryptomining changes, while the public repository did not contain matching malicious source. The package still looked like a normal computer-vision library release to downstream users.
 
     The project cleaned up the releases and GitHub published GHSA-32hc-9xrg-cc9g. The durable lesson is simple: `pull_request_target` can be safe only when untrusted fork input is kept out of privileged execution.
+  pull_quote:
+    text: >-
+      The payload was the branch name. Ultralytics' custom action dropped an
+      unsanitized branch name into a shell `run` block, so a fork branch named
+      as a command substitution ran `curl | bash` on a privileged runner.
+    caption: the branch name was the exploit
+    after: 3
   start_date: 2024-12-04
   end_date: 2024-12-07
   target:
@@ -85,18 +92,27 @@
     - kind: malware
       value: cryptominer
     evidence:
-    - kind: source_tree
-      path: artifacts/clean/v8.3.40
+    - kind: source_archive
+      path: samples/ultralytics/before/ultralytics-8.3.40-py3-none-any.whl
       role: clean_source
-    - kind: source_tree
-      path: artifacts/compromised/v8.3.41
+    - kind: source_archive
+      path: samples/ultralytics/during/b6ea1681855ec2f73c643ea2acfcf7ae084a9648f888d4bd1e3e119ec15c3495.sample
       role: compromised_source
-    - kind: source_tree
-      path: artifacts/clean/v8.3.44
+    - kind: source_archive
+      path: samples/ultralytics/before/ultralytics-8.3.44-py3-none-any.whl
       role: clean_source
-    - kind: source_tree
-      path: artifacts/compromised/v8.3.46
+    - kind: source_archive
+      path: samples/ultralytics/during/4347625838a5cb0e9d29f3ec76ed8365b31b281103b716952bf64d37cf309785.sample
       role: compromised_source
+  notes:
+  - >-
+    The four evidence archives were compared over one curated subset of 14 module paths, not the whole package. Those members were kept unpacked under artifacts/ until 2026-09-11; each was byte-identical to a member of the archives named above.
+  - >-
+    The subset, part one: __init__.py, cfg/__init__.py, engine/model.py, engine/predictor.py, models/sam/predict.py, models/yolo/model.py, nn/autobackend.py.
+  - >-
+    The subset, part two: solutions/heatmap.py, solutions/queue_management.py, trackers/utils/matching.py, utils/checks.py, utils/downloads.py, utils/ops.py, utils/triton.py.
+  - >-
+    Only three of the 14 differ between clean 8.3.40 and compromised 8.3.41: __init__.py, models/yolo/model.py and utils/downloads.py. One differs between 8.3.44 and 8.3.46: __init__.py.
   references:
   - url: 
       https://www.legitsecurity.com/blog/the-ultralytics-supply-chain-attack-how-it-happened-how-to-prevent

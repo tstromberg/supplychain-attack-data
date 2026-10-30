@@ -1,33 +1,322 @@
 schema_version: 1
-samples: []
+samples:
+  - artifact_id: 3cxdesktopapp-macos
+    phase: before
+    classification: baseline_candidate
+    coordinate: pkg:generic/3cxdesktopapp-macos
+    filename: libffmpeg.dylib
+    path: 3cx/before/libffmpeg.dylib
+    sha256: c819243266e17758afb7e49c0577be46f36235880355359bb21b2b387a9d097f
+    size: 4973680
+    source:
+      url: local:/Users/t/data/supplychain/cases/macho/2023/2023.3CX/libffmpeg.dylib
+      retrieved_at: '2026-08-15T18:00:00Z'
+      kind: local_case_corpus_clean_comparator
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - exact_local_case_artifact
+        - measured_sha256_and_size
+    notes:
+      - >-
+        Clean library comparator only. This is not asserted to be a complete 3CX DMG or to represent
+        every file in a clean application bundle.
+      - >-
+        Recorded under the non-version version label "clean-library-comparator" before release
+        identities were normalized; the label is retained here because it is not derivable from the
+        version or commit.
+    subject: 3cxdesktopapp-macos
+  - artifact_id: 3cxdesktopapp-macos
+    phase: during
+    classification: malicious
+    coordinate: pkg:generic/3cxdesktopapp-macos
+    filename: libffmpeg.dylib
+    path: 3cx/during/libffmpeg.dylib
+    sha256: a64fa9f1c76457ecc58402142a8728ce34ccba378c17318b3340083eeb7acc67
+    size: 4979136
+    source:
+      url: local:/Users/t/data/supplychain/cases/macho/2023/2023.3CX/libffmpeg.dirty.dylib
+      retrieved_at: '2026-08-15T18:00:00Z'
+      kind: local_case_corpus_extracted_member
+      original_url: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - exact_local_case_artifact
+        - matches_volexity_reported_sha256
+        - measured_sha256_and_size
+    notes:
+      - >-
+        Exact macOS libffmpeg.dylib member whose SHA-256 matches Volexity's reported backdoor
+        component. The complete signed DMG installer was not recovered; this member must not be
+        represented as the full 3CXDesktopApp distribution.
+      - >-
+        Recorded under the non-version version label "malicious-library-member" before release
+        identities were normalized; the label is retained here because it is not derivable from the
+        version or commit.
+    subject: 3cxdesktopapp-macos
+  - artifact_id: 3cxdesktopapp-windows
+    phase: during
+    classification: malicious
+    coordinate: pkg:generic/3cxdesktopapp-windows
+    filename: ffmpeg.dll
+    path: 3cxdesktopapp-windows/during/ffmpeg.dll
+    sha256: 7986bbaee8940da11ce089383521ab420c443ab7b15ed42aed91fd31ce833896
+    size: 2814976
+    source:
+      url: https://mb-api.abuse.ch/api/v1/
+      retrieved_at: '2026-09-02T13:47:21Z'
+      kind: malware_repository
+      original_url: https://downloads.3cx.com/downloads/3cxdesktopapp/3CXDesktopApp-18.12.416.msi
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - malwarebazaar_reported_sha256
+        - measured_sha256_and_size
+    notes:
+      - >-
+        The trojanized ffmpeg.dll shipped inside the Windows 3CXDesktopApp installer. It is the
+        first stage: it reads the appended shellcode out of d3dcompiler_47.dll and runs it.
+      - >-
+        A component of the installer, not the installer. The signed MSI itself remains unrecovered,
+        and the unresolved record for it stands.
+      - >-
+        Renamed from MalwareBazaar's defanged _ffmpeg.dll to the name it carries inside the
+        application; the rename is recorded in the sidecar.
+      - >-
+        Recorded under the non-version version label "ffmpeg.dll-component" before release
+        identities were normalized; the label is retained here because it is not derivable from the
+        version or commit.
+    subject: 3cxdesktopapp-windows
+  - artifact_id: 3cxdesktopapp-windows
+    phase: during
+    classification: malicious
+    coordinate: pkg:generic/3cxdesktopapp-windows
+    filename: d3dcompiler_47.dll
+    path: 3cxdesktopapp-windows/during/d3dcompiler_47.dll
+    sha256: 11be1803e2e307b647a8a7e02d128335c448ff741bf06bf52b332e0bbf423b03
+    size: 5168344
+    source:
+      url: https://mb-api.abuse.ch/api/v1/
+      retrieved_at: '2026-09-02T13:47:21Z'
+      kind: malware_repository
+      original_url: https://downloads.3cx.com/downloads/3cxdesktopapp/3CXDesktopApp-18.12.416.msi
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - malwarebazaar_reported_sha256
+        - measured_sha256_and_size
+    notes:
+      - >-
+        The carrier for the second stage: a legitimate-looking d3dcompiler_47.dll with encrypted
+        shellcode appended past the end of its PE structure, which is what ffmpeg.dll decrypts.
+      - >-
+        Renamed from MalwareBazaar's defanged _d3dcompiler_47.dll; the rename is recorded in the
+        sidecar.
+      - >-
+        Recorded under the non-version version label "d3dcompiler_47.dll-component" before release
+        identities were normalized; the label is retained here because it is not derivable from the
+        version or commit.
+    subject: 3cxdesktopapp-windows
+  - artifact_id: 3cxdesktopapp-windows
+    phase: during
+    classification: malicious
+    coordinate: pkg:generic/3cxdesktopapp-windows
+    filename: third-stage-unmapped.dll
+    path: 3cxdesktopapp-windows/during/third-stage-unmapped.dll
+    sha256: 82a2dafd6ce594f2cf8588f32585c71be2180fc4cf9a144e300b1692f3de5807
+    size: 294912
+    source:
+      url: https://mb-api.abuse.ch/api/v1/
+      retrieved_at: '2026-09-02T13:47:21Z'
+      kind: malware_repository
+      original_url: https://downloads.3cx.com/downloads/3cxdesktopapp/3CXDesktopApp-18.12.416.msi
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - malwarebazaar_reported_sha256
+        - measured_sha256_and_size
+    notes:
+      - >-
+        The third stage, the information stealer the earlier stages pull down. Submitted as an
+        unmapped memory image rather than a file from disk, so it is the stage as it ran, not as it
+        was delivered.
+      - >-
+        Renamed from 'third-stage - unmapped.dll' to remove the spaces; bytes unchanged and the
+        original name is in the sidecar.
+      - >-
+        Recorded under the non-version version label "third-stage" before release identities were
+        normalized; the label is retained here because it is not derivable from the version or
+        commit.
+    subject: 3cxdesktopapp-windows
+  - artifact_id: 3cxdesktopapp-windows
+    phase: during
+    classification: malicious
+    coordinate: pkg:generic/3cxdesktopapp-windows@18.12.416
+    version: 18.12.416
+    filename: 3CXDesktopApp-18.12.416.msi
+    path: 3cxdesktopapp-windows/during/3CXDesktopApp-18.12.416.msi
+    sha256: 59e1edf4d82fae4978e97512b0331b7eb21dd4b838b850ba46794d9c7a2c0983
+    size: 102555648
+    source:
+      url: >-
+        http://10.9.8.10:8081/api/file/59e1edf4d82fae4978e97512b0331b7eb21dd4b838b850ba46794d9c7a2c0983
+      original_url: https://downloads.3cx.com/downloads/3cxdesktopapp/3CXDesktopApp-18.12.416.msi
+      retrieved_at: '2026-09-02T17:05:00Z'
+      kind: research_corpus
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - malwarebazaar_reported_sha256_and_filename
+        - contains_the_two_trojanized_dlls_held_in_this_manifest
+        - msi_summary_stream_names_3cx_ltd_built_2023_03_13
+        - measured_sha256_and_size
+    notes:
+      - >-
+        The trojanized Windows installer itself, not a component. Its MSI summary stream reads
+        Subject '3CX Desktop App', Author '3CX Ltd.', created 2023-03-13, inside the compromise
+        window.
+      - >-
+        Extracting its CAB yields ffmpeg.dll and d3dcompiler_47.dll byte-identical to the two
+        components recorded above, which is what establishes this is the trojanized build rather
+        than a clean 18.12.416.
+      - >-
+        It was found by asking MalwareBazaar what it knew about a digest, not by requesting either
+        digest this record listed for the artifact. Neither of those two is known to MalwareBazaar
+        or VirusTotal; see the interpretation.
+    subject: 3cxdesktopapp-windows
 unresolved:
-  - artifact_id: windows
-    phase: during
-    status: unavailable_by_hash
-    hashes:
-      - sha256: 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4
-      - sha256: 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43
-    attempts:
-      - Hopper had no matching sample on 2026-08-08.
-      - MalwareBazaar returned hash_not_found for both hashes on 2026-08-08.
-      - Triage returned no file analysis for both hashes on 2026-08-08.
-  - artifact_id: macos
-    phase: during
-    status: unavailable_by_hash
-    hashes:
-      - sha256: e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be
-      - sha256: 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5
-    attempts:
-      - Hopper had no matching sample on 2026-08-08.
-      - MalwareBazaar returned hash_not_found for both hashes on 2026-08-08.
-      - Triage returned no file analysis for both hashes on 2026-08-08.
   - artifact_id: x-trader
     phase: during
     status: unavailable
     hashes: []
     locations: []
-    attempts: []
-    last_attempted_at: '2026-08-10T15:07:47.062Z'
+    attempts:
+      - >-
+        Forager SHA256 fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370:
+        time=2026-09-02T19:51:32.347-04:00 level=ERROR msg="command failed" error="hash
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370; malshare: download
+        returned status 404"
+      - >-
+        Forager MD5 ef4ab22e565684424b4142b1294f1f4d: time=2026-09-02T19:51:33.013-04:00 level=ERROR
+        msg="command failed" error="hash ef4ab22e565684424b4142b1294f1f4d unavailable from
+        configured sources: malwarebazaar: MalwareBazaar has no sample for
+        ef4ab22e565684424b4142b1294f1f4d: hash_not_found; triage: triage has no file analysis for
+        MD5 ef4ab22e565684424b4142b1294f1f4d; malshare: download returned status 404"
+      - >-
+        Forager SHA256 fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370:
+        time=2026-09-03T05:37:00.682-04:00 level=ERROR msg="command failed" error="hash
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370; malshare: download
+        returned status 404"
+      - >-
+        Forager MD5 ef4ab22e565684424b4142b1294f1f4d: time=2026-09-03T05:37:01.165-04:00 level=ERROR
+        msg="command failed" error="hash ef4ab22e565684424b4142b1294f1f4d unavailable from
+        configured sources: malwarebazaar: MalwareBazaar has no sample for
+        ef4ab22e565684424b4142b1294f1f4d: hash_not_found; triage: triage has no file analysis for
+        MD5 ef4ab22e565684424b4142b1294f1f4d; malshare: download returned status 404"
+      - >-
+        Forager SHA256 fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370:
+        time=2026-09-03T05:57:08.934-04:00 level=ERROR msg="command failed" error="hash
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370;
+        malwarebazaar: MalwareBazaar has no sample for
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370; malshare: download
+        returned status 404"
+      - >-
+        Forager MD5 ef4ab22e565684424b4142b1294f1f4d: time=2026-09-03T05:57:09.850-04:00 level=ERROR
+        msg="command failed" error="hash ef4ab22e565684424b4142b1294f1f4d unavailable from
+        configured sources: hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar:
+        MalwareBazaar has no sample for ef4ab22e565684424b4142b1294f1f4d: hash_not_found; triage:
+        triage has no file analysis for MD5 ef4ab22e565684424b4142b1294f1f4d; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370:
+        time=2026-09-03T08:38:00.154-04:00 level=ERROR msg="command failed" error="hash
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370;
+        malwarebazaar: MalwareBazaar has no sample for
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370; malshare: download
+        returned status 404"
+      - >-
+        Forager MD5 ef4ab22e565684424b4142b1294f1f4d: time=2026-09-03T08:38:01.060-04:00 level=ERROR
+        msg="command failed" error="hash ef4ab22e565684424b4142b1294f1f4d unavailable from
+        configured sources: hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar:
+        MalwareBazaar has no sample for ef4ab22e565684424b4142b1294f1f4d: hash_not_found; triage:
+        triage has no file analysis for MD5 ef4ab22e565684424b4142b1294f1f4d; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370:
+        time=2026-09-05T11:05:50.493-04:00 level=ERROR msg="command failed" error="hash
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370;
+        malwarebazaar: MalwareBazaar has no sample for
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370; malshare: download
+        returned status 404"
+      - >-
+        Forager MD5 ef4ab22e565684424b4142b1294f1f4d: time=2026-09-05T11:05:51.069-04:00 level=ERROR
+        msg="command failed" error="hash ef4ab22e565684424b4142b1294f1f4d unavailable from
+        configured sources: hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar:
+        MalwareBazaar has no sample for ef4ab22e565684424b4142b1294f1f4d: hash_not_found; triage:
+        triage has no file analysis for MD5 ef4ab22e565684424b4142b1294f1f4d; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370:
+        time=2026-09-10T10:56:23.173-04:00 level=ERROR msg="command failed" error="hash
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370; malshare: download
+        returned status 404"
+      - >-
+        Forager MD5 ef4ab22e565684424b4142b1294f1f4d: time=2026-09-10T10:56:24.889-04:00 level=ERROR
+        msg="command failed" error="hash ef4ab22e565684424b4142b1294f1f4d unavailable from
+        configured sources: malwarebazaar: MalwareBazaar has no sample for
+        ef4ab22e565684424b4142b1294f1f4d: hash_not_found; triage: triage has no file analysis for
+        MD5 ef4ab22e565684424b4142b1294f1f4d; malshare: download returned status 404"
+      - >-
+        Digest sweep, 2026-09-10: the 2 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'
   - artifact_id: 3cxdesktopapp-macos
     phase: during
     status: unavailable
@@ -138,7 +427,295 @@ unresolved:
         Triage has no file analysis for SHA256
         7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:52:15.621Z'
+      - >-
+        Forager SHA256 e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be:
+        time=2026-09-02T11:28:29.688-04:00 level=ERROR msg="command failed" error="hash
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be;
+        malwarebazaar: MalwareBazaar has no sample for
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5:
+        time=2026-09-02T11:28:46.463-04:00 level=ERROR msg="command failed" error="hash
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5;
+        malwarebazaar: MalwareBazaar has no sample for
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be:
+        time=2026-09-02T11:30:43.842-04:00 level=ERROR msg="command failed" error="hash
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be;
+        malwarebazaar: MalwareBazaar has no sample for
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5:
+        time=2026-09-02T11:30:44.489-04:00 level=ERROR msg="command failed" error="hash
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5;
+        malwarebazaar: MalwareBazaar has no sample for
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be:
+        time=2026-09-02T11:47:01.727-04:00 level=ERROR msg="command failed" error="hash
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be;
+        malwarebazaar: MalwareBazaar has no sample for
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5:
+        time=2026-09-02T11:47:02.695-04:00 level=ERROR msg="command failed" error="hash
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5;
+        malwarebazaar: MalwareBazaar has no sample for
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be:
+        time=2026-09-02T11:48:29.543-04:00 level=ERROR msg="command failed" error="hash
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be;
+        malwarebazaar: MalwareBazaar has no sample for
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5:
+        time=2026-09-02T11:48:30.205-04:00 level=ERROR msg="command failed" error="hash
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5;
+        malwarebazaar: MalwareBazaar has no sample for
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be:
+        time=2026-09-02T12:12:44.714-04:00 level=ERROR msg="command failed" error="hash
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be;
+        malwarebazaar: MalwareBazaar has no sample for
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5:
+        time=2026-09-02T12:12:45.615-04:00 level=ERROR msg="command failed" error="hash
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5;
+        malwarebazaar: MalwareBazaar has no sample for
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be:
+        time=2026-09-02T19:51:32.373-04:00 level=ERROR msg="command failed" error="hash
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5:
+        time=2026-09-02T19:51:32.991-04:00 level=ERROR msg="command failed" error="hash
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg:
+        time=2026-09-02T19:51:33.121-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Direct URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg: response was
+        HTML, not an artifact
+      - 'Direct URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg: exit 0'
+      - 'Wayback https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg: no captures'
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg:
+        time=2026-09-02T19:51:34.338-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Direct URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg: response was
+        HTML, not an artifact
+      - 'Direct URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg: exit 0'
+      - 'Wayback https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg: no captures'
+      - >-
+        Forager SHA256 e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be:
+        time=2026-09-03T05:37:00.904-04:00 level=ERROR msg="command failed" error="hash
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5:
+        time=2026-09-03T05:37:01.855-04:00 level=ERROR msg="command failed" error="hash
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg:
+        time=2026-09-03T05:37:01.976-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg:
+        time=2026-09-03T05:37:13.646-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager SHA256 e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be:
+        time=2026-09-03T05:57:08.955-04:00 level=ERROR msg="command failed" error="hash
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be;
+        malwarebazaar: MalwareBazaar has no sample for
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5:
+        time=2026-09-03T05:57:09.566-04:00 level=ERROR msg="command failed" error="hash
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5;
+        malwarebazaar: MalwareBazaar has no sample for
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg:
+        time=2026-09-03T05:57:09.674-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg:
+        time=2026-09-03T05:57:13.733-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager SHA256 e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be:
+        time=2026-09-03T08:38:00.366-04:00 level=ERROR msg="command failed" error="hash
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be;
+        malwarebazaar: MalwareBazaar has no sample for
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5:
+        time=2026-09-03T08:38:01.258-04:00 level=ERROR msg="command failed" error="hash
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5;
+        malwarebazaar: MalwareBazaar has no sample for
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg:
+        time=2026-09-03T08:38:01.376-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg:
+        time=2026-09-03T08:38:06.636-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager SHA256 e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be:
+        time=2026-09-05T11:05:50.484-04:00 level=ERROR msg="command failed" error="hash
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be;
+        malwarebazaar: MalwareBazaar has no sample for
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5:
+        time=2026-09-05T11:05:51.357-04:00 level=ERROR msg="command failed" error="hash
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5;
+        malwarebazaar: MalwareBazaar has no sample for
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg:
+        time=2026-09-05T11:05:51.415-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg:
+        time=2026-09-05T11:06:08.065-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager SHA256 e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be:
+        time=2026-09-10T10:56:24.181-04:00 level=ERROR msg="command failed" error="hash
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5:
+        time=2026-09-10T10:56:25.882-04:00 level=ERROR msg="command failed" error="hash
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.dmg:
+        time=2026-09-10T10:56:25.981-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg:
+        time=2026-09-10T10:56:33.853-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+    last_attempted_at: '2026-09-10T14:56:43.346Z'
   - artifact_id: 3cxdesktopapp-windows
     phase: during
     status: unavailable
@@ -249,4 +826,353 @@ unresolved:
         Triage has no file analysis for SHA256
         2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:52:15.424Z'
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-02T09:28:35.579-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-02T09:28:37.132-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi:
+        time=2026-09-02T09:30:05.964-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Direct URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi: response was
+        HTML, not an artifact
+      - 'Direct URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi: exit 0'
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi:
+        time=2026-09-02T09:30:06.571-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Direct URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi: response was
+        HTML, not an artifact
+      - 'Direct URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi: exit 0'
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi:
+        time=2026-09-02T09:35:45.067-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - 'Wayback https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi: no captures'
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi:
+        time=2026-09-02T09:35:46.203-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - 'Wayback https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi: no captures'
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi:
+        time=2026-09-02T09:37:51.724-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi:
+        time=2026-09-02T09:37:58.573-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-02T11:28:28.847-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4;
+        malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-02T11:28:44.726-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43;
+        malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-02T11:30:43.841-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4;
+        malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-02T11:30:44.482-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43;
+        malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-02T11:47:01.364-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4;
+        malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-02T11:47:02.137-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43;
+        malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-02T11:48:29.540-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4;
+        malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-02T11:48:30.010-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43;
+        malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-02T12:12:45.048-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4;
+        malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-02T12:12:45.805-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43;
+        malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-02T19:51:32.376-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-02T19:51:33.059-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi:
+        time=2026-09-02T19:51:33.159-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi:
+        time=2026-09-02T19:51:47.942-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-03T05:37:00.857-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-03T05:37:01.723-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi:
+        time=2026-09-03T05:37:01.832-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi:
+        time=2026-09-03T05:37:25.111-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-03T05:57:08.969-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4;
+        malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-03T05:57:09.834-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43;
+        malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi:
+        time=2026-09-03T05:57:09.925-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi:
+        time=2026-09-03T05:57:55.104-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-03T08:38:00.536-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4;
+        malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-03T08:38:01.478-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43;
+        malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi:
+        time=2026-09-03T08:38:01.588-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi:
+        time=2026-09-03T08:38:16.562-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-05T11:05:50.484-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4;
+        malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-05T11:05:51.319-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43;
+        malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi:
+        time=2026-09-05T11:05:51.407-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi:
+        time=2026-09-05T11:05:59.835-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager SHA256 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4:
+        time=2026-09-10T10:56:24.097-04:00 level=ERROR msg="command failed" error="hash
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43:
+        time=2026-09-10T10:56:26.420-04:00 level=ERROR msg="command failed" error="hash
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43; malshare: download
+        returned status 404"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi:
+        time=2026-09-10T10:56:26.498-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi:
+        time=2026-09-10T10:56:29.687-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+    last_attempted_at: '2026-09-10T14:57:00.687Z'
+interpretation:
+  - >-
+    The signed 3CX installers are still unrecovered on both platforms. What is held is the malicious
+    code from inside them: the macOS libffmpeg.dylib member, and on Windows the two DLLs the
+    installer shipped plus the third stage they fetched.
+  - >-
+    The Windows components were found by searching MalwareBazaar's 3CX tag rather than by asking for
+    the installer digests the incident record publishes. That is the general lesson: a repository
+    often holds the payload under its own name while holding nothing under the coordinate the report
+    names.
+  - >-
+    Five placeholder evidence records were removed from this manifest. Three are superseded by the
+    recovered components; two carried artifact ids, windows and macos, that meta.yaml no longer
+    declares.
+  - >-
+    The Windows installer was recorded as unavailable behind two SHA-256 values that no provider has
+    ever seen. VirusTotal returns NotFound for both, as does MalwareBazaar. The installer was in
+    Hopper the whole time under a different digest, and it is now held; the two unverifiable values
+    are annotated in meta.yaml rather than presented as the artifact's identity.

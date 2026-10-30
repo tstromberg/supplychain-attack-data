@@ -1,23 +1,194 @@
 schema_version: 1
-samples: []
-unresolved:
+interpretation:
+  - >-
+    All four files PyPI served for the two malicious releases are held, verified against PyPI's own
+    published digests. The incident record previously said they were unavailable; they were not, and
+    the reason the earlier search failed is instructive.
+  - >-
+    This record carried two SHA-256 values attributed to the OSV entry. Neither MAL-2025-6794 nor
+    PYSEC-2025-72 contains a digest at all, and neither value matches any file PyPI served, so every
+    hash lookup ever run for this incident asked for bytes that do not exist. The correct digests
+    came from the PyPI JSON response captured while the releases were still live, which DataDog
+    preserved in its malicious-packages dataset. With those, Hopper returned all four on the first
+    attempt.
+  - >-
+    The DataDog dataset also holds both releases as extracted trees. Those are not recorded here:
+    the original distribution bytes were recovered, which is strictly better, and the dataset's copy
+    is what supplied the digests rather than the artifact.
+samples:
+  - artifact_id: num2words
+    phase: before
+    classification: clean
+    coordinate: pkg:pypi/num2words@0.5.14
+    version: 0.5.14
+    filename: num2words-0.5.14.tar.gz
+    path: num2words/before/num2words-0.5.14.tar.gz
+    sha256: b066ec18e56b6616a3b38086b5747daafbaa8868b226a36127e0451c0cf379c6
+    size: 218213
+    source:
+      url: >-
+        https://files.pythonhosted.org/packages/f6/58/ad645bd38b4b648eb2fc2ba1b909398e54eb0cbb6a7dbd2b4953e38c9621/num2words-0.5.14.tar.gz
+      retrieved_at: '2026-09-02T16:50:00Z'
+      kind: distribution
+    verification:
+      status: exact
+      basis:
+        - measured_sha256
+      evidence:
+        - pypi_index_sha256
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: 0.5.15
+    notes:
+      - >-
+        The last clean release, and still the newest one PyPI serves: no remediated version
+        followed, so this file is both the before state and the current state.
+      - >-
+        218213 bytes against 794612 for the malicious sdist. The difference is almost entirely the
+        1291264-byte PE that 0.5.15 added, compressed.
+    subject: num2words
   - artifact_id: num2words
     phase: during
+    classification: malicious
     coordinate: pkg:pypi/num2words@0.5.15
-    status: unavailable
-    attempts:
+    version: 0.5.15
+    filename: num2words-0.5.15.tar.gz
+    path: num2words/during/num2words-0.5.15.tar.gz
+    sha256: d31480b0a3a553309f423f83d2ed50e6dd623a64e8b1211c22a3756d55fd77ab
+    size: 794612
+    source:
+      url: >-
+        http://10.9.8.10:8081/api/file/d31480b0a3a553309f423f83d2ed50e6dd623a64e8b1211c22a3756d55fd77ab
+      original_url: https://files.pythonhosted.org/packages/source/n/num2words/num2words-0.5.15.tar.gz
+      retrieved_at: '2026-09-02T16:45:00Z'
+      kind: research_corpus
+    verification:
+      status: exact
+      basis:
+        - measured_sha256
+      evidence:
+        - pypi_published_sha256_captured_while_the_release_was_live
+        - measured_sha256_and_size
+    relates_to:
+      - phase: before
+        version: 0.5.14
+    notes:
       - >-
-        Forager PURL: time=2026-08-09T08:57:25.960-04:00 level=ERROR msg="command failed" error="1
-        of 1 downloads failed"
-      - 'Forager PURL: per-target timeout'
-    last_attempted_at: '2026-08-10T14:49:49.206Z'
+        The source distribution, uploaded 2025-07-28T14:02:27Z and removed within days. It carries
+        num2words/_build.py, which is a Windows PE DLL rather than Python, and thirteen lines
+        appended to num2words/__init__.py that load it through ctypes.CDLL on Windows.
+      - >-
+        Stored unnamed by digest and renamed here to the filename PyPI published; the rename is
+        recorded in the sidecar.
+    subject: num2words
   - artifact_id: num2words
     phase: during
-    coordinate: pkg:pypi/num2words@0.5.16
-    status: unavailable
-    attempts:
+    classification: malicious
+    coordinate: pkg:pypi/num2words@0.5.15
+    version: 0.5.15
+    filename: num2words-0.5.15-py3-none-any.whl
+    path: num2words/during/num2words-0.5.15-py3-none-any.whl
+    sha256: 3783159b7351bdf788162ec4531c6336fba1040873182595af318711ee4a2261
+    size: 740750
+    source:
+      url: >-
+        http://10.9.8.10:8081/api/file/3783159b7351bdf788162ec4531c6336fba1040873182595af318711ee4a2261
+      original_url: https://files.pythonhosted.org/packages/py3/n/num2words/num2words-0.5.15-py3-none-any.whl
+      retrieved_at: '2026-09-02T16:45:00Z'
+      kind: research_corpus
+    verification:
+      status: exact
+      basis:
+        - measured_sha256
+      evidence:
+        - pypi_published_sha256_captured_while_the_release_was_live
+        - measured_sha256_and_size
+    notes:
       - >-
-        Forager PURL: time=2026-08-09T08:57:58.314-04:00 level=ERROR msg="command failed" error="1
-        of 1 downloads failed"
-      - 'Forager PURL: per-target timeout'
-    last_attempted_at: '2026-08-10T14:49:49.221Z'
+        The wheel, uploaded two seconds before the sdist. It matters more than the sdist for
+        exposure: pip prefers a wheel, so this is what a dependency bot would have installed.
+    subject: num2words
+  - artifact_id: num2words
+    phase: during
+    classification: malicious
+    coordinate: pkg:pypi/num2words@0.5.16
+    version: 0.5.16
+    filename: num2words-0.5.16.tar.gz
+    path: num2words/during/num2words-0.5.16.tar.gz
+    sha256: ee90ff8c0757bd9a2cf0d3091f6e06dc55e88915abf5c7bf1977600c50a00106
+    size: 794619
+    source:
+      url: >-
+        http://10.9.8.10:8081/api/file/ee90ff8c0757bd9a2cf0d3091f6e06dc55e88915abf5c7bf1977600c50a00106
+      original_url: https://files.pythonhosted.org/packages/source/n/num2words/num2words-0.5.16.tar.gz
+      retrieved_at: '2026-09-02T16:45:00Z'
+      kind: research_corpus
+    verification:
+      status: exact
+      basis:
+        - measured_sha256
+      evidence:
+        - pypi_published_sha256_captured_while_the_release_was_live
+        - measured_sha256_and_size
+    notes:
+      - >-
+        Uploaded 2025-07-28T16:56:27Z, under three hours after 0.5.15 and after the maintainers had
+        rotated the password — the point the project made publicly at the time, that the attacker's
+        session outlived the rotation.
+    subject: num2words
+  - artifact_id: num2words
+    phase: during
+    classification: malicious
+    coordinate: pkg:pypi/num2words@0.5.16
+    version: 0.5.16
+    filename: num2words-0.5.16-py3-none-any.whl
+    path: num2words/during/num2words-0.5.16-py3-none-any.whl
+    sha256: c148c3b899b8c77634a60a83deab1570d4815356e7942e94f9247eee8acefb79
+    size: 740749
+    source:
+      url: >-
+        http://10.9.8.10:8081/api/file/c148c3b899b8c77634a60a83deab1570d4815356e7942e94f9247eee8acefb79
+      original_url: https://files.pythonhosted.org/packages/py3/n/num2words/num2words-0.5.16-py3-none-any.whl
+      retrieved_at: '2026-09-02T16:45:00Z'
+      kind: research_corpus
+    verification:
+      status: exact
+      basis:
+        - measured_sha256
+      evidence:
+        - pypi_published_sha256_captured_while_the_release_was_live
+        - measured_sha256_and_size
+    notes:
+      - The second wheel, one byte smaller than the first.
+    subject: num2words
+  - artifact_id: num2words
+    phase: during
+    classification: malicious
+    coordinate: pkg:pypi/num2words@0.5.15
+    version: 0.5.15
+    filename: _build.py
+    path: num2words/during/_build.py
+    sha256: be917cb379b9622f56a4d5ec93bf00c20cb76c6646e5919690d0f7c09c956de2
+    size: 1291264
+    source:
+      url: >-
+        http://10.9.8.10:8081/api/file/d31480b0a3a553309f423f83d2ed50e6dd623a64e8b1211c22a3756d55fd77ab
+      retrieved_at: '2026-09-02T16:50:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - member_of_the_retained_sdist
+        - measured_sha256
+    notes:
+      - >-
+        The payload on its own, extracted verbatim from the sdist above. Despite the .py extension
+        it begins MZ: a 1291264-byte Windows PE DLL, which is why appending thirteen lines to
+        __init__.py was enough to run it.
+      - >-
+        Kept separately so it can be searched for by digest. It is the only part of this incident
+        likely to appear in a malware repository under its own identity.
+    subject: num2words

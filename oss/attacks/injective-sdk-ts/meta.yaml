@@ -20,8 +20,9 @@
 
     Exfiltration was designed to survive a glance at network logs. The captured
     material was base64-encoded and POSTed to
-    `testnet[.]archival[.]chain[.]grpc-web[.]injective[.]network`, a hostname built
-    to read as ordinary Injective infrastructure telemetry. The malicious commits
+    `testnet[.]archival[.]chain[.]grpc-web[.]injective[.]network`, a genuine InjectiveLabs public
+    infrastructure endpoint, so the exfiltration blended into the traffic the SDK
+    normally produces. The malicious commits
     arrived from a GitHub account belonging to a developer with an established
     history of contributions to the repository, and the run-up is visible in the
     history: a branch named `test-backdoor-check` appeared at 20:06 GMT+2, testing
@@ -36,6 +37,13 @@
     reporting. Anyone whose mnemonic or private key passed through the affected
     version was told to move funds and rotate keys, on the assumption that
     possession is the whole game.
+  pull_quote:
+    text: >-
+      Nothing fired at install time. The hook sat inside `fromMnemonic()` and
+      `fromHex()`, so the mnemonic left the machine only when a developer
+      actually derived a wallet.
+    caption: it waited to be used
+    after: 1
   start_date: 2026-06-08
   end_date: 2026-06-08
   target:
@@ -94,6 +102,8 @@
     - 1.20.21
     hashes:
     - sha256:244b92499bef2e24950f0ca3f753cd1131c574dc58bb025896a70ab97fe71970
+    - sha1:e3f9da575934fe216a3109cfe2fb699a1dc398d3
+    - sha512:4cc1167341f0db3037f079c2b0b8993d68b0cf899170383de01e530d40289502172ac9d8eb1ac4eb58b27df3f45ae359a504eb78f098657b9015869140714f3c
     fixed_versions:
     - 1.20.23
     locations:
@@ -101,6 +111,9 @@
       role: distribution
     - uri: https://registry.npmjs.org/@injectivelabs/sdk-ts/-/sdk-ts-1.20.21.tgz
       role: distribution
+    notes:
+    - OSSF MAL-2026-10165 maps the SHA-1 and SHA-512 checksums to the complete
+      sdk-ts-1.20.21.tgz npm archive; the SHA-256 identifies that same archive.
   references:
   - url: https://socket.dev/blog/compromised-injective-sdk-npm-package
     title: Compromised Injective SDK npm Package Exfiltrates Wallet Keys and Mnemonics -
@@ -112,3 +125,5 @@
       Hacker News
   - url: https://crypto.news/compromised-injective-sdk-sends-wallet-keys-through-fake-telemetry/
     title: Compromised Injective SDK sends wallet keys through fake telemetry - crypto.news
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/@injectivelabs/sdk-ts/MAL-2026-10165.json
+    title: OSSF MAL-2026-10165 package-integrity record for @injectivelabs/sdk-ts

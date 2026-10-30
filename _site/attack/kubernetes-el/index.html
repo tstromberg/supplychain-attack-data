@@ -36,35 +36,13 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>In early March 2026, an attacker using the GitHub handle `quicktrinny`
-opened what looked like an ordinary pull request against kubernetes-el, a
-long-running Emacs interface for Kubernetes, and within hours had replaced
-the project&#39;s main source file with an Emacs expression that called
-`rm -rf /`. The compromise was disclosed by Emacsmirror maintainer Jonas
-Bernoulli on March 7.</p>
+      <p>In early March 2026, an attacker using the GitHub handle <code>quicktrinny</code> opened what looked like an ordinary pull request against kubernetes-el, a long-running Emacs interface for Kubernetes, and within hours had replaced the project's main source file with an Emacs expression that called <code>rm -rf /</code>. The compromise was disclosed by Emacsmirror maintainer Jonas Bernoulli on March 7.</p>
     
-      <p>The opening was a Pwn Request. kubernetes-el&#39;s CI fired on
-`pull_request_target`, the GitHub Actions trigger that grants
-repository-write permissions, and then explicitly checked out the pull
-request head. That combination, which StepSecurity has flagged repeatedly,
-let the attacker&#39;s fork code run with the project&#39;s own credentials.</p>
+      <p>The opening was a Pwn Request. kubernetes-el's CI fired on <code>pull_request_target</code>, the GitHub Actions trigger that grants repository-write permissions, and then explicitly checked out the pull request head. That combination, which StepSecurity has flagged repeatedly, let the attacker's fork code run with the project's own credentials. The payload then evolved live in the workflow logs. The attacker first changed the Makefile to execute a script called <code>funny.sh</code>, then experimented with runner memory dumping, swapped tools, fixed build errors, and finally exfiltrated GitHub Actions secrets to a <code>webhook.site</code> endpoint. The valuable secret turned out to be the workflow's own writable <code>GITHUB_TOKEN</code>.</p>
     
-      <p>The payload evolved live in the workflow logs. The attacker first changed
-the Makefile to execute a script called `funny.sh`, then experimented with
-runner memory dumping, swapped tools, fixed build errors, and finally
-exfiltrated GitHub Actions secrets to a `webhook.site` endpoint. The
-valuable secret turned out to be the workflow&#39;s own writable `GITHUB_TOKEN`.</p>
+      <p>With that token in hand, the attacker pushed commits authored as <code>github-actions[bot]</code>. The README was defaced and <code>kubernetes.el</code> itself was rewritten so that loading the package would invoke <code>rm -rf /</code>. For Emacs users who installed or updated the package directly from the repository, source code had become the delivery channel.</p>
     
-      <p>With that token in hand, the attacker pushed commits authored as
-`github-actions[bot]`. The README was defaced and `kubernetes.el` itself
-was rewritten so that loading the package would invoke `rm -rf /`. For
-Emacs users who installed or updated the package directly from the
-repository, source code had become the delivery channel.</p>
-    
-      <p>MELPA pulled the package and Emacsmirror blocked further updates, holding
-the damage to a narrow window. StepSecurity, which wrote up the incident,
-used it as a reminder that `pull_request_target` plus a fork-head checkout
-remains one of the most reliable ways to hand a repository to a stranger.</p>
+      <p>MELPA pulled the package and Emacsmirror blocked further updates, holding the damage to a narrow window. StepSecurity, which wrote up the incident, used it as a reminder that <code>pull_request_target</code> plus a fork-head checkout remains one of the most reliable ways to hand a repository to a stranger.</p>
     
   </div>
   
@@ -88,7 +66,7 @@ remains one of the most reliable ways to hand a repository to a stranger.</p>
           <td>
             <strong>kubernetes-el</strong>
             
-            <br><span>github · source_repository</span>
+            <br><span>github · revision_control_system</span>
             <br><a href="https://github.com" target="_blank">https://github.com</a>
             <br><a href="https://github.com/kubernetes-el/kubernetes-el" target="_blank">https://github.com/kubernetes-el/kubernetes-el</a>
           </td>

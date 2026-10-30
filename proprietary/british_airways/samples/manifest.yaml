@@ -1,10 +1,92 @@
 schema_version: 1
-samples: []
+interpretation:
+  - >-
+    The record's distribution URL was wrong until 2026-09-02: it read
+    https://www.britishairways.com/scripts/modernizr.js, a path the Internet Archive has never held
+    anything under except unrelated scripts from 2001. RiskIQ's own screenshots name the real one,
+    https://www.britishairways.com/cms/global/scripts/lib/modernizr-2.6.2.min.js, and the archive
+    holds 32 captures of it.
+  - >-
+    None of those captures fall inside the window. The archive's coverage of this URL jumps from
+    2013-01-14 to 2019-07-10, straddling the August-September 2018 compromise entirely, so the
+    tampered file itself cannot be recovered from the archive at any resolution.
+  - >-
+    What can be established is both ends of the change. The 2013 capture is the clean file, and two
+    independent details tie it to the incident: its Last-Modified matches the header RiskIQ
+    screenshotted for the untampered script, and it ends at the exact byte where RiskIQ's screenshot
+    of the tampered script shows the appended block starting.
+  - >-
+    The injected block is held only as a transcription of RiskIQ's screenshot, because RiskIQ
+    published it as an image. It is 22 lines that bind to mouseup and touchend on #submitButton,
+    serialize #paymentForm, add the innerHTML of #personPaying as the payer name, and POST the JSON
+    to https://baways.com/gateway/app/dataprocessing/api/ after a 500ms delay. The baways.com
+    certificate RiskIQ screenshotted was issued 2018-08-15 by COMODO, six days before the tampered
+    file's Last-Modified of 21 Aug 2018 20:49:38 GMT.
+samples:
+  - artifact_id: british-airways-via-modernizr-script
+    phase: before
+    classification: clean
+    filename: modernizr-2.6.2.min.js
+    path: british-airways-via-modernizr-script/before/modernizr-2.6.2.min.js
+    sha256: 60f0a5a228d241bf6bca1b761f5f5d414fc3343dfeaeb802c43f529be2858b8e
+    size: 28426
+    source:
+      url: >-
+        https://web.archive.org/web/20130114170556id_/http://www.britishairways.com/cms/global/scripts/lib/modernizr-2.6.2.min.js
+      original_url: https://www.britishairways.com/cms/global/scripts/lib/modernizr-2.6.2.min.js
+      kind: web_archive_capture
+      retrieved_at: '2026-09-03T00:50:55Z'
+    verification:
+      status: exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+        - transcribed_from_report
+      evidence:
+        - fetched_from_web_archive_id_replay
+        - measured_sha256_and_size
+        - last_modified_matches_the_header_in_the_published_screenshot
+    notes:
+      - >-
+        The clean file the skimmer was appended to. Contains no reference to baways.com or
+        #submitButton.
+    subject: british-airways-via-modernizr-script
+    commit: '20130114170556'
+  - artifact_id: british-airways-via-modernizr-script
+    phase: during
+    classification: malicious
+    version: '2018-08-21'
+    filename: injected-skimmer.transcribed.js
+    path: british-airways-via-modernizr-script/during/injected-skimmer.transcribed.js
+    sha256: 215946fc87aee4a15aac1068d869fcade88bd251cf5214ed661043ed017face7
+    size: 675
+    source:
+      url: https://www.riskiq.com/blog/labs/magecart-british-airways-breach/
+      kind: transcribed_from_published_screenshot
+      retrieved_at: '2026-09-03T00:50:55Z'
+    verification:
+      status: verification_material
+      basis:
+        - transcribed_from_report
+        - file_format_confirmed
+      evidence:
+        - transcribed_from_published_screenshot
+        - parses_as_valid_javascript
+        - agrees_with_the_second_screenshot_of_the_minified_form
+    notes:
+      - >-
+        Not recovered bytes. The digest names this transcription, not anything britishairways.com
+        served.
+    subject: british-airways-via-modernizr-script
 unresolved:
   - artifact_id: british-airways-via-modernizr-script
     phase: during
     status: unavailable
     hashes: []
-    locations: []
-    attempts: []
-    last_attempted_at: '2026-08-10T15:07:47.069Z'
+    locations:
+      - https://www.britishairways.com/cms/global/scripts/lib/modernizr-2.6.2.min.js
+    notes:
+      - >-
+        The served bytes are unavailable: the archive's coverage of the correct URL skips the entire
+        window.
+    last_attempted_at: '2026-09-03T00:50:55Z'

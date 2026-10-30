@@ -18,7 +18,7 @@
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> openx · <a href="https://openx.com" target="_blank">website</a></div>
     <div class="meta-item"><strong>Date:</strong> 2012-11-01 to 2013-08-08 (280 days)</div>
-    <div class="meta-item"><strong>Actor:</strong> Cybercriminal Gang (group)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
     <div class="meta-item"><strong>Language:</strong> PHP</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
@@ -36,11 +36,15 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>OpenX sat between publishers, advertisers, and every visitor who loaded an ad slot. In 2013, heise Security found that official OpenX Source 2.8.10 downloads from the project server contained a hidden PHP execution path. The compromised ZIP, tar.gz, and tar.bz2 archives came from the trusted download channel.</p>
+      <p>OpenX sat between publishers, advertisers, and every visitor who loaded an ad slot. In 2013, heise Security found that official OpenX Source 2.8.10 downloads from the project server contained a hidden PHP execution path. The compromised ZIP, tar.gz, and tar.bz2 archives came from the trusted download channel, and the backdoor did not sit in plain view inside them: it rode in a nested archive, <code>openx-2.8.10/etc/plugins/openXVideoAds.zip</code>, the plugin bundle that a normal installation unpacks.</p>
     
-      <p>The attacker hid PHP inside `flowplayer-3.1.1.min.js`, a JavaScript file nested under the video ads plugin. OpenX delivery code then read that file through `MAX_commonReadFile` and reached it through `require_once`, turning an innocuous-looking asset into server-side code. Rapid7 later described exploitation as a single request with a ROT13-encoded and reversed payload.</p>
+      <p>The attacker hid PHP inside <code>flowplayer-3.1.1.min.js</code>, a JavaScript file nested under the video ads plugin. That file alone would have been inert, because web servers do not hand <code>.js</code> files to the PHP interpreter. Three files were modified, not one. In <code>player.delivery.php</code>, the <code>echo file_get_contents()</code> call that 2.8.9 and 2.8.11 used to serve the player became <code>MAX_commonReadFile()</code>. In <code>lib/max/Delivery/common.php</code>, the attacker injected the function that call now resolved to: <code>function MAX_commonReadFile($arg) { if($conf['debug']['read']){ echo file_get_contents($arg); } require_once($arg); }</code>. That second edit is what converted a read into an include, turning an innocuous-looking asset into server-side code. Rapid7 later described exploitation as a single request with a ROT13-encoded and reversed payload.</p>
+      <figure class="pull-quote">
+        <blockquote>2.8.9 and 2.8.11 read the video player file with <code>echo file_get_contents()</code>; in 2.8.10 that call became <code>MAX_commonReadFile()</code>, whose <code>require_once($arg)</code> made PHP parse a minified JavaScript asset as source.</blockquote>
+        <figcaption>the read that became a require</figcaption>
+      </figure>
     
-      <p>Heise reported that the backdoor appeared to have been present for almost a year and was already being used against ad servers. OpenX 2.8.10 was the current open-source release, so administrators who installed or refreshed the package during the window could inherit the backdoor as part of ordinary deployment.</p>
+      <p>The backdoor was already being used against ad servers. Heise confirmed it in a download from November 2012, put its own body text at &quot;at least three quarters of a year&quot; unnoticed, and summarized that as almost a year; Rapid7 dated the exposure from at least November 2012 through August 2013, the roughly nine-month window recorded here. OpenX 2.8.10 was the current open-source release, so administrators who installed or refreshed the package during the window could inherit the backdoor as part of ordinary deployment.</p>
     
       <p>Remediation required more than removing one line. Acunetix and other advisories recommended upgrading to OpenX 2.8.11 or later, auditing the server for prior compromise, rotating credentials and API keys, and considering a clean reinstall if exploitation evidence existed. A compromised ad server could also deliver attacks to site visitors.</p>
     
@@ -83,7 +87,7 @@
           </td>
           <td>
             
-              <code>md5:46fbfea4c901de2b168f871eb824875a</code><br><code>sha256:de81072439b47e701f5f4aa2b3c49c31ef0c43d9cf71e6f0a94ca3434a6ba276</code><br><code>md5:558c80e601fb996e5f6bbc99a9ee0051</code><br><code>md5:fa4991d5fd3bf4a947b6ab0b15ce10b2</code><br><code>md5:5014c31b479094c0b32221ae1f1473ac</code><br><code>md5:6b3459f16238aa717f379565650cb0cf</code>
+              <code>md5:46fbfea4c901de2b168f871eb824875a</code><br><code>sha256:de81072439b47e701f5f4aa2b3c49c31ef0c43d9cf71e6f0a94ca3434a6ba276</code><br><code>md5:558c80e601fb996e5f6bbc99a9ee0051</code><br><code>md5:fa4991d5fd3bf4a947b6ab0b15ce10b2</code><br><code>[object Object]</code><br><code>[object Object]</code>
             
           </td>
         </tr>

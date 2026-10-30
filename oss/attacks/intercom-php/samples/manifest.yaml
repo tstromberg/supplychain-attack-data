@@ -1,25 +1,156 @@
 schema_version: 1
+interpretation:
+  - >-
+    GitHub still serves the incident-published malicious commit e8a812c5 as a complete source
+    snapshot. Its tree is the same as the second reported transient commit e69bf4b3, and contains
+    the Composer plugin conversion, setup-intercom.sh, and 11.7 MB router_runtime.js payload. This
+    is an exact malicious source tree but not the original Packagist-generated archive whose
+    independently reported SHA-256 remains unresolved.
 samples:
-- artifact_id: intercom-php
-  phase: during
-  classification: clean
-  coordinate: pkg:composer/intercom/intercom-php@5.0.2?revision=9371eba90169cd825fe7502a8837d2d3e7a03faf
-  version: 5.0.2
-  filename: intercom-intercom-php-5.0.2.zip
-  path: intercom-php/during/intercom-intercom-php-5.0.2.zip
-  sha256: 4618d6888db2456999f8e0cdbe909ffc9eb8d9c2e99f97814d38336a0858aea4
-  size: 1109267
-  source:
-    url: https://api.github.com/repos/intercom/intercom-php/zipball/9371eba90169cd825fe7502a8837d2d3e7a03faf
-    retrieved_at: '2026-08-10T19:14:06.124325Z'
-    kind: distribution
-  verification:
-    status: probable_exact
-    basis:
-    - official_distribution_endpoint
-    - measured_sha256
-  notes:
-  - Packagist resolves 5.0.2 to commit 9371eba90169cd825fe7502a8837d2d3e7a03faf, dated 2026-01-30, three
-    months before the April 30 overwrite. The archive is a same-version comparator; the overwritten 5.0.2
-    bytes were not recovered.
-unresolved: []
+  - artifact_id: intercom-php
+    phase: during
+    classification: malicious
+    coordinate: pkg:composer/intercom/intercom-php@5.0.2?revision=e8a812c5ea7d8c7ed642b0d82754ced6a99025b0
+    version: 5.0.2-e8a812c5
+    filename: intercom-php-5.0.2-e8a812c5.zip
+    path: intercom-php/during/intercom-php-5.0.2-e8a812c5.zip
+    sha256: 1c84080bae0becc0b5a0ef53f76708972eb73f40e27a141cba64d66dce890be4
+    size: 4531965
+    source:
+      url: >-
+        https://codeload.github.com/intercom/intercom-php/zip/e8a812c5ea7d8c7ed642b0d82754ced6a99025b0
+      retrieved_at: '2026-09-07T01:25:00Z'
+      kind: source_snapshot
+    verification:
+      status: source_snapshot
+      basis:
+        - reported_digest_matched
+        - payload_indicator_present
+        - measured_sha256
+      evidence:
+        - incident_record_identifies_exact_git_commit
+        - github_commit_api_confirms_commit_and_parent
+        - complete_codeload_snapshot_of_commit
+        - tree_b35b8f358c4a89b5711f4e76b6db6a418e22f920_matches_both_reported_transient_commits
+        - malicious_composer_plugin_setup_script_and_router_runtime_present
+        - measured_sha256_and_size
+    notes:
+      - >-
+        Complete exact source tree, not a reconstruction. Codeload's archive framing differs from
+        the overwritten Packagist distribution, so this archive does not claim the reported 66664a49
+        digest.
+    subject: intercom-php
+  - artifact_id: intercom-php
+    phase: before
+    classification: clean
+    coordinate: pkg:composer/intercom/intercom-php@5.0.2?revision=9371eba90169cd825fe7502a8837d2d3e7a03faf
+    version: 5.0.2
+    filename: intercom-intercom-php-5.0.2.zip
+    path: intercom-php/before/intercom-intercom-php-5.0.2.zip
+    sha256: 4618d6888db2456999f8e0cdbe909ffc9eb8d9c2e99f97814d38336a0858aea4
+    size: 1109267
+    source:
+      url: >-
+        https://api.github.com/repos/intercom/intercom-php/zipball/9371eba90169cd825fe7502a8837d2d3e7a03faf
+      retrieved_at: '2026-08-10T19:14:06.124325Z'
+      kind: distribution
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_distribution_endpoint
+        - measured_sha256
+    notes:
+      - >-
+        Packagist resolves 5.0.2 to commit 9371eba90169cd825fe7502a8837d2d3e7a03faf, dated
+        2026-01-30, three months before the April 30 overwrite. The archive is a same-version
+        comparator; the overwritten 5.0.2 bytes were not recovered.
+      - >-
+        Re-phased from during to before: this is the unmodified artifact, not the state the attack
+        left it in, so it is a comparator rather than an affected sample.
+    subject: intercom-php
+  - artifact_id: intercom-php
+    phase: before
+    classification: clean
+    coordinate: pkg:composer/intercom/intercom-php@5.0.1
+    version: 5.0.1
+    filename: intercom-intercom-php-5.0.1.zip
+    path: intercom-php/before/intercom-intercom-php-5.0.1.zip
+    sha256: 8ab4316ea942d5e360eac0cc445f2ede4a4a0cce86926aa8fdc66cc9c6ff5b4a
+    size: 881973
+    source:
+      url: >-
+        https://api.github.com/repos/intercom/intercom-php/zipball/76c35cbb4872941312d100cd4d7b60f3f210ec69
+      kind: distribution
+      retrieved_at: '2026-09-03T22:49:37Z'
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_registry_download
+        - measured_sha256
+    notes:
+      - The highest release below the earliest compromised version.
+    subject: intercom-php
+  - artifact_id: intercom-php
+    phase: after
+    classification: remediated
+    coordinate: pkg:composer/intercom/intercom-php@5.0.3
+    version: 5.0.3
+    filename: intercom-intercom-php-5.0.3.zip
+    path: intercom-php/after/intercom-intercom-php-5.0.3.zip
+    sha256: 41d4bbdc49759536679534a5c4eb4ed74f258235c5d5fd7a64053badf0f8e456
+    size: 1112222
+    source:
+      url: >-
+        https://api.github.com/repos/intercom/intercom-php/zipball/78df39ffbe49ccc2c1f31f0471d7aa673b0bc749
+      kind: distribution
+      retrieved_at: '2026-09-03T22:49:37Z'
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_registry_download
+        - measured_sha256
+    notes:
+      - The first release published above the last compromised version.
+    subject: intercom-php
+unresolved:
+  - artifact_id: intercom-php
+    phase: during
+    coordinate: sha256:66664a49edbcee0ed0d8365839707916e92d3aa06e7f26f33c9dcc58e5fc1ef3
+    status: unavailable
+    attempts:
+      - >-
+        Recovered the complete exact malicious Git source tree at incident-published commit
+        e8a812c5ea7d8c7ed642b0d82754ced6a99025b0. GitHub also confirms that the second reported
+        commit e69bf4b3e84e7951a7b4ded8fee8822c57630cf8 has the identical tree
+        b35b8f358c4a89b5711f4e76b6db6a418e22f920. The original Packagist archive matching the
+        separately reported 66664a49 SHA-256 remains unavailable.
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:41:43.575-04:00 level=ERROR msg="command failed"
+        error="hash 66664a49edbcee0ed0d8365839707916e92d3aa06e7f26f33c9dcc58e5fc1ef3 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/66664a49edbcee0ed0d8365839707916e92d3aa06e7f26f33c9dcc58e5fc1ef3;
+        malwarebazaar: MalwareBazaar has no sample for
+        66664a49edbcee0ed0d8365839707916e92d3aa06e7f26f33c9dcc58e5fc1ef3: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        66664a49edbcee0ed0d8365839707916e92d3aa06e7f26f33c9dcc58e5fc1ef3; malshare: download
+        returned status 404"
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:13:52.256-04:00 level=ERROR msg="command failed"
+        error="hash 66664a49edbcee0ed0d8365839707916e92d3aa06e7f26f33c9dcc58e5fc1ef3 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/66664a49edbcee0ed0d8365839707916e92d3aa06e7f26f33c9dcc58e5fc1ef3;
+        malwarebazaar: MalwareBazaar has no sample for
+        66664a49edbcee0ed0d8365839707916e92d3aa06e7f26f33c9dcc58e5fc1ef3: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        66664a49edbcee0ed0d8365839707916e92d3aa06e7f26f33c9dcc58e5fc1ef3; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:13:52.280Z'

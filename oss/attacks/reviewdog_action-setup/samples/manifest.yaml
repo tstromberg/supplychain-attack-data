@@ -1,12 +1,71 @@
 schema_version: 1
+interpretation:
+  - >-
+    The mutable v1 tag archive was fetched after GitHub restored the release and is therefore an
+    after/remediated sample. The during sample is an immutable codeload snapshot of the malicious
+    commit, and the before sample is the malicious commit's immediate clean parent.
 samples:
   - artifact_id: reviewdog-action-setup
+    phase: before
+    classification: clean
+    coordinate: pkg:github/reviewdog/action-setup@113423ab69374cde3e92a5b1c019e132eb003a16
+    filename: action-setup-113423a.tar.gz
+    path: reviewdog-action-setup/before/action-setup-113423a.tar.gz
+    sha256: 61292a909eff9889d485cadaff1fc80395741c83ce7b2903f95344e17e7479d5
+    size: 4022
+    source:
+      url: >-
+        https://codeload.github.com/reviewdog/action-setup/tar.gz/113423ab69374cde3e92a5b1c019e132eb003a16
+      retrieved_at: '2026-09-06T00:00:00Z'
+      kind: source_snapshot
+    verification:
+      status: exact
+      basis:
+        - git_object_id_verified
+        - payload_indicator_present
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - immediate_parent_of_malicious_commit
+        - measured_sha256
+    subject: reviewdog-action-setup
+    commit: 113423ab69374cde3e92a5b1c019e132eb003a16
+  - artifact_id: reviewdog-action-setup
     phase: during
-    classification: affected
+    classification: malicious
+    coordinate: pkg:github/reviewdog/action-setup@f0d342d24037bb11d26b9bd8496e0808ba32e9ec
+    filename: action-setup-f0d342d.tar.gz
+    path: reviewdog-action-setup/during/action-setup-f0d342d.tar.gz
+    sha256: 7e37400e97e5bd90b60a1d6d65cf08509802b353aef8d273afafaae8a675d628
+    size: 5321
+    source:
+      url: >-
+        https://codeload.github.com/reviewdog/action-setup/tar.gz/f0d342d24037bb11d26b9bd8496e0808ba32e9ec
+      retrieved_at: '2026-09-06T00:00:00Z'
+      kind: source_snapshot
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - reported_malicious_commit
+        - immutable_git_revision
+        - measured_sha256
+    notes:
+      - >-
+        install.sh contains the inserted SCRIPT_RUNNER payload that reads the GitHub Actions runner
+        process memory and prints recovered secret values.
+    subject: reviewdog-action-setup
+    commit: f0d342d24037bb11d26b9bd8496e0808ba32e9ec
+  - artifact_id: reviewdog-action-setup
+    phase: after
+    classification: remediated
     coordinate: pkg:github/reviewdog/action-setup@v1
     version: v1
     filename: reviewdog-action-setup-v1.tar.gz
-    path: reviewdog-action-setup/during/reviewdog-action-setup-v1.tar.gz
+    path: reviewdog-action-setup/after/reviewdog-action-setup-v1.tar.gz
     sha256: 603e02bcc59e94129ab5672d5db65c2daa05128616e239b219f9bca46c448425
     size: 10843
     source:
@@ -18,16 +77,7 @@ samples:
       basis:
         - official_distribution_endpoint
         - measured_sha256
-unresolved:
-  - artifact_id: reviewdog-action-setup
-    phase: during
-    coordinate: sha1:f0d342d24037bb11d26b9bd8496e0808ba32e9ec
-    status: unavailable
-    attempts:
-      - >-
-        Forager PURL/SHA-256: time=2026-08-10T13:56:56.530-04:00 level=ERROR msg="command failed"
-        error="hash f0d342d24037bb11d26b9bd8496e0808ba32e9ec unavailable from configured sources:
-        malwarebazaar: MalwareBazaar has no sample for f0d342d24037bb11d26b9bd8496e0808ba32e9ec:
-        hash_not_found; triage: Triage has no file analysis for SHA1
-        f0d342d24037bb11d26b9bd8496e0808ba32e9ec; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:56:57.594Z'
+      evidence:
+        - official_distribution_endpoint
+        - measured_sha256
+    subject: reviewdog-action-setup

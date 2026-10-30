@@ -1,4 +1,4 @@
-.PHONY: all compile run clean site serve deploy samples-inventory samples-verify refs
+.PHONY: all compile run clean site serve deploy samples-inventory samples-verify samples-npm-mirror missing-before missing-during missing-after refs
 
 all: compile run site
 
@@ -32,6 +32,22 @@ samples-inventory:
 
 samples-verify:
 	node tools/verify-oss-samples.js
+
+# Recovers npm releases npm has unpublished from the caching registry mirrors that
+# still serve what they cached while those releases were live.
+samples-npm-mirror:
+	node tools/acquire-npm-mirror.js --phase during
+
+# Reports the attacks still missing a sample for one collection phase. An attack
+# counts as covered only when every artifact its record names has one.
+missing-during:
+	node tools/missing-samples.js --phase during --out MUST-FIND.md
+
+missing-before:
+	node tools/missing-samples.js --phase before --out MUST-FIND-BEFORE.md
+
+missing-after:
+	node tools/missing-samples.js --phase after --out MUST-FIND-AFTER.md
 
 clean:
 	@echo "Cleaning up generated files..."

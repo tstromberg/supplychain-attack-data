@@ -1,0 +1,174 @@
+schema_version: 1
+interpretation:
+  - >-
+    The malicious builds existed only as Chrome Web Store updates. Google removed both extensions,
+    the store serves no history, and the code was never pushed to the new owners' GitHub repository,
+    which is the point Raymond Hill made at the time. No CRX for Nano Defender 15.0.0.206 or Nano
+    Adblocker 1.0.0.154 could be located.
+  - >-
+    What survives is the reviewer's extraction. Raymond Hill unpacked the shipped extension and
+    posted the diff against the last clean release the day before the story broke; that diff is
+    authentic modified source and is kept here as a reconstruction input, with the API record it
+    came from beside it.
+samples:
+  - artifact_id: nano-defender
+    phase: during
+    classification: malicious
+    version: 15.0.0.206
+    filename: nano-defender-15.0.0.206.diff
+    path: nano-defender/during/nano-defender-15.0.0.206.diff
+    sha256: cce02af777cc197b13683a977155a1647c2f0c3205b5273b9c8c383d08f7c3e2
+    size: 3799
+    source:
+      url: https://github.com/NanoAdblocker/NanoCore/issues/362#issuecomment-709428210
+      retrieved_at: '2026-09-02T13:20:00Z'
+      kind: original_incident_report_fragment
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - extracted_from_retained_github_api_comment
+        - measured_sha256
+    notes:
+      - >-
+        The code added to background/core.js and js/commands.js in the shipped update: a
+        webRequest.onBeforeSendHeaders listener registered for <all_urls> that tests each request's
+        details object against a listOfObject fetched from def.dev-nano.com and emits the whole
+        object back as handleObject when every field matches.
+      - >-
+        It also carries the console-detection reporting and the four-character obfuscation that
+        strips "-zzz" from outgoing request headers.
+      - >-
+        A diff from an analysis, not the CRX. It is the exact text Hill published; only CRLF line
+        endings were normalised, as recorded in the sidecar.
+    subject: nano-defender
+  - artifact_id: nano-defender
+    phase: during
+    classification: detection_evidence
+    version: 15.0.0.206
+    filename: gorhill-analysis-comment-709428210.json
+    path: nano-defender/during/gorhill-analysis-comment-709428210.json
+    sha256: 34139c03173ced48f8403c12f76432c3eaf23716f936d9d53b0a86abe9ceddf4
+    size: 9588
+    source:
+      url: https://api.github.com/repos/NanoAdblocker/NanoCore/issues/comments/709428210
+      retrieved_at: '2026-09-02T13:20:00Z'
+      kind: contemporary_incident_response_copy
+    verification:
+      status: verification_material
+      basis:
+        - measured_sha256
+      evidence:
+        - github_api_record
+        - measured_sha256
+    notes:
+      - >-
+        The source document for the diff above, posted 2020-10-15T16:05:43Z by gorhill, the uBlock
+        Origin author. Preserved whole because the surrounding analysis is what establishes what the
+        diff does and where it came from.
+      - >-
+        Hill later confirmed in the follow-up thread that the same code was added to Nano Adblocker
+        1.0.0.154, in js/commands.js, with different message names.
+    subject: nano-defender
+  - artifact_id: nano-defender
+    phase: before
+    classification: clean
+    version: 15.0.0.205
+    filename: background-core.js
+    path: nano-defender/before/background-core.js
+    sha256: 71e335444435ecd85e751e4c57a0cf439aa61beee2726dfe8489da7dfee75a28
+    size: 17576
+    source:
+      url: >-
+        https://raw.githubusercontent.com/jspenguin2017/uBlockProtector/v15.0.0.205/src/background/core.js
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: official_source_repository
+    verification:
+      status: exact
+      basis:
+        - payload_indicator_present
+        - measured_sha256
+      evidence:
+        - fetched_from_upstream_repository_at_tag_v15_0_0_205
+        - last_release_before_the_malicious_store_update
+        - measured_sha256
+    notes:
+      - >-
+        src/background/core.js at v15.0.0.205, the last release the original maintainer published
+        before transferring the Chrome Web Store listing.
+      - >-
+        This is the file the reviewer's diff was taken against; every one of its five hunks applies
+        to it.
+    subject: nano-defender
+  - artifact_id: nano-defender
+    phase: during
+    classification: malicious
+    version: 15.0.0.206
+    filename: background-core-backdoored.js
+    path: nano-defender/during/background-core-backdoored.js
+    sha256: f56eae298cdf1ee82c86d1d909528a8fe9a280729dfde4f40298b2325de41a8f
+    size: 19937
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: unified_diff_applied_to_upstream_release_member
+        base:
+          path: nano-defender/before/background-core.js
+          sha256: 71e335444435ecd85e751e4c57a0cf439aa61beee2726dfe8489da7dfee75a28
+          member: src/background/core.js
+        overlay:
+          path: nano-defender/during/nano-defender-15.0.0.206.diff
+          sha256: cce02af777cc197b13683a977155a1647c2f0c3205b5273b9c8c383d08f7c3e2
+          operation: apply
+    verification:
+      status: tree_equivalent
+      basis:
+        - measured_sha256
+      evidence:
+        - all_five_hunks_applied_to_the_upstream_v15_0_0_205_member
+        - reviewer_diff_of_the_shipped_update
+        - measured_sha256
+    notes:
+      - >-
+        background/core.js as the shipped 15.0.0.206 update carried it, rebuilt by applying the
+        reviewer's diff to the upstream release it was taken against.
+      - >-
+        It opens a socket.io channel to def.dev-nano.com and registers handlers on it: one fetches a
+        URL and request options supplied by the operator and emits the entire response -- header
+        entries, body text, ok flag and status -- straight back down the channel, turning every
+        install into an HTTP relay running with the extension's host permissions.
+      - >-
+        The malicious CRX itself was never recovered; this is the reviewer's extracted source
+        restored to a loadable file, not the shipped package.
+    subject: nano-defender
+unresolved:
+  - artifact_id: nano-adblocker
+    phase: during
+    version: 1.0.0.154
+    filename: Nano Adblocker CRX
+    status: unavailable
+    notes:
+      - >-
+        Extension id gabbbocakeomblphkmmnoamkioajlkfo. Removed from the Chrome Web Store; no digest
+        was ever published, so a recovered CRX could not be verified as exact.
+    attempts:
+      - Chrome Web Store: extension removed.
+      - crx4chrome search for the extension id: 404
+      - >-
+        GitHub code search for def.dev-nano.com returns only blocklists and one unrelated extension
+        write-up, no copy of the extension.
+  - artifact_id: nano-defender
+    phase: during
+    version: 15.0.0.206
+    filename: Nano Defender CRX
+    status: unavailable
+    notes:
+      - >-
+        Extension id ggolfgbegefeeoocgjbmkembbncoadlb. Removed from the Chrome Web Store before the
+        campaign was a week old.
+    attempts:
+      - Chrome Web Store: extension removed.
+      - crx4chrome search for the extension id: 404
+      - nenodevs/uBlockProtector: the shipped code was never committed there.

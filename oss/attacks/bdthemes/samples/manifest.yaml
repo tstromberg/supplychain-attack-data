@@ -1,0 +1,180 @@
+schema_version: 1
+interpretation:
+  - >-
+    No plugin file was modified in this incident. The artifact that changed is the static JSON the
+    seven Biggopti plugins fetch on every wp-admin page load, so the corpus holds the feed as its
+    own artifact alongside the plugin release that made it dangerous.
+  - >-
+    The poisoned response itself was never archived. Internet Archive holds the Biggopti feed on
+    2026-06-27 and 2026-07-31, both clean, and again on 2026-08-18, after cleanup; the poisoning
+    window Wordfence dated by Last-Modified is 2026-08-06 22:40 UTC to 2026-08-07 09:11 UTC, which
+    no capture falls in. What survives of the malicious response is the excerpt Wordfence printed,
+    retained here as a reconstruction input rather than as bytes.
+  - >-
+    Both attacker payload paths now answer 403 AccessDenied naming DigitalOcean Spaces bucket
+    static-bdthemes, so x.js and w2.js cannot be recovered from the origin.
+samples:
+  - artifact_id: biggopti-api-feed
+    phase: before
+    classification: clean
+    filename: api-data-all-records-20260627.json
+    path: biggopti-api-feed/before/api-data-all-records-20260627.json
+    sha256: f8855b8605a2dbad5476f3dd46dd3759094f11f20c8ed60cef144a2bb89c8f40
+    size: 2002
+    source:
+      url: >-
+        https://web.archive.org/web/20260627132002id_/https://api.sigmative.io/prod/store/api/biggopti/api-data-all-records
+      original_url: https://api.sigmative.io/prod/store/api/biggopti/api-data-all-records
+      retrieved_at: '2026-09-02T12:52:00Z'
+      kind: wayback
+    verification:
+      status: probable_exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - exact_wayback_capture
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: 2026-08
+    notes:
+      - >-
+        The legitimate feed carrying the same record the attacker later overwrote: its
+        biggopti_class is class-01kvw52snnwd7r8ge9aj80xnsw, the value the poisoned excerpt also
+        carries. Its display_id is the plain string 20260624_SummerSaleOffer.
+      - >-
+        The archived response was stored gzip-encoded; these are the decoded bytes, as recorded in
+        the sidecar.
+    subject: biggopti-api-feed
+    commit: '20260627132002'
+  - artifact_id: biggopti-api-feed
+    phase: during
+    classification: malicious
+    version: 2026-08
+    filename: poisoned-api-response-excerpt.txt
+    path: biggopti-api-feed/during/poisoned-api-response-excerpt.txt
+    sha256: a3d308fc231470c52966d8dee4811d1372fb33d3d3c2ffc06732871ab1985253
+    size: 708
+    source:
+      url: >-
+        https://www.wordfence.com/blog/2026/08/psa-supply-chain-compromise-in-bdthemes-ecosystem-via-poisoned-api-response/
+      retrieved_at: '2026-09-02T12:52:00Z'
+      kind: original_incident_report_fragment
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - retained_report_pdf_refs_01_www_wordfence_com_pdf
+        - biggopti_class_matches_archived_clean_feed
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: '20260627132002'
+    notes:
+      - >-
+        The crafted record as Wordfence printed it: display_id breaks out of the id attribute and
+        adds onanimationstart with a CSS animation that fires it within 10ms of any dashboard page
+        load.
+      - >-
+        A report excerpt, not the served response. The report wrapped the JSON mid-token, and those
+        breaks are preserved rather than guessed away; the sidecar records every derivation step.
+    subject: biggopti-api-feed
+  - artifact_id: biggopti-api-feed
+    phase: during
+    classification: malicious
+    version: 2026-08
+    filename: display_id-stage1.js
+    path: biggopti-api-feed/during/display_id-stage1.js
+    sha256: 773f1c078d673f0a6fe9a496f35fac56d6dc6dcf3a310cd5bac7bd8b60f569dc
+    size: 112
+    source:
+      url: >-
+        https://www.wordfence.com/blog/2026/08/psa-supply-chain-compromise-in-bdthemes-ecosystem-via-poisoned-api-response/
+      retrieved_at: '2026-09-02T12:52:00Z'
+      kind: original_incident_report_payload
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - decoded_from_retained_excerpt
+        - decimal_only_input_unaffected_by_report_line_wrapping
+        - measured_sha256
+    notes:
+      - >-
+        The first stage, decoded from the excerpt's String.fromCharCode list: it fetches x.js from
+        the vendor's own bucket and runs it through new Function.
+      - >-
+        The decoding consumes only decimal digits, so the report's line wrapping cannot have changed
+        the result. The stages it pulls, x.js and w2.js, are gone from the origin.
+    subject: biggopti-api-feed
+  - artifact_id: bdthemes-prime-slider-lite
+    phase: before
+    classification: clean
+    version: 4.1.7
+    coordinate: pkg:wordpress/bdthemes-prime-slider-lite@4.1.7
+    filename: bdthemes-prime-slider-lite.4.1.7.zip
+    path: bdthemes-prime-slider-lite/before/bdthemes-prime-slider-lite.4.1.7.zip
+    sha256: 815722540efcd7288332c835ff62d3a7ff2ea61f591233a77fc876f98993b5cf
+    size: 2089277
+    source:
+      url: https://downloads.wordpress.org/plugin/bdthemes-prime-slider-lite.4.1.7.zip
+      retrieved_at: '2026-09-02T12:48:00Z'
+      kind: official_repository_archive
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_wordpress_org_archive
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: 4.1.9
+    notes:
+      - >-
+        The published release before the flaw. wordpress.org lists no 4.1.8, so this is the
+        chronological predecessor rather than a decremented version number.
+      - >-
+        It has no admin/assets/js/ps-admin-api-biggopti.js at all; the file that builds the
+        unescaped id attribute does not yet exist here.
+    subject: bdthemes-prime-slider-lite
+  - artifact_id: bdthemes-prime-slider-lite
+    phase: during
+    classification: affected
+    version: 4.1.9
+    coordinate: pkg:wordpress/bdthemes-prime-slider-lite@4.1.9
+    filename: bdthemes-prime-slider-lite.4.1.9.zip
+    path: bdthemes-prime-slider-lite/during/bdthemes-prime-slider-lite.4.1.9.zip
+    sha256: 8fe3c1fdae99ee7559c0f100fb13abd5902e949b26bcf6a90354e0b12b8cacf8
+    size: 2098100
+    source:
+      url: https://downloads.wordpress.org/plugin/bdthemes-prime-slider-lite.4.1.9.zip
+      retrieved_at: '2026-09-02T12:48:00Z'
+      kind: official_repository_archive
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - official_wordpress_org_archive
+        - contains_reported_unescaped_id_write
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: 4.1.7
+    notes:
+      - >-
+        The release that introduced the flaw, on 2026-03-01 at SVN r3471891. Its
+        admin/assets/js/ps-admin-api-biggopti.js reads m=i.display_id||i.id||"default" and
+        concatenates it into 'id="'+f+'"' unescaped, while escaping data-display-id a few lines
+        later through the same file's own escape helper.
+      - >-
+        The plugin code is the vendor's own and carries no attacker content. It is recorded as
+        affected, not malicious: it is what turned a poisoned feed into script execution.
+    subject: bdthemes-prime-slider-lite

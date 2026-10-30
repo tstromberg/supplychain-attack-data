@@ -36,42 +36,17 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>Between April 24 and 25, 2026, an attacker forged a release of
-elementary-data, an open-source data-observability tool used in dbt
-pipelines, by exploiting a script-injection flaw in one of the
-project&#39;s own GitHub Actions workflows. No maintainer ever pushed
-the bad version; the project&#39;s CI did it on the attacker&#39;s behalf.</p>
+      <p>Between April 24 and 25, 2026, an attacker forged a release of elementary-data, an open-source data-observability tool used in dbt pipelines, by exploiting a script-injection flaw in one of the project's own GitHub Actions workflows. No maintainer ever pushed the bad version; the project's CI did it on the attacker's behalf.</p>
     
-      <p>The entry point was a pull-request comment. According to
-StepSecurity, which reverse-engineered the incident alongside
-Elementary&#39;s own post-mortem, the project ran an issue-update
-workflow that interpolated comment text directly into a shell
-`run:` block. A crafted comment let the attacker execute arbitrary
-commands inside the workflow with the repository&#39;s `GITHUB_TOKEN`.</p>
+      <p>The entry point was a pull-request comment. According to StepSecurity, which reverse-engineered the incident alongside Elementary's own post-mortem, the project ran an issue-update workflow that interpolated comment text directly into a shell <code>run:</code> block, so a crafted comment let the attacker execute arbitrary commands inside the workflow with the repository's <code>GITHUB_TOKEN</code>. From there, the attacker used that token to create an orphan commit, tag it <code>v0.23.3</code>, and add a large <code>elementary.pth</code> file along with a version bump. Python evaluates <code>.pth</code> files at interpreter startup, so the payload would fire without any explicit <code>import elementary</code> in the victim's code. The attacker then dispatched the project's normal release workflow against the forged tag. PyPI accepted <code>elementary-data==0.23.3</code>, and GHCR accepted a multi-architecture <code>ghcr.io/elementary-data/elementary</code> image tagged both <code>0.23.3</code> and <code>latest</code>, all signed off by the project's own automation.</p>
+      <figure class="pull-quote">
+        <blockquote>The forged GitHub release was titled <code>dsajdkjsajkdsajk</code>, created by <code>github-actions[bot]</code>. It still carried the &quot;Latest&quot; label, and the same run pushed the payload to <code>ghcr.io/elementary-data/elementary:latest</code>.</blockquote>
+        <figcaption>keyboard mash, labelled latest</figcaption>
+      </figure>
     
-      <p>From there, the attacker used that token to create an orphan
-commit, tag it `v0.23.3`, and add a large `elementary.pth` file
-along with a version bump. Python&#39;s `.pth` files are evaluated by
-the interpreter at startup, so the payload would fire without any
-explicit `import elementary` in the victim&#39;s code. The attacker
-then dispatched the project&#39;s normal release workflow against the
-forged tag. PyPI accepted `elementary-data==0.23.3`, and GHCR
-accepted a multi-architecture `ghcr.io/elementary-data/elementary`
-image tagged both `0.23.3` and `latest`, all signed off by the
-project&#39;s own automation.</p>
+      <p>The payload was a credential stealer of the kind familiar from the broader spring 2026 wave. It walked the host for SSH keys, cloud credentials, Kubernetes config, package-manager tokens, cryptocurrency wallets, and other secrets, then posted an archive named <code>trin.tar.gz</code> to <code>igotnofriendsonlineorirl-imgonnakmslmao.skyhanni.cloud</code>.</p>
     
-      <p>The payload was a credential stealer of the kind familiar from
-the broader spring 2026 wave. It walked the host for SSH keys,
-cloud credentials, Kubernetes config, package-manager tokens,
-cryptocurrency wallets, and other secrets, then posted an archive
-named `trin.tar.gz` to
-`igotnofriendsonlineorirl-imgonnakmslmao.skyhanni.cloud`.</p>
-    
-      <p>Elementary pulled the bad release, rotated affected credentials,
-and published a clean `0.23.4`. The incident is a textbook
-example of how a single `${{ github.event.comment.body }}`
-interpolated into a shell step can hand an outsider the same
-publish authority a maintainer holds.</p>
+      <p>Elementary pulled the bad release, rotated affected credentials, and published a clean <code>0.23.4</code>. The incident is a textbook example of how a single <code>${{ github.event.comment.body }}</code> interpolated into a shell step can hand an outsider the same publish authority a maintainer holds.</p>
     
   </div>
   
@@ -112,7 +87,7 @@ publish authority a maintainer holds.</p>
           </td>
           <td>
             
-              N/A
+              <code>sha256:e06db3fdea8102f3954875b733a1f770e5c7e06bca110742e0bac6580216d90a</code><br><code>sha1:55d0161a5992267e4da5a7ef8de85b84748cf903</code><br><code>sha512:bc9a4141c97e74641ab013f92020b98cb401cf8eea57a8eaf8c72be7fb84963fc5a08b3211c850ac34b921bc5c501edc65dc90856ad362517b958c82c0b50422</code>
             
           </td>
         </tr>
@@ -187,6 +162,12 @@ publish authority a maintainer holds.</p>
       <li><a href="https://snyk.io/blog/malicious-release-of-elementary-data-pypi-package-steals-cloud-credentials-from-data-engineers/" target="_blank">Malicious Release of elementary-data PyPI Package Steals Cloud Credentials from Data Engineers - Snyk</a></li>
     
       <li><a href="https://cybersecuritynews.com/pypi-package-hacked-with-malware/" target="_blank">Popular PyPI Package With 1 Million Monthly Downloads Hacked to Inject Malicious Scripts - Cyber Security News</a></li>
+    
+      <li><a href="https://github.com/elementary-data/elementary/commit/b1e4b1f3aad0d489ab0e9208031c67402bbb8480" target="_blank">Retained malicious Elementary 0.23.3 release commit</a></li>
+    
+      <li><a href="https://inspector.pypi.io/project/elementary-data/0.23.3/packages/22/11/e4da100e382242b5e00e60f9da48fe9927b31c8fa4ea331162c137321feb/elementary-data-0.23.3.tar.gz/elementary_data-0.23.3/" target="_blank">PyPI Inspector record carrying the original sdist content address</a></li>
+    
+      <li><a href="https://tria.ge/260427-1wwcraes3k" target="_blank">Public Triage capture of the PyPI Inspector record on 2026-04-27</a></li>
     
   </ul>
   

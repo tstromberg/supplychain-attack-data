@@ -1,15 +1,14 @@
 schema_version: 1
 interpretation:
   - >-
-    phpBB described this as an official-link redirection attack: the two normal
-    phpBB download URLs were redirected by a malicious Cloudflare page rule to
-    archives on an attacker-controlled server. The project did not publish the
-    malicious archive hashes, the redirect destination, or the injected file.
+    phpBB described this as an official-link redirection attack: the two normal phpBB download URLs
+    were redirected by a malicious Cloudflare page rule to archives on an attacker-controlled
+    server. The project did not publish the malicious archive hashes, the redirect destination, or
+    the injected file.
   - >-
-    The clean 3.2.2 archives currently preserved in phpBB's historical release
-    directory are post-incident comparators. They match the SHA-256 values
-    published alongside the official files and must not be mistaken for the
-    poisoned archives served during the three-hour window.
+    The clean 3.2.2 archives currently preserved in phpBB's historical release directory are
+    post-incident comparators. They match the SHA-256 values published alongside the official files
+    and must not be mistaken for the poisoned archives served during the three-hour window.
 samples:
   - artifact_id: phpbb-full-package
     phase: before
@@ -25,9 +24,15 @@ samples:
       kind: official_historical_archive
     verification:
       status: exact
-      basis: [official_published_sha256, measured_sha256]
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_published_sha256
+        - measured_sha256
     notes:
       - Immediate clean full-package release preceding the affected 3.2.2 release.
+    subject: phpbb-full-package
   - artifact_id: phpbb-full-package
     phase: after
     classification: remediated
@@ -42,13 +47,22 @@ samples:
       kind: official_historical_archive
     verification:
       status: exact
-      basis: [official_published_sha256, measured_sha256, post_incident_clean_download]
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_published_sha256
+        - measured_sha256
+        - post_incident_clean_download
     notes:
       - Clean same-release comparator restored after the malicious redirect was removed.
+    subject: phpbb-full-package
   - artifact_id: phpbb-automatic-updater
     phase: after
     classification: remediated
-    version: 3.2.1 - 3.2.2
+    version:
+      - 3.2.1
+      - 3.2.2
     filename: phpBB-3.2.1_to_3.2.2.zip
     path: phpbb-automatic-updater/after/phpBB-3.2.1_to_3.2.2.zip
     sha256: 1b6cc477efca2a729377944ee67ee01adc1c27f6a2f52c38659dec01181038ce
@@ -59,9 +73,16 @@ samples:
       kind: official_historical_archive
     verification:
       status: exact
-      basis: [official_published_sha256, measured_sha256, post_incident_clean_download]
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_published_sha256
+        - measured_sha256
+        - post_incident_clean_download
     notes:
       - Clean same-release updater comparator restored after the malicious redirect was removed.
+    subject: phpbb-automatic-updater
   - artifact_id: phpbb-full-package
     phase: during
     classification: malicious
@@ -71,17 +92,26 @@ samples:
     sha256: bdfc51fbc74aff04f684b3549c19f751481917453d492c8fcd9e648238cf88c0
     size: 63570
     source:
-      url: https://web.archive.org/web/20190205045844id_/https://www.phpbb.com/community/viewtopic.php?t=2456896
+      url: >-
+        https://web.archive.org/web/20190205045844id_/https://www.phpbb.com/community/viewtopic.php?t=2456896
       original_url: https://www.phpbb.com/community/viewtopic.php?t=2456896
       retrieved_at: '2026-08-10T01:03:22Z'
       kind: archived_official_incident_report
     verification:
       status: payload_only
-      basis: [official_incident_timeline, official_payload_description, official_attack_cause, measured_sha256]
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_incident_timeline
+        - official_payload_description
+        - official_attack_cause
+        - measured_sha256
     relates_to:
       - artifact_id: phpbb-automatic-updater
     notes:
       - Preserves official evidence for both affected archives, not malicious package bytes.
+    subject: phpbb-full-package
 unresolved:
   - artifact_id: phpbb-full-package
     phase: during

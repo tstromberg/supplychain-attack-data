@@ -45,45 +45,49 @@
 affecting BdThemes, a WordPress plugin vendor whose Elementor add-ons ship
 through the official WordPress.org directory. No plugin source file was
 modified. The attackers poisoned a static JSON feed the plugins fetch, and let
-the vendor&#39;s own code do the rest.</p>
+the vendor's own code do the rest.</p>
+      <figure class="pull-quote">
+        <blockquote>A second payload generated the rogue admin's credentials mathematically from the site hostname. The operators never needed a victim list, and responders can compute the exact username and password to hunt for.</blockquote>
+        <figcaption>credentials you can derive</figcaption>
+      </figure>
     
       <p>Seven BdThemes plugins bundle a component called Biggopti, which pulls
-promotional banners from the vendor&#39;s API and renders them in the WordPress
+promotional banners from the vendor's API and renders them in the WordPress
 dashboard. The API is not an application server. It is flat JSON files in a
 DigitalOcean Spaces bucket behind Cloudflare. Every plugin using Biggopti
-enqueues its client-side script on `admin_init`, so it runs on every wp-admin
-page load for every logged-in administrator. The flaw was the vendor&#39;s own.
-When the script builds the notice container, it concatenates the `display_id`
-field from the remote JSON straight into an HTML `id` attribute with no
-escaping, while escaping `data-display-id` properly a few lines later, which is
+enqueues its client-side script on <code>admin_init</code>, so it runs on every wp-admin
+page load for every logged-in administrator. The flaw was the vendor's own.
+When the script builds the notice container, it concatenates the <code>display_id</code>
+field from the remote JSON straight into an HTML <code>id</code> attribute with no
+escaping, while escaping <code>data-display-id</code> properly a few lines later, which is
 how Wordfence concluded this was an oversight rather than a design. SVN history
 put the unescaped write at March 1, 2026, in Prime Slider 4.1.9, from where it
 spread to the other plugins.</p>
     
       <p>Someone with write access to the bucket replaced the legitimate records. The
-poisoned `display_id` broke out of the attribute and attached an
-`onanimationstart` handler fired by a 10-millisecond CSS animation, so the
-payload ran silently on any dashboard page. The handler pulled `w2.js` from
-`ia-cdn[.]com`, which checked in with the C2, created an administrator through
-the WordPress REST API using the live session&#39;s `X-WP-Nonce`, installed a fake
-plugin under a slug like `wp-smart-thumbnails` containing a webshell named
-`emer-run.php`, and used that webshell to drop two must-use plugins: a magic
-login backdoor keyed to a `?_wplogin=&lt;token&gt;` parameter, and a stealth module
+poisoned <code>display_id</code> broke out of the attribute and attached an
+<code>onanimationstart</code> handler fired by a 10-millisecond CSS animation, so the
+payload ran silently on any dashboard page. The handler pulled <code>w2.js</code> from
+<code>ia-cdn[.]com</code>, which checked in with the C2, created an administrator through
+the WordPress REST API using the live session's <code>X-WP-Nonce</code>, installed a fake
+plugin under a slug like <code>wp-smart-thumbnails</code> containing a webshell named
+<code>emer-run.php</code>, and used that webshell to drop two must-use plugins: a magic
+login backdoor keyed to a <code>?_wplogin=&lt;token&gt;</code> parameter, and a stealth module
 that filters the rogue accounts out of the user list and adjusts the user
 counts to match. Both were backdated to September 2025. A second payload,
-`x.js`, was served from BdThemes&#39; own infrastructure and generated deterministic
+<code>x.js</code>, was served from BdThemes' own infrastructure and generated deterministic
 credentials from the site hostname, meaning the operators never had to keep a
 victim list, and responders can compute the exact username and password to hunt
 for.</p>
     
-      <p>Wordfence tracked the campaign back to a `start_date` of June 23, 2026 in the
+      <p>Wordfence tracked the campaign back to a <code>start_date</code> of June 23, 2026 in the
 poisoned records, the earliest the XSS could have been live. The affected
 plugins were closed on the WordPress directory on August 7, and both API
 endpoints were serving clean JSON by August 8. Wordfence linked the C2 domain
 to the same operators behind the Advanced Responsive Video Embedder and
 OptinMonster compromises earlier in the summer, and noted that the presence of
-attacker-controlled files inside the vendor&#39;s own bucket points to a deeper
-compromise of BdThemes&#39; cloud storage credentials.</p>
+attacker-controlled files inside the vendor's own bucket points to a deeper
+compromise of BdThemes' cloud storage credentials.</p>
     
   </div>
   
@@ -105,9 +109,35 @@ compromise of BdThemes&#39; cloud storage credentials.</p>
         
         <tr>
           <td>
+            <strong>Biggopti promotional API response</strong>
+            
+            <br><span>cdn · configuration_feed</span>
+            <br><a href="https://api.sigmative.io/prod/store/api/biggopti/" target="_blank">https://api.sigmative.io/prod/store/api/biggopti/</a>
+            
+          </td>
+          <td>2026-06-23<br>to 2026-08-08</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
             <strong>Element Pack Addons for Elementor</strong>
             <br><code>bdthemes-element-pack-lite</code>
-            <br><span>wordpress.org · plugin</span>
+            <br><span>wordpress · plugin</span>
             
             
           </td>
@@ -133,7 +163,7 @@ compromise of BdThemes&#39; cloud storage credentials.</p>
           <td>
             <strong>Prime Slider Addons for Elementor</strong>
             <br><code>bdthemes-prime-slider-lite</code>
-            <br><span>wordpress.org · plugin</span>
+            <br><span>wordpress · plugin</span>
             
             
           </td>
@@ -159,7 +189,7 @@ compromise of BdThemes&#39; cloud storage credentials.</p>
           <td>
             <strong>Pixel Gallery Addons for Elementor</strong>
             <br><code>pixel-gallery</code>
-            <br><span>wordpress.org · plugin</span>
+            <br><span>wordpress · plugin</span>
             
             
           </td>
@@ -185,7 +215,7 @@ compromise of BdThemes&#39; cloud storage credentials.</p>
           <td>
             <strong>Ultimate Post Kit Addons for Elementor</strong>
             <br><code>ultimate-post-kit</code>
-            <br><span>wordpress.org · plugin</span>
+            <br><span>wordpress · plugin</span>
             
             
           </td>
@@ -211,7 +241,7 @@ compromise of BdThemes&#39; cloud storage credentials.</p>
           <td>
             <strong>Ultimate Store Kit</strong>
             <br><code>ultimate-store-kit</code>
-            <br><span>wordpress.org · plugin</span>
+            <br><span>wordpress · plugin</span>
             
             
           </td>
@@ -237,7 +267,7 @@ compromise of BdThemes&#39; cloud storage credentials.</p>
           <td>
             <strong>Live Copy Paste for Elementor</strong>
             <br><code>live-copy-paste</code>
-            <br><span>wordpress.org · plugin</span>
+            <br><span>wordpress · plugin</span>
             
             
           </td>
@@ -263,7 +293,7 @@ compromise of BdThemes&#39; cloud storage credentials.</p>
           <td>
             <strong>Smart Admin Assistant</strong>
             <br><code>smart-admin-assistant</code>
-            <br><span>wordpress.org · plugin</span>
+            <br><span>wordpress · plugin</span>
             
             
           </td>

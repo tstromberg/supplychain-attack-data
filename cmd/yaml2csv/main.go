@@ -117,15 +117,46 @@ type Artifact struct {
 	Repo          string      `yaml:"repo"`
 	StartDate     string      `yaml:"start_date"`
 	EndDate       string      `yaml:"end_date"`
-	Versions      []string    `yaml:"versions"`
-	FixedVersions []string    `yaml:"fixed_versions"`
-	Locations     []Location  `yaml:"locations"`
-	Hashes        HashList    `yaml:"hashes"`
-	Commits       []string    `yaml:"commits"`
-	Indicators    []Indicator `yaml:"indicators"`
-	Evidence      []Evidence  `yaml:"evidence"`
-	References    []Reference `yaml:"references"`
-	Notes         []string    `yaml:"notes"`
+	Versions      VersionList `yaml:"versions"`
+	FixedVersions VersionList `yaml:"fixed_versions"`
+	// DuringSampleNotExpected records why this artifact has no affected state to
+	// collect, for the artifacts where searching harder can never produce one: the
+	// attack ran at runtime and no release was malicious, or the tampered files were
+	// never publicly named. tools/missing-samples.js reads it so those artifacts are
+	// listed apart from the ones still worth hunting for.
+	DuringSampleNotExpected string      `yaml:"during_sample_not_expected"`
+	Locations               []Location  `yaml:"locations"`
+	Hashes                  HashList    `yaml:"hashes"`
+	Commits                 []string    `yaml:"commits"`
+	Indicators              []Indicator `yaml:"indicators"`
+	Evidence                []Evidence  `yaml:"evidence"`
+	References              []Reference `yaml:"references"`
+	Notes                   []string    `yaml:"notes"`
+}
+
+/*
+ * VersionList is a list of version identifiers that must be written as strings.
+ *
+ * An unquoted 0.30 is a YAML float, and decoding it drops the trailing zero:
+ * ssh-decorate's 0.30 became 0.3 and published a version that never existed.
+ * Two-dot versions like 1.2.3 are strings already, so the bug only bites the
+ * single-dot ones, which is exactly why it went unnoticed.
+ */
+type VersionList []string
+
+func (versions *VersionList) UnmarshalYAML(value *yaml.Node) error {
+	if value.Kind != yaml.SequenceNode {
+		return fmt.Errorf("versions must be a list")
+	}
+	result := make(VersionList, 0, len(value.Content))
+	for _, item := range value.Content {
+		if item.Kind == yaml.ScalarNode && (item.Tag == "!!float" || item.Tag == "!!int") {
+			return fmt.Errorf("version %s must be quoted; unquoted numbers lose trailing zeros", item.Value)
+		}
+		result = append(result, strings.TrimSpace(item.Value))
+	}
+	*versions = result
+	return nil
 }
 
 type Location struct {
@@ -419,6 +450,8 @@ func validate(entries []Entry, campaigns []Campaign, campaignIDs map[string]bool
 		}
 		seenEntries[entry.ID] = entry.SourcePath
 	}
+	issues = append(issues, validateDistinctIncidents(entries)...)
+
 	seenCampaigns := map[string]string{}
 	for _, campaign := range campaigns {
 		issues = append(issues, validateCampaign(campaign)...)
@@ -438,6 +471,99 @@ func validate(entries []Entry, campaigns []Campaign, campaignIDs map[string]bool
 	if errorCount > 0 && os.Getenv("YAML2CSV_STRICT") == "1" {
 		log.Fatalf("Error: validation failed with %d error(s)", errorCount)
 	}
+}
+
+// validateDistinctIncidents reports pairs of records that look like the same
+// incident catalogued twice under different ids.
+//
+// An exact id collision is already an error, but the duplicates that actually
+// happen share no id at all: a record is added as "linux-kernel-cvs" when the
+// catalogue already holds the same 2003 backdoor as "linux", because ids here are
+// usually just the project name and no id search reaches for them. What the pairs
+// do share is a target and a moment. Two records naming the same target over
+// overlapping dates are either one incident written twice or a coincidence worth
+// looking at, and the same target attacked twice at different times -- the usual
+// legitimate case, as with the three Ammyy Admin records -- does not overlap.
+//
+// Nesting is the other shape this takes. A project directory can hold one record
+// per incident in dated subdirectories, and dropping a meta.yaml beside them adds
+// a duplicate rather than a record.
+func validateDistinctIncidents(entries []Entry) []issue {
+	var issues []issue
+	nested := map[string]bool{}
+	for i := range entries {
+		for j := i + 1; j < len(entries); j++ {
+			a, b := entries[i], entries[j]
+			// Either record can be the outer one: WalkDir reaches a dated
+			// subdirectory before the meta.yaml sitting beside it. One nested
+			// record answers for every record it encloses, so report it once.
+			if outer, inner, ok := nestedPair(a, b); ok {
+				if !nested[outer.ID] {
+					nested[outer.ID] = true
+					issues = append(issues, issue{"error", "id", outer.ID, outer.SourcePath, outer.ID,
+						"record sits in the directory holding " + inner.ID + "; a record beside dated " +
+							"subdirectories duplicates them rather than adding to them"})
+				}
+				continue
+			}
+			if !sameTarget(a.Target.Name, b.Target.Name) || !datesOverlap(a, b) {
+				continue
+			}
+			issues = append(issues, issue{"warning", "target.name", b.Target.Name, b.SourcePath, b.ID,
+				fmt.Sprintf("same target and overlapping dates as %s in %s; if this is the same "+
+					"incident it belongs in that record, and if not, say what distinguishes them",
+					a.ID, a.SourcePath)})
+		}
+	}
+	return issues
+}
+
+// nestedPair orders two records when one's directory contains the other's,
+// returning the outer record first.
+func nestedPair(a, b Entry) (outer, inner Entry, ok bool) {
+	dirA, dirB := filepath.Dir(a.SourcePath), filepath.Dir(b.SourcePath)
+	switch {
+	case dirA == dirB:
+		return Entry{}, Entry{}, false
+	case strings.HasPrefix(dirB, dirA+string(filepath.Separator)):
+		return a, b, true
+	case strings.HasPrefix(dirA, dirB+string(filepath.Separator)):
+		return b, a, true
+	}
+	return Entry{}, Entry{}, false
+}
+
+// sameTarget reports whether two target names denote the same thing once
+// punctuation and case are discarded. One name is often the other plus a
+// qualifier -- "php" and "php-src", "linux" and "Linux kernel" -- so a prefix
+// counts.
+func sameTarget(a, b string) bool {
+	a, b = normalizeTarget(a), normalizeTarget(b)
+	if a == "" || b == "" {
+		return false
+	}
+	return strings.HasPrefix(a, b) || strings.HasPrefix(b, a)
+}
+
+func normalizeTarget(value string) string {
+	var out strings.Builder
+	for _, r := range strings.ToLower(value) {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			out.WriteRune(r)
+		}
+	}
+	return out.String()
+}
+
+// datesOverlap compares the two records' windows. Dates are ISO-8601 and sort
+// lexically, and a record with no end date occupies its start date alone.
+func datesOverlap(a, b Entry) bool {
+	startA, endA := a.StartDate, firstNonEmpty(a.EndDate, a.StartDate)
+	startB, endB := b.StartDate, firstNonEmpty(b.EndDate, b.StartDate)
+	if startA == "" || startB == "" {
+		return false
+	}
+	return startA <= endB && startB <= endA
 }
 
 func validateEntry(entry Entry, campaignIDs map[string]bool) []issue {
@@ -471,6 +597,7 @@ func validateEntry(entry Entry, campaignIDs map[string]bool) []issue {
 	issues = append(issues, validateSynopsis(entry.SourcePath, entry.ID, "synopsis", entry.Synopsis)...)
 	issues = append(issues, validateStory(entry.SourcePath, entry.ID, "story", entry.Story)...)
 	issues = append(issues, validatePullQuote(entry.SourcePath, entry.ID, "pull_quote", entry.PullQuote, entry.Story)...)
+	issues = append(issues, validateNotes(entry.SourcePath, entry.ID, "notes", entry.Notes)...)
 	issues = append(issues, validateDate(entry.SourcePath, entry.ID, "start_date", entry.StartDate)...)
 	issues = append(issues, validateDate(entry.SourcePath, entry.ID, "end_date", entry.EndDate)...)
 	issues = append(issues, validateURL(entry.SourcePath, entry.ID, "target.website", entry.Target.Website)...)
@@ -531,6 +658,7 @@ func validateArtifact(entry Entry, artifact Artifact, field string) []issue {
 	issues = append(issues, validateIndicators(entry.SourcePath, entry.ID, field+".indicators", artifact.Indicators)...)
 	issues = append(issues, validateEvidence(entry.SourcePath, entry.ID, field+".evidence", artifact.Evidence)...)
 	issues = append(issues, validateReferences(entry.SourcePath, entry.ID, field+".references", artifact.References)...)
+	issues = append(issues, validateNotes(entry.SourcePath, entry.ID, field+".notes", artifact.Notes)...)
 	return issues
 }
 
@@ -557,6 +685,7 @@ func validateCampaign(campaign Campaign) []issue {
 	issues = append(issues, validateSynopsis(campaign.SourcePath, campaign.ID, "synopsis", campaign.Synopsis)...)
 	issues = append(issues, validateStory(campaign.SourcePath, campaign.ID, "story", campaign.Story)...)
 	issues = append(issues, validatePullQuote(campaign.SourcePath, campaign.ID, "pull_quote", campaign.PullQuote, campaign.Story)...)
+	issues = append(issues, validateNotes(campaign.SourcePath, campaign.ID, "notes", campaign.Notes)...)
 	issues = append(issues, validateDate(campaign.SourcePath, campaign.ID, "start_date", campaign.StartDate)...)
 	issues = append(issues, validateDate(campaign.SourcePath, campaign.ID, "end_date", campaign.EndDate)...)
 	issues = append(issues, validateImpact(campaign.SourcePath, campaign.ID, "impact", campaign.Impact)...)
@@ -587,6 +716,30 @@ func validateSynopsis(path, id, field, value string) []issue {
 	sentences := countSentences(value)
 	if sentences < 1 || sentences > 2 {
 		issues = append(issues, issue{"error", field, strconv.Itoa(sentences), path, id, "synopsis must be 1 or 2 sentences"})
+	}
+	return issues
+}
+
+// Notes carry the evidence caveats a reader needs, not a second article. Past
+// these sizes they stop being read, and the record's own story is the place for
+// anything that needs a paragraph.
+const (
+	notesMax     = 4
+	noteMaxChars = 240
+)
+
+func validateNotes(path, id, field string, notes []string) []issue {
+	var issues []issue
+	if len(notes) > notesMax {
+		issues = append(issues, issue{"error", field, strconv.Itoa(len(notes)), path, id,
+			fmt.Sprintf("no more than %d notes; merge or drop the rest", notesMax)})
+	}
+	for i, note := range notes {
+		chars := len([]rune(strings.TrimSpace(note)))
+		if chars > noteMaxChars {
+			issues = append(issues, issue{"error", fmt.Sprintf("%s[%d]", field, i), strconv.Itoa(chars), path, id,
+				fmt.Sprintf("note must be no more than %d characters", noteMaxChars)})
+		}
 	}
 	return issues
 }

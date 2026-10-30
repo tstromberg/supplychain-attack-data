@@ -44,38 +44,42 @@
       <p>An attacker with commit access to Advanced Responsive Video Embedder, a
 WordPress plugin with roughly 20,000 active installations, planted a
 hardcoded authentication bypass in version 10.8.7 on the morning of July 28,
-2026. Wordfence&#39;s autonomous vulnerability-analysis agent, PRISM, flagged it
+2026. Wordfence's autonomous vulnerability-analysis agent, PRISM, flagged it
 111 minutes later.</p>
     
       <p>The plugin embeds video players for Rumble, Odysee, YouTube, Vimeo, and Kick.
-The backdoor arrived in a file called `php/fn-update-check.php`, a name chosen
+The backdoor arrived in a file called <code>php/fn-update-check.php</code>, a name chosen
 to read as routine plugin housekeeping, loaded unconditionally from line 76 of
-the plugin bootstrap. Inside was `_arve_uc_init()`, registered on WordPress&#39;s
-`init` hook at priority 1 so it ran on every request, frontend or admin, before
+the plugin bootstrap. Inside was <code>_arve_uc_init()</code>, registered on WordPress's
+<code>init</code> hook at priority 1 so it ran on every request, frontend or admin, before
 any authentication logic. The leading underscore made it look like a private
 WordPress internal.</p>
+      <figure class="pull-quote">
+        <blockquote>Before impersonating an administrator the backdoor skipped any username starting with <code>wpsvc_</code>, <code>developer_</code>, <code>dev_</code>, or <code>wp_update_</code>. Wordfence read that as operators avoiding accounts they had already seeded.</blockquote>
+        <figcaption>the accounts it refused to use</figcaption>
+      </figure>
     
-      <p>The function read a token from `$_REQUEST` under either `_wplogin` or `_wpm`,
+      <p>The function read a token from <code>$_REQUEST</code> under either <code>_wplogin</code> or <code>_wpm</code>,
 accepted it from a query string, POST body, or cookie, and required only that
 it be at least 32 characters. It first tried to derive a site-specific value
-from the installation&#39;s `AUTH_KEY` and `SECURE_AUTH_KEY`, which gave the code
+from the installation's <code>AUTH_KEY</code> and <code>SECURE_AUTH_KEY</code>, which gave the code
 the shape of a legitimate keyed scheme. Then it fell through to compare the
 token against a SHA-256 hash baked into the source:
-`35fe7057ffed92ff7bc5a0b90f302a77fb5843ad6c972294d68da0b0553b3900`. Since the
+<code>35fe7057ffed92ff7bc5a0b90f302a77fb5843ad6c972294d68da0b0553b3900</code>. Since the
 plugin source was public on WordPress.org, that hash was a universal master
 credential. On a match the code enumerated administrator accounts, picked one
-at random, called `wp_set_auth_cookie()` with a long-lived session, and
-redirected the caller into `/wp-admin/`. One HTTP GET, no credentials, full
+at random, called <code>wp_set_auth_cookie()</code> with a long-lived session, and
+redirected the caller into <code>/wp-admin/</code>. One HTTP GET, no credentials, full
 control. It was assigned CVE-2026-18072 at CVSS 9.8.</p>
     
       <p>Two details marked it as deliberate rather than accidental. Before choosing an
 administrator to impersonate, the code filtered out usernames beginning with
-`wpsvc_`, `developer_`, `dev_`, or `wp_update_`, which suggests the operators
+<code>wpsvc_</code>, <code>developer_</code>, <code>dev_</code>, or <code>wp_update_</code>, which suggests the operators
 had already seeded their own accounts on target sites and did not want to
-collide with them. And a companion function, `_arve_uc_cb()`, reported the site
-URL and chosen username to `fontswp.com` through three fallback HTTP methods
+collide with them. And a companion function, <code>_arve_uc_cb()</code>, reported the site
+URL and chosen username to <code>fontswp.com</code> through three fallback HTTP methods
 with certificate verification disabled. Wordfence notified the WordPress.org
-plugin team rather than the developer, on the reasoning that the developer&#39;s
+plugin team rather than the developer, on the reasoning that the developer's
 account was the likely point of compromise. The plugin was closed for downloads
 at 11:09 EST, and WordPress.org confirmed the malicious release had not yet been
 distributed to sites.</p>
@@ -102,7 +106,7 @@ distributed to sites.</p>
           <td>
             <strong>Advanced Responsive Video Embedder</strong>
             <br><code>advanced-responsive-video-embedder</code>
-            <br><span>wordpress.org · plugin</span>
+            <br><span>wordpress · plugin</span>
             
             
           </td>

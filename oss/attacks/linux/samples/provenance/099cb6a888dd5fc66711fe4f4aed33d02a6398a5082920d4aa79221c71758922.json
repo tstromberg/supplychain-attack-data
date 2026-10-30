@@ -1,0 +1,34 @@
+{
+  "schema_version": 2,
+  "sha256": "099cb6a888dd5fc66711fe4f4aed33d02a6398a5082920d4aa79221c71758922",
+  "size_bytes": 28630,
+  "acquisitions": [
+    {
+      "schema_version": "1.0",
+      "artifact": {
+        "filename": "kernel-exit-backdoored.c",
+        "sha256": "099cb6a888dd5fc66711fe4f4aed33d02a6398a5082920d4aa79221c71758922",
+        "size_bytes": 28630
+      },
+      "reconstruction": {
+        "method": "evidence_fragment_spliced_into_release_member",
+        "built_at": "2026-09-03T00:00:00Z",
+        "base": {
+          "path": "linux/before/kernel-exit.c",
+          "sha256": "ca6b73f7ca4b6ea4fe1e101034a7ec502115f192f8a4ed808381407f5c57fe6f",
+          "member": "kernel/exit.c"
+        },
+        "overlay": {
+          "path": "linux/during/kernel-exit.c-injected-lines.patch",
+          "sha256": "014e5dea0ebda8379b54686a19559aa17aead8e50c0c9f9437feb01fc0272228",
+          "operation": "apply"
+        }
+      },
+      "notes": [
+        "The two preserved lines placed at their reported position in sys_wait4, immediately before `retval = -ECHILD;`.",
+        "The payload is the assignment hiding in a comparison: `(current->uid = 0)` sets the calling process's uid to root and evaluates false, so the branch it guards never runs and the function returns normally. A reader skims it as `==`.",
+        "Placement is corroborated: the injected line lands at 1114, the offset the published hunk header gives."
+      ]
+    }
+  ]
+}

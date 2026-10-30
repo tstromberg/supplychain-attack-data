@@ -31,11 +31,18 @@
 
     On a developer machine it dropped a native daemon into `~/.local/share/gcm/`
     and installed redundant persistence through both a `systemd --user` unit and
-    cron, with an attempted privilege escalation by way of `/usr/local/sbin/ping6`.
+    cron, with a setuid-root shell planted after passwordless sudo had already granted root by way of `/usr/local/sbin/ping6`.
     The operators iterated visibly across the four `git_credential_manager`
     releases over about nine hours, moving execution into the `require()` path in
     2.8.2 with the final script commented out, then re-enabling it in 2.8.3, which
     the rubygems-security-team yanked.
+  pull_quote:
+    text: >-
+      A normal pipeline install shows no malicious behavior at all.
+      StepSecurity had to strip the CI environment variables before the loader
+      would believe it was on a developer machine and run.
+    caption: why your ci saw nothing
+    after: 1
   start_date: 2026-07-18
   end_date: 2026-07-19
   target:
@@ -75,23 +82,22 @@
   - kind: account
     value: 'RubyGems: pinkroom'
   notes:
-  - Only the hijacked pre-existing gems are recorded as artifacts. The third gem in the
-    campaign, git_credential_manager 2.8.0 through 2.8.3, was created by the attacker to
-    impersonate Microsoft's Git Credential Manager and is out of scope as its own record.
-  - The loader checks roughly thirty CI-related environment variables and exits if it
-    detects GitHub Actions, GitLab CI, CircleCI, Jenkins, Travis, or Vercel. This targets
-    developer workstations rather than build runners, inverting the usual pattern for
-    2026 registry worms.
-  - Two distinct maintainer accounts were involved, LR-DEV and pinkroom, indicating at
-    least two account compromises rather than a single hijack.
-  - Reported download exposure across the campaign has been cited at over 574,000, which
-    counts historical downloads of the affected gem names rather than installs of the
-    malicious versions.
-  - RubyGems yanked both malicious versions, which now return 404. The surviving version
-    lists corroborate the dormancy that made these accounts attractive. Dendreo ends at
-    1.1.2 from 2020-10-24 and fastlane-plugin-run_tests_firebase_testlab ends at 0.3.1 from
-    2019-03-04. Because the versions were yanked, no sample of either malicious gem could
-    be acquired.
+  - >-
+    Only the hijacked pre-existing gems are recorded as artifacts. The campaign's third gem,
+    git_credential_manager 2.8.0 to 2.8.3, was created by the attacker to impersonate
+    Microsoft's tool and is out of scope here.
+  - >-
+    The loader checks roughly thirty CI-related environment variables and exits under GitHub
+    Actions, GitLab CI, CircleCI, Jenkins, Travis or Vercel, targeting workstations rather than
+    build runners.
+  - >-
+    Two maintainer accounts were involved, LR-DEV and pinkroom. Reported exposure of over
+    574,000 counts historical downloads of the gem names, not installs of the malicious
+    versions.
+  - >-
+    RubyGems yanked the malicious versions, but exact complete archives for both Dendreo
+    releases and the fastlane plugin were recovered from public incident-analysis captures and
+    reproduce RubyGems' retained SHA-256 values.
   artifacts:
   - id: dendreo
     name: Dendreo
@@ -103,6 +109,9 @@
     versions:
     - 1.1.3
     - 1.1.4
+    hashes:
+    - sha256:dd75857ec8f3cc768931592b83c1c3b13eee3723c6aefde7f50c4069b19b2765
+    - sha256:cd37b55603dea2ec624e255124f270681b5689a26905dfad02cc3bab9f6905df
     fixed_versions:
     - 1.1.2
     locations:
@@ -112,6 +121,12 @@
     - The public release line had stopped at 1.1.2 on 2020-10-24 before 1.1.3 and 1.1.4
       appeared on 2026-07-18. Both have since been yanked and 1.1.2 is again the latest
       version.
+    - RubyGems.org's retained yanked-version page maps SHA-256
+      dd75857ec8f3cc768931592b83c1c3b13eee3723c6aefde7f50c4069b19b2765 to the
+      complete Dendreo 1.1.3 gem archive.
+    - RubyGems.org's retained yanked-version page maps SHA-256
+      cd37b55603dea2ec624e255124f270681b5689a26905dfad02cc3bab9f6905df to the
+      complete Dendreo 1.1.4 gem archive.
   - id: fastlane-plugin-run-tests-firebase-testlab
     name: fastlane-plugin-run_tests_firebase_testlab
     package: fastlane-plugin-run_tests_firebase_testlab
@@ -121,6 +136,8 @@
     end_date: 2026-07-19
     versions:
     - 0.3.2
+    hashes:
+    - sha256:c55d9f4bbe6b82bb44464bf6703392e595455b0037fb77dd41ade58a8b0ce9a2
     fixed_versions:
     - 0.3.1
     locations:
@@ -129,6 +146,9 @@
     notes:
     - The gem had seen no releases since 0.3.1 on 2019-03-04 before 0.3.2 appeared on
       2026-07-19. 0.3.2 has since been yanked and 0.3.1 is again the latest version.
+    - RubyGems.org's retained yanked-version page maps SHA-256
+      c55d9f4bbe6b82bb44464bf6703392e595455b0037fb77dd41ade58a8b0ce9a2 to the
+      complete fastlane-plugin-run_tests_firebase_testlab 0.3.2 gem archive.
   references:
   - url: https://www.stepsecurity.io/blog/sleepergem-compromised-rubygems-drop-persistent-backdoor
     title: 'SleeperGem: Compromised git_credential_manager, Dendreo, and fastlane RubyGems
@@ -144,3 +164,9 @@
   - url: https://www.aikido.dev/blog/sleepergem-rubygems-supply-chain-attack
     title: 'SleeperGem: RubyGems supply chain attack targets dormant maintainer accounts -
       Aikido'
+  - url: https://rubygems.org/gems/Dendreo/versions/1.1.3
+    title: Dendreo 1.1.3 - RubyGems.org
+  - url: https://rubygems.org/gems/Dendreo/versions/1.1.4
+    title: Dendreo 1.1.4 - RubyGems.org
+  - url: https://rubygems.org/gems/fastlane-plugin-run_tests_firebase_testlab/versions/0.3.2
+    title: fastlane-plugin-run_tests_firebase_testlab 0.3.2 - RubyGems.org

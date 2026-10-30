@@ -41,26 +41,30 @@ push two malicious releases of LiteLLM, the popular open-source proxy that
 fronts more than a hundred large-language-model APIs behind a single
 OpenAI-compatible interface. Versions 1.82.7 and 1.82.8 carried a
 credential stealer; LiteLLM maintainers BerriAI traced the token theft
-back to a compromised Trivy scanner that had been running in the project&#39;s
+back to a compromised Trivy scanner that had been running in the project's
 own CI pipeline.</p>
     
       <p>StepSecurity, which published a teardown of the wheel alongside coverage
 in The Register, said the two releases shipped identical payloads through
 different injection points. Version 1.82.7 embedded a base64 blob inside
-`litellm/proxy/proxy_server.py`, which only fired when the proxy module
+<code>litellm/proxy/proxy_server.py</code>, which only fired when the proxy module
 loaded. Version 1.82.8 was more aggressive: it placed a 34,628-byte
-`litellm_init.pth` file in the wheel&#39;s site-packages directory. Python
-processes every `.pth` file under `site-packages` on interpreter startup
-through the standard `site` module, so 1.82.8 ran before any application
+<code>litellm_init.pth</code> file in the wheel's site-packages directory. Python
+processes every <code>.pth</code> file under <code>site-packages</code> on interpreter startup
+through the standard <code>site</code> module, so 1.82.8 ran before any application
 code touched LiteLLM at all. BerriAI said its official LiteLLM Proxy
 Docker image was not affected, because that build pinned dependencies and
 did not pull the compromised PyPI artifacts.</p>
+      <figure class="pull-quote">
+        <blockquote>Because the payload spawned a detached Python subprocess, that subprocess also ran <code>litellm_init.pth</code> on startup. Each generation of the stealer forked the next, and the process tree grew on its own.</blockquote>
+        <figcaption>the stealer that forked itself</figcaption>
+      </figure>
     
       <p>The payload swept the host for SSH keys, AWS, GCP and Azure credentials,
 Kubernetes tokens, Docker credentials, shell history, environment
 variables, crypto wallets, TLS certificates, and CI/CD configuration. It
 also made live API calls to AWS Secrets Manager and any reachable
-Kubernetes API. Stolen material was bundled into `tpcp.tar.gz` and
+Kubernetes API. Stolen material was bundled into <code>tpcp.tar.gz</code> and
 encrypted with the same RSA/AES pattern StepSecurity attributes to the
 threat group it calls TeamPCP. Where pod permissions allowed, the malware
 attempted a privileged pod deployment to reach the underlying node.</p>
@@ -111,7 +115,7 @@ LiteLLM environment was exposed and to rotate it from a clean system.</p>
           </td>
           <td>
             
-              <code>sha256:71e35aef03099cd1f2d6446734273025a163597de93912df321ef118bf135238</code>
+              <code>sha256:8a2a05fd8bdc329c8a86d2d08229d167500c01ecad06e40477c49fb0096efdea</code><br><code>sha256:d39f4e7a218053cce976c91eacf184cf09a6960c731cc9d66d8e1a53406593a5</code><br><code>sha256:71e35aef03099cd1f2d6446734273025a163597de93912df321ef118bf135238</code>
             
           </td>
         </tr>

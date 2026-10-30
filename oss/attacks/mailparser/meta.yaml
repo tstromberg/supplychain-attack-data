@@ -11,6 +11,14 @@
     The attempted reach was the story. npm said download counts for `getcookies`, `express-cookies`, and `http-fetch-cookies` spiked around the time a `mailparser` version began depending on `http-fetch-cookies`. `mailparser` still had about 64,000 weekly downloads despite being deprecated, so the chain made a small cookie parser look more legitimate and gave it a path toward real production installations.
 
     npm also drew an important boundary: published `mailparser` versions that depended on `http-fetch-cookies` did not use the dependency in a way that triggered the backdoor. npm removed `getcookies`, `express-cookies`, `http-fetch-cookies`, and `mailparser` versions 2.2.1 through 2.2.3, then reset the `mailparser` maintainer's npm tokens. This was a near miss in a dependency chain, not evidence that `mailparser` users were compromised.
+  pull_quote:
+    text: >-
+      The three `mailparser` releases declared `http-fetch-cookies` and never
+      called it. npm's Adam Baldwin believed the dependency existed to inflate
+      download counts, borrowing a deprecated package's traffic until a
+      stranger's cookie parser looked popular enough to adopt.
+    caption: a dependency added to be counted
+    after: 3
   start_date: 2018-05-02
   end_date: 2018-05-02
   target:
@@ -43,6 +51,17 @@
       role: distribution
     - uri: https://blog.npmjs.org/post/173526807575/reported-malicious-module-getcookies
       role: mirror
+    - uri: https://github.com/cybertier/Backstabbers-Knife-Collection/tree/54e71f528a5ab67d7356969dbc2e84fe8d5fa97b/samples/npm/getcookies
+      role: mirror
+    hashes:
+    - sha256: 4c861a2c9b098e3e5f38f85b501582c93166937d4af30fa447fb3d49deb81178
+      of: archive
+      note: getcookies-1.12.3.tgz
+      role: malicious
+    - sha256: c42e316f43f5fb9d9c9a1fdbe79b52fa3496f3f608ca3ba90364cf4cb29e4672
+      of: archive
+      note: getcookies-1.12.1.tgz
+      role: malicious
     indicators:
     - kind: package
       value: getcookies
@@ -70,12 +89,18 @@
       value: npm found no published mailparser use path that would have triggered the
         backdoor.
     notes:
-    - npm removed getcookies, express-cookies, http-fetch-cookies, and mailparser
-      versions 2.2.1, 2.2.2, and 2.2.3.
-    - npm reset the mailparser maintainer's tokens as a precaution after removing the
-      affected mailparser releases.
-    - Hacker News discussion surfaced the suspicious lack of repositories and the stock
-      profile photo associated with the packages before npm published its write-up.
+    - >-
+      npm removed getcookies, express-cookies, http-fetch-cookies, and mailparser versions 2.2.1 and
+      2.2.2, and reset the mailparser maintainer's tokens as a precaution.
+    - >-
+      Hacker News discussion surfaced the suspicious lack of repositories and the stock profile
+      photo on the publishing account before npm acted.
+    - >-
+      Complete probable-exact archives for getcookies 1.12.1 and 1.12.3 plus the latest
+      express-cookies are retained as the malicious distribution.
+    - >-
+      The exact npm archive for mailparser 2.2.0 is retained as the clean immediate predecessor; the
+      removed 2.2.1 and 2.2.2 archives remain unavailable.
   references:
   - url: https://blog.npmjs.org/post/173526807575/reported-malicious-module-getcookies
     title: 'Reported malicious module: getcookies'
@@ -89,3 +114,5 @@
     title: Backdoor injected to NPM express-cookies package
   - url: https://dl.acm.org/doi/pdf/10.1145/3510457.3513044
     title: What are Weak Links in the npm Supply Chain?
+  - url: https://github.com/cybertier/Backstabbers-Knife-Collection/tree/54e71f528a5ab67d7356969dbc2e84fe8d5fa97b/samples/npm/getcookies
+    title: Backstabber's Knife Collection getcookies samples

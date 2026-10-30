@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coder module registry served credential-stealing Terraform modules</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Coder module registry served credential-stealing Terraform modules</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> registry.coder.com · <a href="https://registry.coder.com" target="_blank">website</a> · <a href="https://github.com/coder/registry" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-08-31</div>
+    <div class="meta-item"><strong>Actor:</strong> unattributed (unknown)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> package_repository</div>
+    <div class="meta-item"><strong>Language:</strong> HCL</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">An attacker added unauthorized IPs to the Cloudflare pool behind registry.coder.com, which served modified Terraform modules for fourteen hours on 2026-08-31. The modules ran a script that gathered provisioner secrets, OIDC tokens and SSH keys and sent them to coder-infra.com.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>Coder never lost control of its source code. On August 31, 2026, an attacker reached the
+Cloudflare infrastructure in front of registry.coder.com and added IP addresses of its own to
+the pool that answers for the module registry. Those addresses ran a copy of the registry.
+For fourteen hours, some fraction of requests for Coder's Terraform modules were answered by
+a server Coder did not own, and the modules it returned were not the ones in the repository.</p>
+    
+      <p>The window ran from 07:35 to 21:45 UTC. A Coder deployment fetches registry modules when a
+template is created or updated, when a template build is dry-run, and during workspace
+creation on templates where module caching is turned off. Deployments that fetched in that
+window cached what the rogue servers returned. The modified modules carried a Terraform
+<code>data &quot;external&quot; &quot;telemetry&quot;</code> block that executed a shell script shipped alongside the module,
+named <code>dlp.sh</code> or <code>dlp-docker.sh</code>. The script was tailored per module: the advisory lists
+separate SHA-256 values for the common, aider, rstudio-server, windows-rdp and zed variants.</p>
+    
+      <p>What the script collected depended on when it ran. On a template upload, update or dry run,
+the provisioner holds no user data, so the exposure was the provisioner's own environment
+variables and secrets. On a workspace build, the provisioner also receives the user's OIDC
+token, the user's SSH key where one is configured, and single-use tokens for any external
+auth provider the template uses. Coder noted that deployments running the provisioner inside
+coderd rather than as a separate service would additionally have exposed coder configuration,
+including the database password. The script sent what it found to www.coder-infra.com, a
+domain registered three days before the attack, at 199.91.220.205.</p>
+    
+      <p>Coder published advisory GHSA-vx42-ghc9-gw65 on September 1 and shipped fixes in 2.37.0,
+2.36.4, 2.35.7 and 2.34.9. It also published SQL queries that identify cached modules fetched
+inside the window and delete them, because a poisoned module persists in a deployment's cache
+after the registry is restored. Coder said it has no indication that customer data it
+maintains was affected, and stated plainly that it cannot determine which users were hit: the
+server that took the stolen credentials was not Coder's, so Coder has no logs of it. Users are
+advised to treat any credential reachable by a provisioner as exposed and rotate it.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>coder/aider</strong>
+            
+            <br><span>terraform registry · source_archive</span>
+            <br><a href="https://registry.coder.com/modules/coder/aider" target="_blank">https://registry.coder.com/modules/coder/aider</a>
+            
+          </td>
+          <td>2026-08-31</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>coder/rstudio-server</strong>
+            
+            <br><span>terraform registry · source_archive</span>
+            <br><a href="https://registry.coder.com/modules/coder/rstudio-server" target="_blank">https://registry.coder.com/modules/coder/rstudio-server</a>
+            
+          </td>
+          <td>2026-08-31</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>coder/windows-rdp</strong>
+            
+            <br><span>terraform registry · source_archive</span>
+            <br><a href="https://registry.coder.com/modules/coder/windows-rdp" target="_blank">https://registry.coder.com/modules/coder/windows-rdp</a>
+            
+          </td>
+          <td>2026-08-31</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>coder/zed</strong>
+            
+            <br><span>terraform registry · source_archive</span>
+            <br><a href="https://registry.coder.com/modules/coder/zed" target="_blank">https://registry.coder.com/modules/coder/zed</a>
+            
+          </td>
+          <td>2026-08-31</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://registry.coder.com</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>domain:www.coder-infra.com</code></li>
+    
+      <li><code>ip:199.91.220.205</code></li>
+    
+      <li><code>url:http://www.coder-infra.com/cli/check</code></li>
+    
+      <li><code>http_header:X-CLI-Token: your-secret-token</code></li>
+    
+      <li><code>technique:Terraform data &quot;external&quot; &quot;telemetry&quot; block invoking ${path.module}/dlp-docker.sh</code></li>
+    
+      <li><code>file_sha256:dlp-docker.sh 7190a17c593276d7fd71c4863a4bc0b6c957ed14249288e6f64c5540e2c49398</code></li>
+    
+      <li><code>file_sha256:dlp.sh (common) a7f4fa5f7e33b2a6f6488cf28444584caa449144d246b083de919162f5514247</code></li>
+    
+      <li><code>commit:dd1aa88914 migration to delete identified modules (#28798), superseded</code></li>
+    
+      <li><code>commit:10fd510ada purge identified terraform modules via dbpurge (#28802)</code></li>
+    
+      <li><code>observable:cached module archives are files rows with mimetype application/x-tar and created_by 00000000-0000-0000-0000-000000000000</code></li>
+    
+      <li><code>observable:coder-infra.com registered 2026-08-28T07:05:09Z via Fewmoretaps OU d/b/a Trustname.com</code></li>
+    
+      <li><code>observable:199.91.220.205 announced by BL Networks (US)</code></li>
+    
+      <li><code>ip:104.21.10.65</code></li>
+    
+      <li><code>ip:172.67.144.184</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://github.com/coder/coder/security/advisories/GHSA-vx42-ghc9-gw65" target="_blank">Malicious Packages Served from Unauthorized Registry Server - coder/coder advisory GHSA-vx42-ghc9-gw65</a></li>
+    
+      <li><a href="https://www.bleepingcomputer.com/news/security/coders-registry-infrastructure-compromised-to-push-malicious-modules/" target="_blank">Coder&#39;s registry infrastructure compromised to push malicious modules - BleepingComputer</a></li>
+    
+      <li><a href="https://github.com/coder/coder/commit/10fd510ada0e3a7c222511dbd9916f83afd1acf0" target="_blank">chore: purge identified terraform modules via dbpurge (#28802) - coder/coder</a></li>
+    
+      <li><a href="https://github.com/coder/coder/pull/28798" target="_blank">chore: migration to delete identified modules - coder/coder #28798</a></li>
+    
+      <li><a href="https://www.esecurityplanet.com/cybersecurity/news-coder-registry-malicious-terraform-modules/" target="_blank">Coder Registry Compromise: Malicious Terraform Modules Explained - eSecurity Planet</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

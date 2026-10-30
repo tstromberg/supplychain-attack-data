@@ -36,9 +36,13 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The acroread incident was a small compromise, but it is a clean example of how community package metadata becomes a distribution point. Adobe Reader was not backdoored upstream, and Arch&#39;s official binary repositories were not compromised. The poisoned layer was the AUR package recipe that Arch users could pull into a normal local build.</p>
+      <p>The acroread incident was a small compromise, but it is a clean example of how community package metadata becomes a distribution point. Adobe Reader was not backdoored upstream, and Arch's official binary repositories were not compromised. The poisoned layer was the AUR package recipe that Arch users could pull into a normal local build.</p>
     
       <p>The package was attractive because nobody was actively maintaining it. acroread wrapped an old Linux build of Adobe Reader, a native version no longer supported by Adobe. On July 8, 2018, Arch users noticed that an AUR account named xeactor had adopted the orphaned package and pushed a PKGBUILD change with the classic red flag: a remote script fetched from ptpb.pw and piped into bash. That first script was not noisy malware; it staged the rest of the intrusion. It created xeactor.service and xeactor.timer under systemd paths, set the timer to run every 360 seconds, and downloaded a second script from ptpb.pw that collected system details and posted them to Pastebin through an API key. Public analysis found no self-update mechanism and no destructive payload, but the installer path had already crossed the important line: a trusted community build recipe was executing attacker-controlled shell code during installation.</p>
+      <figure class="pull-quote">
+        <blockquote>The fetched script exited unless <code>$pkgdir</code> was set; inside a build it wrote <code>xeactor.timer</code> and its <code>multi-user.target.wants</code> symlink into the staging tree, so pacman installed the timer already enabled, as a file of acroread.</blockquote>
+        <figcaption>persistence shipped as package content</figcaption>
+      </figure>
     
       <p>The response was fast. The report hit the aur-general list at 05:48 UTC on July 8. Six minutes later, Trusted User Eli Schwartz said the account had been suspended and the commit reverted. He then found and fixed two other packages that had been modified the same way. Arch later named the affected versions as acroread 9.5.5-8, balz 1.20-3, and minergate 8.1-2.</p>
     

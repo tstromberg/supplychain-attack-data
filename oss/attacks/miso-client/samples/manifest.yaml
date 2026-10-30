@@ -30,6 +30,10 @@ samples:
     verification:
       status: exact
       basis:
+        - publisher_digest_reproduced
+        - archive_declares_version
+        - measured_sha256
+      evidence:
         - official_npm_registry_distribution
         - npm_sha1_472465e6dfd4ce33072087d86b0ffd025035b3be_matches_bytes
         - npm_sha512_integrity_matches_bytes
@@ -40,6 +44,7 @@ samples:
     relates_to:
       - phase: during
         version: 4.7.2
+    subject: miso-client
   - artifact_id: miso-client
     phase: during
     classification: malicious
@@ -102,6 +107,13 @@ samples:
     verification:
       status: tree_equivalent
       basis:
+        - reported_digest_matched
+        - publisher_digest_reproduced
+        - all_members_digest_matched
+        - indicator_absent
+        - payload_indicator_present
+        - measured_sha256
+      evidence:
         - exact_upstream_source_commit_contains_reported_invisible_unicode_loader
         - exact_frozen_dependency_graph_and_documented_release_build
         - retained_jsdelivr_manifest_accounts_for_all_446_members
@@ -115,6 +127,33 @@ samples:
         Complete-tree reconstruction, not the removed npm tarball. The RECONSTRUCTED name and
         tree_equivalent status are required because no authoritative whole-archive checksum is
         available for a byte-identity comparison.
+    subject: miso-client
+  - artifact_id: miso-client
+    phase: after
+    classification: remediated
+    coordinate: pkg:npm/%40aifabrix/miso-client@4.8.0
+    version: 4.8.0
+    filename: aifabrix-miso-client-4.8.0.tgz
+    path: miso-client/after/aifabrix-miso-client-4.8.0.tgz
+    sha256: 0ecbbe34e8781cd31511b87aaa97d09b2efdbda930f27a41d42e9c299e848adf
+    size: 282417
+    source:
+      url: https://registry.npmjs.org/@aifabrix/miso-client/-/miso-client-4.8.0.tgz
+      kind: distribution
+      retrieved_at: '2026-09-03T20:22:02Z'
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - official_registry_tarball
+        - npm_dist_integrity_sha512_reproduced
+        - measured_sha256
+    notes:
+      - The remediated release published after the compromise.
+    subject: miso-client
 unresolved:
   - artifact_id: miso-client
     phase: during
@@ -132,4 +171,9 @@ unresolved:
         The exact upstream source commit, frozen build inputs, and retained manifest permit a
         complete 446-member tree reconstruction despite loss of the original gzip bytes.
       - 'Forager batch: per-target timeout'
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        6dc22fe5dd515126cf813c8f505f5da7619ed73de44db9317628ca5377d3c809 as
+        pkg:npm/%40aifabrix/miso-client@4.7.2. The digest names a real file; what is missing is a
+        source that will serve it.
     last_attempted_at: '2026-08-12T02:00:06.748Z'

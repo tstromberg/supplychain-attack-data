@@ -1,0 +1,84 @@
+name: Analyze VeloraDEX SDK Compromised Package
+
+on:
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  download-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Download compromised and clean tarballs
+        run: |
+          mkdir -p /tmp/packages
+          cd /tmp/packages
+          npm pack @velora-dex/sdk@9.4.1 || true
+          npm pack @velora-dex/sdk@9.4.0 || true
+
+      - name: Upload package tarballs
+        uses: actions/upload-artifact@v4
+        with:
+          name: velora-dex-sdk-tarballs
+          path: /tmp/packages/*.tgz
+          retention-days: 90
+
+  install-compromised-package:
+    runs-on: ubuntu-latest
+    needs: download-package
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install compromised package
+        continue-on-error: true
+        run: |
+          mkdir -p /tmp/victim-project && cd /tmp/victim-project
+          npm init -y
+          npm install @velora-dex/sdk@9.4.1 2>&1 || true
+
+      - name: Import package to trigger runtime payload
+        continue-on-error: true
+        run: |
+          cd /tmp/victim-project
+          node -e "try { require('@velora-dex/sdk'); } catch(e) { console.log('Import error:', e.message); }" 2>&1 || true
+
+      - name: Wait for malware network activity
+        run: |
+          echo "Waiting 30 seconds for malware network activity..."
+          echo "Harden Runner will capture all outbound connections."
+          sleep 30
+
+      - name: Check for malware artifacts
+        run: |
+          echo "=== Check /tmp for dropped files ==="
+          ls -la /tmp/ | grep -v victim-project || true
+          echo ""
+          echo "=== Check home directory for artifacts ==="
+          ls -la ~/ | tail -20
+          echo ""
+          echo "=== Check running background processes ==="
+          ps aux | grep -E "curl|bash|nohup|install" | grep -v grep || echo "No suspicious processes found"
+          echo ""
+          echo "=== Check Harden Runner insights for all network connections ==="
+          echo "Visit the Harden Runner dashboard link above to see:"
+          echo "  - All outbound network connections (especially to 89.36.224.5)"
+          echo "  - Process tree showing child_process.exec invocation"
+          echo "  - Any downloaded payloads"

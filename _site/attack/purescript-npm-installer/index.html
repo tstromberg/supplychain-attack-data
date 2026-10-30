@@ -16,7 +16,7 @@
   <h1>PureScript installer dependencies were sabotaged</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> PureScript npm installer · <a href="https://github.com/purescript/npm-installer" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Target:</strong> PureScript npm installer</div>
     <div class="meta-item"><strong>Date:</strong> 2019-07-05 to 2019-07-12 (6 days)</div>
     <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
@@ -38,9 +38,11 @@
     
       <p>The PureScript incident was a supply-chain attack with an unusually personal-looking payload. The purescript package was not itself republished with credential theft code. Instead, two dependencies maintained outside the PureScript team were changed so they would break the new PureScript npm installer while trying to avoid obvious failure in other paths.</p>
     
-      <p>The timing mattered. PureScript 0.13.2 shipped on July 5, 2019, after the compiler maintainers had taken over the purescript npm package and replaced the older install-purescript-cli path with their own purescript-installer. About eight hours later, load-from-cwd-or-npm 3.0.2 was published. When pulled through dl-tar during a normal install, it returned a PassThrough stream where the installer expected the request module, so the binary download step silently went nowhere.</p>
-    
-      <p>The first sabotage looked enough like a bug that maintainers initially worked around it. Then, on July 9, rate-map 1.0.3 appeared with a sharper version of the same idea. It used similar activation logic, resolved the local dl-tar package through an obfuscated string, removed the callback that let the download stream advance, and then rewrote its own installed file to erase the malicious block after it ran.</p>
+      <p>The timing mattered. PureScript 0.13.2 shipped on July 5, 2019, after the compiler maintainers had taken over the purescript npm package and replaced the older install-purescript-cli path with their own purescript-installer. About eight hours later, load-from-cwd-or-npm 3.0.2 was published. When pulled through dl-tar during a normal install, it returned a PassThrough stream where the installer expected the request module, so the binary download step silently went nowhere. That first sabotage looked enough like a bug that maintainers initially worked around it. Then, on July 9, rate-map 1.0.3 appeared with a sharper version of the same idea: it used similar activation logic, resolved the local dl-tar package through an obfuscated string, removed the callback that let the download stream advance, and then rewrote its own installed file to erase the malicious block after it ran.</p>
+      <figure class="pull-quote">
+        <blockquote>rate-map 1.0.3 refused to fire whenever a <code>.git</code> directory sat beside the calling module, stripped a callback from the neighbouring <code>dl-tar</code> package, then rewrote its own file to erase the malicious block. Source checkouts installed cleanly.</blockquote>
+        <figcaption>it would not run from git</figcaption>
+      </figure>
     
       <p>The targeting logic is what made the case stand out. The code tried not to fire when the old install-purescript-cli path was in use, and it checked for nearby Git directories to make local reproduction harder. Jarrod Overson later summarized the oddity well: there was no obvious monetization, no miner, no token theft, and no remote shell. The effect was sabotage of one installer lineage after a messy maintainer handoff.</p>
     

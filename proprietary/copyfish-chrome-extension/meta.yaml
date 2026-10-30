@@ -1,10 +1,9 @@
----
 - id: copyfish-chrome-extension
   title: Copyfish Chrome extension shipped malware
   campaigns:
   - chrome-extension-hijacking-2017
-  synopsis: Copyfish 2.8.5 was pushed through the Chrome Web Store after developer-account
-    phishing in the 2017 extension hijacking spree.
+  synopsis: Copyfish 2.8.5 was pushed through the Chrome Web Store after developer-account phishing 
+    in the 2017 extension hijacking spree.
   story: |-
     Copyfish was one of the legitimate Chrome extensions affected by the 2017 developer-account phishing spree. Attackers used stolen Chrome Web Store credentials to publish a malicious update through the official extension channel.
 
@@ -13,6 +12,13 @@
     The malicious extension activity sat inside the same Proofpoint-tracked campaign as Chrometana, Web Developer, Infinity New Tab, Web Paint, and Social Fixer. The common pattern was stolen publisher access followed by ad injection, traffic redirection, and credential-theft-capable JavaScript.
 
     This leaf record preserves the Copyfish version and Chrome Web Store distribution boundary. The campaign record carries the shared phishing domains, redirect infrastructure, and cross-extension behavior.
+  pull_quote:
+    text: >-
+      The attackers did not just push Copyfish 2.8.5; they moved the extension
+      into their own Chrome Web Store account, so a9t9 could not roll it back
+      or even disable it until Google intervened.
+    caption: locked out of their own listing
+    after: 2
   start_date: 2017-07-28
   end_date: 2017-08-15
   target:
@@ -42,6 +48,42 @@
     end_date: 2017-08-15
     versions:
     - 2.8.5
+    indicators:
+    - kind: observable
+      value: Chrome Web Store extension id eenjdnjldapjajjofmldgmkjaienebbj. Recovered 2026-09-02 
+        from the vendor's own incident post retained under refs/, which links its extension by that 
+        id; the listing is delisted so crx4chrome cannot corroborate it. Without it no archive can 
+        be asked about this extension at all.
+    - kind: package
+      value: copyfish-npm-2-8-5 (npm, payload host)
+    - kind: url
+      value: https://unpkg.com/copyfish-npm-2-8-5/<UTC hour>.js
+    - kind: observable
+      value: removed npm versions 1.0.1501325940, 1.0.1501413946, 1.0.1501416918
+    - kind: technique
+      value: payload withheld for ten minutes after install to evade review
+    - kind: technique
+      value: host and script tag assembled from split string fragments
+    locations:
+    - uri: 
+        https://chrome.google.com/webstore/detail/copyfish-free-ocr-soft/eenjdnjldapjajjofmldgmkjaienebbj
+      role: distribution
+    notes:
+    - >-
+      Recovered 2026-09-02: the malicious background script is held as a transcription of the
+      code the extension's own author published after regaining the account. The payload it
+      fetched is not held and appears unrecoverable.
+    - >-
+      The loader built an npm package name from the extension version, copyfish-npm-2-8-5, and
+      pulled https://unpkg.com/copyfish-npm-2-8-5/<UTC hour>.js, so the payload rotated hourly
+      across 24 files.
+    - >-
+      npm still holds that name as a security holding package and its time field lists the three
+      removed versions 1.0.1501325940, 1.0.1501413946 and 1.0.1501416918, which as Unix
+      timestamps are 29 and 30 July 2017.
+    - >-
+      The tarballs 404 on both npmjs.org and npmmirror.com, and the Internet Archive's only
+      capture of the unpkg path is a 404 from 2019.
   indicators:
   - kind: domain
     value: click.rdr11.top
@@ -64,13 +106,16 @@
   - kind: url
     value: http://partner-net[.]men/code/pid/973820_BNX.js?rev=133
   references:
-  - url: https://www.bleepingcomputer.com/news/security/chrome-extension-developers-under-a-barrage-of-phishing-attacks/
+  - url: 
+      https://www.bleepingcomputer.com/news/security/chrome-extension-developers-under-a-barrage-of-phishing-attacks/
     title: Chrome extension developers under a barrage of phishing attacks
-  - url: https://a9t9.com/blog/chrome-extension-adware/
+  - url: https://ui.vision/blog/chrome-extension-adware/
     title: Chrome extension developers under attack
-  - url: https://www.proofpoint.com/us/threat-insight/post/threat-actor-goes-chrome-extension-hijacking-spree
+  - url: 
+      https://www.proofpoint.com/us/threat-insight/post/threat-actor-goes-chrome-extension-hijacking-spree
     title: Threat actor goes on a Chrome extension hijacking spree
   - url: https://blog.cloudflare.com/keeping-our-users-safe/
     title: Keeping our users safe
-  - url: https://www.bleepingcomputer.com/news/security/eight-chrome-extensions-hijacked-to-deliver-malicious-code-to-4-8-million-users/
+  - url: 
+      https://www.bleepingcomputer.com/news/security/eight-chrome-extensions-hijacked-to-deliver-malicious-code-to-4-8-million-users/
     title: Eight Chrome Extensions Hijacked to Deliver Malicious Code to 4.8 Million Users

@@ -38,6 +38,13 @@
     using the credentials it collected to republish trojanized versions from any
     maintainer account it could reach, which is how a technique demonstrated on
     one project arrived in 56 others the same afternoon.
+  pull_quote:
+    text: >-
+      The package's `main` pointed at `dist/index.js`, 27 KB of real SDK. The
+      4.5 MB root `index.js` was never imported by application code; it
+      existed only for `binding.gyp` to execute.
+    caption: the file nothing imports
+    after: 2
   start_date: 2026-06-03
   end_date: 2026-06-05
   target:
@@ -74,18 +81,22 @@
   - kind: file
     value: .claude/setup.mjs
   notes:
-  - StepSecurity counted 57 packages and more than 286 malicious versions published in
-    under two hours on 2026-06-03. Snyk reported 57 packages and over 300 malicious
-    versions for the same activity, tracking it as a node-gyp supply chain compromise.
-  - The binding.gyp payload was reported as `"<!(node index.js > /dev/null 2>&1 && echo
-    stub.c)"`. Execution occurs because node-gyp evaluates shell commands in binding.gyp
-    during dependency installation, so `npm install --ignore-scripts` does not prevent it.
-  - '@vapi-ai/server-sdk was the largest single victim of this wave by download volume.
-    Specific affected version identifiers for the Vapi package have not been published;
-    four versions were reported as compromised.'
-  - Exfiltration used 236 programmatically created repositories under the GitHub account
-    liuende501. Repository descriptions referenced earlier security disclosures in
-    reversed text.
+  - >-
+    StepSecurity counted 57 packages and more than 286 malicious versions published in under two
+    hours on 2026-06-03. Snyk reported 57 packages and over 300 versions, tracking it as a
+    node-gyp supply chain compromise.
+  - >-
+    The binding.gyp payload was reported as "<!(node index.js > /dev/null 2>&1 && echo stub.c)".
+    node-gyp evaluates shell commands in binding.gyp during install, so --ignore-scripts does
+    block it by suppressing the implicit build.
+  - >-
+    @vapi-ai/server-sdk was the largest single victim of this wave by download volume. Specific
+    affected version identifiers were never published; four versions were reported as
+    compromised.
+  - >-
+    Exfiltration used 236 programmatically created repositories under the GitHub account
+    liuende501. Repository descriptions referenced earlier security disclosures in reversed
+    text.
   artifacts:
   - id: vapi-ai-server-sdk
     name: '@vapi-ai/server-sdk'
@@ -104,6 +115,8 @@
     - sha256:2bbea133e823705f841b665a72cf7aa8714a4f6408288215a1a8365e17c205dc
     - sha256:f61e0a2980195682b5135f2620052b4287c7e1a0452bcfe7c897c5f32b1995f4
     - sha256:127aef493c197efd18be027fe54aa4d9056d2ed8cce600d81bdd04f25a16c4a1
+    - sha1:885508112721510eb52744b9049fb4ece4a6f132
+    - sha512:b13cebd0fb0cea4c9acbcf79f01d06a20bdd120c285fd4862559fdcdee94f3aea4f2e121a1d6b550efe2a9d375704e9fa78481215b7d894794758ed9486dfa77
     fixed_versions:
     - 1.2.0
     locations:
@@ -118,20 +131,22 @@
     - uri: https://registry.npmjs.org/@vapi-ai/server-sdk/-/server-sdk-1.2.2.tgz
       role: distribution
     notes:
-    - Four versions were reported compromised on 2026-06-03 without published identifiers.
-      These four are the only versions the npm registry records as published that day,
-      in two pairs across both maintained release lines - 0.11.1 at 23:26:29Z and 1.2.1 at
-      23:26:39Z, then 0.11.2 at 23:28:37Z and 1.2.2 at 23:28:48Z. Identifiers are derived
-      from registry publish timestamps, not from a vendor advisory.
-    - The registry corroborates the identification. The `latest` dist-tag points at 1.2.0,
-      published 2026-04-22, which is older than 1.2.1 and 1.2.2. Rolling `latest` back to
-      the last pre-incident release is the expected response to a compromised publish, so
-      1.2.0 is recorded as the remediated release.
-    - All four versions remain published and installable by explicit version or by a range
-      that resolves to them. They were not unpublished, only removed from the `latest`
-      tag, so a lockfile or caret range pinned into the 0.11.x line can still reach them.
-    - The four SHA-256 values are measured complete npm archives and correspond to
-      0.11.1, 0.11.2, 1.2.1, and 1.2.2 in that order.
+    - >-
+      Four versions were reported compromised on 2026-06-03 without published identifiers. These
+      four are the only versions npm records as published that day: 0.11.1 at 23:26:29Z, 1.2.1
+      at 23:26:39Z, 0.11.2 at 23:28:37Z, 1.2.2 at 23:28:48Z.
+    - >-
+      The registry corroborates it: the latest dist-tag points at 1.2.0 from 2026-04-22, older
+      than 1.2.1 and 1.2.2. Rolling latest back to the last pre-incident release is the expected
+      response, so 1.2.0 is the remediated release.
+    - >-
+      All four versions remain published and installable by explicit version or a range that
+      resolves to them. They were not unpublished, only removed from latest, so a pinned caret
+      range can still reach them.
+    - >-
+      The four SHA-256 values are measured complete npm archives for 0.11.1, 0.11.2, 1.2.1 and
+      1.2.2 in that order. OSSF MAL-2026-5209 maps the SHA-1 and SHA-512 to
+      server-sdk-0.11.1.tgz.
   references:
   - url: https://www.stepsecurity.io/blog/binding-gyp-npm-supply-chain-attack-spreads-like-worm
     title: 'Miasma npm Supply Chain Attack: Self-Spreading Worm via Phantom Gyp - StepSecurity'
@@ -140,3 +155,5 @@
   - url: https://thehackernews.com/2026/06/ironworm-and-new-miasma-worm-variant.html
     title: IronWorm and New Miasma Worm Variant Hit npm in Supply Chain Attacks - The Hacker
       News
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/@vapi-ai/server-sdk/MAL-2026-5209.json
+    title: OSSF MAL-2026-5209 package-integrity record for @vapi-ai/server-sdk

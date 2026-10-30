@@ -1,5 +1,49 @@
 schema_version: 1
-samples: []
+samples:
+  - artifact_id: iolitelabs-vscode-solidity
+    phase: during
+    classification: payload_only
+    coordinate: pkg:vscode-extension/iolitelabs.solidity-macos@0.1.8
+    version: 0.1.8
+    filename: pako-loader.fragment
+    path: iolitelabs-vscode-solidity/during/pako-loader.fragment
+    sha256: f030cca12119b8b8e18f36d72af82547cd4a70156eee880dff4f12c6e254b0e8
+    size: 679
+    source:
+      url: >-
+        https://www.stepsecurity.io/blog/malicious-iolitelabs-vscode-extensions-target-solidity-developers-on-windows-macos-and-linux-with-backdoor
+      retrieved_at: '2026-08-15T13:40:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - transcribed_from_report
+        - reported_digest_matched
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - exact_report_transcribed_decoded_loader
+        - exact_reported_c2_urls
+        - exact_reported_tampered_pako_sha256
+        - archived_source_capture_sha256
+        - measured_sha256_and_size
+    relates_to:
+      - phase: during
+        version: 0.1.8
+        artifact_id: iolitelabs-solidity-macos
+      - phase: during
+        version: 0.1.8
+        artifact_id: iolitelabs-solidity-windows
+      - phase: during
+        version: 0.1.8
+        artifact_id: iolitelabs-solidity-linux
+    notes:
+      - >-
+        Report-transcribed decoded loader from the shared tampered pako dependency. StepSecurity
+        describes the same backdoor across all three extensions, but the original VSIX archives and
+        later-stage payloads remain unavailable; this fragment does not stand in for any complete
+        platform archive.
+    subject: iolitelabs-vscode-solidity
 unresolved:
   - artifact_id: iolitelabs-solidity-windows
     phase: during
@@ -14,7 +58,28 @@ unresolved:
         target=pkg:vscode-extension/iolitelabs.solidity-windows@0.1.8 error="failed to download
         VSIX: unexpected status code 404 from
         https://iolitelabs.gallery.vsassets.io/_apis/public/gallery/publisher/iolitelabs/extension/solidity-windows/0.1.8/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage"
-    last_attempted_at: '2026-08-11T14:54:41.473Z'
+      - >-
+        Microsoft Marketplace's alternate versioned vspackage API was checked on 2026-08-14:
+        https://marketplace.visualstudio.com/_apis/public/gallery/publishers/iolitelabs/vsextensions/solidity-windows/0.1.8/vspackage.
+        HEAD returned 405 because that endpoint only permits GET, while GET returned 404; no VSIX
+        bytes were served. StepSecurity still reports the Windows VSIX as not yet analyzed and does
+        not publish an archive checksum.
+      - >-
+        Visual Studio Marketplace, 2026-09-10: the vspackage endpoint returns 404 for 0.1.8 of all
+        three extensions, and an extensionquery for iolitelabs.solidity-macos returns TotalCount 0.
+        The publisher and its extensions were removed, and the marketplace serves no withdrawn
+        version.
+      - 'open-vsx.org, 2026-09-10: 404 for all three extensions. They were never published there.'
+      - >-
+        Digest sweep, 2026-09-10: ReversingLabs recognises sha256 e0f206aa...63b and fcd398ab...508
+        exactly, but it is a reputation service for registry coordinates and serves no bytes.
+        MalwareBazaar, Triage and MalShare all report hash_not_found for both.
+      - >-
+        Wayback host sweep, 2026-09-10: asked the CDX index for every archived file with an
+        installer extension under marketplace.visualstudio.com between 2026-03-25 and 2026-03-27
+        (three days either side). No capture exists. The vendor download was not archived while it
+        was compromised.
+    last_attempted_at: '2026-09-10T22:03:57Z'
   - artifact_id: iolitelabs-solidity-macos
     phase: during
     coordinate: pkg:vscode-extension/iolitelabs.solidity-macos@0.1.8
@@ -28,7 +93,34 @@ unresolved:
         target=pkg:vscode-extension/iolitelabs.solidity-macos@0.1.8 error="failed to download VSIX:
         unexpected status code 404 from
         https://iolitelabs.gallery.vsassets.io/_apis/public/gallery/publisher/iolitelabs/extension/solidity-macos/0.1.8/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage"
-    last_attempted_at: '2026-08-11T14:54:41.472Z'
+      - >-
+        Microsoft Marketplace's alternate versioned vspackage API was checked on 2026-08-14:
+        https://marketplace.visualstudio.com/_apis/public/gallery/publishers/iolitelabs/vsextensions/solidity-macos/0.1.8/vspackage.
+        HEAD returned 405 because that endpoint only permits GET, while GET returned 404; no VSIX
+        bytes were served. The authoritative SHA-256 published by StepSecurity remains recorded in
+        meta.yaml, but the corresponding original archive has not been recovered.
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        e0f206aac2c3fa733b0c466d2ebb86ba038cf1fe2edeee21e94a4d943a27f63b as
+        pkg:vsx/iolitelabs/solidity-macos@0.1.8?artifact=IoliteLabs.solidity-macos-0.1.8.vsix and
+        assesses it malicious. The digest names a real file; what is missing is a source that will
+        serve it.
+      - >-
+        Visual Studio Marketplace, 2026-09-10: the vspackage endpoint returns 404 for 0.1.8 of all
+        three extensions, and an extensionquery for iolitelabs.solidity-macos returns TotalCount 0.
+        The publisher and its extensions were removed, and the marketplace serves no withdrawn
+        version.
+      - 'open-vsx.org, 2026-09-10: 404 for all three extensions. They were never published there.'
+      - >-
+        Digest sweep, 2026-09-10: ReversingLabs recognises sha256 e0f206aa...63b and fcd398ab...508
+        exactly, but it is a reputation service for registry coordinates and serves no bytes.
+        MalwareBazaar, Triage and MalShare all report hash_not_found for both.
+      - >-
+        Wayback host sweep, 2026-09-10: asked the CDX index for every archived file with an
+        installer extension under marketplace.visualstudio.com between 2026-03-25 and 2026-03-27
+        (three days either side). No capture exists. The vendor download was not archived while it
+        was compromised.
+    last_attempted_at: '2026-09-10T22:03:57Z'
   - artifact_id: iolitelabs-solidity-linux
     phase: during
     coordinate: pkg:vscode-extension/iolitelabs.solidity-linux@0.1.8
@@ -42,4 +134,72 @@ unresolved:
         target=pkg:vscode-extension/iolitelabs.solidity-linux@0.1.8 error="failed to download VSIX:
         unexpected status code 404 from
         https://iolitelabs.gallery.vsassets.io/_apis/public/gallery/publisher/iolitelabs/extension/solidity-linux/0.1.8/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage"
-    last_attempted_at: '2026-08-11T14:54:41.472Z'
+      - >-
+        Microsoft Marketplace's alternate versioned vspackage API was checked on 2026-08-14:
+        https://marketplace.visualstudio.com/_apis/public/gallery/publishers/iolitelabs/vsextensions/solidity-linux/0.1.8/vspackage.
+        HEAD returned 405 because that endpoint only permits GET, while GET returned 404; no VSIX
+        bytes were served. StepSecurity still reports the Linux VSIX as not yet analyzed and does
+        not publish an archive checksum.
+      - >-
+        Visual Studio Marketplace, 2026-09-10: the vspackage endpoint returns 404 for 0.1.8 of all
+        three extensions, and an extensionquery for iolitelabs.solidity-macos returns TotalCount 0.
+        The publisher and its extensions were removed, and the marketplace serves no withdrawn
+        version.
+      - 'open-vsx.org, 2026-09-10: 404 for all three extensions. They were never published there.'
+      - >-
+        Digest sweep, 2026-09-10: ReversingLabs recognises sha256 e0f206aa...63b and fcd398ab...508
+        exactly, but it is a reputation service for registry coordinates and serves no bytes.
+        MalwareBazaar, Triage and MalShare all report hash_not_found for both.
+      - >-
+        Wayback host sweep, 2026-09-10: asked the CDX index for every archived file with an
+        installer extension under marketplace.visualstudio.com between 2026-03-25 and 2026-03-27
+        (three days either side). No capture exists. The vendor download was not archived while it
+        was compromised.
+    last_attempted_at: '2026-09-10T22:03:57Z'
+  - artifact_id: iolitelabs-solidity-macos
+    phase: during
+    coordinate: sha256:e0f206aac2c3fa733b0c466d2ebb86ba038cf1fe2edeee21e94a4d943a27f63b
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:42:00.370-04:00 level=ERROR msg="command failed"
+        error="hash e0f206aac2c3fa733b0c466d2ebb86ba038cf1fe2edeee21e94a4d943a27f63b unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/e0f206aac2c3fa733b0c466d2ebb86ba038cf1fe2edeee21e94a4d943a27f63b;
+        malwarebazaar: MalwareBazaar has no sample for
+        e0f206aac2c3fa733b0c466d2ebb86ba038cf1fe2edeee21e94a4d943a27f63b: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e0f206aac2c3fa733b0c466d2ebb86ba038cf1fe2edeee21e94a4d943a27f63b; malshare: download
+        returned status 404"
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        e0f206aac2c3fa733b0c466d2ebb86ba038cf1fe2edeee21e94a4d943a27f63b as
+        pkg:vsx/iolitelabs/solidity-macos@0.1.8?artifact=IoliteLabs.solidity-macos-0.1.8.vsix and
+        assesses it malicious. The digest names a real file; what is missing is a source that will
+        serve it.
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:13:52.870-04:00 level=ERROR msg="command failed"
+        error="hash e0f206aac2c3fa733b0c466d2ebb86ba038cf1fe2edeee21e94a4d943a27f63b unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/e0f206aac2c3fa733b0c466d2ebb86ba038cf1fe2edeee21e94a4d943a27f63b;
+        malwarebazaar: MalwareBazaar has no sample for
+        e0f206aac2c3fa733b0c466d2ebb86ba038cf1fe2edeee21e94a4d943a27f63b: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e0f206aac2c3fa733b0c466d2ebb86ba038cf1fe2edeee21e94a4d943a27f63b; malshare: download
+        returned status 404"
+      - >-
+        Visual Studio Marketplace, 2026-09-10: the vspackage endpoint returns 404 for 0.1.8 of all
+        three extensions, and an extensionquery for iolitelabs.solidity-macos returns TotalCount 0.
+        The publisher and its extensions were removed, and the marketplace serves no withdrawn
+        version.
+      - 'open-vsx.org, 2026-09-10: 404 for all three extensions. They were never published there.'
+      - >-
+        Digest sweep, 2026-09-10: ReversingLabs recognises sha256 e0f206aa...63b and fcd398ab...508
+        exactly, but it is a reputation service for registry coordinates and serves no bytes.
+        MalwareBazaar, Triage and MalShare all report hash_not_found for both.
+      - >-
+        Wayback host sweep, 2026-09-10: asked the CDX index for every archived file with an
+        installer extension under marketplace.visualstudio.com between 2026-03-25 and 2026-03-27
+        (three days either side). No capture exists. The vendor download was not archived while it
+        was compromised.
+    last_attempted_at: '2026-09-10T22:03:57Z'

@@ -1,24 +1,23 @@
 schema_version: 1
 interpretation:
   - >-
-    The previous unscoped PURL was incorrect. The compromised official package
-    was @bitwarden/cli@2026.4.0. Bitwarden confirms that its npm delivery path
-    served the malicious release for 93 minutes on April 22, 2026; the company
-    found no impact to the legitimate source repository or other products.
+    The previous unscoped PURL was incorrect. The compromised official package was
+    @bitwarden/cli@2026.4.0. Bitwarden confirms that its npm delivery path served the malicious
+    release for 93 minutes on April 22, 2026; the company found no impact to the legitimate source
+    repository or other products.
   - >-
-    The original tarball has been removed. jsDelivr retains a complete nine-file
-    manifest for 2026.4.0. Four members differ from the exact 2026.3.0 base: two
-    added malicious files, modified package.json, and a one-byte change to build/bw.js.
-    Every other member, including the no-longer-retrievable WebAssembly file, has the
-    same retained SHA-256 as the clean base. Those facts permit a complete
-    member-for-member tree reconstruction, but not recovery of the original npm
-    tarball bytes. Ossprey later published the original tarball's SHA-256; it does not
-    match the synthetic archive, confirming that the reconstructed filename must remain.
+    The original tarball has been removed. jsDelivr retains a complete nine-file manifest for
+    2026.4.0. Four members differ from the exact 2026.3.0 base: two added malicious files, modified
+    package.json, and a one-byte change to build/bw.js. Every other member, including the
+    no-longer-retrievable WebAssembly file, has the same retained SHA-256 as the clean base. Those
+    facts permit a complete member-for-member tree reconstruction, but not recovery of the original
+    npm tarball bytes. Ossprey later published the original tarball's SHA-256; it does not match the
+    synthetic archive, confirming that the reconstructed filename must remain.
   - >-
-    The recovered package.json adds a preinstall hook and redirects the bw CLI
-    binary to bw_setup.js. That setup file installs Bun and launches bw1.js.
-    The 10,154,904-byte bw1.js is the payload Socket analyzed; all three files
-    match jsDelivr's retained content hashes and Socket's manifest sizes.
+    The recovered package.json adds a preinstall hook and redirects the bw CLI binary to
+    bw_setup.js. That setup file installs Bun and launches bw1.js. The 10,154,904-byte bw1.js is the
+    payload Socket analyzed; all three files match jsDelivr's retained content hashes and Socket's
+    manifest sizes.
 samples:
   - artifact_id: bitwarden-cli
     phase: before
@@ -36,12 +35,17 @@ samples:
     verification:
       status: exact
       basis:
+        - publisher_digest_reproduced
+        - archive_declares_version
+        - measured_sha256
+      evidence:
         - npm_registry_distribution
         - npm_publication_time_2026_04_02T17_27_31_694Z
         - immediately_precedes_removed_2026_4_0
         - embedded_name_and_version
         - bw1_js_and_bw_setup_js_absent
         - measured_sha256_and_size
+    subject: bitwarden-cli
   - artifact_id: bitwarden-cli
     phase: during
     classification: carrier
@@ -58,6 +62,11 @@ samples:
     verification:
       status: payload_only
       basis:
+        - publisher_digest_reproduced
+        - member_manifest_retained
+        - archive_declares_version
+        - measured_sha256
+      evidence:
         - jsdelivr_manifest_content_hash_and_size
         - socket_manifest_content_id_and_size
         - embedded_name_and_version
@@ -66,6 +75,7 @@ samples:
         - measured_sha256_and_size
     notes:
       - Exact modified package manifest only; this is not the removed npm tarball.
+    subject: bitwarden-cli
   - artifact_id: bitwarden-cli
     phase: during
     classification: carrier
@@ -82,6 +92,10 @@ samples:
     verification:
       status: payload_only
       basis:
+        - publisher_digest_reproduced
+        - member_manifest_retained
+        - measured_sha256
+      evidence:
         - jsdelivr_manifest_content_hash_and_size
         - socket_manifest_content_id_and_size
         - downloads_bun_1_3_13_from_github_releases
@@ -89,6 +103,7 @@ samples:
         - measured_sha256_and_size
     notes:
       - Exact malicious setup/loader file only; this is not the removed npm tarball.
+    subject: bitwarden-cli
   - artifact_id: bitwarden-cli
     phase: during
     classification: malicious
@@ -105,6 +120,12 @@ samples:
     verification:
       status: payload_only
       basis:
+        - payload_indicator_present
+        - publisher_digest_reproduced
+        - member_manifest_retained
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - socket_identifies_bw1_js_as_the_malicious_payload
         - jsdelivr_manifest_content_hash_and_size
         - socket_manifest_content_id_and_size
@@ -112,6 +133,7 @@ samples:
         - measured_sha256_and_size
     notes:
       - Exact malicious payload file only; this is not the removed npm tarball.
+    subject: bitwarden-cli
   - artifact_id: bitwarden-cli
     phase: during
     classification: malicious
@@ -177,6 +199,11 @@ samples:
     verification:
       status: tree_equivalent
       basis:
+        - publisher_digest_reproduced
+        - all_members_digest_matched
+        - indicator_absent
+        - measured_sha256
+      evidence:
         - retained_jsdelivr_manifest_accounts_for_all_9_members
         - all_reconstructed_paths_sizes_and_sha256_values_match_manifest
         - 5_unchanged_members_match_verified_2026_3_0_base
@@ -185,11 +212,11 @@ samples:
         - measured_synthetic_archive_sha256_and_size
     notes:
       - >-
-        Synthetic complete-tree reconstruction, not the removed npm tarball. The
-        RECONSTRUCTED filename and tree_equivalent status are intentional: Ossprey's
-        authoritative whole-archive SHA-256 is
-        99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f, which does not
+        Synthetic complete-tree reconstruction, not the removed npm tarball. The RECONSTRUCTED
+        filename and tree_equivalent status are intentional: Ossprey's authoritative whole-archive
+        SHA-256 is 99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f, which does not
         match this synthetic archive.
+    subject: bitwarden-cli
   - artifact_id: bitwarden-cli
     phase: after
     classification: remediated
@@ -206,6 +233,11 @@ samples:
     verification:
       status: exact
       basis:
+        - publisher_digest_reproduced
+        - remediation_release_identified
+        - archive_declares_version
+        - measured_sha256
+      evidence:
         - npm_registry_distribution
         - npm_publication_time_2026_04_23T15_54_37_374Z
         - bitwarden_remediation_release
@@ -214,6 +246,7 @@ samples:
         - bin_bw_points_to_build_bw_js
         - bw1_js_and_bw_setup_js_absent
         - measured_sha256_and_size
+    subject: bitwarden-cli
 unresolved:
   - artifact_id: bitwarden-cli
     phase: during
@@ -225,20 +258,54 @@ unresolved:
       - unpkg returns 404 for the removed version.
       - Software Heritage does not retain version 2026.4.0.
       - >-
-        jsDelivr lists 11 files and serves the three decisive malicious files,
-        but its advertised build/0267f925739a02ab7f0e.module.wasm returns 404.
+        jsDelivr lists 11 files and serves the three decisive malicious files, but its advertised
+        build/0267f925739a02ab7f0e.module.wasm returns 404.
       - >-
-        Socket lists the same 11 files and content mappings, but its copy of
-        that WebAssembly member returns HTTP 400. Strict Forager reconstruction
-        rejected and removed the incomplete archive.
+        Socket lists the same 11 files and content mappings, but its copy of that WebAssembly member
+        returns HTTP 400. Strict Forager reconstruction rejected and removed the incomplete archive.
       - >-
-        On 2026-08-11 the retained jsDelivr manifest hash for that WebAssembly
-        member was found to match the exact 2026.3.0 base, allowing a complete
-        tree reconstruction without retrieving the member again.
+        On 2026-08-11 the retained jsDelivr manifest hash for that WebAssembly member was found to
+        match the exact 2026.3.0 base, allowing a complete tree reconstruction without retrieving
+        the member again.
       - >-
-        Ossprey published SHA-256
-        99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f for the
-        original package tarball. The synthetic archive hashes to
-        ac71803ababd0dd6f33d5f441ff99d2427939dc0c3435d91afd0d7a61ab0a105, so it is
-        complete at the member-tree level but is not byte-for-byte identical.
+        Ossprey published SHA-256 99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f
+        for the original package tarball. The synthetic archive hashes to
+        ac71803ababd0dd6f33d5f441ff99d2427939dc0c3435d91afd0d7a61ab0a105, so it is complete at the
+        member-tree level but is not byte-for-byte identical.
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f as
+        pkg:npm/%40bitwarden/cli@2026.4.0. The digest names a real file; what is missing is a source
+        that will serve it.
     last_attempted_at: '2026-08-11T15:42:38Z'
+  - artifact_id: bitwarden-cli
+    phase: during
+    coordinate: sha256:99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:37:08.161-04:00 level=ERROR msg="command failed"
+        error="hash 99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f;
+        malwarebazaar: MalwareBazaar has no sample for
+        99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f; malshare: download
+        returned status 404"
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f as
+        pkg:npm/%40bitwarden/cli@2026.4.0. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:12:22.861-04:00 level=ERROR msg="command failed"
+        error="hash 99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f;
+        malwarebazaar: MalwareBazaar has no sample for
+        99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        99ac962005550130398d55af2527d839e73489bc7911e7c2c37474d979aaf43f; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:12:22.893Z'

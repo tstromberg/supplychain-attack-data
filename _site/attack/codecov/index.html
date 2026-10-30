@@ -36,11 +36,15 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>Codecov was a CI/CD supply-chain compromise with a small code change and a large trust boundary. Attackers obtained a Google Cloud Storage key exposed through Codecov&#39;s Docker image creation process. With that key, they periodically altered the hosted Bash Uploader beginning January 31, 2021.</p>
+      <p>Codecov was a CI/CD supply-chain compromise with a small code change and a large trust boundary. Attackers obtained a Google Cloud Storage key exposed through Codecov's Docker image creation process. With that key, they periodically altered the hosted Bash Uploader beginning January 31, 2021.</p>
     
-      <p>The delivery path was ordinary build automation. Customers invoked `https://codecov.io/bash`, the raw GitHub uploader, or the S3-hosted script from CI jobs to publish coverage reports. The compromised uploader added a curl-based exfiltration line that sent Git remotes and environment variables to attacker infrastructure.</p>
+      <p>The delivery path was ordinary build automation. Customers invoked <code>https://codecov.io/bash</code>, the raw GitHub uploader, or the S3-hosted script from CI jobs to publish coverage reports. The compromised uploader added a curl-based exfiltration line that sent Git remotes and environment variables to attacker infrastructure.</p>
     
-      <p>The payload did not need to run on developer laptops. It ran where secrets were dense: CI workers. Environment variables could include cloud credentials, deploy keys, package tokens, GitHub tokens, signing material, and service credentials. BleepingComputer reported Reuters-sourced claims that hundreds of customer networks were breached, while Codecov&#39;s customer base exceeded 29,000 organizations.</p>
+      <p>The payload did not need to run on developer laptops. It ran where secrets were dense: CI workers. Environment variables could include cloud credentials, deploy keys, package tokens, GitHub tokens, signing material, and service credentials. BleepingComputer reported Reuters-sourced claims that hundreds of customer networks were breached, while Codecov's customer base exceeded 29,000 organizations.</p>
+      <figure class="pull-quote">
+        <blockquote>Codecov's own advice drew the line at the checksum: pipelines that compared the uploader's shasum against GitHub's were likely unaffected. Nothing in the fetch required that comparison, and the customer who ran it ended a two-month compromise.</blockquote>
+        <figcaption>the check nothing required</figcaption>
+      </figure>
     
       <p>A customer noticed a checksum mismatch on April 1, 2021, ending a two-month detection gap. Codecov disclosed the incident on April 15 and urged customers to rotate credentials and audit CI systems. The hard lesson was simple: fetching a mutable shell script at build time converts a coverage upload helper into a privileged remote code path.</p>
     

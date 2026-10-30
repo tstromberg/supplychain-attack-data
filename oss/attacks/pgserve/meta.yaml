@@ -9,9 +9,17 @@
 
     Pgserve is a small development dependency that embeds a PostgreSQL server inside Node.js projects, the kind of utility a developer adds without much thought. Researchers at StepSecurity, who tracked the incident under the name CanisterSprawl, documented versions 1.1.11 through 1.1.13, and Ossprey subsequently identified 1.1.14, bringing the publication window to roughly five hours. None had a corresponding tag on the upstream Git repository, and the previous release, 1.1.10 from April 17, was the last legitimate one. The diff against it was blunt: the malicious tarballs added `scripts/check-env.js` and `scripts/public.pem`, then wired `package.json` to invoke the script during postinstall. The command was suffixed with `|| true`, so any error inside the malware would swallow itself rather than surface a failed install to the developer.
 
-    Once it ran, the script swept the host for environment variables, package-manager tokens, SSH keys, cloud credentials, Kubernetes and database material, cryptocurrency wallets, and browser password stores. It wrapped the collection in a hybrid RSA-4096 and AES-256-CBC scheme using the bundled public key, then sent it to the Internet Computer canister `cjn37-uyaaa-aaaac-qgnva-cai`, with a secondary webhook at `telemetry.api-monitor.com` available when an environment key was present. Routing exfiltration through an ICP canister is unusual: the hostnames look like ordinary cloud endpoints and the traffic is hard to distinguish from legitimate Web3 activity.
+    Once it ran, the script swept the host for environment variables, package-manager tokens, SSH keys, cloud credentials, Kubernetes and database material, cryptocurrency wallets, and browser password stores. It wrapped the collection in a hybrid RSA-4096 and AES-256-CBC scheme using the bundled public key, then sent it to the Internet Computer canister `cjn37-uyaaa-aaaac-qgnva-cai`, with a secondary webhook at `telemetry.api-monitor.com`, whose key was hardcoded from 1.1.13 onward, so every victim of 1.1.13 and 1.1.14 was sent to both destinations while 1.1.11 and 1.1.12 reached the canister only. Routing exfiltration through an ICP canister is unusual: the hostnames look like ordinary cloud endpoints and the traffic is hard to distinguish from legitimate Web3 activity.
 
     The loader also tried to spread. Given an npm publish token, it enumerated the packages the victim could publish, copied `check-env.js` and `public.pem` into each one, bumped the patch version, and republished. A PyPI token triggered a parallel attempt using `.pth` file injection, a Python startup trick that runs code whenever the interpreter loads, carrying the campaign across an ecosystem boundary.
+  pull_quote:
+    text: >-
+      The exfiltration endpoint was a smart contract, not a server. Canister
+      `cjn37-uyaaa-aaaac-qgnva-cai` cannot be removed by domain seizure or a
+      hosting provider, and is permanent for the lifetime of the Internet
+      Computer.
+    caption: an exfil endpoint you cannot seize
+    after: 2
   start_date: 2026-04-21T22:14:00Z
   end_date: 2026-04-22
   target:
@@ -89,14 +97,21 @@
     - kind: observable
       value: PyPI token propagation through .pth file injection.
     notes:
-    - StepSecurity reported pgserve@1.1.10, published on April 17, 2026 with git tag 
-      v1.1.10, as the last legitimate release before the compromised versions.
-    - StepSecurity reported pgserve@1.1.11 at 2026-04-21 22:14 UTC and pgserve@1.1.12 at
-      2026-04-21 22:26 UTC; pgserve@1.1.13 was also published on April 21, 2026.
-    - Ossprey subsequently identified 1.1.14 at 2026-04-22 03:35 UTC and published the
-      npm SHA-1 integrity values for all four complete tarballs. Hash order follows
-      versions 1.1.11, 1.1.12, 1.1.13, and 1.1.14.
-    - The four compromised versions had no corresponding upstream git tag.
+    - >-
+      StepSecurity reported pgserve@1.1.10, published 2026-04-17 with git tag v1.1.10, as the
+      last legitimate release. None of the four compromised versions has a corresponding
+      upstream git tag.
+    - >-
+      StepSecurity reported 1.1.11 at 2026-04-21 22:14 UTC and 1.1.12 at 22:26 UTC; 1.1.13 was
+      also published that day.
+    - >-
+      Ossprey identified 1.1.14 at 2026-04-22 03:35 UTC and published npm SHA-1 integrity values
+      for all four complete tarballs. Hash order follows versions 1.1.11, 1.1.12, 1.1.13 and
+      1.1.14.
+    - >-
+      The original four archives remain unavailable. The samples directory retains a
+      report-derived loader fragment covering the version transition and temporary-execution
+      stub; payload_only evidence, not a reconstructed archive.
   references:
   - url: 
       https://www.stepsecurity.io/blog/pgserve-compromised-on-npm-malicious-versions-harvest-credentials

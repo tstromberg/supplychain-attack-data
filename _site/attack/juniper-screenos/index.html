@@ -18,7 +18,7 @@
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> juniper-screenos · <a href="https://juniper.net" target="_blank">website</a></div>
     <div class="meta-item"><strong>Date:</strong> 2012-09-01 to 2015-12-17 (1202 days)</div>
-    <div class="meta-item"><strong>Actor:</strong> Nation-state (state)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> firmware</div>
     <div class="meta-item"><strong>Language:</strong> c</div>
     <div class="meta-item"><strong>Cause:</strong> source_code_compromise</div>
@@ -38,11 +38,15 @@
     
       <p>The Juniper ScreenOS incident was not a normal bug disclosure. Juniper said an internal review found unauthorized code in ScreenOS, the operating system for NetScreen firewalls. The affected firmware was official vendor firmware, distributed through the normal ScreenOS channel, and the product sat directly on network boundaries.</p>
     
-      <p>CVE-2015-7755 was the administrative-access backdoor. Rapid7 and Fox-IT analysis found an authentication path in SSH and Telnet that compared the supplied password against the string `&lt;&lt;&lt; %s(un=&#39;%s&#39;) = %u`. The string looked like a format string, but on vulnerable builds it was a master password: any username could reach an administrative shell with the highest privileges.</p>
+      <p>CVE-2015-7755 was the administrative-access backdoor. Rapid7's analysis found an authentication path in SSH and Telnet that compared the supplied password against the string <code>&lt;&lt;&lt; %s(un='%s') = %u</code>. The string looked like a format string, but on vulnerable builds it was a master password: any username could reach an administrative shell with the highest privileges.</p>
     
       <p>CVE-2015-7756 was a separate VPN decryption vulnerability. Juniper described it as independent of the authentication bypass. Public cryptographic analysis tied it to ScreenOS random-number generation, Dual_EC_DRBG, and a changed Q parameter. The attacker did not need a large code change; replacing the parameter was enough if the holder of the corresponding secret could see the right output.</p>
+      <figure class="pull-quote">
+        <blockquote>Juniper said ScreenOS filtered Dual EC output through an ANSI X9.31 generator, which would have killed the backdoor. Reseeding left <code>prng_output_index</code> at 32, the filter loop's own counter, so the filter never ran.</blockquote>
+        <figcaption>the countermeasure that never ran</figcaption>
+      </figure>
     
-      <p>The deeper lesson was that ScreenOS already carried dangerous cryptographic structure. Dual_EC output was meant to be hidden behind an ANSI X9.17 generator, but researchers found paths where raw output could surface. The unauthorized parameter change then turned weak plumbing into a practical passive decryption path for VPN traffic.</p>
+      <p>The deeper lesson was that ScreenOS already carried dangerous cryptographic structure. Dual_EC output was meant to be hidden behind an ANSI X9.31 generator, but in the default configuration that filter never ran at all: ScreenOS reseeded on every call, which left the filter loop's own counter exhausted, so raw Dual_EC output was what callers received. Checkoway and colleagues traced that plumbing to a cluster of changes Juniper itself made in the 2008 ScreenOS 6.2 release — crucially, not the &quot;unauthorized code&quot; introduced by the third party. The unauthorized parameter change then turned weak plumbing into a practical passive decryption path for VPN traffic.</p>
     
   </div>
   
@@ -122,6 +126,25 @@
   
 
   
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>string:&lt;&lt;&lt; %s(un=&#39;%s&#39;) = %u</code></li>
+    
+      <li><code>function:sub_13DBEC</code></li>
+    
+      <li><code>log:Admin user system has logged on via SSH from</code></li>
+    
+      <li><code>log:SSH: Password authentication successful for admin user</code></li>
+    
+      <li><code>technique:any username paired with the hardcoded password authenticates over SSH or Telnet</code></li>
+    
+      <li><code>cve:CVE-2015-7755</code></li>
+    
+      <li><code>cve:CVE-2015-7756</code></li>
+    
+  </ul>
+  
 
   
 
@@ -139,7 +162,7 @@
     
       <li><a href="https://www.wired.com/2015/12/researchers-solve-the-juniper-mystery-and-they-say-its-partially-the-nsas-fault/" target="_blank">Researchers Solve the Juniper Mystery and They Say It&#39;s Partially the NSA&#39;s Fault</a></li>
     
-      <li><a href="https://blog.fox-it.com/2015/12/20/deepdive-into-cve-2015-7755-juniper-screenos-authentication-backdoor/" target="_blank">Deep dive into CVE-2015-7755 Juniper ScreenOS authentication backdoor</a></li>
+      <li><a href="https://eprint.iacr.org/2016/376" target="_blank">A Systematic Analysis of the Juniper Dual EC Incident</a></li>
     
       <li><a href="https://www.kb.cert.org/vuls/id/640184" target="_blank">Juniper ScreenOS contains multiple vulnerabilities</a></li>
     

@@ -30,8 +30,16 @@
     Adform removed the malicious code and notified customers, and the injected script had
     begun disappearing while Beaumont's write-up was being published. Anyone who visited a
     site carrying the Adform tracker during the window was advised to clear browser
-    cookies. No sample of the modified script carries a published digest, so the affected
-    bytes are identified by the URL and behavior rather than by hash.
+    cookies. Beaumont published a SHA-256 for the served file, which is the one
+    durable indicator the campaign left behind.
+  pull_quote:
+    text: >-
+      Beaumont found that the file, its URLs, its domains, and its IP address
+      returned zero detections across every vendor on VirusTotal. Reputation
+      scanning cannot flag a crypto stealer served from the vendor's own
+      hostname.
+    caption: clean across every vendor
+    after: 1
   start_date: 2026-07-26
   end_date: 2026-07-27
   target:
@@ -51,6 +59,8 @@
     types:
     - cryptocurrency_theft
     users: 0
+  hashes:
+  - sha256:02ff86c7f9fe609a753ff15bda90baa3c3e0d4a2e559ec4fcf8a3de0954b7c55
   indicators:
   - kind: url
     value: https://s2.adform.net/banners/scripts/st/trackpoint-async.js
@@ -69,15 +79,17 @@
   - kind: technique
     value: beacon carries the visitor address and referring page as h and u parameters
   notes:
-  - No file hash is recorded. The one digest quoted in reporting is 49 hex characters,
-    which is not a SHA-256, SHA-1, or MD5, so it is not usable as an indicator and is left
-    out rather than reproduced. Beaumont also reported zero VirusTotal detections for the
-    file and its infrastructure while the campaign was live.
-  - The attacker-controlled wallet addresses were not published, so the substitution
-    targets are described by behavior rather than enumerated.
-  - This record previously carried a different field layout from the rest of the dataset
-    and cited three site homepages rather than articles. It was rewritten onto the common
-    schema and the citations replaced with the reporting they were standing in for.
+  - >-
+    Beaumont reported zero VirusTotal detections for the file, its URLs, its domains and its IP
+    address while the campaign was live, so the recorded hash is useful for retrospective
+    hunting rather than detection at the time.
+  - >-
+    The attacker-controlled wallet addresses were not published, so the substitution targets are
+    described by behaviour rather than enumerated.
+  - >-
+    This record previously used a different field layout and cited three site homepages rather
+    than articles. It was rewritten onto the common schema and the citations replaced with the
+    reporting they stood in for.
   artifacts:
   - id: trackpoint-async-js
     name: trackpoint-async.js
@@ -90,9 +102,14 @@
     - uri: https://s2.adform.net/banners/scripts/st/trackpoint-async.js
       role: distribution
     notes:
-    - The affected artifact is the modified `trackpoint-async.js` as served from
-      s2.adform.net during the window. Adform replaced the file in place, so no versioned
-      coordinate identifies the malicious state and no archived copy has been located.
+    - >-
+      The affected artifact is the modified trackpoint-async.js as served from s2.adform.net
+      during the window. Adform replaced the file in place, so no versioned coordinate
+      identifies the malicious state.
+    - >-
+      Three tampered copies were recovered from the Internet Archive on 2026-09-02, captured
+      2026-07-26T23:29Z, 00:00Z and 00:41Z. Each is the clean 82727-byte file with a payload
+      appended, and the payload grew between captures.
   references:
   - url: https://doublepulsar.com/adform-compromised-to-serve-crypto-stealer-via-supply-chain-attack-2f1ec024f33e
     title: Adform compromised to serve crypto stealer via supply chain attack - Kevin Beaumont, DoublePulsar

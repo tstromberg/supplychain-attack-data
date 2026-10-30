@@ -1,0 +1,130 @@
+schema_version: 1
+interpretation:
+  - >-
+    polyfill.io served generated JavaScript from a URL rather than publishing versioned files, and
+    the hostile response was conditional on request context. No single capture is the artifact; each
+    one is what a particular client received at a particular moment.
+  - >-
+    Every Internet Archive capture of cdn.polyfill.io/v3/polyfill.min.js retrieved for this record
+    returned the benign polyfill bundle, which is consistent with targeted delivery to mobile
+    clients rather than to a desktop crawler. The malicious stage is therefore held as a
+    contemporaneous research copy and as an archived capture of the second-stage host.
+samples:
+  - artifact_id: polyfill-io
+    phase: before
+    classification: clean
+    filename: polyfill.min.js
+    path: polyfill-io/before/polyfill.min.js
+    sha256: 49984cf09acd5e2e0bb5eef5bf584c56927742d6f1337710e07545e85ff565ef
+    size: 87412
+    source:
+      url: https://web.archive.org/web/20240110003013id_/https://cdn.polyfill.io/v3/polyfill.min.js
+      original_url: https://cdn.polyfill.io/v3/polyfill.min.js
+      retrieved_at: '2026-09-02T12:17:00Z'
+      kind: wayback
+    verification:
+      status: probable_exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - exact_wayback_capture
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: 2024-06
+    notes:
+      - >-
+        Polyfill service v3.111.0 as served three weeks before the February 2024 domain handover.
+        Comparator for what an unmodified response looked like.
+    subject: polyfill-io
+    commit: '20240110003013'
+  - artifact_id: polyfill-io
+    phase: during
+    classification: malicious
+    version: 2024-06
+    filename: polyfill-injected-payload.js
+    path: polyfill-io/during/polyfill-injected-payload.js
+    sha256: 2ccefa9d25df088546b5d34544c32bd4ea193f54eb70394142bb1a2733150c54
+    size: 87141
+    source:
+      url: >-
+        https://raw.githubusercontent.com/iamtimqueen/Malware-Analysis/main/polyfill.io/00_original_obfuscated_compressed.js
+      retrieved_at: '2026-09-02T12:17:00Z'
+      kind: contemporary_research_archive
+    verification:
+      status: payload_only
+      basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - contemporary_analysis_copy
+        - deobfuscation_names_reported_indicators
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: '20240110003013'
+    notes:
+      - >-
+        The injected stage as retained by a contemporary analysis, not the whole response the CDN
+        returned. No authoritative digest for the served bytes exists, so this is not claimed as
+        original distribution bytes.
+      - >-
+        Corroborated by its own deobfuscation, which names googie-anaiytics.com/html/
+        checkcachehw.js and kuurza.com/redirect?from=bitget, the indicators Sansec reported.
+    subject: polyfill-io
+  - artifact_id: polyfill-io
+    phase: during
+    classification: malicious
+    version: 2024-06
+    filename: polyfill-injected-payload-deobfuscated.js
+    path: polyfill-io/during/polyfill-injected-payload-deobfuscated.js
+    sha256: 6f705c71e484fe44d60873489145c795dcdeca03400be83a63d43bcf8457df34
+    size: 4786
+    source:
+      url: >-
+        https://raw.githubusercontent.com/iamtimqueen/Malware-Analysis/main/polyfill.io/02_deobfuscated_clean.js
+      retrieved_at: '2026-09-02T12:17:00Z'
+      kind: contemporary_research_archive
+    verification:
+      status: verification_material
+      basis:
+        - measured_sha256
+      evidence:
+        - derived_from_retained_payload
+        - measured_sha256
+    notes:
+      - >-
+        A researcher's deobfuscation of the file above, kept because it is what binds the obfuscated
+        bytes to the reported indicators. It is analysis, not distributed code.
+    subject: polyfill-io
+  - artifact_id: polyfill-io
+    phase: during
+    classification: malicious
+    filename: googie-anaiytics-ga.js
+    path: polyfill-io/during/googie-anaiytics-ga.js
+    sha256: 0c9d708ea1496a322cc0365a635e0b2abc7b0653b1da4b7e7458c4bcb7520c58
+    size: 89492
+    source:
+      url: https://web.archive.org/web/20240625190903id_/https://www.googie-anaiytics.com/ga.js
+      original_url: https://www.googie-anaiytics.com/ga.js
+      retrieved_at: '2026-09-02T12:19:00Z'
+      kind: archived_runtime_payload
+    verification:
+      status: probable_exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - exact_wayback_capture
+        - capture_within_incident_window
+        - measured_sha256
+    notes:
+      - >-
+        The second stage, captured 2024-06-25 while the attack was live and two days before the CDN
+        was taken down. Same obfuscator as the injected payload.
+      - >-
+        The archived response was stored gzip-encoded; these are the decoded 89492 bytes of the
+        36402-byte archived body. The derivation is recorded in the sidecar.
+    subject: polyfill-io
+    commit: '20240625190903'

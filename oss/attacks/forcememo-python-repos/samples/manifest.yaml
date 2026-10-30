@@ -1,0 +1,175 @@
+schema_version: 1
+interpretation:
+  - >-
+    ForceMemo published no package. The affected distribution was each repository's default branch,
+    consumed by downstream users who installed straight from a git URL, so the unit of collection is
+    the immutable git object rather than a versioned archive.
+  - >-
+    Every capture below is bound to a commit SHA. The tell is the committer date: the attacker kept
+    the original commit's message, author, and author date and rewrote only the tail of an
+    entry-point file, so author date and committer date disagree by months.
+  - >-
+    Three repositories are sampled to show the campaign's spread across the shapes it hit: a
+    published Python SDK, machine-learning research code, and a Django application. The payload is
+    the same in all three, organised around the marker variable lzcdrtfxyqiplpd.
+samples:
+  - artifact_id: forcememo-python-repos
+    phase: before
+    classification: clean
+    filename: watercrawl-py-examples.py
+    path: forcememo-python-repos/before/watercrawl-py-examples.py
+    sha256: d372eeb3f81ea0970c8515ced12f597469a67b1a65593acd382c3a6ac178b171
+    size: 11902
+    source:
+      url: >-
+        https://raw.githubusercontent.com/watercrawl/watercrawl-py/113c7453ecebeee93d8b23552b6ef85c233d5968/examples.py
+      retrieved_at: '2026-09-02T12:22:00Z'
+      kind: immutable_source_file
+    verification:
+      status: exact
+      basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: 16f7797f15a75d632e55d03af07a31d4336a88db
+    notes:
+      - Parent of the force-pushed commit; the same file before the malicious tail.
+    subject: forcememo-python-repos
+    commit: 113c7453ecebeee93d8b23552b6ef85c233d5968
+  - artifact_id: forcememo-python-repos
+    phase: during
+    classification: malicious
+    filename: watercrawl-py-examples.py
+    path: forcememo-python-repos/during/watercrawl-py-examples.py
+    sha256: 6c234f4f9d1485b573aad2e330d66dea689178f7e9f1eb52c5afa20f602566c1
+    size: 18485
+    source:
+      url: >-
+        https://raw.githubusercontent.com/watercrawl/watercrawl-py/16f7797f15a75d632e55d03af07a31d4336a88db/examples.py
+      retrieved_at: '2026-09-02T12:22:00Z'
+      kind: immutable_source_file
+    verification:
+      status: exact
+      basis:
+        - git_object_id_verified
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - reported_commit_sha1
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: 113c7453ecebeee93d8b23552b6ef85c233d5968
+    notes:
+      - >-
+        The commit named in the incident record. Ten appended lines hold a base64 blob in
+        lzcdrtfxyqiplpd, zlib-decompress it, XOR it, and pass the result to exec.
+    subject: forcememo-python-repos
+    commit: 16f7797f15a75d632e55d03af07a31d4336a88db
+  - artifact_id: forcememo-python-repos
+    phase: during
+    classification: malicious
+    filename: watercrawl-py-16f7797.patch
+    path: forcememo-python-repos/during/watercrawl-py-16f7797.patch
+    sha256: 1f5a9155d966c43c7eb75b726bbaa6605cde4a3d8f37dc803a0c0443abe9e850
+    size: 9004
+    source:
+      url: >-
+        https://api.github.com/repos/watercrawl/watercrawl-py/commits/16f7797f15a75d632e55d03af07a31d4336a88db
+      retrieved_at: '2026-09-02T12:23:00Z'
+      kind: immutable_repository_revision
+    verification:
+      status: exact
+      basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - measured_sha256
+    notes:
+      - >-
+        Retrieved as application/vnd.github.patch; github.com's .patch endpoint answers 404 for this
+        object because no branch references it any more.
+      - >-
+        Author date 2025-06-30, committer date 2026-03-10T21:58:12Z. The rewrite carries the
+        original "chore: update CHANGELOG.md" message and its author identity.
+    subject: forcememo-python-repos
+    commit: 16f7797f15a75d632e55d03af07a31d4336a88db
+  - artifact_id: forcememo-python-repos
+    phase: during
+    classification: malicious
+    filename: ood_coverage-main.py
+    path: forcememo-python-repos/during/ood_coverage-main.py
+    sha256: fffcfdc975db426ad7ca292111360a68185e3d8f1fbaebd15ed184c4692c4281
+    size: 7740
+    source:
+      url: >-
+        https://raw.githubusercontent.com/BierOne/ood_coverage/16933b0b17fe451cdcd60f77d95d8746e57da4cc/main.py
+      retrieved_at: '2026-09-02T12:26:00Z'
+      kind: immutable_source_file
+    verification:
+      status: exact
+      basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - measured_sha256
+    notes:
+      - >-
+        Machine-learning research repository named in the incident record; injected 2026-03-12 and
+        still the head of main.py at capture time.
+    subject: forcememo-python-repos
+    commit: 16933b0b17fe451cdcd60f77d95d8746e57da4cc
+  - artifact_id: forcememo-python-repos
+    phase: during
+    classification: malicious
+    filename: zaranara-backend-manage.py
+    path: forcememo-python-repos/during/zaranara-backend-manage.py
+    sha256: 44b54e47c977fc90bf6ad7966594417a920e39c786e5a3dcb21271ad310452b8
+    size: 7243
+    source:
+      url: >-
+        https://raw.githubusercontent.com/wecode-bootcamp-korea/27-1st-ZARANARA-backend/b992b1b2c7c05578eea95d46ec1423f1404d245d/manage.py
+      retrieved_at: '2026-09-02T12:26:00Z'
+      kind: immutable_source_file
+    verification:
+      status: exact
+      basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - measured_sha256
+    notes:
+      - >-
+        Django entry point in the wecode-bootcamp-korea organisation, injected 2026-03-08, the
+        campaign's first day.
+    subject: forcememo-python-repos
+    commit: b992b1b2c7c05578eea95d46ec1423f1404d245d
+unresolved:
+  - artifact_id: forcememo-python-repos
+    phase: during
+    coordinate: sha1:16f7797f15a75d632e55d03af07a31d4336a88db
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:40:20.303-04:00 level=ERROR msg="command failed"
+        error="hash 16f7797f15a75d632e55d03af07a31d4336a88db unavailable from configured sources:
+        hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has
+        no sample for 16f7797f15a75d632e55d03af07a31d4336a88db: hash_not_found; triage: triage has
+        no file analysis for SHA1 16f7797f15a75d632e55d03af07a31d4336a88db; malshare: download
+        returned status 404"
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:13:19.033-04:00 level=ERROR msg="command failed"
+        error="hash 16f7797f15a75d632e55d03af07a31d4336a88db unavailable from configured sources:
+        hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has
+        no sample for 16f7797f15a75d632e55d03af07a31d4336a88db: hash_not_found; triage: triage has
+        no file analysis for SHA1 16f7797f15a75d632e55d03af07a31d4336a88db; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:13:19.063Z'

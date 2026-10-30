@@ -1,10 +1,98 @@
 schema_version: 1
-samples: []
-unresolved:
+interpretation:
+  - >-
+    The artifact is a CDN URL rather than a release, so the sample is whatever browsealoud.com
+    returned at a moment inside the window. The window is a single day and the Internet Archive
+    holds exactly one capture inside it.
+  - >-
+    That capture is the clean file with 1703 bytes spliced in after a 77-byte header comment: the
+    surrounding 77-byte prefix and 30458-byte suffix are byte-identical to the 2018-02-10 capture.
+    The captures on 2018-02-10 and 2018-03-14 agree with each other and not with it, which brackets
+    the compromise from the archive alone without relying on any report.
+  - >-
+    The injected bytes are hex-escaped to hide their strings from a casual reader. Decoded, they
+    document.write a script tag loading https://coinhive.com/lib/coinhive.min.js and then start
+    CoinHive.Anonymous with a thread count derived from navigator.hardwareConcurrency and a throttle
+    of 0.6 -- an in-browser Monero miner, which is what the February 2018 Texthelp incident is.
+  - >-
+    The capture immediately after, on 2018-02-12, is 558 bytes and reads only 'BA.js */'. That is
+    the file being pulled during remediation rather than a third version of it, so it is not held as
+    a sample.
+samples:
+  - artifact_id: browsealoud
+    phase: before
+    classification: clean
+    filename: ba.js
+    path: browsealoud/before/ba.js
+    sha256: 38527c93e446580d52617083d72ebea68b5b5f417ee3a2e9b02919d603a1e8ac
+    size: 30579
+    source:
+      url: https://web.archive.org/web/20180210014247id_/https://www.browsealoud.com/plus/scripts/ba.js
+      original_url: https://www.browsealoud.com/plus/scripts/ba.js
+      kind: web_archive_capture
+      retrieved_at: '2026-09-02T00:00:00Z'
+    verification:
+      status: exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - fetched_from_web_archive_id_replay
+        - measured_sha256_and_size
+    notes:
+      - >-
+        The last capture of the URL before the compromise, on 2018-02-10. It is the baseline that
+        bounds the injection.
+    subject: browsealoud
+    commit: '20180210014247'
   - artifact_id: browsealoud
     phase: during
-    status: unavailable
-    hashes: []
-    locations: []
-    attempts: []
-    last_attempted_at: '2026-08-10T15:07:47.069Z'
+    classification: malicious
+    filename: ba.js
+    path: browsealoud/during/ba.js
+    sha256: 01b862b1afe74bd58c9defd85fe76a88520d97e262135e4c096bc0489bd5b489
+    size: 32238
+    source:
+      url: https://web.archive.org/web/20180211112633id_/https://www.browsealoud.com/plus/scripts/ba.js
+      original_url: https://www.browsealoud.com/plus/scripts/ba.js
+      kind: web_archive_capture
+      retrieved_at: '2026-09-02T00:00:00Z'
+    verification:
+      status: exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - fetched_from_web_archive_id_replay
+        - measured_sha256_and_size
+        - differs_from_captures_on_both_sides_of_the_window
+    notes:
+      - The only capture inside the incident window. Carries the Coinhive loader described above.
+    subject: browsealoud
+    commit: '20180211112633'
+  - artifact_id: browsealoud
+    phase: during
+    classification: malicious
+    filename: injected-coinhive-loader.js
+    path: browsealoud/during/injected-coinhive-loader.js
+    sha256: 52268c888d09886919adad0c442b1a618c1d55bced5c0cc7c334242c292d33bb
+    size: 1703
+    source:
+      url: https://web.archive.org/web/20180211112633id_/https://www.browsealoud.com/plus/scripts/ba.js
+      original_url: https://www.browsealoud.com/plus/scripts/ba.js
+      kind: web_archive_capture
+      retrieved_at: '2026-09-02T00:00:00Z'
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - extracted_by_diff_against_adjacent_capture
+        - measured_sha256_and_size
+    notes:
+      - >-
+        The 1703 bytes present in the tampered capture and in neither neighbour, taken verbatim. Not
+        a file the CDN ever served on its own; it is the injected region of ba.js isolated for
+        reading.
+    subject: browsealoud
+    commit: '20180211112633'

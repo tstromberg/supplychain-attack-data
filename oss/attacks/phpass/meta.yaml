@@ -8,9 +8,16 @@
 
     Composer and Packagist trusted the coordinate. Installers resolving hautelook/phpass could fetch from the attacker's repository because the URL still matched the package metadata. No source forge was needed; the abandoned namespace became the source.
 
-    The malicious replacement carried code to collect environment data and secrets. Concrete CMS traced exposure through dependency resolution and published a replacement package while Packagist and GitHub removed the hostile repository.
+    The malicious replacement carried code that read two hardcoded environment variables, AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY. Packagist administrators redirected users to a pre-existing clean fork, and Concrete CMS advised moving to PHP's built-in password hashing while Packagist and GitHub removed the hostile repository.
 
     This differs from a typosquat. The package name was established, and the attacker took over the exact upstream location that package metadata still referenced. The failure was stale ownership on an official dependency path.
+  pull_quote:
+    text: >-
+      Packagist kept auto-updating hautelook/phpass from a GitHub URL whose
+      repository and organization had been deleted nine months earlier. When a
+      stranger re-registered the organization name, tracking simply resumed.
+    caption: deletion never unregistered the package
+    after: 2
   start_date: 2022-05-19
   end_date: 2022-05-24
   target:
@@ -49,6 +56,18 @@
       role: mirror
     hashes:
     - sha256:bc9cf9f18f5c41cc27d53d46b579f95f3ea45a70f94a8da3060b864d3e2d18c4
+    - sha256: 47ccfde85c99e57016cfebdc69408f99c8f5410e50ac4e02feac04abe073b4f3
+      of: archive
+      role: malicious
+      note: phpass-0.3.x.zip — Complete probable-exact archive recovered from Backstabber's Knife Collection.
+    - sha256: ae6c5e7ae5f1ca3d008d4ff9499e5589a64bbcaf65c68adabbcd76abf8177d69
+      of: archive
+      role: malicious
+      note: phpass-0.3.x-dev.zip — Complete probable-exact development archive recovered from Backstabber's Knife Collection.
+    - sha256: ad0c9053274606428dccbafe026b6c1b0e11a912d62e8b0382f061a3cb4cd4c3
+      of: archive
+      role: clean
+      note: phpass-0.3.6.zip — Packagist-advertised remediated bordoni/phpass source reference.
     indicators:
     - kind: domain
       value: anti-theft-web.herokuapp.com
@@ -86,3 +105,11 @@
     title: PyPI package ctx and PHP library phpass compromised
   - url: https://cybersecuritynews.com/attackers-compromised-pypi-package/
     title: Attackers compromised PyPI package to steal AWS keys
+  notes:
+  - >-
+    Complete probable-exact malicious 0.3.x and 0.3.x-dev archives are retained from Backstabber's
+    Knife Collection, plus the Packagist-remediated 0.3.6 source reference.
+  - >-
+    The separately reported bc9cf9f1 whole-file digest remains unavailable after Forager attempts. A
+    bounded carrier fragment from CrowdStrike's archived Figure 2 is also retained; it is related
+    Python ctx code.

@@ -62,6 +62,20 @@
     - uri: https://aur.archlinux.org/
       role: distribution
   indicators:
+    - kind: commit
+      value: 9d107786fa851c6305dadb3573aab5330a041524
+    - kind: commit
+      value: meshcore-open-git malicious snapshot 80529dcb0d9ee567fbb963cd8b7b33566de3f31c
+    - kind: file_sha256
+      value: meshcore-open-git optimizer e73a35b3e75e94746428d1a207703d6335933deadee7d1d9c9d0328df7b9df77
+    - kind: file_sha256
+      value: meshcore-open-git PKGBUILD 6126c3e44406592f002ce9465014c2fe869bd8f308e2c86286f6a13042e521e1
+    - kind: file_sha256
+      value: validator (stage 1) 2d25d2ea313767fae5808164224cf6ad610ab09546d1e5a6f033eedbfd98a281
+    - kind: file_sha256
+      value: stage 2 stealer 06c857c8ca798d50c765b4de39e6c4f272ecb57bc8316a8ed4c0fdf02fb59502
+    - kind: domain
+      value: p4ayykxcrxfyzrgfbbkazernntjbz43hgclrheguylzd7kijmtce6zqd.onion
     - kind: file
       value: validator
     - kind: technique
@@ -69,19 +83,20 @@
     - kind: technique
       value: Tor-backed second stage shared with the Atomic Arch waves
   notes:
-    - >-
-      Arch Linux disabled AUR package adoption on 2026-07-30 following the DevOps team announcement
-      by Robin Candau, and paused all AUR pushes on 2026-08-01 while investigating.
-    - >-
-      At least 89 package names were publicly corroborated, catalogued in three batches of 27, 42,
-      and 19. The list is community-assembled and was still growing at the time of reporting.
-    - >-
-      The delivery differs from the June waves. Instead of a malicious npm dependency installed
-      during the build, this wave placed a `validator` binary directly into the build path where it
-      executed with sudo privileges.
-    - >-
-      The shared Tor-backed second stage is the reported link to [[arch-aur-atomic-arch]]. No source
-      names the operator.
+  - >-
+    Arch Linux disabled AUR package adoption on 2026-07-30 following the DevOps team announcement by
+    Robin Candau, and paused all AUR pushes on 2026-08-01 while investigating.
+  - >-
+    Reporting corroborated at least 89 package names, community-assembled and still growing. 298
+    package branches were force-pushed in the window and 290 are confirmed malicious; all 290 trees
+    are held.
+  - >-
+    The one payload, SHA-256 e73a35b3e75e94746428d1a207703d6335933deadee7d1d9c9d0328df7b9df77, was
+    committed under 28 build-tool names such as validator, indexer and compressor. The name is
+    camouflage.
+  - >-
+    Commit messages were camouflage too: upgpkg, updpkgsums, Fix source. Only the PKGBUILD invoking
+    the binary the same commit added separates a poisoned commit from a routine one.
   artifacts:
     - id: openconnect-sso
       name: openconnect-sso
@@ -110,13 +125,49 @@
         - uri: https://aur.archlinux.org/
           role: distribution
       notes:
-        - >-
-          At least 89 package names were corroborated, including i915-sriov-dkms, rtk-git,
-          boringssl-git, warp-terminal-git, weather-display, and astro-box. The affected unit is
-          each package's PKGBUILD and committed build files rather than a versioned artifact.
-        - >-
-          The affected releases were recorded as a wildcard rather than enumerated, so this record
-          asserts no version list.
+      - >-
+        At least 89 package names were corroborated, including i915-sriov-dkms, rtk-git,
+        boringssl-git, warp-terminal-git and astro-box. The affected unit is each package's
+        PKGBUILD, not a versioned artifact.
+      - >-
+        The affected releases were recorded as a wildcard rather than enumerated, so this record
+        asserts no version list.
+    - id: meshcore-open-git
+      name: meshcore-open-git malicious AUR snapshot
+      package: meshcore-open-git
+      ecosystem: aur
+      kind: source_archive
+      start_date: 2026-07-30T00:00:00.000Z
+      end_date: 2026-08-01T00:00:00.000Z
+      hashes:
+        - sha256:b97a762f886fa62a3908568cdf8695409d9d5e42a9f85e0ff5ee737f172c78d4
+      locations:
+        - uri: https://aur.archlinux.org/packages/meshcore-open-git
+          role: distribution
+      indicators:
+        - kind: commit
+          value: 80529dcb0d9ee567fbb963cd8b7b33566de3f31c
+        - kind: file_sha256
+          value: PKGBUILD 6126c3e44406592f002ce9465014c2fe869bd8f308e2c86286f6a13042e521e1
+        - kind: file_sha256
+          value: optimizer e73a35b3e75e94746428d1a207703d6335933deadee7d1d9c9d0328df7b9df77
+        - kind: file_sha1
+          value: optimizer 069380d8a59b806120d75c554827b9ec9f5e583a
+        - kind: file_md5
+          value: optimizer 76b7981f13d86374414e4c887b77539d
+      evidence:
+        - kind: malicious_payload
+          path: samples/meshcore-open-git/during/optimizer
+          role: embedded loader recovered byte-for-byte by its published SHA-256
+      notes:
+      - >-
+        The artifact hash identifies the complete malicious AUR snapshot named
+        malicious-aur-80529dcb0d9ee567fbb963cd8b7b33566de3f31c.tar.gz in the static-analysis
+        report. It is an original-archive checksum, not a reconstruction.
+      - >-
+        The recovered 43,640-byte optimizer is exact payload-only evidence. Its measured
+        SHA-256, SHA-1, MD5, size and ELF format all match the independent report, but the
+        complete AUR snapshot bytes remain unavailable.
   references:
     - url: https://corgea.com/research/arch-aur-openconnect-sso-malware-wave-august-2026
       title: 'Arch AUR''s August malware wave: openconnect-sso and 89 named packages - Corgea'
@@ -128,3 +179,15 @@
         Security News
     - url: https://www.hexnode.com/blogs/arch-linux-aur-malware-campaign/
       title: Arch Linux AUR Malware Halts Adoption and Pushes - Hexnode
+    - url: https://discourse.ifin.network/t/new-aur-attack-prompts-adoption-lock/698
+      title: New AUR Attack Prompts Adoption Lock - IFIN
+    - url: https://gist.github.com/ysf/502a324ff301d0c738e8ae011272fd59
+      title: AUR validator malware stage-one analysis
+    - url: https://gist.github.com/ysf/57850cdee152da066ac51c07a452e883
+      title: AUR validator malware stage-two analysis
+    - url: https://gist.github.com/orhun/a966583226df9b160e180ecf0ea9dcb6
+      title: 'Analysis Report: Malicious meshcore-open-git AUR Package'
+    - url: https://gist.githubusercontent.com/orhun/a966583226df9b160e180ecf0ea9dcb6/raw
+      title: Raw Markdown for the meshcore-open-git static-analysis report
+    - url: https://github.com/lenucksi/aur-malware-check/issues/52
+      title: AUR malware tracker discussion documenting the two stage-one loader hashes

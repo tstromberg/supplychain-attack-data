@@ -27,12 +27,18 @@ samples:
     verification:
       status: exact
       basis:
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
         - npm_registry_distribution
         - measured_sha256_and_size
+    subject: ctrl-tinycolor
   - artifact_id: ctrl-tinycolor
     phase: during
     classification: malicious
-    version: 4.1.1 - 4.1.2
+    version:
+      - 4.1.1
+      - 4.1.2
     filename: bundle.js
     path: ctrl-tinycolor/during/bundle.js
     sha256: 46faab8ab153fae6e80e7cca38eab363075bb524edd79e42269217a083628f09
@@ -45,12 +51,16 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - reported_bundle_sha256
         - measured_sha256_and_size
         - inspected_as_webpack_javascript_bundle
         - both_removed_versions_list_bundle_js_in_archival_metadata
     notes:
       - Exact shared payload member; the complete affected trees are reconstructed below.
+    subject: ctrl-tinycolor
   - artifact_id: ctrl-tinycolor
     phase: during
     classification: malicious
@@ -87,7 +97,7 @@ samples:
         unchanged_members:
           count: 41
           verification: path_size_and_sha256_match_base_and_retained_manifest
-        packaging: &reconstructed_packaging
+        packaging:
           format: ustar_gzip
           member_mtime: '1985-10-26T08:15:00Z'
           uid: 0
@@ -101,6 +111,11 @@ samples:
     verification:
       status: tree_equivalent
       basis:
+        - publisher_digest_reproduced
+        - all_members_digest_matched
+        - reconstruction_documented
+        - measured_sha256
+      evidence:
         - retained_jsdelivr_manifest_accounts_for_all_42_members
         - all_reconstructed_paths_sizes_and_sha256_values_match_manifest
         - 41_unchanged_members_match_verified_4_1_0_base
@@ -111,56 +126,49 @@ samples:
         Synthetic complete-tree reconstruction, not the removed npm tarball. The RECONSTRUCTED
         filename is required because no authoritative whole-archive SHA-256 is available.
       - The retained target package.json embeds version 4.1.0; reconstruction preserves those bytes.
+    subject: ctrl-tinycolor
   - artifact_id: ctrl-tinycolor
     phase: during
     classification: malicious
     coordinate: pkg:npm/%40ctrl/tinycolor@4.1.2
     version: 4.1.2
-    filename: '@ctrl-tinycolor-4.1.2-RECONSTRUCTED.tgz'
-    path: ctrl-tinycolor/during/@ctrl-tinycolor-4.1.2-RECONSTRUCTED.tgz
-    sha256: 3413ffbc9a1fef9532f32bb39f494138ff08d5a2f35cda2eec40b330a8fcf323
-    size: 876028
+    filename: ctrl-tinycolor-4.1.2.tgz
+    path: ctrl-tinycolor/during/ctrl-tinycolor-4.1.2.tgz
+    sha256: 70dcb27f385a21faccdf8a0d5812d94f9620679e71475a78482e50c2b90d4c08
+    size: 1689837
     source:
-      url: https://data.jsdelivr.com/v1/package/npm/@ctrl/tinycolor@4.1.2
-      retrieved_at: '2026-08-11T16:31:12Z'
-      kind: reconstructed_distribution
-      original_url: https://registry.npmjs.org/@ctrl/tinycolor/-/tinycolor-4.1.2.tgz
-      reconstruction:
-        method: exact_member_overlay_on_verified_predecessor
-        base:
-          coordinate: pkg:npm/%40ctrl/tinycolor@4.1.0
-          path: ctrl-tinycolor/before/@ctrl-tinycolor-4.1.0.tgz
-          sha256: 5782aa3e82ad8c11cdaa449e42733e450517555d2f2e4c7d279c0f71b8f8d279
-          member_count: 41
-        retained_manifest:
-          url: https://data.jsdelivr.com/v1/package/npm/@ctrl/tinycolor@4.1.2
-          retrieved_at: '2026-08-11T16:31:12Z'
-          sha256: 132ae1ee73b935a3ca8a35c54bd053b78cfeba3747ea81492db12bb9963a1ba1
-          member_count: 42
-          member_hash: sha256_base64
-        overlays:
-          - path: package/bundle.js
-            operation: add
-            source_path: ctrl-tinycolor/during/bundle.js
-            sha256: 46faab8ab153fae6e80e7cca38eab363075bb524edd79e42269217a083628f09
-            size: 3734675
-        unchanged_members:
-          count: 41
-          verification: path_size_and_sha256_match_base_and_retained_manifest
-        packaging: *reconstructed_packaging
+      url: https://repo.huaweicloud.com/repository/npm/%40ctrl/tinycolor/-/tinycolor-4.1.2.tgz
+      original_url: https://registry.npmjs.org/%40ctrl/tinycolor/-/tinycolor-4.1.2.tgz
+      retrieved_at: '2026-09-10T14:36:56.669Z'
+      kind: distribution_mirror
     verification:
-      status: tree_equivalent
+      status: probable_exact
       basis:
+        - distribution_mirror
+        - coordinate_matches
+        - publisher_digest_reproduced
+        - all_members_digest_matched
+        - reconstruction_documented
+        - measured_sha256
+      evidence:
+        - distribution_mirror_retained_published_tarball
+        - exact_package_name_and_version
         - retained_jsdelivr_manifest_accounts_for_all_42_members
         - all_reconstructed_paths_sizes_and_sha256_values_match_manifest
         - 41_unchanged_members_match_verified_4_1_0_base
         - exact_bundle_js_overlay_matches_retained_hash
         - measured_synthetic_archive_sha256_and_size
+        - measured_sha256
     notes:
+      - >-
+        Replaced the reconstruction held until 2026-09-10: a registry mirror still serves the
+        published tarball, and these are those bytes. The rebuilt archive it supersedes was removed
+        rather than kept beside it, so a synthetic copy cannot be mistaken for the distribution.
       - >-
         Synthetic complete-tree reconstruction, not the removed npm tarball. The RECONSTRUCTED
         filename is required because no authoritative whole-archive SHA-256 is available.
       - The retained target package.json embeds version 4.1.0; reconstruction preserves those bytes.
+    subject: ctrl-tinycolor
   - artifact_id: ctrl-tinycolor
     phase: after
     classification: clean
@@ -177,10 +185,14 @@ samples:
     verification:
       status: exact
       basis:
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
         - npm_registry_distribution
         - maintainer_says_clean_versions_were_republished_to_flush_caches
         - published_2025_09_16T03_17_48_101Z_after_incident
         - measured_sha256_and_size
+    subject: ctrl-tinycolor
 unresolved:
   - artifact_id: ctrl-tinycolor
     phase: during

@@ -1,4 +1,3 @@
----
 - id: british-airways-via-modernizr-script
   title: British Airways Modernizr skimmed payments
   synopsis: >-
@@ -13,6 +12,13 @@
     The target was narrow and efficient. The malicious code captured names, billing addresses, email addresses, payment card numbers, expiry dates, and CVV values from customers buying tickets. Public reporting and the ICO put the affected population above 400,000 people, while early BA reporting cited about 380,000 payment-card transactions.
 
     RiskIQ attributed the operation to Magecart. The ICO later fined British Airways 20 million pounds, finding that the attack went undetected until a third party notified the airline. BA removed the malicious code quickly after discovery, but for fifteen days the official checkout path was the skimmer.
+  pull_quote:
+    text: >-
+      The skimmer bound `touchend` as well as `mouseup` on the submit button,
+      so it also caught customers paying inside British Airways' mobile app,
+      which loaded its booking pages from the same website.
+    caption: the touch event that reached the app
+    after: 2
   start_date: 2018-08-21
   end_date: 2018-09-05
   target:
@@ -44,7 +50,7 @@
     start_date: 2018-08-21
     end_date: 2018-09-05
     locations:
-    - uri: https://www.britishairways.com/scripts/modernizr.js
+    - uri: https://www.britishairways.com/cms/global/scripts/lib/modernizr-2.6.2.min.js
       role: distribution
     - uri: https://www.britishairways.com
       role: distribution
@@ -76,22 +82,52 @@
     - kind: observable
       value: Skimmer copied checkout form data while the normal booking flow continued.
     - kind: observable
-      value: Malicious JavaScript was appended to BA-hosted Modernizr rather than loaded as an obvious external script.
+      value: Malicious JavaScript was appended to BA-hosted Modernizr rather than loaded as an 
+        obvious external script.
+    - kind: file
+      value: modernizr-2.6.2.min.js
+    - kind: domain
+      value: baways.com
+    - kind: url
+      value: https://baways.com/gateway/app/dataprocessing/api/
+    - kind: observable
+      value: 'Last-Modified: Tue, 21 Aug 2018 20:49:38 GMT on the tampered script'
+    - kind: observable
+      value: baways.com certificate issued 2018-08-15 by COMODO RSA Domain Validation Secure Server 
+        CA, serial 129950451738167431558149351195969236479
     notes:
-    - Affected scope covered BA website and mobile-app checkout flows that loaded the
+    - >-
+      Affected scope covered BA website and mobile-app checkout flows that loaded the
       compromised website JavaScript during the incident window.
-    - The ICO reported more than 400,000 affected customers; the original BA notice
-      cited about 380,000 payment-card transactions.
+    - >-
+      The ICO reported more than 400,000 affected customers; the original BA notice cited about
+      380,000 payment-card transactions.
+    - >-
+      The URL recorded here until 2026-09-02 was /scripts/modernizr.js, which was never tampered
+      with. RiskIQ names the real path, /cms/global/scripts/lib/modernizr-2.6.2.min.js, which
+      has 32 archive captures where the old path has none.
+    - >-
+      The archive still cannot supply the tampered file, jumping from 2013-01-14 to 2019-07-10,
+      but the clean baseline either side is held. The injected block survives only as RiskIQ
+      screenshots, stored as verification_material.
+    hashes:
+    - sha256: 60f0a5a228d241bf6bca1b761f5f5d414fc3343dfeaeb802c43f529be2858b8e
+      of: archive
+      role: clean
+      note: The clean Modernizr 2.6.2 this skimmer was appended to, measured on 2026-09-02 from the 
+        2013-01-14 web archive capture. Its Last-Modified, Tue 18 Dec 2012 08:02:48 GMT, matches the
+        header RiskIQ screenshotted for the untampered file, and it ends at the byte where their 
+        screenshot of the tampered file shows the injection beginning.
   references:
   - url: https://www.riskiq.com/blog/labs/magecart-british-airways-breach/
     title: Inside the Magecart Breach of British Airways
   - url: https://www.infoq.com/news/2018/11/british-airways-data-breach/
     title: British Airways Data Breach Conducted via Malicious JavaScript Injection
-  - url: https://www.securonix.com/blog/securonix-threat-research-british-airways-breach-magecart-formgrabbing-supply-chain-attack-detection/
+  - url: 
+      https://www.securonix.com/blog/securonix-threat-research-british-airways-breach-magecart-formgrabbing-supply-chain-attack-detection/
     title: 'British Airways Breach: Magecart Formgrabbing Supply Chain Attack Detection'
   - url: https://www.helpnetsecurity.com/2018/09/11/british-airways-breach-magecart/
     title: British Airways breach was effected by Magecart attackers
   - url: 
       https://ico.org.uk/about-the-ico/news-and-events/news-and-blogs/2020/10/ico-fines-british-airways-20m-for-data-breach-affecting-more-than-400-000-customers/
-    title: ICO fines British Airways 20m for data breach affecting more than 400,000
-      customers
+    title: ICO fines British Airways 20m for data breach affecting more than 400,000 customers

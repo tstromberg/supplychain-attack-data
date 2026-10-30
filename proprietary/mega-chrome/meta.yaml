@@ -11,6 +11,14 @@
     The extension exfiltrated captured data to `megaopac.host`, an attacker server reported in Ukraine. The prize was not only passwords; wallet private keys and exchange credentials made the browser extension a direct path to cryptocurrency theft.
 
     MEGA replaced the extension with a clean release the same day and warned users to change passwords and rotate wallet secrets. This record tracks the Chrome Web Store package, not MEGA's cloud-storage service itself.
+  pull_quote:
+    text: >-
+      Google disallowed publisher signatures on Chrome extensions, signing
+      them itself after upload, so the store account was the only barrier.
+      MEGA signed its Firefox extension and mobile apps itself, and said those
+      could not have fallen this way.
+    caption: signed by the store, not the publisher
+    after: 2
   start_date: 2018-09-04
   end_date: 2018-09-04
   target:
@@ -41,7 +49,7 @@
     versions:
     - 3.39.4
     locations:
-    - uri: https://chrome.google.com/webstore/detail/mega/nlbmnnijcnlegkjjpcfjclmcfggfefdm
+    - uri: https://chrome.google.com/webstore/detail/mega/bigefpfhnfcobdlfbedofhhaibnlghod
       role: distribution
     - uri: https://serhack.me/articles/mega-chrome-extension-hacked/
       role: mirror
@@ -51,8 +59,40 @@
     - kind: permission
       value: Expanded Chrome extension permissions requested by version 3.39.4.
     - kind: observable
-      value: Targeted credentials on Google, GitHub, Amazon, MyEtherWallet, MyMonero,
-        and IDEX.
+      value: Targeted credentials on Google, GitHub, Amazon, MyEtherWallet, MyMonero, and IDEX.
+    - kind: observable
+      value: Chrome Web Store extension id bigefpfhnfcobdlfbedofhhaibnlghod. This record previously 
+        carried nlbmnnijcnlegkjjpcfjclmcfggfefdm, which is MyEtherWallet CX, not MEGA. The mix-up is
+        an easy one to make because the MEGA payload targeted MyEtherWallet credentials, but the two
+        extensions are different listings and only the first can be used to ask an archive for the 
+        removed version.
+    - kind: ip
+      value: 176.119.1.146
+    - kind: file
+      value: content.js
+    - kind: string
+      value: chrome.runtime.sendMessage action nmewm
+    - kind: string
+      value: chrome.runtime.sendMessage action nmmm
+    - kind: string
+      value: chrome.runtime.sendMessage action immm
+    notes:
+    - >-
+      Extension id corrected on 2026-09-02 after crx4chrome resolved each id to its listing:
+      bigefpfhnfcobdlfbedofhhaibnlghod is MEGA, nlbmnnijcnlegkjjpcfjclmcfggfefdm is
+      MyEtherWallet CX.
+    - >-
+      The malicious CRX is not held and is unlikely to surface: Google pulled 3.39.4 about five
+      hours after it was published on 2018-09-04 and no archive of the Chrome Web Store binary
+      survives.
+    - >-
+      What is held instead, recovered 2026-09-02, is the content script and manifest match list
+      as the analysing researcher published them. They are transcriptions, so they are
+      verification_material rather than served bytes.
+    - >-
+      The code polls every two seconds for MyEtherWallet private keys via Angular scope,
+      MyMonero view and spend keys, and Idex localStorage state, forwarding each to the
+      extension background, which reached megaopac.host.
   references:
   - url: https://serhack.me/articles/mega-chrome-extension-hacked/
     title: MEGA Chrome Extension Hacked - Detailed Timeline of Events

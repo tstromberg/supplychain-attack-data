@@ -6,9 +6,9 @@
   story: |
     At the end of July 2002, source archives for OpenSSH were replaced on the OpenBSD FTP server and potentially propagated by the normal mirror network. The affected files were `openssh-3.4p1.tar.gz`, `openssh-3.4.tgz`, and `openssh-3.2.2p1.tar.gz`; the project replaced them with clean originals at 13:00 UTC on August 1.
 
-    The attacker changed source distribution, not the SSH protocol. The tainted archives carried `bf-test.c`, and the build system compiled and executed it during `configure`. A system could be compromised by building OpenSSH even if it never deployed the resulting daemon.
+    The attacker changed source distribution, not the SSH protocol. The tainted archives carried `bf-test.c`, and a line appended to the `all:` target of `openbsd-compat/Makefile.in` compiled and ran it, so the payload fired at `make` rather than at `configure`. A system could be compromised by building OpenSSH even if it never deployed the resulting daemon.
 
-    The payload lived in `bf-test.c` and executed during the build, not when a running SSH daemon handled traffic. Once compiled, it attempted hourly outbound connections to an IRC-style port and could execute attacker-supplied commands as the build user. CERT's advisory treated any host that built the trojaned source as compromised and told mirrors, redistributors, and administrators to verify signatures and checksums rather than trusting timestamps or file sizes.
+    The payload lived in `bf-test.c` and executed during the build, not when a running SSH daemon handled traffic. Once compiled, it attempted hourly outbound connections to an IRC-style port and could execute attacker-supplied commands as the build user. OpenSSH's own advisory treated any host that built the trojaned source as compromised, and CERT told mirrors, redistributors, and administrators to verify signatures and checksums rather than trusting timestamps or file sizes. CERT also recorded that the trojaned tarballs were not correctly signed, so a signature check would have failed; Conectiva was unaffected because it always verified the detached signature before building.
 
     The detection path was ordinary package hygiene. Isosceles notes that FreeBSD ports already had expected checksums, so a developer building the tainted archive saw a mismatch. The short exposure window prevented broader compromise, but the attack showed that replacing source archives on trusted infrastructure was enough to reach high-value Unix systems.
   start_date: 2002-07-30
@@ -49,14 +49,23 @@
     - uri: http://www.mavetju.org/~edwin/bf-output.sh
       role: mirror
     hashes:
-    - md5:3ac9bc346d736b4a51d676faa2a08a57
+    - md5: 3ac9bc346d736b4a51d676faa2a08a57
+      of: archive
+      role: malicious
+    - sha256: 60ec0e74e249a292669a561fcb104fbce2693c1925c8b33152dbcc5485e16c3f
+      of: archive
+      role: malicious
+      note: >-
+        Resolved from the md5 3ac9bc346d736b4a51d676faa2a08a57 via VirusTotal on 2026-09-10,
+        reported as 840574 bytes, 27 engines detect it. The bytes are not held; the SHA-256 lets the
+        SHA-256-only digest lanes reach it.
     commits:
     - None
     indicators:
     - kind: file
       value: bf-test.c
     - kind: command
-      value: configure
+      value: openbsd-compat/Makefile.in
     - kind: port
       value: 6667/tcp
     - kind: observable
@@ -78,7 +87,7 @@
     start_date: 2002-07-30
     end_date: 2002-08-01
     versions:
-    - 3.4
+    - "3.4"
     locations:
     - uri: ftp://ftp.openssh.com/pub/OpenBSD/OpenSSH/openssh-3.4.tgz
       role: distribution
@@ -107,7 +116,25 @@
     indicators:
     - kind: observable
       value: ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/openssh-3.2.2p1.tar.gz
+  notes:
+  - >-
+    Contemporaneous developer IRC logs record the sizes on ftp.openbsd.org before and after the
+    swap: openssh-3.4.tgz 398595 to 401466, openssh-3.2.2p1.tar.gz 822567 to 825630,
+    openssh-3.4p1.tar.gz 837668 to 840574.
+  - >-
+    All three clean figures match the held before samples, and 840574 matches VirusTotal's size for
+    the one published trojaned digest, so the pairs are corroborated.
+  - >-
+    The trojaned openssh-3.2.2p1.tar.gz unpacked to an openssh-3.2.3 directory, so the attacker
+    packaged a different tree and it cannot be rebuilt from the clean 3.2.2p1 archive.
+  - >-
+    The payload sat in openbsd-compat/ in the portable releases but in ssh-keygen/ in the native
+    openssh-3.4.tgz, and that tree's Makefile edit was never published.
   references:
+  - url: http://miod.online.fr/software/openbsd/stories/trojan.html
+    title: >-
+      Trojaned OpenSSH - Miod Vallat's account, with the contemporaneous developer IRC logs and the
+      ftp.openbsd.org directory listings
   - url: https://www.openssh.com/txt/trojan.adv
     title: OpenSSH Security Advisory adv.trojan
   - url: https://marc.info/?l=bugtraq&m=102821663814127&w=2

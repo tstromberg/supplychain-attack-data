@@ -1,0 +1,150 @@
+- id: vapi-server-sdk
+  text: >-
+    The package's `main` pointed at `dist/index.js`, 27 KB of real SDK. The 4.5 MB
+    root `index.js` was never imported by application code; it existed only for
+    `binding.gyp` to execute.
+  caption: the file nothing imports
+  after: 2
+  source: https://www.stepsecurity.io/blog/binding-gyp-npm-supply-chain-attack-spreads-like-worm
+
+- id: actions-cool
+  text: >-
+    The attacker generated a unique imposter commit for each of the 53 tags, every one
+    messaged "Build action for vX.Y.Z" to mimic the maintainer. All were dangling,
+    reachable only through the rewritten tags.
+  caption: one fake commit per tag
+  after: 1
+  source: https://www.stepsecurity.io/blog/actions-cool-issues-helper-github-action-compromised-all-tags-point-to-imposter-commit-that-exfiltrates-ci-cd-credentials
+
+- id: node-ipc-2026
+  text: >-
+    `node-ipc` listed twelve npm maintainers. The attacker needed only the dormant one,
+    whose lapsed email domain could be re-registered and pointed at a standard password
+    reset.
+  caption: twelve maintainers, one dormant
+  after: 2
+  source: https://socket.dev/blog/node-ipc-package-compromised
+
+- id: litellm
+  text: >-
+    Because the payload spawned a detached Python subprocess, that subprocess also ran
+    `litellm_init.pth` on startup. Each generation of the stealer forked the next, and
+    the process tree grew on its own.
+  caption: the stealer that forked itself
+  after: 2
+  source: https://www.stepsecurity.io/blog/litellm-credential-stealer-hidden-in-pypi-wheel
+
+- id: sleepergem-rubygems
+  text: >-
+    A normal pipeline install shows no malicious behavior at all. StepSecurity had to
+    strip the CI environment variables before the loader would believe it was on a
+    developer machine and run.
+  caption: why your ci saw nothing
+  after: 1
+  source: https://www.stepsecurity.io/blog/sleepergem-compromised-rubygems-drop-persistent-backdoor
+
+- id: advanced-responsive-video-embedder
+  text: >-
+    Before impersonating an administrator the backdoor skipped any username starting
+    with `wpsvc_`, `developer_`, `dev_`, or `wp_update_`. Wordfence read that as
+    operators avoiding accounts they had already seeded.
+  caption: the accounts it refused to use
+  after: 2
+  source: https://www.wordfence.com/blog/2026/07/wordfence-prism-detected-backdoored-wordpress-plugin-within-two-hours-of-it-being-introduced/
+
+- id: bdthemes
+  text: >-
+    A second payload generated the rogue admin's credentials mathematically from the
+    site hostname. The operators never needed a victim list, and responders can compute
+    the exact username and password to hunt for.
+  caption: credentials you can derive
+  after: 1
+  source: https://www.wordfence.com/blog/2026/08/psa-supply-chain-compromise-in-bdthemes-ecosystem-via-poisoned-api-response/
+
+- id: cline
+  text: >-
+    Cline did try to rotate the npm token. The wrong one was deleted, and npm's
+    org-level token page showed zero active tokens while the exposed token was still
+    live.
+  caption: the token the ui didn't show
+  after: 2
+  source: https://cline.bot/blog/post-mortem-unauthorized-cline-cli-npm
+
+- id: ironworm-npm
+  text: >-
+    The credential scanner had a skip list with one entry: a complete twelve-word BIP-39
+    recovery phrase. The operator taught his wallet stealer not to rob him, and shipped
+    his own seed to everyone who unpacked the binary.
+  caption: the one wallet it skipped
+  after: 1
+  source: https://research.jfrog.com/post/iron-worm-shai-hulud-rustier-cousin/
+
+- id: axios
+  text: >-
+    OpenAI's stated root cause was a workflow misconfiguration: the action used a
+    floating tag rather than a commit hash, with no `minimumReleaseAge` set. A
+    three-hour npm window reached its macOS signing certificate.
+  caption: a floating tag reached the certificate
+  after: 1
+  source: https://socket.dev/blog/axios-supply-chain-attack-reaches-openai-macos-signing-pipeline-forces-certificate-rotation
+
+- id: tanstack-router
+  text: >-
+    The malicious versions carry valid SLSA Build Level 3 provenance, signed by npm's
+    own infrastructure and bound to the real `release.yml`. Provenance proves where a
+    build ran, not that the build was clean.
+  caption: valid provenance, malicious package
+  after: 1
+  source: https://www.stepsecurity.io/blog/mini-shai-hulud-is-back-a-self-spreading-supply-chain-attack-hits-the-npm-ecosystem
+
+- id: pgserve
+  text: >-
+    The exfiltration endpoint was a smart contract, not a server. Canister
+    `cjn37-uyaaa-aaaac-qgnva-cai` cannot be removed by domain seizure or a hosting
+    provider, and is permanent for the lifetime of the Internet Computer.
+  caption: an exfil endpoint you cannot seize
+  after: 2
+  source: https://www.stepsecurity.io/blog/pgserve-compromised-on-npm-malicious-versions-harvest-credentials
+
+- id: injective-sdk-ts
+  text: >-
+    Nothing fired at install time. The hook sat inside `fromMnemonic()` and `fromHex()`,
+    so the mnemonic left the machine only when a developer actually derived a wallet.
+  caption: it waited to be used
+  after: 1
+  source: https://socket.dev/blog/compromised-injective-sdk-npm-package
+
+- id: optinmonster
+  text: >-
+    The backdoor plugin's ZIP was generated fresh on each request. Its name and slug
+    rotated, "Content Delivery Helper" then "Database Optimizer", while the logic stayed
+    byte-identical.
+  caption: a plugin built to disappear
+  after: 1
+  source: https://sansec.io/research/optinmonster-supply-chain-attack
+
+- id: leoplatform-rstreams
+  text: >-
+    The Verana Go module carried the payload but never executed it as Go. The observed
+    trigger was a VS Code folder-open task running `node .claude/setup.mjs`.
+  caption: not a go compromise
+  after: 1
+  source: https://socket.dev/blog/miasma-mini-shai-hulud-hits-leoplatform-npm-packages-go-ecosystem
+
+- id: bittensor-wallet
+  text: >-
+    The same release also stripped `attestations: write` and the
+    `attest-build-provenance` step from `release.yml`. That removed the Sigstore
+    signature, so nothing could prove the wheels came from the legitimate pipeline.
+  caption: the signature that was deleted
+  after: 2
+  source: https://www.stepsecurity.io/blog/bittensor-wallet-4-0-2-compromised-on-pypi---backdoor-exfiltrates-private-keys
+
+- id: elementary-data
+  text: >-
+    The forged GitHub release was titled `dsajdkjsajkdsajk`, created by
+    `github-actions[bot]`. It still carried the "Latest" label, and the same run pushed
+    the payload to `ghcr.io/elementary-data/elementary:latest`.
+  caption: keyboard mash, labelled latest
+  after: 2
+  source: https://www.stepsecurity.io/blog/elementary-data-compromised-on-pypi-and-ghcr-forged-release-pushed-via-github-actions-script-injection

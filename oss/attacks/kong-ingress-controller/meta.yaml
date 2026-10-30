@@ -11,6 +11,14 @@
     Users reported high CPU usage on December 29. Kong reproduced the behavior on January 2 and found the public 3.4.0 image making DNS requests to subdomains of `supportxmr.com`. Third-party analysis concluded that the only malicious payload was XMRig. ARMO also described runtime behavior consistent with cryptomining, including high CPU use, communication with `pool.supportxmr.com`, and fileless execution through `memfd_create`.
 
     Kong deleted the affected 3.4.0 tag, rebuilt from a clean environment, published 3.4.1, and moved clean images back under the 3.4 and latest tags. The advisory told users who pulled 3.4.0 between December 22, 2024 and January 3, 2025 to remove the image from clusters and internal registries and pull the remediated image.
+  pull_quote:
+    text: >-
+      Kong reverted the risky trigger in November after a researcher's report,
+      applying the fix to master and every actively developed branch. It
+      missed some old unused branches, and that is where the pull request
+      landed.
+    caption: patched everywhere but the dead branches
+    after: 3
   start_date: 2024-12-23
   end_date: 2025-01-03
   target:
@@ -35,7 +43,7 @@
   - id: kong-ingress-controller
     name: kong-ingress-controller
     package: kong/kubernetes-ingress-controller
-    ecosystem: docker
+    ecosystem: docker hub
     kind: oci_image
     website: https://docker.io
     repo: https://github.com/Kong/kubernetes-ingress-controller
@@ -87,12 +95,14 @@
       value: Users reported high CPU usage from Kong Ingress Controller 3.4.0 pods.
     notes:
     - Kong reported that the unauthorized image was downloaded 202 times.
-    - Kong's fixed image hashes for 3.4.0 were 
-      sha256:b358296fa6a1458c977c0513ff918e80b708fa9d7721f9d438f3dfce24f60f4f for AMD64 
-      and sha256:e0125aa85a4c9eef7822ba5234e90958c71e1d29474d6247adc3e7e21327e8ee for 
-      ARM64; these are clean replacement hashes, not malicious hashes.
-    - Kong reported no evidence that any other images before or after the malicious hash
-      were affected.
+    - >-
+      Kong's fixed 3.4.0 image hashes were
+      sha256:b358296fa6a1458c977c0513ff918e80b708fa9d7721f9d438f3dfce24f60f4f (AMD64) and
+      sha256:e0125aa85a4c9eef7822ba5234e90958c71e1d29474d6247adc3e7e21327e8ee (ARM64). These are
+      clean replacements.
+    - >-
+      Kong reported no evidence that any other images before or after the malicious hash were
+      affected.
   references:
   - url: 
       https://github.com/Kong/kubernetes-ingress-controller/security/advisories/GHSA-58mg-ww7q-xw3p
@@ -103,7 +113,15 @@
   - url: https://hackread.com/malicious-kong-ingress-controller-image-dockerhub/
     title: Malicious Kong Ingress Controller Image Found on DockerHub
   - url: https://www.armosec.io/blog/kong-ingress-controller-cryptojacking/
-    title: Tackling the recent Kong ingress controller security incident with ARMO's 
-      behavioral CADR
+    title: Tackling the recent Kong ingress controller security incident with ARMO's behavioral CADR
   - url: https://github.com/Kong/kubernetes-ingress-controller/issues/6907
     title: Kong-ingress-controller 3.4 has high CPU usage when running 2 pods
+  notes:
+  - >-
+    A bounded ARMO report-derived runtime-indicator fragment is retained under samples/. It
+    preserves the malicious digests and documented XMRig, pool.supportxmr.com, high-CPU and
+    memfd_create indicators without reconstructing the image.
+  - >-
+    The corpus holds an uncompressed compromised manager ELF (SHA-256
+    0492d814e60c424463e1b0fe6458e1447240ff6aa2d1e6a9d37888c123d7ad69, 78,487,704 bytes) and a
+    clean comparator. That digest is an extracted-member identity, not an image hash.

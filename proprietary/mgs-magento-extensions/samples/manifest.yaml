@@ -1,5 +1,35 @@
 schema_version: 1
-samples: []
+samples:
+  - artifact_id: mgs-magento-extensions
+    phase: during
+    classification: malicious
+    filename: license-backdoor-fragments.php
+    path: mgs-magento-extensions/during/license-backdoor-fragments.php
+    sha256: 9b93dfbf6ef9a066b391ac80acc35cfa32e433dc6dd9997e72fc5aebb3c15500
+    size: 863
+    source:
+      url: https://sansec.io/research/license-backdoor
+      retrieved_at: '2026-09-02T20:10:27Z'
+      kind: original_incident_report_fragment
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - retained_report_page_02_sansec_io_html
+        - measured_sha256
+    notes:
+      - >-
+        The mechanism as Sansec published it: registration.php includes a License.php that ships
+        with the module, and adminLoadLicense passes the licence file straight to include_once, so
+        the licence file is executed as PHP.
+      - >-
+        The hard-coded SECURE_KEY and SIGN_KEY constants are the vendor's, and are what let the
+        attacker sign a licence the module would run.
+      - >-
+        A report excerpt, not the shipped extension. The vendor download URLs this record cites
+        answer 403 or 404 and the Internet Archive holds no capture of any of them.
+    subject: mgs-magento-extensions
 unresolved:
   - artifact_id: mgs-magento-extensions
     phase: during
@@ -27,4 +57,29 @@ unresolved:
         Forager URL https://magesolution.com/downloads/MGS_Fbuilder_v2.2.1.zip:
         time=2026-08-10T11:20:42.466-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
         failed"
-    last_attempted_at: '2026-08-10T15:20:43.825Z'
+      - >-
+        Forager URL https://magesolution.com/downloads/MGS_Fbuilder_v2.2.1.zip:
+        time=2026-09-02T09:30:46.901-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Forager URL https://magesolution.com/downloads/MGS_Fbuilder_v2.2.1.zip:
+        time=2026-09-02T09:40:07.612-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - 'Wayback https://magesolution.com/downloads/MGS_Fbuilder_v2.2.1.zip: no captures'
+    last_attempted_at: '2026-09-02T13:40:08.168Z'
+  - artifact_id: mgs-magento-extensions
+    phase: during
+    status: unavailable
+    filename: vendor extension ZIP
+    notes:
+      - >-
+        Sansec found the backdoor in 21 modules across these three vendors; none of the download
+        URLs still serves one.
+      - >-
+        No digest is published for any affected ZIP, so even a recovered copy could not be verified
+        as exact. The test a candidate must pass is structural: registration.php includes a bundled
+        License.php, and adminLoadLicense passes the licence file to include_once.
+    attempts:
+      - 'Vendor URLs: tigren.com answers 403, meetanshi.com and magesolution.com answer 404.'
+      - 'Internet Archive: no captures of any of the three download paths.'
+      - No published digest, so the hash lanes have nothing to query.

@@ -30,15 +30,19 @@
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">SquirrelMail 1.4.11 and 1.4.12 release archives were modified after release through a compromised maintainer account, turning official downloads into remote file-inclusion backdoors until 1.4.13 replaced them.</p>
+  <p class="synopsis">SquirrelMail 1.4.11 and 1.4.12 release archives were modified after release, in what the project believed was a compromised account belonging to a release maintainer, turning official downloads into remote file-inclusion backdoors until 1.4.13 replaced them.</p>
 
   
   <h2>Story</h2>
   <div class="story">
     
-      <p>SquirrelMail&#39;s December 2007 compromise was found the boring way: the published MD5 sums for 1.4.12 did not match the package sitting on the download servers. The project investigated and concluded that the final release package had been altered after release, likely through a compromised account belonging to one of the release maintainers. The source-control history was not the delivery path; the tainted code was in the official packaged archives.</p>
+      <p>SquirrelMail's December 2007 compromise was found the boring way: the published MD5 sums for 1.4.12 did not match the package sitting on the download servers. The project investigated and concluded that the final release package had been altered after release, likely through a compromised account belonging to one of the release maintainers. The source-control history was not the delivery path; the tainted code was in the official packaged archives.</p>
     
-      <p>The first public note sounded cautious because the inserted code seemed to depend on a PHP global variable the maintainers could not immediately trace. Within a day, outside review had turned that uncertainty into a concrete exploit path. The injected logic let a request-supplied `HTTP_BASE_PATH` value define `SM_PATH`, which in SquirrelMail&#39;s PHP include flow could become remote file inclusion and then server-side code execution.</p>
+      <p>The first public note sounded cautious because the inserted code seemed to depend on a PHP global variable the maintainers could not immediately trace. Within a day, outside review had turned that uncertainty into a concrete exploit path. The injected logic let a request-supplied <code>HTTP_BASE_PATH</code> value define <code>SM_PATH</code>, which in SquirrelMail's PHP include flow could become remote file inclusion and then server-side code execution.</p>
+      <figure class="pull-quote">
+        <blockquote>SquirrelMail first judged the change harmless because <code>HTTP_BASE_PATH</code> was a PHP variable it could not track down. Web servers build <code>$_SERVER['HTTP_*']</code> from arbitrary client headers, so the two inserted lines let any request set <code>SM_PATH</code>.</blockquote>
+        <figcaption>the diff that read as broken code</figcaption>
+      </figure>
     
       <p>The scope also widened from 1.4.12 to 1.4.11. SquirrelMail released 1.4.13 on December 14 and told users of both affected versions to upgrade immediately. Red Hat and Fedora bug traffic is useful context: those distributions determined their shipped packages were based on clean tarballs, while the upstream archives themselves were treated as compromised.</p>
     
@@ -155,7 +159,7 @@
     
       <li><a href="https://tag-security.cncf.io/community/catalog/compromises/2007/squirrelmail/" target="_blank">CNCF TAG Security catalog entry for SquirrelMail</a></li>
     
-      <li><a href="https://it.slashdot.org/story/07/12/18/1847233/squirrelmail-repository-poisoned" target="_blank">SquirrelMail repository poisoned</a></li>
+      <li><a href="https://it.slashdot.org/story/07/12/18/1847233/squirrelmail-repository-poisoned" target="_blank">Slashdot: &quot;SquirrelMail repository poisoned&quot; - the headline is wrong; upstream said the code modifications never reached source control, only the final package</a></li>
     
   </ul>
   

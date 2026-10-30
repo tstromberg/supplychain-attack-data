@@ -36,13 +36,15 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>Vietnam&#39;s Government Certification Authority is not just another software vendor. It issues government digital certificates and distributes the GCA toolkit that Vietnamese agencies and private organizations use to sign electronic documents. That made its download site a high-trust target.</p>
+      <p>Vietnam's Government Certification Authority is not just another software vendor. It issues government digital certificates and distributes the GCA toolkit that Vietnamese agencies and private organizations use to sign electronic documents. That made its download site a high-trust target.</p>
     
-      <p>In Operation SignSight, attackers compromised `ca.gov.vn` and replaced the x86 and x64 GCA 8.3 MSI installers. ESET confirmed the trojanized files were downloaded over HTTPS from the official VGCA site, which makes a man-in-the-middle explanation unlikely. A user still had to download and run the installer, but the trust decision had already been shaped by the certificate authority&#39;s domain.</p>
+      <p>In Operation SignSight, attackers compromised <code>ca.gov.vn</code> and replaced the x86 and x64 GCA 8.3 MSI installers. ESET confirmed the trojanized files were downloaded over HTTPS from the official VGCA site, which makes a man-in-the-middle explanation unlikely. A user still had to download and run the installer, but the trust decision had already been shaped by the certificate authority's domain. The installers still launched the genuine GCA program. They also wrote a malicious <code>eToken.exe</code> under <code>C:\Program Files\VGCA\Authentication\SAC\x32\</code>, then unpacked a CAB that carried the PhantomNet backdoor, also called SManager. Admin installs registered the backdoor DLL as a Windows service under <code>C:\Windows\apppatch\netapi32.dll</code>; non-admin installs used a scheduled task and a <code>%TEMP%\Wmedia\</code> path.</p>
+      <figure class="pull-quote">
+        <blockquote>The trojanized MSIs were improperly signed, but ESET found the genuine GCA installers failed verification too, both using a certificate assigned to Safenet. Checking the signature would have condemned the real installer as well.</blockquote>
+        <figcaption>the genuine installer failed too</figcaption>
+      </figure>
     
-      <p>The installers still launched the genuine GCA program. They also wrote a malicious `eToken.exe` under `C:&#92;Program Files&#92;VGCA&#92;Authentication&#92;SAC&#92;x32&#92;`, then unpacked a CAB that carried the PhantomNet backdoor, also called SManager. Admin installs registered the backdoor DLL as a Windows service under `C:&#92;Windows&#92;apppatch&#92;netapi32.dll`; non-admin installs used a scheduled task and a `%TEMP%&#92;Wmedia&#92;` path.</p>
-    
-      <p>PhantomNet was built for espionage rather than monetization. It gathered host and user details, read browser proxy settings so it could reach out from corporate networks, and used HTTPS with certificate pinning to contact `vgca.homeunix.org` and `office365.blogdns.com`. ESET also found a plugin with debug paths suggesting lateral-movement capability, including Mimikatz-related code.</p>
+      <p>PhantomNet was built for espionage rather than monetization. It gathered host and user details, read browser proxy settings so it could reach out from corporate networks, and used HTTPS with certificate pinning to contact <code>vgca.homeunix.org</code> and <code>office365.blogdns.com</code>. ESET also found a plugin with debug paths suggesting lateral-movement capability, including Mimikatz-related code.</p>
     
       <p>ESET placed the malicious installers on the VGCA site between July 23 and August 16, 2020. VGCA said it had already become aware of the incident, notified users who downloaded the trojanized software, and replaced the installers. This record tracks the official website distribution of the MSI packages, not the cryptographic root trust of the certificate authority itself.</p>
     

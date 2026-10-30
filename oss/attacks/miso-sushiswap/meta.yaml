@@ -6,11 +6,19 @@
   story: |
     SushiSwap's MISO launchpad was attacked through source control, not through a smart-contract bug. A contractor account with access to the front-end repository changed the address used by the Jay Pegs Auto Mart auction.
 
-    The change was small and direct. The front end sent auction proceeds to an attacker-controlled address, moving 864.8 ETH, roughly $3 million at the time. Users were trusting the application surface to point at the right contract path.
+    The change was small and direct. The commit set the auction contract's payout address at creation, and the contract itself forwarded 864.8 ETH, roughly $3 million at the time, when the auction was finalized. Users were trusting the application surface to point at the right contract path.
 
     Sushi leadership described the incident as a supply-chain attack because the attacker used the project's own repository and deployment path. The malicious code entered the product as a code contribution, not as traffic manipulation after deployment.
 
     The funds were later returned to the operational multisig after public pressure and direct handling by Sushi. The archive keeps the record because the delivery method matters even when the money came back.
+  pull_quote:
+    text: >-
+      The front end intercepted nothing. MISO's auction templates take the
+      payout address as a deployment parameter, so the commit set `wallet`
+      when the Jay Pegs auction was created, and `finalize()` paid the balance
+      to that address.
+    caption: the website filled in the payout address
+    after: 2
   start_date: 2021-09-17
   end_date: 2021-09-17
   target:
@@ -47,13 +55,17 @@
       value: AristoK3
     - kind: observable
       value: Front-end code changed auction payout address to attacker-controlled wallet.
+  notes:
+  - >-
+    The sushi.com forum thread cited here is now private and returns a login wall; no
+    Wayback snapshot exists, so it cannot currently be read as a citation.
+  - >-
+    Coverage describes a pushed commit to the private sushiswap/miso-studio repository
+    rather than a merged pull request; whether it passed review is not established.
   references:
   - url: 
       https://arstechnica.com/information-technology/2021/09/cryptocurrency-launchpad-hit-by-3-million-supply-chain-attack/
     title: Cryptocurrency launchpad hit by $3 million supply-chain attack
-  - url: 
-      https://www.bleepingcomputer.com/news/security/sushi-defi-exchange-hit-by-3-million-supply-chain-attack/
-    title: Sushi DeFi exchange hit by $3 million supply chain attack
   - url: 
       https://forum.sushi.com/t/the-miso-front-end-exploit-and-how-we-mitigated-it/4254
     title: The MISO Front End Exploit and How We Mitigated It

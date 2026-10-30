@@ -16,7 +16,7 @@
   <h1>Octopus Scanner infected NetBeans builds</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> NetBeans projects on GitHub · <a href="https://github.com/advisories" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Target:</strong> NetBeans projects on GitHub</div>
     <div class="meta-item"><strong>Date:</strong> 2018-08-01 to 2020-05-28 (666 days)</div>
     <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
@@ -38,11 +38,13 @@
     
       <p>Octopus Scanner reached GitHub as a strange abuse report: repositories were serving malware, but the maintainers did not appear to be the attackers. GitHub Security Lab traced the problem to 26 open-source NetBeans projects whose checked-in sources and artifacts had already been infected.</p>
     
-      <p>The malware looked for NetBeans project metadata on a developer machine, copied a payload named `cache.dat` into `nbproject/cache.dat`, and modified `nbproject/build-impl.xml`. That edit hooked the normal NetBeans build flow so the payload ran whenever the project was built.</p>
+      <p>The malware looked for NetBeans project metadata on a developer machine, copied a payload named <code>cache.dat</code> into <code>nbproject/cache.dat</code>, and modified <code>nbproject/build-impl.xml</code>. That edit hooked the normal NetBeans build flow so the payload ran whenever the project was built, which made the build step the distribution mechanism. A developer who cloned and built an infected project could produce infected JARs, and GitHub also found variants that backdoored existing JAR dependencies checked into the project, so deleting one obvious file was not enough if the repository still carried tainted artifacts.</p>
+      <figure class="pull-quote">
+        <blockquote>The <code>-post-jar</code> hook wrote two empty marker files, <code>.netbeans_automatic_build</code> and <code>.netbeans_update_resources</code>, so NetBeans read the build as up to date and would not replace the infected JAR.</blockquote>
+        <figcaption>why a rebuild did not clean it</figcaption>
+      </figure>
     
-      <p>The build step was the distribution mechanism. A developer who cloned and built an infected project could produce infected JARs; GitHub also found variants that backdoored existing JAR dependencies checked into the project. Deleting one obvious file was not enough if the repository still carried tainted artifacts.</p>
-    
-      <p>The payload chain then moved from project infection to host persistence. The first-stage dropper unpacked `octopus.dat`, installed autostart or scheduled-task persistence depending on platform, and spawned a remote administration tool that attempted to reach command-and-control infrastructure. GitHub reported that the C2 servers did not appear active during analysis, but the repositories still exposed anyone who cloned and built them.</p>
+      <p>The payload chain then moved from project infection to host persistence. The first-stage dropper unpacked <code>octopus.dat</code>, installed autostart or scheduled-task persistence depending on platform, and spawned a remote administration tool that attempted to reach command-and-control infrastructure. GitHub reported that the C2 servers did not appear active during analysis, but the repositories still exposed anyone who cloned and built them.</p>
     
       <p>GitHub removed or cleaned affected projects and published hashes for defenders. This record treats the 26 projects as artifact scope, not as a human victim count. The important lesson is the trust boundary: source review may miss a build-system backdoor if the project file that orchestrates compilation is already part of the attack.</p>
     
@@ -70,7 +72,7 @@
             <br><code>NetBeans project sources</code>
             <br><span>github · source_archive</span>
             <br><a href="https://github.com" target="_blank">https://github.com</a>
-            <br><a href="https://github.com/advisories" target="_blank">https://github.com/advisories</a>
+            
           </td>
           <td>2018-08-01<br>to 2020-05-28</td>
           <td>

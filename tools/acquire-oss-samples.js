@@ -5,7 +5,7 @@
  *
  * This tool only downloads package archives. It never imports, installs, or
  * executes their contents. Forager owns registry/archive/provider fallbacks and
- * writes the adjacent .forage.json provenance record.
+ * records the acquisition in samples/provenance/<sha256>.json.
  */
 
 const crypto = require("node:crypto");
@@ -14,7 +14,8 @@ const os = require("node:os");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
 const yaml = require("js-yaml");
-const { compressLargeSample } = require("./sample-storage.js");
+const { verificationFrom } = require("./normalize-basis.js");
+const provenance = require("./provenance-store.js");
 
 const ROOT = path.resolve(__dirname, "..");
 const ATTACKS = path.join(ROOT, "oss", "attacks");
@@ -172,6 +173,7 @@ function coordinate(ecosystem, name, version) {
   if (ecosystem === "wordpress" || ecosystem === "wordpress.org") return `pkg:wordpress/${n}@${v}`;
   if (ecosystem === "github") return `pkg:github/${n}@${v}`;
   if (ecosystem === "rubygems") return `pkg:gem/${n}@${v}`;
+  if (ecosystem === "crates.io") return `pkg:cargo/${n}@${v}`;
   if (["vscode", "vscode_marketplace", "vscode marketplace", "vs code marketplace"].includes(ecosystem)) {
     return `pkg:vscode-extension/${n}@${v}`;
   }
@@ -549,8 +551,14 @@ function findDownloadedFiles(dir) {
   return found;
 }
 
+// The caching registry proxies serve the bytes npm published, so they are a
+// distribution rather than a reconstruction; forager reaches them through its own
+// npm mirror lane and records the canonical npm URL alongside.
+const DISTRIBUTION_MIRRORS = /repo\.huaweicloud\.com|registry\.npmmirror\.com|r\.cnpmjs\.org|mirrors\.cloud\.tencent\.com/;
+
 function sourceKind(url) {
   if (/web\.archive\.org\/web\//.test(url)) return "web_archive";
+  if (DISTRIBUTION_MIRRORS.test(url)) return "distribution_mirror";
   if (/archive\.softwareheritage\.org/.test(url)) return "source_archive";
   // socket.dev serves a package's files individually. Forager re-packs them into
   // a tarball, so the bytes are a reconstruction, never the published archive.
@@ -565,31 +573,50 @@ function sourceKind(url) {
 function verification(target, sidecar, digest, file) {
   const url = sidecar.fetch?.url || "";
   if (target.expectedSha256 && digest === target.expectedSha256) {
-    return { status: "exact", basis: ["reported_sha256", "measured_sha256"] };
+    return verificationFrom("exact", ["reported_sha256", "measured_sha256"]);
   }
   // An MD5 or SHA-1 target binds the bytes just as tightly for this purpose: the
   // reported digest is what identified the sample, and SHA-256 is measured anyway.
   const expected = target.expectedDigest;
   if (expected && expected.algorithm !== "sha256" && digestFile(file, expected.algorithm) === expected.value) {
-    return { status: "exact", basis: [`reported_${expected.algorithm}`, "measured_sha256"] };
+    return verificationFrom("exact", [`reported_${expected.algorithm}`, "measured_sha256"]);
   }
   if (/archive\.softwareheritage\.org|cdn\.jsdelivr\.net|unpkg\.com/.test(url)) {
-    return { status: "tree_equivalent", basis: ["reconstructed_archived_source_tree", "measured_sha256"] };
+    return verificationFrom("tree_equivalent", ["reconstructed_archived_source_tree", "measured_sha256"]);
   }
   if (/socket\.dev|socketusercontent\.com/.test(url)) {
-    return { status: "tree_equivalent", basis: ["reconstructed_socket_dev_file_listing", "measured_sha256"] };
+    return verificationFrom("tree_equivalent", ["reconstructed_socket_dev_file_listing", "measured_sha256"]);
   }
   if (/web\.archive\.org\/web\//.test(url)) {
-    return { status: "probable_exact", basis: ["wayback_original_replay", "measured_sha256"] };
+    return verificationFrom("probable_exact", ["wayback_original_replay", "measured_sha256"]);
   }
-  return { status: "probable_exact", basis: ["official_distribution_endpoint", "measured_sha256"] };
+  if (DISTRIBUTION_MIRRORS.test(url)) {
+    return verificationFrom("probable_exact",
+      ["distribution_mirror_retained_published_tarball", "exact_package_name_and_version", "measured_sha256"]);
+  }
+  return verificationFrom("probable_exact", ["official_distribution_endpoint", "measured_sha256"]);
+}
+
+// The extension of a package file, taken from the end rather than from the first
+// dot. Cutting at the first dot swallows the version too: "plain-crypto-js-4.2.1.tgz"
+// yielded ".2.1.tgz", and a collision rename then produced a file called
+// "plain-crypto-js-4.2.1-58401c195fe0.2.1.tgz". Trailing segments count as an
+// extension only while they look like one, which keeps ".tar.gz" whole and leaves
+// version digits alone.
+function archiveExtension(basename) {
+  const parts = basename.split(".");
+  const suffix = [];
+  while (parts.length > 1 && suffix.length < 2 && /^[A-Za-z][A-Za-z0-9]{0,4}$/.test(parts.at(-1))) {
+    suffix.unshift(parts.pop());
+  }
+  return suffix.length ? `.${suffix.join(".")}` : ".sample";
 }
 
 function recordSuccess(target, downloaded) {
   const sidecarFile = `${downloaded}.forage.json`;
   const sidecar = fs.existsSync(sidecarFile) ? JSON.parse(fs.readFileSync(sidecarFile, "utf8")) : {};
   const digest = sha256File(downloaded);
-  const ext = path.basename(downloaded).includes(".") ? path.basename(downloaded).slice(path.basename(downloaded).indexOf(".")) : ".sample";
+  const ext = archiveExtension(path.basename(downloaded));
   let filename = path.basename(downloaded);
   const destinationDir = path.join(target.attackDir, "samples", safeSegment(target.artifactId), target.phase);
   fs.mkdirSync(destinationDir, { recursive: true });
@@ -600,11 +627,22 @@ function recordSuccess(target, downloaded) {
   }
   if (!fs.existsSync(destination)) fs.renameSync(downloaded, destination);
   if (fs.existsSync(sidecarFile)) {
-    const destinationSidecar = `${destination}.forage.json`;
-    if (!fs.existsSync(destinationSidecar)) fs.renameSync(sidecarFile, destinationSidecar);
+    // A collision rename is part of how the corpus filed these bytes, not of how they
+    // were obtained, but it is worth recording; the record itself is filed by digest, so
+    // the rename no longer has to chase it.
+    if (sidecar.artifact && sidecar.artifact.filename !== filename) {
+      const original = sidecar.artifact.filename;
+      sidecar.artifact.filename = filename;
+      sidecar.fetch ||= {};
+      sidecar.fetch.derivation ||= [];
+      sidecar.fetch.derivation.push(`Renamed from ${original} on capture: another file of that name with different bytes was already held for this artifact. Bytes unchanged.`);
+    }
+    if (sidecar.artifact) provenance.recordFor(destination, sidecar);
+    fs.rmSync(sidecarFile);
   }
   // An incomplete reconstruction carries an accounting record naming the members
-  // the source could no longer serve. It moves with the bytes, like the sidecar.
+  // the source could no longer serve. That one does move with the bytes: it describes
+  // this archive's contents, not the fetch that produced them.
   const partialFile = `${downloaded}.partial.json`;
   let partial = null;
   if (fs.existsSync(partialFile)) {
@@ -613,9 +651,8 @@ function recordSuccess(target, downloaded) {
     if (!fs.existsSync(destinationPartial)) fs.renameSync(partialFile, destinationPartial);
   }
 
-  // Identity is the artifact's own bytes; large ones are stored compressed.
+  // Identity is the artifact's own bytes, stored exactly as they were distributed.
   const artifactSize = fs.statSync(destination).size;
-  const stored = compressLargeSample(destination);
 
   const { manifest } = manifestState(target);
   manifest.samples = manifest.samples.filter(x => entryKey(x) !== sampleKey(target));
@@ -628,7 +665,7 @@ function recordSuccess(target, downloaded) {
     coordinate: target.purl,
     version: target.version,
     filename,
-    path: path.relative(path.join(target.attackDir, "samples"), stored.path),
+    path: path.relative(path.join(target.attackDir, "samples"), destination),
     sha256: digest,
     size: artifactSize,
     source: {
@@ -636,7 +673,6 @@ function recordSuccess(target, downloaded) {
       retrieved_at: fetchInfo.at || new Date().toISOString(),
       kind: sourceKind(fetchInfo.url || ""),
     },
-    ...(stored.storage ? { storage: stored.storage } : {}),
     verification: partial
       ? { status: "payload_only", basis: ["partial_reconstruction", "measured_sha256"] }
       : verification(target, sidecar, digest, destination),
@@ -881,7 +917,7 @@ function writeReport(options, inventory, results, predecessors) {
     scope: "open-source attacks",
     policy: {
       layout: "oss/attacks/<incident>/samples/<artifact>/{before,during,after}",
-      provenance: "Adjacent .forage.json files are mandatory for acquired files.",
+      provenance: "Every acquired file is recorded in samples/provenance/<sha256>.json.",
       safety: "Archives are stored only; this workflow never imports, installs, or executes them.",
       fidelity: {
         exact: "Bytes are bound to an authoritative digest or immutable source revision and have a measured SHA-256.",

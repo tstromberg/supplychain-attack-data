@@ -16,7 +16,7 @@
   <h1>Intruder signed tampered OpenSSH RPMs with Red Hat key</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> Red Hat Enterprise Linux OpenSSH packages · <a href="https://access.redhat.com" target="_blank">website</a> · <a href="https://src.fedoraproject.org/rpms/openssh" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Target:</strong> Red Hat Enterprise Linux OpenSSH packages · <a href="https://access.redhat.com" target="_blank">website</a></div>
     <div class="meta-item"><strong>Date:</strong> 2008-08-14 to 2008-08-22 (8 days)</div>
     <div class="meta-item"><strong>Actor:</strong> Unknown (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> distribution</div>
@@ -36,13 +36,17 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The Fedora and Red Hat intrusion started in public with silence, which is why the incident still reads like a case study in distribution trust. On August 14, Fedora warned users not to download or update packages while it investigated an infrastructure issue. A week later, Fedora confirmed that one compromised machine had been used to sign Fedora packages, but said the signing passphrase had not been used during the intrusion and source/package checks had found no evidence of Fedora package tampering. Fedora rotated signing keys anyway.</p>
+      <p>The Fedora and Red Hat intrusion started in public with silence, which is why the incident still reads like a case study in distribution trust. On August 14, Fedora warned users not to download or update packages while it investigated an infrastructure issue. A week later, Fedora confirmed that one of the compromised servers was a system used for signing Fedora packages, but said the signing passphrase had not been used during the intrusion and source/package checks had found no evidence of Fedora package tampering. Fedora rotated signing keys anyway.</p>
     
-      <p>Red Hat&#39;s disclosure landed inside RHSA-2008:0855, an OpenSSH security update. The important supply-chain fact was separate from the ordinary OpenSSH X11-cookie fix in the same advisory: an intruder had managed to sign a small number of tampered OpenSSH packages for RHEL 4 on i386 and x86_64, and RHEL 5 on x86_64. That made the trust boundary different from a random mirrored RPM. The packages carried a legitimate Red Hat signature, which is the exact signal RPM tooling and administrators normally use to decide that an update came from the vendor.</p>
+      <p>Red Hat's disclosure landed inside RHSA-2008:0855, an OpenSSH security update. The important supply-chain fact was separate from the ordinary OpenSSH X11-cookie fix in the same advisory: an intruder had managed to sign a small number of tampered OpenSSH packages for RHEL 4 on i386 and x86_64, and RHEL 5 on x86_64. That made the trust boundary different from a random mirrored RPM. The packages carried a legitimate Red Hat signature, which is the exact signal RPM tooling and administrators normally use to decide that an update came from the vendor.</p>
+      <figure class="pull-quote">
+        <blockquote>The tampered RPMs were signed with the Red Hat Enterprise Linux key, not Fedora's, so <code>rpm --checksig</code> would have passed them. Red Hat's answer was the channel: RHN, it said, never carried them.</blockquote>
+        <figcaption>the channel held, not the signature</figcaption>
+      </figure>
     
-      <p>Red Hat said its review found that Red Hat Network and RHN-distributed content were not compromised, so customers updating through RHN were not believed to be at risk. The risk sat with people who might have obtained Red Hat binary packages outside the subscriber channel. To make that concrete, Red Hat published `openssh-blacklist-1.0.sh`, a signed detection script that checked installed packages or candidate RPM files against the SIGMD5 values of the known tampered packages.</p>
+      <p>Red Hat said it remained &quot;highly confident&quot; that its systems and processes had prevented the intrusion from compromising Red Hat Network or the content distributed via RHN, and accordingly believed customers updating through RHN were not at risk. The risk sat with people who might have obtained Red Hat binary packages outside the subscriber channel. To make that concrete, Red Hat published <code>openssh-blacklist-1.0.sh</code>, a signed detection script that checked installed packages or candidate RPM files against a list of the known tampered packages. The published page documents its PASS and ALERT output and its RPM-filename arguments; how it compares them is not stated there.</p>
     
-      <p>The tampered versions were compact but high-value: `openssh-3.9p1-8.RHEL4.24`, `openssh-3.9p1-9.el4`, `openssh-4.3p2-26`, and `openssh-4.3p2-26.el5`, across the OpenSSH client, server, askpass, debuginfo, and related subpackages. Public CVE records later tracked the trojaned package issue as CVE-2008-3844 with unknown impact. The lasting lesson is that package signing protects the distribution path only while the signing environment remains controlled; once that boundary is crossed, a signature can authenticate the attacker&#39;s artifact.</p>
+      <p>The tampered versions were compact but high-value: <code>openssh-3.9p1-8.RHEL4.24</code>, <code>openssh-3.9p1-9.el4</code>, <code>openssh-4.3p2-26</code>, and <code>openssh-4.3p2-26.el5</code>, across the OpenSSH client, server, askpass, debuginfo, and related subpackages. Public CVE records later tracked the trojaned package issue as CVE-2008-3844 with unknown impact. The lasting lesson is that package signing protects the distribution path only while the signing environment remains controlled; once that boundary is crossed, a signature can authenticate the attacker's artifact.</p>
     
   </div>
   
@@ -173,6 +177,105 @@
 
   
 
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>package:openssh-3.9p1-8.RHEL4.24 (i386, x86_64)</code></li>
+    
+      <li><code>package:openssh-3.9p1-9.el4 (i386, x86_64)</code></li>
+    
+      <li><code>package:openssh-4.3p2-26 (x86_64)</code></li>
+    
+      <li><code>package:openssh-4.3p2-26.el5 (x86_64)</code></li>
+    
+      <li><code>rpm_sigmd5:00b6c24146eb6222ec58342841ee31b1</code></li>
+    
+      <li><code>rpm_sigmd5:021d1401b2882d864037da406e7b3bd1</code></li>
+    
+      <li><code>rpm_sigmd5:035253874639a1ebf3291189f027a561</code></li>
+    
+      <li><code>rpm_sigmd5:08daefebf2a511852c88ed788717a148</code></li>
+    
+      <li><code>rpm_sigmd5:177b1013dc0692c16e69c5c779b74fcf</code></li>
+    
+      <li><code>rpm_sigmd5:24c67508c480e25b2d8b02c75818efad</code></li>
+    
+      <li><code>rpm_sigmd5:27ed27c7eac779f43e7d69378a20034f</code></li>
+    
+      <li><code>rpm_sigmd5:2a2f907c8d6961cc8bfbc146970c37e2</code></li>
+    
+      <li><code>rpm_sigmd5:2b0a85e1211ba739904654a7c64a4c90</code></li>
+    
+      <li><code>rpm_sigmd5:2df270976cbbbbb05dbdf95473914241</code></li>
+    
+      <li><code>rpm_sigmd5:2ff426e48190519b1710ed23a379bbee</code></li>
+    
+      <li><code>rpm_sigmd5:322cddd04ee5b7b8833615d3fbbcf553</code></li>
+    
+      <li><code>rpm_sigmd5:35b050b131dab0853f11111b5afca8b3</code></li>
+    
+      <li><code>rpm_sigmd5:38f67a6ce63853ad337614dbd760b0db</code></li>
+    
+      <li><code>rpm_sigmd5:3b9e24c54dddfd1f54e33c6cdc90f45c</code></li>
+    
+      <li><code>rpm_sigmd5:3fa1a1b446feb337fd7f4a7938a6385f</code></li>
+    
+      <li><code>rpm_sigmd5:41741fe3c73d919c3758bf78efc437c9</code></li>
+    
+      <li><code>rpm_sigmd5:432b94026da05d6b11604a00856a17b2</code></li>
+    
+      <li><code>rpm_sigmd5:54bd06ebf5125debe0932b2f1f5f1c39</code></li>
+    
+      <li><code>rpm_sigmd5:57f7e73ee28ba0cbbaad1a0a63388e4c</code></li>
+    
+      <li><code>rpm_sigmd5:59ad9703362991d8eff9d138351b37ac</code></li>
+    
+      <li><code>rpm_sigmd5:71ef43e0d9bfdfada39b4cb778b69959</code></li>
+    
+      <li><code>rpm_sigmd5:760040ec4db1d16e878016489703ec6d</code></li>
+    
+      <li><code>rpm_sigmd5:89892d38e3ccf667e7de545ea04fa05b</code></li>
+    
+      <li><code>rpm_sigmd5:8a65c4e7b8cd7e11b9f05264ed4c377b</code></li>
+    
+      <li><code>rpm_sigmd5:8bf3baa4ffec125206c3ff308027a0c4</code></li>
+    
+      <li><code>rpm_sigmd5:982cd133ba95f2db580c67b3ff27cfde</code></li>
+    
+      <li><code>rpm_sigmd5:990d27b6140d960ad1efd1edd5ec6898</code></li>
+    
+      <li><code>rpm_sigmd5:9bef2d9c4c581996129bd9d4b82faafa</code></li>
+    
+      <li><code>rpm_sigmd5:9c90432084937eac6da3d5266d284207</code></li>
+    
+      <li><code>rpm_sigmd5:a1dea643f8b0bda52e3b6cad3f7c5eb6</code></li>
+    
+      <li><code>rpm_sigmd5:b54197ff333a2c21d0ca3a5713300071</code></li>
+    
+      <li><code>rpm_sigmd5:b92ccd4cbd68b3d3cefccee3ed9b612c</code></li>
+    
+      <li><code>rpm_sigmd5:bb1905f7994937825cb9693ec175d4d5</code></li>
+    
+      <li><code>rpm_sigmd5:bc6b8b246be3f3f0a25dd8333ad3456b</code></li>
+    
+      <li><code>rpm_sigmd5:c0aff0b45ee7103de53348fcbedaf72e</code></li>
+    
+      <li><code>rpm_sigmd5:c7d520faab2673b66a13e58e0346021d</code></li>
+    
+      <li><code>rpm_sigmd5:ce97e8c02c146c8b1075aad1550b1554</code></li>
+    
+      <li><code>rpm_sigmd5:d19ae2199662e90ec897c8f753816ee0</code></li>
+    
+      <li><code>rpm_sigmd5:de61e6e1afd2ca32679ff78a2c3a0767</code></li>
+    
+      <li><code>rpm_sigmd5:dfbc24a871599af214cd7ef72e3ef867</code></li>
+    
+      <li><code>rpm_sigmd5:f68d010c6e54f3f8a973583339588262</code></li>
+    
+      <li><code>rpm_sigmd5:fc814c0e28b674da8afcfbdeecd1e18e</code></li>
+    
+  </ul>
   
 
   

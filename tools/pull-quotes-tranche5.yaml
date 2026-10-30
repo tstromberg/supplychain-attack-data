@@ -1,0 +1,136 @@
+# Tranche 5 (2022+). Campaign records first.
+
+- id: shai-hulud-here-we-go-again
+  text: >-
+    Inside a release runner the worm scraped GitHub Actions OIDC material out of
+    memory and exchanged it for an npm publish token, so it propagated through
+    trusted publishing itself and its releases carried valid provenance.
+  caption: trusted publishing as the propagation path
+  after: 2
+  source: https://research.jfrog.com/post/shai-hulud-here-we-go-again/
+
+- id: chaindrop-2026
+  text: >-
+    ChainDrop had no hardcoded C2 domain to sinkhole; it read the current one
+    from an Ethereum contract that emits no events, so one owner-only write
+    redirected every infected host without a malware update.
+  caption: no domain to sinkhole
+  after: 3
+  source: https://unit42.paloaltonetworks.com/chaindrop-npm-worm-analysis/
+
+- id: miasma-2026
+  text: >-
+    The package.json declared no install scripts at all; the mere presence of a
+    `binding.gyp` made npm run node-gyp, and gyp's `<!(...)` command expansion
+    executed the attacker's shell at configure time.
+  caption: no install script to find
+  after: 3
+  source: https://snyk.io/blog/node-gyp-supply-chain-compromise-self-propagating-npm-worm-binding-gyp/
+
+- id: pytorch
+  text: >-
+    PyTorch shipped torchtriton from its own nightly index, but pip gives PyPI
+    precedence, so publishing the same name publicly won resolution. The fix was
+    registering a dummy torchtriton on PyPI to hold the name.
+  caption: the public index took precedence
+  after: 1
+  source: https://pytorch.org/blog/compromised-nightly-dependency/
+
+- id: node-ipc
+  text: >-
+    Versions 10.1.1 and 10.1.2 looked up the installing machine's IP and, when it
+    geolocated to Russia or Belarus, overwrote its files with a heart emoji. The
+    package's own maintainer wrote and published it.
+  caption: the maintainer wrote the wiper
+  after: 2
+  source: https://arstechnica.com/information-technology/2022/03/sabotage-code-added-to-popular-npm-package-wiped-files-in-russia-and-belarus/
+
+- id: phpass-hautelook-fork-on-github-packagist
+  text: >-
+    Packagist kept auto-updating hautelook/phpass from a GitHub URL whose
+    repository and organization had been deleted nine months earlier. When a
+    stranger re-registered the organization name, tracking simply resumed.
+  caption: deletion never unregistered the package
+  after: 2
+  source: https://www.concretecms.org/about/project-news/security/supply-chain-hack-phpass-repo-jacking
+
+- id: art-template-npm
+  text: >-
+    Caught injecting 4.13.3, the new owners published a clean 4.13.4, explained
+    they `wanted to make simple statistics`, deleted the warning thread, then
+    shipped the exploit-kit loader fourteen months later.
+  caption: caught once, withdrawn, then shipped again
+  after: 3
+  source: https://github.com/aui/blog/issues/3
+
+- id: xzutils
+  text: >-
+    Since 2008 xz's tests/files README had said the inputs were made by hand with
+    a hex editor, so there is no better source code than the files themselves. The
+    two files carrying the payload ran in no test.
+  caption: binary test data with no source
+  after: 1
+  source: https://github.com/tukaani-project/xz/commit/cf44e4b7f5dfdbf8c78aef377c10f71e274f63c0
+
+- id: 3cx
+  text: >-
+    3CX met SentinelOne's March 22 detection by double-checking its own desktop app
+    on VirusTotal; the all-clear made the alert a false positive. "It's not unusual
+    for VoIP apps," CEO Nick Galea told The Register.
+  caption: the all-clear that outranked the alert
+  after: 3
+  source: https://www.theregister.com/security/2023/04/03/3cx-decided-supply-chain-attack-indicator-was-false-positive/1134697
+
+- id: polyfill-io
+  text: >-
+    The redirect fired only on mobile, stood down for any browser carrying an
+    admin_id cookie, and delayed itself where it found an analytics script, staying
+    out of the stats and away from anyone able to report it.
+  caption: invisible to admins and to analytics
+  after: 2
+  source: https://sansec.io/research/polyfill-supply-chain-attack
+
+- id: solana-web3-js
+  text: >-
+    The lure was an invitation to collaborate on a private package, appearing to
+    come from a teammate. The maintainer entered their npm username, password and a
+    round of two-factor authentication into a clone of the npm site.
+  caption: two-factor completed on the attacker's page
+  after: 2
+  source: https://thehackernews.com/2024/12/researchers-uncover-backdoor-in-solanas.html
+
+- id: npnjs-scam-npm-2025
+  text: >-
+    The maintainer did check the sender. It was npmjs.org, a domain npm owns but
+    does not send mail from, so there was no DMARC record for the spoof to fail;
+    only the link pointed at npnjs.com.
+  caption: the sender domain npm never used
+  after: 1
+  source: https://www.theregister.com/security/2025/07/24/npm-phishing-attack-laces-popular-packages-with-malware/841273
+
+- id: qix-npm-phishing-2025
+  text: >-
+    The last check in a signing flow is a human reading the address on screen. Wiz
+    found the payload swapping in look-alike addresses built to survive that, in
+    the end user's browser, never on the machine that installed it.
+  caption: built to pass a human eye
+  after: 2
+  source: https://www.wiz.io/blog/widespread-npm-supply-chain-attack-breaking-down-impact-scope-across-debug-chalk
+
+- id: reviewdog-tj-actions-2025
+  text: >-
+    Nothing was exfiltrated to an attacker server: the secrets were printed into
+    the victims' own workflow logs, public for anyone to read. Unit 42 called it a
+    mystery, since that is also what revealed the attack.
+  caption: the secrets were published, not stolen
+  after: 2
+  source: https://unit42.paloaltonetworks.com/github-actions-supply-chain-attack/
+
+- id: megalodon-2026
+  text: >-
+    The Optimize-Build variant fires only on `workflow_dispatch`, leaving no runs
+    in the Actions tab and no failed builds. GitHub exempts that trigger from its
+    anti-recursion rule, so a `GITHUB_TOKEN` from any other workflow can fire it.
+  caption: a backdoor with no CI history
+  after: 2
+  source: https://safedep.io/megalodon-mass-github-repo-backdooring-ci-workflows/

@@ -1,0 +1,1241 @@
+{
+  "schema_version": 2,
+  "sha256": "e93fc8ff5fc7c97ae9ab75654ffa6063b2e339adadd4f4d90295d9e9d6cedc87",
+  "size_bytes": 164227,
+  "acquisitions": [
+    {
+      "schema_version": "1.0",
+      "artifact": {
+        "filename": "mrmustard-0.7.4-RECONSTRUCTED.tar.gz",
+        "sha256": "e93fc8ff5fc7c97ae9ab75654ffa6063b2e339adadd4f4d90295d9e9d6cedc87",
+        "size_bytes": 164227
+      },
+      "package": {
+        "ecosystem": "python",
+        "name": "mrmustard",
+        "version": "0.7.4",
+        "purl": "pkg:pypi/mrmustard@0.7.4",
+        "feed": "purl"
+      },
+      "fetch": {
+        "collector": "forager",
+        "category": "submitted",
+        "at": "2026-09-02T10:46:24.64453Z",
+        "url": "https://archive.softwareheritage.org/swh:1:dir:f091aca313abef8a737ef3a068bf14421791c622",
+        "original_url": "https://pypi.org/project/mrmustard/0.7.4/"
+      },
+      "registry": {
+        "source_id": "pypi",
+        "ecosystem": "pypi",
+        "format": "fletch.registry",
+        "url": "https://pypi.org/pypi/mrmustard/json",
+        "at": "2026-09-02T10:46:24.644315Z",
+        "status": "complete",
+        "raw": [
+          {
+            "url": "https://pypi.org/pypi/mrmustard/json",
+            "status": 200,
+            "content_type": "application/json",
+            "body": {
+              "info": {
+                "author": "Xanadu",
+                "author_email": "filippo@xanadu.ai",
+                "bugtrack_url": null,
+                "classifiers": [
+                  "Development Status :: 4 - Beta",
+                  "Environment :: Console",
+                  "Intended Audience :: Science/Research",
+                  "License :: OSI Approved :: Apache Software License",
+                  "Natural Language :: English",
+                  "Operating System :: MacOS :: MacOS X",
+                  "Operating System :: Microsoft :: Windows",
+                  "Operating System :: POSIX",
+                  "Operating System :: POSIX :: Linux",
+                  "Programming Language :: Python",
+                  "Programming Language :: Python :: 3",
+                  "Programming Language :: Python :: 3 :: Only",
+                  "Programming Language :: Python :: 3.10",
+                  "Programming Language :: Python :: 3.11",
+                  "Programming Language :: Python :: 3.9",
+                  "Topic :: Scientific/Engineering :: Physics"
+                ],
+                "description": "![Logo](https://github.com/XanaduAI/MrMustard/blob/main/mm_white.png#gh-light-mode-only)\n![Logo](https://github.com/XanaduAI/MrMustard/blob/main/mm_dark.png#gh-dark-mode-only)\n\n[![Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)](https://opensource.org/licenses/Apache-2.0)\n[![Actions Status](https://github.com/XanaduAI/MrMustard/workflows/Tests/badge.svg)](https://github.com/XanaduAI/MrMustard/actions)\n[![Python version](https://img.shields.io/pypi/pyversions/mrmustard.svg?style=popout-square)](https://pypi.org/project/MrMustard/)\n\nMr Mustard is a differentiable simulator with a sophisticated built-in optimizer, that operates seamlessly across phase space and Fock space. It is built on top of an agnostic autodiff interface, to allow for plug-and-play backends (`numpy` by default).\n\nMr Mustard supports:\n- Phase space representation of Gaussian states and Gaussian channels on an arbitrary number of modes\n- Exact Fock representation of any Gaussian circuit and any Gaussian state up to an arbitrary cutoff\n- Riemannian optimization on the symplectic group (for Gaussian transformations) and on the unitary group (for interferometers)\n- Adam optimizer for euclidean parameters\n- Single-mode gates (parallelizable):\n    - squeezing, displacement, phase rotation, attenuator, amplifier, additive noise, phase noise\n- Two-mode gates:\n    - beam splitter, Mach-Zehnder interferometer, two-mode squeezing, CX, CZ, CPHASE\n- N-mode gates (with dedicated Riemannian optimization):\n    - Interferometer (unitary), RealInterferometer (orthogonal), Gaussian transformation (symplectic)\n- Single-mode states (parallelizable):\n    - Vacuum, Coherent, SqueezedVacuum, Thermal, Fock\n- Two-mode states:\n    - TMSV (two-mode squeezed vacuum)\n- N-mode states:\n    - Gaussian\n- Photon number moments and entropic measures\n- PNR detectors and Threshold detectors with trainable quantum efficiency and dark counts\n- Homodyne, Heterodyne and Generaldyne measurements\n- Composable circuits\n- Plug-and-play backends (`numpy` as default)\n- An abstraction layer `XPTensor` for seamless symplectic algebra (experimental)\n\n# Increased numerical stability using Julia [optional]\n\nConverting phase space objects to Fock space can be numerically unstable due to accumulating floating point errors.\nTo resolve this, the conversion can be performed with extended-precision arithmetic. To use this feature,\nan installation of [Julia](https://github.com/JuliaLang/juliaup#installation) is required (version 1.9.3 recommended).\n\n* When installing MrMustard via devcontainer, Julia and its required packages are automatically installed.\n\n* When installing MrMustard via `poetry install` or `pip install`, the required Julia packages have to be installed manually as follows:\n\n```\njulia --project=\"julia_pkg\" -e \"using Pkg; Pkg.instantiate()\"\n```\n\n* When installing MrMustard via the `MakeFile`, the required Julia packages are automatically installed _only_ if Julia was previously installed by the user.\n\n# The lab module\nThe lab module contains things you'd find in a lab: states, transformations, measurements, circuits. States can be used at the beginning of a circuit as well as at the end, in which case a state is interpreted as a measurement (a projection onto that state). Transformations are usually parametrized and map states to states. The action on states is differentiable with respect to the state and to the gate parameters.\n\n\n## 1. States and Gates\nHere are a few examples of states and gates:\n```python\nimport numpy as np\nfrom mrmustard.lab import *\n\nvac = Vacuum(num_modes=2)        # 2-mode vacuum state\ncoh = Coherent(x=0.1, y=-0.4)    # coh state |alpha> with alpha = 0.1 - 0.4j\nsq  = SqueezedVacuum(r=0.5)      # squeezed vacuum state\ng   = Gaussian(num_modes=2)      # 2-mode Gaussian state with zero means\nfock4 = Fock(4)                  # fock state |4>\n\nD  = Dgate(x=1.0, y=-0.4)         # Displacement by 1.0 along x and -0.4 along y\nS  = Sgate(r=0.5)                 # Squeezer with r=0.5\nR  = Rgate(angle=0.3)             # Phase rotation by 0.3\nA  = Amplifier(gain=2.0)          # noisy amplifier with 200% gain\nL  = Attenuator(0.5)              # pure loss channel with 50% transmissivity\nN  = AdditiveNoise(noise=0.1)     # additive noise with noise level 0.1\n\nBS = BSgate(theta=np.pi/4)          # 50/50 beam splitter\nS2 = S2gate(r=0.5)                  # two-mode squeezer\nMZ = MZgate(phi_a=0.3, phi_b=0.1)   # Mach-Zehnder interferometer\nI  = Interferometer(8)              # 8-mode interferometer\nL  = Attenuator(0.5)                # pure lossy channel with 50% transmissivity\nA  = Amplifier(gain=2.0, nbar=1.0)  # noisy amplifier with 200% gain\n```\n\nThe `repr` of single-mode states shows the Wigner function:\n<img width=\"571\" alt=\"Screen Shot 2021-12-06 at 1 31 17 PM\" src=\"https://user-images.githubusercontent.com/8944955/144902008-8d26d59c-8600-4391-9144-ffcc1b2215c2.png\">\n\n```python\ncat_amps = Coherent(2.0).ket([20]) + Coherent(-2.0).ket([20])\ncat_amps = cat_amps / np.linalg.norm(cat_amps)\ncat = State(ket=cat_amps)\ncat\n```\n<img width=\"538\" alt=\"Screen Shot 2021-12-06 at 8 27 06 PM\" src=\"https://user-images.githubusercontent.com/8944955/144949009-ebf7bbf8-9240-406c-ab99-bf8c36acd3f7.png\">\n\nStates (even those in Fock representation) are always compatible with gates:\n```python\ncat >> Sgate(0.5)  # squeezed cat\n```\n<img width=\"479\" alt=\"Screen Shot 2021-12-07 at 2 03 14 PM\" src=\"https://user-images.githubusercontent.com/8944955/145090219-298ca2ab-92e9-4ac2-beab-33ee33770fb2.png\">\n\n\n\n## 2. Gates and the right shift operator `>>`\n\nApplying gates to states looks natural, thanks to python's right-shift operator `>>`:\n```python\ndisplaced_squeezed = Vacuum(1) >> Sgate(r=0.5) >> Dgate(x=1.0)\n```\n\nIf you want to apply a gate to specific modes, use the `getitem` format. Here are a few examples:\n```python\nD = Dgate(y=-0.4)\nS = Sgate(r=0.1, phi=0.5)\nstate = Vacuum(2) >> D[1] >> S[0]  # displacement on mode 1 and squeezing on mode 0\n\nBS = BSgate(theta=1.1)\nstate = Vacuum(3) >> BS[0,2]  # applying a beamsplitter to modes 0 and 2\nstate = Vacuum(4) >> S[0,1,2]  # applying the same Sgate in parallel to modes 0, 1 and 2 but not to mode 3\n```\n\n## 3. Circuit\nWhen chaining just gates with the right-shift `>>` operator, we create a circuit:\n```python\nX8 = Sgate(r=[1.0] * 4) >> Interferometer(4)\noutput = Vacuum(4) >> X8\n\n# lossy X8\nnoise = lambda: np.random.uniform(size=4)\nX8_noisy = (Sgate(r=0.9 + 0.1*noise(), phi=0.1*noise())\n                >> Attenuator(0.89 + 0.01*noise())\n                >> Interferometer(4)\n                >> Attenuator(0.95 + 0.01*noise())\n               )\n\n# 2-mode Bloch Messiah decomposition\nbloch_messiah = Sgate(r=[0.1,0.2]) >> BSgate(theta=-0.1, phi=2.1) >> Dgate(x=[0.1, -0.4])\nmy_state = Vacuum(2) >> bloch_messiah\n```\n\n## 4. Measurements\nIn order to perform a measurement, we use the left-shift operator, e.g. `coh << sq` (think of the left-shift on a state as \"closing\" the circuit).\n```python\nleftover = Vacuum(4) >> X8 << SqueezedVacuum(r=10.0, phi=np.pi)[2]  # a homodyne measurement of p=0.0 on mode 2\n```\n\nTransformations can also be applied in the dual sense by using the left-shift operator `<<`:\n```python\nAttenuator(0.5) << Coherent(0.1, 0.2) == Coherent(0.1, 0.2) >> Amplifier(2.0)\n```\nThis has the advantage of modelling lossy detectors without applying the loss channel to the state going into the detector, which can be overall faster e.g. if the state is kept pure by doing so.\n\n## 5. Detectors\nThere are two types of detectors in Mr Mustard. Fock detectors (PNRDetector and ThresholdDetector) and Gaussian detectors (Homodyne, Heterodyne, Generaldyne).\n\nThe PNR and Threshold detectors return an array of unnormalized measurement results, meaning that the elements of the array are the density matrices of the leftover systems, conditioned on the outcomes:\n```python\nresults = Gaussian(2) << PNRDetector(efficiency = 0.9, modes = [0])\nresults[0]  # unnormalized dm of mode 1 conditioned on measuring 0 in mode 0\nresults[1]  # unnormalized dm of mode 1 conditioned on measuring 1 in mode 0\nresults[2]  # unnormalized dm of mode 1 conditioned on measuring 2 in mode 0\n# etc...\n```\nThe trace of the leftover density matrices will yield the success probability. If multiple modes are measured then there is a corresponding number of indices:\n```python\nresults = Gaussian(3) << PNRDetector(efficiency = [0.9, 0.8], modes = [0,1])\nresults[2,3]  # unnormalized dm of mode 2 conditioned on measuring 2 in mode 0 and 3 in mode 1\n# etc...\n```\nSet a lower `settings.PNR_INTERNAL_CUTOFF` (default 50) to speed-up computations of the PNR output.\n\n## 6. Comparison operator `==`\nStates support the comparison operator:\n```python\n>>> bunched = (Coherent(1.0) & Coherent(1.0)) >> BSgate(np.pi/4)\n>>> bunched.get_modes(1) == Coherent(np.sqrt(2.0))\nTrue\n```\nAs well as transformations (gates and circuits):\n```python\n>>> Dgate(np.sqrt(2)) >> Attenuator(0.5) == Attenuator(0.5) >> Dgate(1.0)\nTrue\n```\n\n## 7. State operations and properties\nStates can be joined using the `&` (and) operator:\n```python\nCoherent(x=1.0, y=1.0) & Coherent(x=2.0, y=2.0)  # A separable two-mode coherent state\n\ns = SqueezedVacuum(r=1.0)\ns4 = s & s & s & s   # four squeezed states\n```\n\nSubsystems can be accessed via `get_modes`:\n```python\njoint = Coherent(x=1.0, y=1.0) & Coherent(x=2.0, y=2.0)\njoint.get_modes(0)  # first mode\njoint.get_modes(1)  # second mode\n\nswapped = joint.get_modes([1,0])\n```\n\n## 8. Fock representation\nThe Fock representation of a State is obtained via `.ket(cutoffs)` or `.dm(cutoffs)`. For circuits and gates (transformations in general) it's `.U(cutoffs)` or `.choi(cutoffs)`, if available. The Fock representation is exact and it doesn't break differentiability. This means that one can define cost functions on the Fock representation and backpropagate back to the phase space representation.\n\n```python\n# Fock representation of a coherent state\nCoherent(0.5).ket(cutoffs=[5])   # ket\nCoherent(0.5).dm(cutoffs=[5])    # density matrix\n\nDgate(x=1.0).U(cutoffs=[15])  # truncated unitary matrix\nDgate(x=1.0).choi(cutoffs=[15])  # truncated choi tensor\n```\n\nStates can be initialized in Fock representation and used as any other state:\n```python\nmy_amplitudes = np.array([0.5, 0.25, -0.5, 0.25, 0.25, 0.5, -0.25] + [0.0]*23)  # notice the buffer\nmy_state = State(ket=my_amplitudes)\nmy_state >> Sgate(r=0.5)  # just works\n```\n<img width=\"542\" alt=\"Screen Shot 2021-12-06 at 1 44 38 PM\" src=\"https://user-images.githubusercontent.com/8944955/144903799-5b6c1524-4357-4be0-9778-e1f0de6943c1.png\">\n\nAlternatively,\n```python\nmy_amplitudes = np.array([0.5, 0.25, -0.5, 0.25, 0.25, 0.5, -0.25])  # no buffer\nmy_state = State(ket=my_amplitudes)\nmy_state._cutoffs = [42]  # force the cutoff\nmy_state >> Sgate(r=0.5)  # works too\n```\n\n# The physics module\nThe physics module contains a growing number of functions that we can apply to states directly. These are made out of the functions that operate on the _representation_ of the state:\n\n- If the state is in Gaussian representation, then internally the physics functions utilize the [physics.gaussian](https://github.com/XanaduAI/MrMustard/blob/main/mrmustard/physics/gaussian.py) module.\n- If the state is in Fock representation, then internally the physics functions utilize the [physics.fock](https://github.com/XanaduAI/MrMustard/blob/main/mrmustard/physics/fock.py) module.\n\n\n# The math module\nThe math module is the backbone of Mr Mustard. Mr Mustard comes with a plug-and-play backends through a math interface. You can use it as a drop-in replacement for tensorflow or numpy and your code will be plug-and-play too!\n\nHere's an example where the `numpy` backend is used.\n```python\nimport mrmustard.math as math\n\nmath.cos(0.1)  # numpy\n```\n\nIn a different session, we can change the backend to ``tensorflow``.\n```python\nimport mrmustard.math as math\nmath.change_backend(\"tensorflow\")\n\nmath.cos(0.1)  # tensorflow\n```\n\n### Optimization\nThe `mrmustard.training.Optimizer` uses Adam underneath the hood for the optimization of Euclidean parameters, a custom symplectic optimizer for Gaussian gates and states and a unitary/orthogonal optimizer for interferometers.\n\nWe can turn any simulation in Mr Mustard into an optimization by marking which parameters we wish to be trainable. Let's take a simple example: synthesizing a displaced squeezed state.\n\n```python\nfrom mrmustard import math\nfrom mrmustard.lab import Dgate, Ggate, Attenuator, Vacuum, Coherent, DisplacedSqueezed\nfrom mrmustard.physics import fidelity\nfrom mrmustard.training import Optimizer\n\nmath.change_backend(\"tensorflow\")\n\nD = Dgate(x = 0.1, y = -0.5, x_trainable=True, y_trainable=True)\nL = Attenuator(transmissivity=0.5)\n\n# we write a function that takes no arguments and returns the cost\ndef cost_fn_eucl():\n    state_out = Vacuum(1) >> D >> L\n    return 1 - fidelity(state_out, Coherent(0.1, 0.5))\n\nG = Ggate(num_modes=1, symplectic_trainable=True)\ndef cost_fn_sympl():\n    state_out = Vacuum(1) >> G >> D >> L\n    return 1 - fidelity(state_out, DisplacedSqueezed(r=0.3, phi=1.1, x=0.4, y=-0.2))\n\n# For illustration, here the Euclidean optimization doesn't include squeezing \nopt = Optimizer(symplectic_lr=0.1, euclidean_lr=0.01)\nopt.minimize(cost_fn_eucl, by_optimizing=[D])  # using Adam for D\n\n# But the symplectic optimization always does\nopt = Optimizer(symplectic_lr=0.1, euclidean_lr=0.01)\nopt.minimize(cost_fn_sympl, by_optimizing=[G,D])  # uses Adam for D and the symplectic opt for G\n```\n",
+                "description_content_type": "text/markdown",
+                "docs_url": null,
+                "download_url": null,
+                "downloads": {
+                  "last_day": -1,
+                  "last_month": -1,
+                  "last_week": -1
+                },
+                "dynamic": null,
+                "home_page": null,
+                "keywords": null,
+                "license": "Apache-2.0",
+                "license_expression": null,
+                "license_files": null,
+                "maintainer": null,
+                "maintainer_email": null,
+                "name": "mrmustard",
+                "package_url": "https://pypi.org/project/mrmustard/",
+                "platform": null,
+                "project_url": "https://pypi.org/project/mrmustard/",
+                "project_urls": null,
+                "provides_extra": null,
+                "release_url": "https://pypi.org/project/mrmustard/0.7.3/",
+                "requires_dist": [
+                  "grpcio==1.60.0",
+                  "ipython>=8.18.1",
+                  "julia==0.6.1",
+                  "matplotlib<4.0.0,>=3.5.0",
+                  "networkx<4.0,>=3.1",
+                  "numba<0.60,>=0.59",
+                  "numpy<2.0.0,>=1.23.5",
+                  "ray[tune]<3.0.0,>=2.5.0; extra == \"ray\"",
+                  "rich<11.0.0,>=10.15.1",
+                  "scikit-optimize<0.10.0,>=0.9.0; extra == \"ray\"",
+                  "scipy<2.0.0,>=1.8.0",
+                  "tensorflow<3.0.0,>=2.15.0",
+                  "tensorflow-cpu-aws<3.0.0,>=2.15.0; (platform_machine == \"arm64\" or platform_machine == \"aarch64\") and sys_platform == \"linux\"",
+                  "tensorflow-intel<3.0.0,>=2.15.0; sys_platform == \"win32\"",
+                  "tensorflow-io-gcs-filesystem<0.32.0; platform_system == \"Windows\"",
+                  "tensorflow-io-gcs-filesystem>=0.23.1; platform_machine != \"arm64\" or platform_system != \"Darwin\"",
+                  "tensorflow-macos==2.15.0; platform_machine == \"arm64\" and sys_platform == \"darwin\"",
+                  "tensorflow-probability<0.23.0,>=0.22.0",
+                  "thewalrus<0.20.0,>=0.19.0"
+                ],
+                "requires_python": "<3.12,>=3.9",
+                "summary": "Differentiable quantum Gaussian circuits",
+                "version": "0.7.3",
+                "yanked": false,
+                "yanked_reason": null
+              },
+              "last_serial": 39529682,
+              "ownership": {
+                "organization": null,
+                "roles": [
+                  {
+                    "role": "Owner",
+                    "user": "XanaduAI"
+                  },
+                  {
+                    "role": "Maintainer",
+                    "user": "ziofil"
+                  }
+                ]
+              },
+              "releases": {
+                "0.1.0": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "4b5e6c6089acd3f73aff4e04794f71d25c1944b5010299665da73612f109d355"
+                    },
+                    "digests": {
+                      "blake2b_256": "b25a2cbd6c8ca5236f6cb95321c9c8c1c9bf94b1f6bd6745e2125de179eb2db7",
+                      "md5": "f821d4c30643df41be5d6da9f86c2751",
+                      "sha256": "2ee04c203adc93110914d4038ad55d060e5a53e726ac22c2f7a9b651904c19b2"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.1.0-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "f821d4c30643df41be5d6da9f86c2751",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": null,
+                    "size": 84711,
+                    "upload_time": "2021-12-08T17:30:06",
+                    "upload_time_iso_8601": "2021-12-08T17:30:06.463040Z",
+                    "url": "https://files.pythonhosted.org/packages/b2/5a/2cbd6c8ca5236f6cb95321c9c8c1c9bf94b1f6bd6745e2125de179eb2db7/mrmustard-0.1.0-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "comment_text": "",
+                    "core-metadata": false,
+                    "digests": {
+                      "blake2b_256": "3383a145f3685f954f9f8097c6a3dff30f5a95133de071c6604bd7fd988d475c",
+                      "md5": "418cb35fb0e9690325def1b46df3c95c",
+                      "sha256": "085ec5fefd025ad2451686b856d7d59f3edb3303bc18bbc329c35adf5a6f4944"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.1.0.tar.gz",
+                    "has_sig": false,
+                    "md5_digest": "418cb35fb0e9690325def1b46df3c95c",
+                    "packagetype": "sdist",
+                    "python_version": "source",
+                    "requires_python": null,
+                    "size": 69641,
+                    "upload_time": "2021-12-08T17:30:08",
+                    "upload_time_iso_8601": "2021-12-08T17:30:08.037986Z",
+                    "url": "https://files.pythonhosted.org/packages/33/83/a145f3685f954f9f8097c6a3dff30f5a95133de071c6604bd7fd988d475c/mrmustard-0.1.0.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "0.1.1": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "a6a7b6b1679ed99f64041249e2575d1b99e46f4a7d6e5515f913931a8230750a"
+                    },
+                    "digests": {
+                      "blake2b_256": "f6444211d8adf8ee32dda2822548b7e7d21142d8ef0c28785df8304af339e7ac",
+                      "md5": "a615ac0a024b280186e25f5b2fc0d94a",
+                      "sha256": "6183f7cd3e473443f89d136b23e4c6e527c3d1ab3201f235930dc84a86f9d191"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.1.1-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "a615ac0a024b280186e25f5b2fc0d94a",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": null,
+                    "size": 85318,
+                    "upload_time": "2021-12-16T23:21:15",
+                    "upload_time_iso_8601": "2021-12-16T23:21:15.913990Z",
+                    "url": "https://files.pythonhosted.org/packages/f6/44/4211d8adf8ee32dda2822548b7e7d21142d8ef0c28785df8304af339e7ac/mrmustard-0.1.1-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "comment_text": "",
+                    "core-metadata": false,
+                    "digests": {
+                      "blake2b_256": "f1048d9682594b84c5d9ca7c96f01300f48ebf6d2f44504eb688fdef620bfda8",
+                      "md5": "330645eb16cac8b3d761e520851cb6e1",
+                      "sha256": "6df1e65e8a79d031ab364ca61d9603b7772b2d9cf6991937b725f5bc27580696"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.1.1.tar.gz",
+                    "has_sig": false,
+                    "md5_digest": "330645eb16cac8b3d761e520851cb6e1",
+                    "packagetype": "sdist",
+                    "python_version": "source",
+                    "requires_python": null,
+                    "size": 70267,
+                    "upload_time": "2021-12-16T23:21:17",
+                    "upload_time_iso_8601": "2021-12-16T23:21:17.763439Z",
+                    "url": "https://files.pythonhosted.org/packages/f1/04/8d9682594b84c5d9ca7c96f01300f48ebf6d2f44504eb688fdef620bfda8/mrmustard-0.1.1.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "0.2.0": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "8cfd0f65049428020832e5b1ea4414712ac0049b19a16454b07f7eb4c0ab731f"
+                    },
+                    "digests": {
+                      "blake2b_256": "9e128d136483bc369faae1a5ca5fcd36cdfc3d9d0bb98d6ec4c419364750b077",
+                      "md5": "e24892b5a3f382e0180642af68b6a2e4",
+                      "sha256": "97b3aaaab89f3f08a1c948454cf8887341fb0acbfbc9c095c2bdeeba42f65e85"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.2.0-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "e24892b5a3f382e0180642af68b6a2e4",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": null,
+                    "size": 92789,
+                    "upload_time": "2022-03-24T19:28:06",
+                    "upload_time_iso_8601": "2022-03-24T19:28:06.966071Z",
+                    "url": "https://files.pythonhosted.org/packages/9e/12/8d136483bc369faae1a5ca5fcd36cdfc3d9d0bb98d6ec4c419364750b077/mrmustard-0.2.0-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "comment_text": "",
+                    "core-metadata": false,
+                    "digests": {
+                      "blake2b_256": "924f7e0a82f77d6bee9933de595ea165dfa6471afbac1f053584afaa4ccc80c5",
+                      "md5": "4de2367db1e0ae2f45015f3a231f9311",
+                      "sha256": "6959fadfb058ee90c92840196960904305bbf20ac53260d2a2337328d41c6d76"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.2.0.tar.gz",
+                    "has_sig": false,
+                    "md5_digest": "4de2367db1e0ae2f45015f3a231f9311",
+                    "packagetype": "sdist",
+                    "python_version": "source",
+                    "requires_python": null,
+                    "size": 76267,
+                    "upload_time": "2022-03-24T19:28:09",
+                    "upload_time_iso_8601": "2022-03-24T19:28:09.623502Z",
+                    "url": "https://files.pythonhosted.org/packages/92/4f/7e0a82f77d6bee9933de595ea165dfa6471afbac1f053584afaa4ccc80c5/mrmustard-0.2.0.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "0.3.0": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "02ac907115e7f3238d05c1bc0e03c2a203d36ca30c6b6465d0dce4b4044d329c"
+                    },
+                    "digests": {
+                      "blake2b_256": "ad90e9b7463ccadce8dc5f352843d1654f948d3318a27e203627d5d67529d2d9",
+                      "md5": "d3148a24375fdf2414d105e3f2020bde",
+                      "sha256": "521be77f2c8c0dadb52179536f07ac325ca962afbac1ec5c794b626ef0e329a9"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.3.0-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "d3148a24375fdf2414d105e3f2020bde",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": null,
+                    "size": 99474,
+                    "upload_time": "2022-09-16T17:18:26",
+                    "upload_time_iso_8601": "2022-09-16T17:18:26.262368Z",
+                    "url": "https://files.pythonhosted.org/packages/ad/90/e9b7463ccadce8dc5f352843d1654f948d3318a27e203627d5d67529d2d9/mrmustard-0.3.0-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "comment_text": "",
+                    "core-metadata": false,
+                    "digests": {
+                      "blake2b_256": "28ce427aca466b52b4be6e43a305b3661c215b145ca3f2795b7fd9526771c7aa",
+                      "md5": "840f4fe1c408b2f19ab96274d8ec7708",
+                      "sha256": "144fb19b385e4ada6c8859ffe7d31ff58053195de9b5b2fae09df509a89a600e"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.3.0.tar.gz",
+                    "has_sig": false,
+                    "md5_digest": "840f4fe1c408b2f19ab96274d8ec7708",
+                    "packagetype": "sdist",
+                    "python_version": "source",
+                    "requires_python": null,
+                    "size": 81556,
+                    "upload_time": "2022-09-16T17:18:29",
+                    "upload_time_iso_8601": "2022-09-16T17:18:29.062467Z",
+                    "url": "https://files.pythonhosted.org/packages/28/ce/427aca466b52b4be6e43a305b3661c215b145ca3f2795b7fd9526771c7aa/mrmustard-0.3.0.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "0.4.0": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "ab7f4f900e8b76549faf283df9bb288b429a1561e7af42a2148fa646f55772ce"
+                    },
+                    "digests": {
+                      "blake2b_256": "ff88363afe0dae96416228a9112b6f0fcd4cb6b139dea64bf8e305662b4f344d",
+                      "md5": "cc60a0f2861d5f6eec32e78cf38efc63",
+                      "sha256": "3f7fdf2b48c94ae2c2de8b2619c54eaa7825abe1d6b781467c755314bface10d"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.4.0-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "cc60a0f2861d5f6eec32e78cf38efc63",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": null,
+                    "size": 126656,
+                    "upload_time": "2023-03-08T18:57:29",
+                    "upload_time_iso_8601": "2023-03-08T18:57:29.689819Z",
+                    "url": "https://files.pythonhosted.org/packages/ff/88/363afe0dae96416228a9112b6f0fcd4cb6b139dea64bf8e305662b4f344d/mrmustard-0.4.0-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "0.4.1": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "fa9ce95714116103186c1ed224016dfe6f2e9708d095c9c4f625b3e142e0f10c"
+                    },
+                    "digests": {
+                      "blake2b_256": "362079ac8082ff5f9a543175c9767203f7bccef3a6e13b3778542658ff8e8c8f",
+                      "md5": "b1ab1c5281690ce29d6a5504fe831311",
+                      "sha256": "17f74f8f505bb3511405d93d6a1c0ebbdce30658900c87e0bed484505bf6333f"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.4.1-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "b1ab1c5281690ce29d6a5504fe831311",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": null,
+                    "size": 140775,
+                    "upload_time": "2023-03-23T18:57:03",
+                    "upload_time_iso_8601": "2023-03-23T18:57:03.595020Z",
+                    "url": "https://files.pythonhosted.org/packages/36/20/79ac8082ff5f9a543175c9767203f7bccef3a6e13b3778542658ff8e8c8f/mrmustard-0.4.1-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "0.5.0": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "f6ff819a8574776e78b7bf442a076979c28b7ee3a5a79e2c85ec3ea23330e759"
+                    },
+                    "digests": {
+                      "blake2b_256": "80913aa6caff0561b0199fa809fb25e81cd676fb666bf314c3a4a73ff9fe686e",
+                      "md5": "5f61c29c4985ba207b2691bf368d9cb7",
+                      "sha256": "bb14bd07eb45c9be4c48ee74ec0575a610594c990d2934e6ce1514b5aeb8d52d"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.5.0-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "5f61c29c4985ba207b2691bf368d9cb7",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": ">=3.9,<3.11",
+                    "size": 158313,
+                    "upload_time": "2023-07-31T18:11:40",
+                    "upload_time_iso_8601": "2023-07-31T18:11:40.762465Z",
+                    "url": "https://files.pythonhosted.org/packages/80/91/3aa6caff0561b0199fa809fb25e81cd676fb666bf314c3a4a73ff9fe686e/mrmustard-0.5.0-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "comment_text": "",
+                    "core-metadata": false,
+                    "digests": {
+                      "blake2b_256": "7c0115f840ddea81ef1cdd9001f03ce47980987f44698075da2d8019155d91aa",
+                      "md5": "4433e2ebc7be5313d6c03718573b345a",
+                      "sha256": "dca3ed37f6ed5fb9ae51ccf3a983501c8ce53e09972767efddd8ced3d9847c82"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.5.0.tar.gz",
+                    "has_sig": false,
+                    "md5_digest": "4433e2ebc7be5313d6c03718573b345a",
+                    "packagetype": "sdist",
+                    "python_version": "source",
+                    "requires_python": ">=3.9,<3.11",
+                    "size": 119460,
+                    "upload_time": "2023-07-31T18:11:42",
+                    "upload_time_iso_8601": "2023-07-31T18:11:42.245558Z",
+                    "url": "https://files.pythonhosted.org/packages/7c/01/15f840ddea81ef1cdd9001f03ce47980987f44698075da2d8019155d91aa/mrmustard-0.5.0.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "0.6.0": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "ac161f5ec9da77f4e5b76f3b12583e3cbffe65ea75d667e304ac76b3c65160fa"
+                    },
+                    "digests": {
+                      "blake2b_256": "781c1f15bc48702000e2d71d750223d98efb3d0aa3fe6c112812c6c9f0911d59",
+                      "md5": "e73dfd8bbc2fe12a2e551a9b8880f8d4",
+                      "sha256": "6f0ec3b1559bbd29da6c5389ab7c06821cf10e759ca301059f6fdeaa59bbe7e3"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.6.0-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "e73dfd8bbc2fe12a2e551a9b8880f8d4",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": ">=3.9,<3.11",
+                    "size": 162430,
+                    "upload_time": "2023-10-16T15:17:54",
+                    "upload_time_iso_8601": "2023-10-16T15:17:54.968534Z",
+                    "url": "https://files.pythonhosted.org/packages/78/1c/1f15bc48702000e2d71d750223d98efb3d0aa3fe6c112812c6c9f0911d59/mrmustard-0.6.0-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "comment_text": "",
+                    "core-metadata": false,
+                    "digests": {
+                      "blake2b_256": "c2179b092333f8416a1503f4960f905931326970aa96cc3eb88bfc9a4c8a8df8",
+                      "md5": "12fc5ee9923d7d8619f502dacf8de35c",
+                      "sha256": "ea3adaf451f27568518fb875830cf9b846e00a4238b7d6454777bb9a1ae5cb67"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.6.0.tar.gz",
+                    "has_sig": false,
+                    "md5_digest": "12fc5ee9923d7d8619f502dacf8de35c",
+                    "packagetype": "sdist",
+                    "python_version": "source",
+                    "requires_python": ">=3.9,<3.11",
+                    "size": 121888,
+                    "upload_time": "2023-10-16T15:17:57",
+                    "upload_time_iso_8601": "2023-10-16T15:17:57.065626Z",
+                    "url": "https://files.pythonhosted.org/packages/c2/17/9b092333f8416a1503f4960f905931326970aa96cc3eb88bfc9a4c8a8df8/mrmustard-0.6.0.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "0.6.1.post1": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "0998dbe7bf59833f7b4e92c1e2e01ebab9af5b2f8b516efdc6b6a088e916858c"
+                    },
+                    "digests": {
+                      "blake2b_256": "0484e88d58902c45b10e080e5deb8f207fc358f9ab6c2b19ae389e3baff2f6d3",
+                      "md5": "e8da949258cccc1e5d95d7809bb990c9",
+                      "sha256": "9902dbf41dd7e05b48549312dc7fcc66f9e756602d200abb67f92a7d8460778d"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.6.1.post1-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "e8da949258cccc1e5d95d7809bb990c9",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": ">=3.9,<3.11",
+                    "size": 162491,
+                    "upload_time": "2023-11-01T21:27:25",
+                    "upload_time_iso_8601": "2023-11-01T21:27:25.599882Z",
+                    "url": "https://files.pythonhosted.org/packages/04/84/e88d58902c45b10e080e5deb8f207fc358f9ab6c2b19ae389e3baff2f6d3/mrmustard-0.6.1.post1-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "comment_text": "",
+                    "core-metadata": false,
+                    "digests": {
+                      "blake2b_256": "ada6762855674731b9c044906d642c3c1f79fbc561fa7894f4f8abe874f30d5c",
+                      "md5": "e3eaaa584c7bc3ae96ae76c6fc8a7558",
+                      "sha256": "6518d4e4eb4578f2ad3774400e536beef5ae93e8aba0fa6211a2f006f3778149"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.6.1.post1.tar.gz",
+                    "has_sig": false,
+                    "md5_digest": "e3eaaa584c7bc3ae96ae76c6fc8a7558",
+                    "packagetype": "sdist",
+                    "python_version": "source",
+                    "requires_python": ">=3.9,<3.11",
+                    "size": 121892,
+                    "upload_time": "2023-11-01T21:27:27",
+                    "upload_time_iso_8601": "2023-11-01T21:27:27.949750Z",
+                    "url": "https://files.pythonhosted.org/packages/ad/a6/762855674731b9c044906d642c3c1f79fbc561fa7894f4f8abe874f30d5c/mrmustard-0.6.1.post1.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "0.7.0": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "5a02f32414f2bcd5e10d927085534aac5ee525c484070302f3d608a7a8b942be"
+                    },
+                    "digests": {
+                      "blake2b_256": "36cdbd04e2292ab24d45e889248c6d4cc25526cd7726393020bf49ecd71fdf10",
+                      "md5": "98d06ea696c34822f144d6f473c910d8",
+                      "sha256": "cf658b72361fde8afac9a965fb06e9555de174319d376717d74425484a87a4eb"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.7.0-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "98d06ea696c34822f144d6f473c910d8",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": ">=3.9,<3.11",
+                    "size": 206336,
+                    "upload_time": "2024-02-08T22:33:26",
+                    "upload_time_iso_8601": "2024-02-08T22:33:26.932972Z",
+                    "url": "https://files.pythonhosted.org/packages/36/cd/bd04e2292ab24d45e889248c6d4cc25526cd7726393020bf49ecd71fdf10/mrmustard-0.7.0-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "comment_text": "",
+                    "core-metadata": false,
+                    "digests": {
+                      "blake2b_256": "1889c138837f0e53d7f8e4acc3b35cd8740796271efc70295772f7671961aec1",
+                      "md5": "3d388fd9cca7c584ee2e5e4acf4f97a1",
+                      "sha256": "363e7fcd7dbe71ce5a40f9f076f2b1556beeb11f5767d21919c7ce6e0d99511e"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.7.0.tar.gz",
+                    "has_sig": false,
+                    "md5_digest": "3d388fd9cca7c584ee2e5e4acf4f97a1",
+                    "packagetype": "sdist",
+                    "python_version": "source",
+                    "requires_python": ">=3.9,<3.11",
+                    "size": 151058,
+                    "upload_time": "2024-02-08T22:33:28",
+                    "upload_time_iso_8601": "2024-02-08T22:33:28.936111Z",
+                    "url": "https://files.pythonhosted.org/packages/18/89/c138837f0e53d7f8e4acc3b35cd8740796271efc70295772f7671961aec1/mrmustard-0.7.0.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "0.7.1": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "8584c4baa1c246e581ebfc93bc06265d6dc6bd2dfc49c3a7986b749c2a0b6242"
+                    },
+                    "digests": {
+                      "blake2b_256": "af188e4697f73a9c7a0583729abee97e1e7750f1bf4d607422a18bf9b6bfbf51",
+                      "md5": "a258363e6caba0b03b22fd9e7c7ba198",
+                      "sha256": "871c67dad758bffde4777d21dee858db084ee634f3ba23a35e5653f7d3bcd98a"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.7.1-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "a258363e6caba0b03b22fd9e7c7ba198",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": ">=3.9,<3.12",
+                    "size": 217280,
+                    "upload_time": "2024-02-28T21:54:37",
+                    "upload_time_iso_8601": "2024-02-28T21:54:37.175989Z",
+                    "url": "https://files.pythonhosted.org/packages/af/18/8e4697f73a9c7a0583729abee97e1e7750f1bf4d607422a18bf9b6bfbf51/mrmustard-0.7.1-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "comment_text": "",
+                    "core-metadata": false,
+                    "digests": {
+                      "blake2b_256": "e3ef7b70e6cfa9872a251641c11f5792bcbb513b11e025ffe438b93e82553ff9",
+                      "md5": "106e2da4338389a32ac27cbd9b45ba53",
+                      "sha256": "7c5dcbdc7df66f0ac77418fdd334f1972c132f8b51d4767e5fe037119ced2677"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.7.1.tar.gz",
+                    "has_sig": false,
+                    "md5_digest": "106e2da4338389a32ac27cbd9b45ba53",
+                    "packagetype": "sdist",
+                    "python_version": "source",
+                    "requires_python": ">=3.9,<3.12",
+                    "size": 160245,
+                    "upload_time": "2024-02-28T21:54:38",
+                    "upload_time_iso_8601": "2024-02-28T21:54:38.681997Z",
+                    "url": "https://files.pythonhosted.org/packages/e3/ef/7b70e6cfa9872a251641c11f5792bcbb513b11e025ffe438b93e82553ff9/mrmustard-0.7.1.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "0.7.3": [
+                  {
+                    "comment_text": "",
+                    "core-metadata": {
+                      "sha256": "f60bc38a860631865b1d991e334f295e25bc68a9c371ce0c1ecc15173bd4cf78"
+                    },
+                    "digests": {
+                      "blake2b_256": "7ab4ba53dcee93f01777595c4c60e2c9cb66debdfc510d174faa96b175c3fa00",
+                      "md5": "7febf76518b81222dfe9ecd55a916418",
+                      "sha256": "09781b243dcfae8291bdb60a72ebf2e7c586fdc9cd310722c5dba60b4aaad1b7"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.7.3-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "7febf76518b81222dfe9ecd55a916418",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": "<3.12,>=3.9",
+                    "size": 217558,
+                    "upload_time": "2024-03-28T14:53:43",
+                    "upload_time_iso_8601": "2024-03-28T14:53:43.451782Z",
+                    "url": "https://files.pythonhosted.org/packages/7a/b4/ba53dcee93f01777595c4c60e2c9cb66debdfc510d174faa96b175c3fa00/mrmustard-0.7.3-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "comment_text": "",
+                    "core-metadata": false,
+                    "digests": {
+                      "blake2b_256": "bce21984c5ae1f9b2f54e9ec20e73d7a8c1384eaa5fcc417a6bbb0772e09c016",
+                      "md5": "900515391a9e9e8d1090eaab4b036076",
+                      "sha256": "972faa06ca1d3ea2330f8e6168cb4de3c96393c3bd0e3c252f4a4ce7c32417cf"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-0.7.3.tar.gz",
+                    "has_sig": false,
+                    "md5_digest": "900515391a9e9e8d1090eaab4b036076",
+                    "packagetype": "sdist",
+                    "python_version": "source",
+                    "requires_python": "<3.12,>=3.9",
+                    "size": 160484,
+                    "upload_time": "2024-03-28T14:53:46",
+                    "upload_time_iso_8601": "2024-03-28T14:53:46.030434Z",
+                    "url": "https://files.pythonhosted.org/packages/bc/e2/1984c5ae1f9b2f54e9ec20e73d7a8c1384eaa5fcc417a6bbb0772e09c016/mrmustard-0.7.3.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "1.0.0a1": [
+                  {
+                    "comment_text": null,
+                    "core-metadata": {
+                      "sha256": "b819da9ed84e134d1c64a5313d720a1cd3dbb8bf6c15bb3617bdf9c77a413fde"
+                    },
+                    "digests": {
+                      "blake2b_256": "eea6a536aebcd7f0fd660ee4f1434d418346cb2099746d81ec27e37a45ee99c0",
+                      "md5": "e9af81dae055f5d039b5c41f9407ff66",
+                      "sha256": "102348f1c724559f2025a12ec44dc11780a0d4567e8c46c5f583f5e203113be8"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-1.0.0a1-py3-none-any.whl",
+                    "has_sig": false,
+                    "md5_digest": "e9af81dae055f5d039b5c41f9407ff66",
+                    "packagetype": "bdist_wheel",
+                    "python_version": "py3",
+                    "requires_python": "<3.13,>=3.10",
+                    "size": 424929,
+                    "upload_time": "2025-07-22T18:21:08",
+                    "upload_time_iso_8601": "2025-07-22T18:21:08.332064Z",
+                    "url": "https://files.pythonhosted.org/packages/ee/a6/a536aebcd7f0fd660ee4f1434d418346cb2099746d81ec27e37a45ee99c0/mrmustard-1.0.0a1-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "comment_text": null,
+                    "core-metadata": false,
+                    "digests": {
+                      "blake2b_256": "c92dd54e35632b78af8c1a85c2f498afc4ff049a96cff20e1269e78ea9fdebea",
+                      "md5": "57ab701b5c7bc48a190b35712dfb587c",
+                      "sha256": "8b94d08911f51d115e512d6f83b67fe9e75a7bc22c96cd41b2694024ff0eab85"
+                    },
+                    "downloads": -1,
+                    "filename": "mrmustard-1.0.0a1.tar.gz",
+                    "has_sig": false,
+                    "md5_digest": "57ab701b5c7bc48a190b35712dfb587c",
+                    "packagetype": "sdist",
+                    "python_version": "source",
+                    "requires_python": "<3.13,>=3.10",
+                    "size": 273675,
+                    "upload_time": "2025-07-22T18:21:09",
+                    "upload_time_iso_8601": "2025-07-22T18:21:09.734625Z",
+                    "url": "https://files.pythonhosted.org/packages/c9/2d/d54e35632b78af8c1a85c2f498afc4ff049a96cff20e1269e78ea9fdebea/mrmustard-1.0.0a1.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ]
+              },
+              "urls": [
+                {
+                  "comment_text": "",
+                  "core-metadata": {
+                    "sha256": "f60bc38a860631865b1d991e334f295e25bc68a9c371ce0c1ecc15173bd4cf78"
+                  },
+                  "digests": {
+                    "blake2b_256": "7ab4ba53dcee93f01777595c4c60e2c9cb66debdfc510d174faa96b175c3fa00",
+                    "md5": "7febf76518b81222dfe9ecd55a916418",
+                    "sha256": "09781b243dcfae8291bdb60a72ebf2e7c586fdc9cd310722c5dba60b4aaad1b7"
+                  },
+                  "downloads": -1,
+                  "filename": "mrmustard-0.7.3-py3-none-any.whl",
+                  "has_sig": false,
+                  "md5_digest": "7febf76518b81222dfe9ecd55a916418",
+                  "packagetype": "bdist_wheel",
+                  "python_version": "py3",
+                  "requires_python": "<3.12,>=3.9",
+                  "size": 217558,
+                  "upload_time": "2024-03-28T14:53:43",
+                  "upload_time_iso_8601": "2024-03-28T14:53:43.451782Z",
+                  "url": "https://files.pythonhosted.org/packages/7a/b4/ba53dcee93f01777595c4c60e2c9cb66debdfc510d174faa96b175c3fa00/mrmustard-0.7.3-py3-none-any.whl",
+                  "yanked": false,
+                  "yanked_reason": null
+                },
+                {
+                  "comment_text": "",
+                  "core-metadata": false,
+                  "digests": {
+                    "blake2b_256": "bce21984c5ae1f9b2f54e9ec20e73d7a8c1384eaa5fcc417a6bbb0772e09c016",
+                    "md5": "900515391a9e9e8d1090eaab4b036076",
+                    "sha256": "972faa06ca1d3ea2330f8e6168cb4de3c96393c3bd0e3c252f4a4ce7c32417cf"
+                  },
+                  "downloads": -1,
+                  "filename": "mrmustard-0.7.3.tar.gz",
+                  "has_sig": false,
+                  "md5_digest": "900515391a9e9e8d1090eaab4b036076",
+                  "packagetype": "sdist",
+                  "python_version": "source",
+                  "requires_python": "<3.12,>=3.9",
+                  "size": 160484,
+                  "upload_time": "2024-03-28T14:53:46",
+                  "upload_time_iso_8601": "2024-03-28T14:53:46.030434Z",
+                  "url": "https://files.pythonhosted.org/packages/bc/e2/1984c5ae1f9b2f54e9ec20e73d7a8c1384eaa5fcc417a6bbb0772e09c016/mrmustard-0.7.3.tar.gz",
+                  "yanked": false,
+                  "yanked_reason": null
+                }
+              ],
+              "vulnerabilities": []
+            }
+          }
+        ],
+        "record": {
+          "ecosystem": "pypi",
+          "name": "mrmustard",
+          "version": "0.7.4",
+          "published_at": 1711637623,
+          "age_days": 887,
+          "latest_version": "0.7.3",
+          "author": "Xanadu",
+          "title": null,
+          "description": "Differentiable quantum Gaussian circuits",
+          "homepage": null,
+          "repository": null,
+          "repository_commit": null,
+          "license": "Apache-2.0",
+          "downloads_total": null,
+          "downloads_recent": null,
+          "rating": null,
+          "rating_count": null,
+          "deprecated": null,
+          "maintainers": null,
+          "first_published_at": 1638984606,
+          "previous_published_at": 1709157277,
+          "package_age_days": 1728,
+          "release_count": 13,
+          "releases_24h": 0,
+          "releases_48h": 0,
+          "publisher": "XanaduAI",
+          "publisher_email_domain": "xanadu.ai",
+          "publisher_in_maintainers": null,
+          "publisher_verified": null,
+          "security_hold": null,
+          "version_removed": null,
+          "unpacked_size": null,
+          "file_count": null,
+          "has_install_script": null,
+          "vulnerability_count": 0
+        }
+      },
+      "provenance": {
+        "qualification": "Software Heritage archives the source tree, not the publisher's archive bytes. This container was repacked from that tree, so its SHA-256 identifies this file only and does not establish byte identity with the removed mrmustard-0.7.4.tar.gz, whose reported sdist digest is 0404f8590fdaef95280c1d908068f31bf2321fe887faabf0c2329ba67c7203cb. Per-file content is exact: every member below is addressed by the sha1_git Software Heritage stores it under.",
+        "upstream_filename": "mrmustard-0.7.4.tar.gz",
+        "source_snapshot": {
+          "swhid": "swh:1:snp:33ef3bc9759ff1636700f63e0e3d8d0230dfbc09",
+          "visit_date": "2026-07-24T12:31:50Z",
+          "origin": "https://pypi.org/project/mrmustard/",
+          "note": "The visit that fell between the 2026-07-23 publish and PyPI's removal. The next visit, 2026-07-25, returned not_found, and the current snapshot HEAD is releases/0.7.3."
+        },
+        "reconstruction": {
+          "method": "software_heritage_directory_walk",
+          "release": "swh:1:rel:12aa2d09cbbdf475f850a5b8b4a5bf6668145685",
+          "directory": "swh:1:dir:f091aca313abef8a737ef3a068bf14421791c622",
+          "archive_root": "mrmustard-0.7.4",
+          "members": 84,
+          "member_hash": "sha1_git",
+          "files": [
+            {
+              "path": "mrmustard-0.7.4/LICENSE",
+              "size": 11707,
+              "sha1_git": "86affe79559e69fd27393f3ca0641937bd759a71"
+            },
+            {
+              "path": "mrmustard-0.7.4/PKG-INFO",
+              "size": 15678,
+              "sha1_git": "2ca1cce8f1184c80418a339711ae8c0f2f261737"
+            },
+            {
+              "path": "mrmustard-0.7.4/README.md",
+              "size": 13498,
+              "sha1_git": "98cd9d66d6e6709038325265c0c9db050a7db5e5"
+            },
+            {
+              "path": "mrmustard-0.7.4/julia_pkg/Manifest.toml",
+              "size": 4647,
+              "sha1_git": "00ba6902da0cbeb8a87a5fb03f4973c94a55e471"
+            },
+            {
+              "path": "mrmustard-0.7.4/julia_pkg/Project.toml",
+              "size": 233,
+              "sha1_git": "4d863683b3d0872d1aae47e65beee83774cf619a"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/README.md",
+              "size": 1771,
+              "sha1_git": "23033f6a2b9f33038f9283ed1b3378fa5c8d4873"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/__init__.py",
+              "size": 13422,
+              "sha1_git": "457aedc72d62199cf68cb5369d6467e868d76533"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/_version.py",
+              "size": 749,
+              "sha1_git": "fec2a66873b95d1a6a3ed1107f12735f5148275f"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab/__init__.py",
+              "size": 1017,
+              "sha1_git": "97fe1f005d69db568464678f29101a1c6081bc09"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab/abstract/__init__.py",
+              "size": 848,
+              "sha1_git": "13a199b2cfe67e6dce715d51a978b6726374a5dd"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab/abstract/measurement.py",
+              "size": 7547,
+              "sha1_git": "5f3d87bfd7907c85ce0604f8c8c063c5eb4dfba4"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab/abstract/state.py",
+              "size": 31198,
+              "sha1_git": "faf31179035e60df1ace755ce736adc060157c9b"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab/abstract/transformation.py",
+              "size": 16944,
+              "sha1_git": "9fa49f45301db21fd8bff6cb078e9486b5821cdc"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab/circuit.py",
+              "size": 5128,
+              "sha1_git": "ae3a89f1bda5f971beea3b7ba3ac340f5eb25d4a"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab/circuit_drawer.py",
+              "size": 3778,
+              "sha1_git": "9c73b2f7dc64f4f35690e9e15327239283e60f1f"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab/detectors.py",
+              "size": 18266,
+              "sha1_git": "7310d28845a7b6482534ea03efa422377ac4f653"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab/gates.py",
+              "size": 37503,
+              "sha1_git": "374cf39dfdbd94fc8daf79d3f7d8060f2eb24824"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab/states.py",
+              "size": 18505,
+              "sha1_git": "e8c6d041273dd64154f24c100edfbeafbfb05738"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab/utils.py",
+              "size": 1761,
+              "sha1_git": "9a7eb3f5379c4fdb979713c54af99b5be302f6d9"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/lab_dev/wires.py",
+              "size": 15909,
+              "sha1_git": "31bf6ce551a23bd6b1f27187b8291372397428d3"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/__init__.py",
+              "size": 981,
+              "sha1_git": "d2709df9bcd7e90a8a913c542623b7867f17554a"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/autocast.py",
+              "size": 2873,
+              "sha1_git": "de267bf4cda16e694f199cfb45ff1e1dd0e9cf12"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/backend_base.py",
+              "size": 839,
+              "sha1_git": "4be7585a297cd1889f62fbdb20a1f797a90e9aac"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/backend_manager.py",
+              "size": 51711,
+              "sha1_git": "567cb8a3b6557719c0b3b0102a83ad04ad93106c"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/backend_numpy.py",
+              "size": 22454,
+              "sha1_git": "e25655ded2b7b74f381ab005a22951e89a75dce6"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/backend_tensorflow.py",
+              "size": 27525,
+              "sha1_git": "0e2f2a7471e1e390ddcbb1b338c57ce428293d61"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/caching.py",
+              "size": 1647,
+              "sha1_git": "8b3baa873c0b4c2233a82c6bbcaf3a1ce18649d9"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/__init__.py",
+              "size": 0,
+              "sha1_git": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/neighbors.py",
+              "size": 3127,
+              "sha1_git": "b9fe131dc97addee24f693931432757262a12530"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/paths.py",
+              "size": 2834,
+              "sha1_git": "1c5148c273063746229e22993a88c57b675369dc"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/pivots.py",
+              "size": 1871,
+              "sha1_git": "bc564f61431f0deae20aaf40cd6fbe5f6c1ee171"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/steps.py",
+              "size": 10062,
+              "sha1_git": "ea86f529049bc6f02037c0581377f5b6d1d22029"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/__init__.py",
+              "size": 721,
+              "sha1_git": "66a96b326cc2523ca1b6170abf3dbea969b2de37"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/beamsplitter.py",
+              "size": 7581,
+              "sha1_git": "60ecc1d0befa76daacb49b5452a312b0168851ab"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/binomial.py",
+              "size": 5782,
+              "sha1_git": "d7b867e4b4e4fca953d56b7d24323b6a419c8dbc"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/compactFock/__init__.py",
+              "size": 0,
+              "sha1_git": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/compactFock/diagonal_amps.py",
+              "size": 8746,
+              "sha1_git": "4a765fe528d9d9be87f17c8aa57dca8556baf170"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/compactFock/diagonal_grad.py",
+              "size": 12245,
+              "sha1_git": "ec1bb36bd61598307cb604c72bd1453277e30523"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/compactFock/helperFunctions.py",
+              "size": 1403,
+              "sha1_git": "12a828f902fb5f5526574e176539c840fba763bb"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/compactFock/inputValidation.py",
+              "size": 5433,
+              "sha1_git": "49476b3c683eec53cf212be4d444b02fe049f98f"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/compactFock/singleLeftoverMode_amps.py",
+              "size": 13092,
+              "sha1_git": "ce2746cb3fe6635e5bab2cd5159e7e0fc9f361bb"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/compactFock/singleLeftoverMode_grad.py",
+              "size": 23008,
+              "sha1_git": "6d1df9f73de88f5237729ffc663c6c65ed8a67f4"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/displacement.py",
+              "size": 5356,
+              "sha1_git": "79c3568f8d16cf860612b680d63462d41b631c9c"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/flat_indices.py",
+              "size": 2403,
+              "sha1_git": "4a5d945e060371c80f3d6df2d4c49994e783e109"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/julia/compactFock/diagonal_amps.jl",
+              "size": 5366,
+              "sha1_git": "0875f9ece471d089d14b672f932b48965fb5d468"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/julia/compactFock/diagonal_grad.jl",
+              "size": 8843,
+              "sha1_git": "6ed0136b37272fcab5e990ccc48a974e2f92bd7f"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/julia/compactFock/helperFunctions.jl",
+              "size": 939,
+              "sha1_git": "b739008046cae438c7cb07b74a62ad839d1db684"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/julia/compactFock/singleLeftoverMode_amps.jl",
+              "size": 9420,
+              "sha1_git": "353cf04e34bf318adbbbbd7ed6e66969ab861a99"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/julia/compactFock/singleLeftoverMode_grad.jl",
+              "size": 15451,
+              "sha1_git": "0ed724d2ab50579d828b0de89f637003d3d39d2f"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/julia/getPrecision.jl",
+              "size": 497,
+              "sha1_git": "e227f4bd7b3266e6099e6b519e73296bb34e34e9"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/julia/vanilla.jl",
+              "size": 2588,
+              "sha1_git": "3192b3ef6981fc807ae0527dc99cc4e98a355e8d"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/squeezer.py",
+              "size": 6068,
+              "sha1_git": "f92e2137266b3e7e363dc3f4027c04bea747b5ec"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/vanilla.jl",
+              "size": 2275,
+              "sha1_git": "4c1fafc01b4f2d4e5b058e0e5074f474f4547386"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/lattice/strategies/vanilla.py",
+              "size": 6302,
+              "sha1_git": "ece85b11da16ca0bc43d5053aa89e8966ea238d2"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/parameter_set.py",
+              "size": 4429,
+              "sha1_git": "59fa4fe8baa54e24f15c31e84ae4d9936c9ee31f"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/parameters.py",
+              "size": 8886,
+              "sha1_git": "ed0009ad956ef6d46bce8493faa29fca9313e08e"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/tensor_networks/__init__.py",
+              "size": 744,
+              "sha1_git": "fd58f4183ec5100775412cd2b1a4a25ba649c06c"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/tensor_networks/networks.py",
+              "size": 4915,
+              "sha1_git": "1fe8dc7722a78a220cd03e214ef00c0a94d5ecf0"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/tensor_networks/tensors.py",
+              "size": 15289,
+              "sha1_git": "6ba6063dba672aa884fb41d17bc6655618c01dbf"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/tensor_wrappers/__init__.py",
+              "size": 696,
+              "sha1_git": "0d13a51fb3df290902cbb24ab33025cdff119a3a"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/tensor_wrappers/mmtensor.py",
+              "size": 8511,
+              "sha1_git": "84ebba12efd113651f3c3b2a6bbb7ff32db5bb03"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/math/tensor_wrappers/xptensor.py",
+              "size": 27256,
+              "sha1_git": "b84ffec0b5916baf1038a05f3c2e109376947a63"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/physics/__init__.py",
+              "size": 3940,
+              "sha1_git": "e8e91337cb024e7f75cae4028580fcde7d2824e9"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/physics/ansatze.py",
+              "size": 18586,
+              "sha1_git": "52fd5403665c6104a3523924ee00171815a7c5ab"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/physics/bargmann.py",
+              "size": 9383,
+              "sha1_git": "af70bfa017e4818b4dbba9e0f7e42eb25cfde788"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/physics/fock.py",
+              "size": 36285,
+              "sha1_git": "721a88728b367794aca41297ca49cb5e5ffe3f21"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/physics/gaussian.py",
+              "size": 30340,
+              "sha1_git": "7611660ed10a65b0f5b980e60a578b5fd833e819"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/physics/husimi.py",
+              "size": 1451,
+              "sha1_git": "44ce075f05a2110d7245249dbd5065925c7e90c6"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/physics/representations.py",
+              "size": 19023,
+              "sha1_git": "95e1863e4b1a34b6156913f1789f8fa84ce96dc5"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/physics/triples.py",
+              "size": 13858,
+              "sha1_git": "6cf67fbad629fb2e994ac39f4e93cc8079b9a1ed"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/physics/wigner.py",
+              "size": 6048,
+              "sha1_git": "49ec214b3af2be0298c58822dd499ef1d9e695dd"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/training/__init__.py",
+              "size": 2281,
+              "sha1_git": "799dc842c75dfe102953f0434c2dbb6297ab9ed9"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/training/callbacks.py",
+              "size": 10593,
+              "sha1_git": "16f8e7e9dd14a4de14a4057bfc539165c9096771"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/training/optimizer.py",
+              "size": 12616,
+              "sha1_git": "337ebe0e552994e7b1d22b9ee771cb976b511f90"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/training/parameter_update.py",
+              "size": 2934,
+              "sha1_git": "0a1be7c9abdac323e74c3aae4773e04875de2fc4"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/training/progress_bar.py",
+              "size": 2239,
+              "sha1_git": "a1497f8feded2cd2c20e2a791f573f00c2b0c1e1"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/training/trainer.py",
+              "size": 17691,
+              "sha1_git": "215f368ea2cfe5847f9a5e1fdd99974dbf73c5ec"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/utils/__init__.py",
+              "size": 680,
+              "sha1_git": "f41ea3e3ebbe0876396445b19f84da57072cbb9e"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/utils/argsort.py",
+              "size": 2363,
+              "sha1_git": "efab6fa9a3937df84501177241724a5ed2565a44"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/utils/filters.py",
+              "size": 2165,
+              "sha1_git": "929265e326afd9d2b34e8638ba6918bdd1bd680c"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/utils/logger.py",
+              "size": 4353,
+              "sha1_git": "204c11d412c4592709dba790a4935d5d46b08ebf"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/utils/settings.py",
+              "size": 12401,
+              "sha1_git": "446732ff17c1c3f75c8a25489685c7260cafaca1"
+            },
+            {
+              "path": "mrmustard-0.7.4/mrmustard/utils/typing.py",
+              "size": 2466,
+              "sha1_git": "84a1577842e63eded7618b57b38ef289cefaf7d4"
+            },
+            {
+              "path": "mrmustard-0.7.4/pyproject.toml",
+              "size": 3566,
+              "sha1_git": "5035329ce92879e448d92046c3c08ae31300eafc"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

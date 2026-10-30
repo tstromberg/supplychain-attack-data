@@ -1,4 +1,3 @@
----
 - id: gom-player
   title: GOM Player update served Miancha
   synopsis: >-
@@ -13,6 +12,13 @@
     The second layer carried the malicious work. `install.exe` checked whether it was running on 32-bit or 64-bit Windows, decrypted `dll.tmp` or `dll64.tmp` with XOR key `x14`, wrote `install.ocx`, copied a matching PDF-like payload, and registered the OCX under a COM CLSID. It then restarted `explorer.exe` so the payload loaded inside Explorer.
 
     Kaspersky detected the malware as `Backdoor.Win32.Miancha.b`. The payload extracted command-and-control data from marker strings at the end of the PDF-like file, decoded it, and used it for callback configuration. The compromise was narrow and effective: official updater, real installer, hidden backdoor.
+  pull_quote:
+    text: >-
+      GRETECH and JPCERT concluded the poisoned update reached only specific
+      organizations, except for six minutes on December 21, when anyone
+      updating was a target and nobody knows what was downloaded.
+    caption: six minutes when everyone was a target
+    after: 2
   start_date: 2013-11-27
   end_date: 2014-01-16
   target:
@@ -20,8 +26,8 @@
     kind: application
     website: https://gomlab.com
   actor:
-    name: Nation-state
-    kind: state
+    name: Unknown attacker
+    kind: unknown
   language: C++
   method:
     cause: update_infrastructure_compromise
@@ -47,6 +53,14 @@
       role: distribution
     hashes:
     - md5:a9225e059d9dace1b259bceec7f48dae
+    - sha256: 52c61a87553e9ad43f14f199e130c48c0ea0eab326732f9d343a883883526820
+      of: archive
+      role: malicious
+      note: >-
+        Resolved from the MD5 a9225e059d9dace1b259bceec7f48dae above through a VirusTotal lookup on
+        2026-09-02, which reports it as '295b91daa7e7cbf61ced13eaeb074356ea64de8e.codex', 13442065
+        bytes. No provider will serve it yet; the SHA-256 is recorded so the digest lanes can reach
+        it without repeating the lookup.
     indicators:
     - kind: file
       value: GoMPLAYER_JPSETUP.EXE
@@ -87,14 +101,12 @@
     - kind: marker
       value: BBBBBBBB
     notes:
-    - Piyolog maps this MD5 to the complete malicious outer updater
-      `GoMPLAYER_JPSETUP.EXE`; it is not the hash of the legitimate bundled updater or
-      any inner Miancha component.
-    - GRETECH initially identified December 27, 2013 through January 16, 2014 as the
-      affected update window; later reporting said investigation extended the start
-      date to November 27, 2013.
-    - The Reddit thread supplied for review appears to discuss later user concerns
-      about bundled unwanted software, not evidence for this update-server compromise.
+    - Piyolog maps this MD5 to the complete malicious outer updater `GoMPLAYER_JPSETUP.EXE`; it is 
+      not the hash of the legitimate bundled updater or any inner Miancha component.
+    - GRETECH initially identified December 27, 2013 through January 16, 2014 as the affected update
+      window; later reporting said investigation extended the start date to November 27, 2013.
+    - The Reddit thread supplied for review appears to discuss later user concerns about bundled 
+      unwanted software, not evidence for this update-server compromise.
   references:
   - url: https://piyolog.hatenadiary.jp/entry/20140125/1389111159
     title: GOM Player updater attack file and hash investigation - Piyolog
@@ -103,10 +115,4 @@
   - url: https://internet.watch.impress.co.jp/docs/news/632516.html
     title: GOM Player update server unauthorized access disclosed
   - url: https://forest.watch.impress.co.jp/docs/news/638849.html
-    title: GRETECH publishes detailed investigation results on targeted attack abusing
-      GOM Player
-  - url: 
-      https://www.symantec.com/connect/blogs/four-years-darkseoul-cyberattacks-against-south-korea-continue-anniversary-korean-war
-    title: Four Years of DarkSeoul Cyberattacks Against South Korea Continue
-  - url: https://www.welivesecurity.com/2013/07/01/south-korea-malware-watering-hole/
-    title: South Korea malware watering hole
+    title: GRETECH publishes detailed investigation results on targeted attack abusing GOM Player

@@ -1,6 +1,36 @@
 schema_version: 1
 samples:
   - artifact_id: bittensor-wallet
+    phase: during
+    classification: malicious
+    filename: bittensor-wallet-backdoor-report.fragment
+    path: bittensor-wallet/during/bittensor-wallet-backdoor-report.fragment
+    sha256: 511c6ae692cbe1bbdfeef8ce175c4950f7baf7d2474e9ef0babdb27b520db150
+    size: 1330
+    source:
+      url: >-
+        https://www.stepsecurity.io/blog/bittensor-wallet-4-0-2-compromised-on-pypi---backdoor-exfiltrates-private-keys
+      retrieved_at: '2026-08-14T22:35:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - reconstruction_documented
+        - measured_sha256
+      evidence:
+        - stitched_exact_report_code_excerpts
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: 4.0.2
+    notes:
+      - >-
+        This file preserves three code excerpts as rendered by the archived report: anti-analysis,
+        wallet-type detection, and the Python HTTPS fallback. It is deliberately not presented as a
+        complete source file or reconstructed package; the original 4.0.2 archive remains
+        unavailable.
+    subject: bittensor-wallet
+  - artifact_id: bittensor-wallet
     phase: after
     classification: remediated
     coordinate: pkg:pypi/bittensor-wallet@4.0.1
@@ -19,11 +49,48 @@ samples:
       basis:
         - official_distribution_endpoint
         - measured_sha256
+      evidence:
+        - official_distribution_endpoint
+        - measured_sha256
     relates_to:
       - phase: during
         version: 4.0.2
     notes:
       - Known fixed/remediated release identified by the incident record.
+    subject: bittensor-wallet
+  - artifact_id: bittensor-wallet
+    phase: before
+    classification: clean
+    coordinate: pkg:pypi/bittensor-wallet@4.0.1
+    version: 4.0.1
+    filename: bittensor_wallet-4.0.1.tar.gz
+    path: bittensor-wallet/before/bittensor_wallet-4.0.1.tar.gz
+    sha256: edc2588d5e272835285e4171dd3daf862149f617015bf52e43d433d8e5c297c5
+    size: 83080
+    source:
+      url: >-
+        https://files.pythonhosted.org/packages/74/69/8e5eb1131e3fb750ead1c1b1d2b628dede7b41edfad835cb78764dd88ceb/bittensor_wallet-4.0.1.tar.gz
+      kind: distribution
+      retrieved_at: '2026-09-04T02:02:15Z'
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - official_registry_download
+        - registry_published_digest_reproduced
+        - measured_sha256
+    notes:
+      - The highest release below the earliest compromised version.
+      - >-
+        This artifact's record carries no package field, so the name was taken from its own artifact
+        id, bittensor-wallet, which resolves to a real package in the pypi registry the record
+        names. The compromised versions themselves are no longer published there, which is
+        consistent with the incident, so the identity rests on the id and the ecosystem rather than
+        on finding those versions.
+    subject: bittensor-wallet
 unresolved:
   - artifact_id: bittensor-wallet
     phase: during
@@ -40,6 +107,11 @@ unresolved:
         exceeded (Client.Timeout exceeded while awaiting headers)"
       - "Forager PURL/SHA-256:   -v\tenable verbose logging"
       - 'Forager PURL without hash constraint: per-target timeout'
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        6a416b72ff24804abc12484a3b41413a8580acedd8a5f8c84224fcf0732c2f8e as
+        pkg:pypi/bittensor-wallet@4.0.2?artifact=bittensor_wallet-4.0.2.tar.gz. The digest names a
+        real file; what is missing is a source that will serve it.
     last_attempted_at: '2026-08-10T14:48:29.203Z'
   - artifact_id: bittensor-wallet
     phase: during
@@ -63,4 +135,19 @@ unresolved:
         Triage has no file analysis for SHA256
         6a416b72ff24804abc12484a3b41413a8580acedd8a5f8c84224fcf0732c2f8e; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:55:56.428Z'
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        6a416b72ff24804abc12484a3b41413a8580acedd8a5f8c84224fcf0732c2f8e as
+        pkg:pypi/bittensor-wallet@4.0.2?artifact=bittensor_wallet-4.0.2.tar.gz. The digest names a
+        real file; what is missing is a source that will serve it.
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:12:26.504-04:00 level=ERROR msg="command failed"
+        error="hash 6a416b72ff24804abc12484a3b41413a8580acedd8a5f8c84224fcf0732c2f8e unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/6a416b72ff24804abc12484a3b41413a8580acedd8a5f8c84224fcf0732c2f8e;
+        malwarebazaar: MalwareBazaar has no sample for
+        6a416b72ff24804abc12484a3b41413a8580acedd8a5f8c84224fcf0732c2f8e: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        6a416b72ff24804abc12484a3b41413a8580acedd8a5f8c84224fcf0732c2f8e; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:12:26.516Z'

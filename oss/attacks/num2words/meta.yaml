@@ -6,11 +6,18 @@
   story: |
     On July 28, 2025, an attacker used a phished PyPI credential to publish two malicious releases of `num2words`, the widely used Python library that turns numbers into their written-out form across dozens of languages. The compromise extended a string of registry takeovers that ran through the summer, this time on the Python side rather than npm.
 
-    According to StepSecurity, the maintainer was lured to `pypj.org`, a typosquat of the legitimate `pypi.org` domain, where the attacker harvested credentials and a 2FA code. The stolen session was used to mint a fresh PyPI API token and to push version 0.5.15 to the registry, with 0.5.16 following soon after. Neither release had a matching commit, tag, or GitHub Release on the upstream `savoirfairelinux/num2words` repository, the divergence that first drew the analysts' attention. The bad version sat on PyPI for roughly two hours before being flagged, long enough for automated dependency-update bots to begin opening pull requests against downstream projects.
+    The maintainer was lured to `pypj.org`, a typosquat of the legitimate `pypi.org` domain, where the attacker harvested credentials and a 2FA code. The stolen session was used to mint a fresh PyPI API token and to push version 0.5.15 to the registry, with 0.5.16 following soon after. Neither release had a matching commit, tag, or GitHub Release on the upstream `savoirfairelinux/num2words` repository, the divergence that first drew the analysts' attention. The bad version sat on PyPI for roughly two hours before being flagged, long enough for automated dependency-update bots to begin opening pull requests against downstream projects.
 
-    Researchers tied the incident to an actor commonly tracked as Scavenger, which has been linked to a series of supply-chain intrusions earlier in the year. Public reporting on the num2words payload itself remains thin: the advisory tracked as GHSA-jxr6-qrxx-2ph2 rates it critical and confirms the releases shipped malicious code, but neither StepSecurity's writeup nor GitHub's advisory enumerates the specific behavior.
+    Researchers tied the incident to an actor commonly tracked as Scavenger, which has been linked to a series of supply-chain intrusions earlier in the year. Public reporting on the num2words payload itself remains thin: the advisory tracked as GHSA-jxr6-qrxx-2ph2 rates it critical and confirms the releases shipped malicious code, but neither StepSecurity's writeup nor GitHub's advisory enumerates the specific behavior. The files themselves were recovered in September 2026, and they answer what the advisories do not. Each release appends thirteen lines to `num2words/__init__.py` that, on Windows, hand `num2words/_build.py` to `ctypes.CDLL` and call its `main()`. `_build.py` is not Python at all: it is a 1.3 MB Windows PE DLL wearing a `.py` extension so that it travels inside a source distribution without looking out of place.
 
     PyPI removed both versions, and the project's legitimate maintainers continued publishing from the unaffected GitHub branch. Operators who installed 0.5.15 or 0.5.16, or whose dependency bots resolved them automatically, were advised to pin to a known-good version and rotate any credential reachable from the affected host.
+  pull_quote:
+    text: >-
+      "A new version (0.5.16) was just deployed and it still contains a
+      malicious payload. I feel like their sessions are still active despite
+      the password rotation," the maintainers wrote.
+    caption: rotating the password wasn't enough
+    after: 3
   start_date: 2025-07-28
   end_date: 2025-07-31
   target:
@@ -42,6 +49,25 @@
     versions:
     - 0.5.15
     - 0.5.16
+    hashes:
+    - sha256: d31480b0a3a553309f423f83d2ed50e6dd623a64e8b1211c22a3756d55fd77ab
+      of: archive
+      role: malicious
+      note: >-
+        num2words-0.5.15.tar.gz, 794612 bytes, uploaded 2025-07-28T14:02:27Z. Recovered from
+        the PyPI JSON response that DataDog captured while the release was live.
+    - sha256: 3783159b7351bdf788162ec4531c6336fba1040873182595af318711ee4a2261
+      of: archive
+      role: malicious
+      note: num2words-0.5.15-py3-none-any.whl, 740750 bytes, uploaded 2025-07-28T14:02:25Z.
+    - sha256: ee90ff8c0757bd9a2cf0d3091f6e06dc55e88915abf5c7bf1977600c50a00106
+      of: archive
+      role: malicious
+      note: num2words-0.5.16.tar.gz, 794619 bytes, uploaded 2025-07-28T16:56:27Z.
+    - sha256: c148c3b899b8c77634a60a83deab1570d4815356e7942e94f9247eee8acefb79
+      of: archive
+      role: malicious
+      note: num2words-0.5.16-py3-none-any.whl, 740749 bytes, uploaded 2025-07-28T16:56:25Z.
     locations:
     - uri: https://pypi.org/project/num2words/0.5.15/
       role: distribution
@@ -58,11 +84,30 @@
     indicators:
     - kind: domain
       value: pypj.org
+    - kind: file_sha256
+      value: num2words/_build.py be917cb379b9622f56a4d5ec93bf00c20cb76c6646e5919690d0f7c09c956de2
+    - kind: observable
+      value: >-
+        num2words/__init__.py gains thirteen appended lines that, on Windows, load
+        num2words/_build.py through ctypes.CDLL and call its main().
+    - kind: observable
+      value: >-
+        num2words/_build.py is not Python. It is a 1291264-byte Windows PE DLL carrying a .py
+        extension so that it passes as source inside a source distribution.
     - kind: observable
       value: PyPI releases lacked matching GitHub tags, commits, or releases.
     notes:
-    - StepSecurity cited package popularity as exposure context; no confirmed affected-user
+    - >-
+      StepSecurity cited package popularity as exposure context; no confirmed affected-user
       count is stored.
+    - >-
+      Two SHA-256 values previously attributed to the OSV record appear in neither MAL-2025-6794
+      nor PYSEC-2025-72 and match none of the four files PyPI served. They are removed; the
+      hashes above come from PyPI's own API.
+    - >-
+      A 2026-08-14 audit queried those two values through MalwareBazaar, Triage and MalShare and
+      found nothing. Re-running the lookup on 2026-09-02 with the correct digests recovered all
+      four files from Hopper on the first attempt.
   references:
   - url: 
       https://www.stepsecurity.io/blog/supply-chain-security-alert-num2words-pypi-package-shows-signs-of-compromise

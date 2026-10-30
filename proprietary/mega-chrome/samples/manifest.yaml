@@ -1,5 +1,51 @@
 schema_version: 1
-samples: []
+samples:
+  - artifact_id: mega-chrome
+    phase: during
+    classification: malicious
+    version: 3.39.4
+    filename: content.js
+    path: mega-chrome/during/content.js
+    sha256: 6e25c867d4a898a842110a558ce0c44d4480dc4855b6e68739ea7d62fcddf96c
+    size: 2368
+    source:
+      url: https://serhack.me/articles/mega-chrome-extension-hacked/
+      kind: researcher_mirror
+      retrieved_at: '2026-09-03T02:06:14Z'
+    verification:
+      status: verification_material
+      basis:
+        - transcribed_from_report
+        - measured_sha256
+      evidence:
+        - transcribed_from_published_code_block
+        - measured_sha256_and_size
+    notes:
+      - Not the CRX's bytes. The digest names this transcription.
+    subject: mega-chrome
+  - artifact_id: mega-chrome
+    phase: during
+    classification: malicious
+    version: 3.39.4
+    filename: manifest-matches.json
+    path: mega-chrome/during/manifest-matches.json
+    sha256: ccbbc990976ecca3724bab811520c97699c69160ff8982033c70c4cdc6918617
+    size: 114
+    source:
+      url: https://serhack.me/articles/mega-chrome-extension-hacked/
+      kind: researcher_mirror
+      retrieved_at: '2026-09-03T02:06:14Z'
+    verification:
+      status: verification_material
+      basis:
+        - transcribed_from_report
+        - measured_sha256
+      evidence:
+        - transcribed_from_published_code_block
+        - measured_sha256_and_size
+    notes:
+      - Not the CRX's bytes. The digest names this transcription.
+    subject: mega-chrome
 unresolved:
   - artifact_id: mega-chrome
     phase: during
@@ -7,4 +53,47 @@ unresolved:
     hashes: []
     locations: []
     attempts: []
-    last_attempted_at: '2026-08-10T15:08:35.505Z'
+    last_attempted_at: '2026-09-02T23:54:40.521Z'
+  - artifact_id: mega-chrome
+    phase: during
+    version: 3.39.4
+    filename: MEGA Chrome extension 3.39.4 CRX
+    status: unavailable
+    notes:
+      - >-
+        Uploaded 2018-09-04 at about 14:30 UTC and pulled by Google roughly four hours later, which
+        is too short a window for the archives that mirror the Web Store to have taken a copy.
+      - >-
+        No digest for the CRX is published in any cited source, so even a recovered copy could not
+        be verified as exact.
+    attempts:
+      - >-
+        crx4chrome extension page for bigefpfhnfcobdlfbedofhhaibnlghod: present, but its version
+        history lists only 3.3.2, 3.8.3 and 3.36.0 and stops well before 3.39.4.
+      - 'chrome-stats.com: answers 403 without a paid key.'
+      - >-
+        Chrome Web Store: serves only the current version, and the malicious one was removed in
+        2018.
+    last_attempted_at: '2026-09-02T20:27:28Z'
+interpretation:
+  - >-
+    The extension id this record carried was MyEtherWallet CX's, not MEGA's, which meant every
+    archive lookup asked about the wrong listing. It is corrected in meta.yaml; the search below
+    used the right one and still came up empty.
+  - >-
+    The malicious CRX itself is not held. Google pulled MEGA 3.39.4 about five hours after it went
+    up on 2018-09-04 and no archive of the Chrome Web Store binary survives, so what is recoverable
+    is the code as the researcher who analysed it published it.
+  - >-
+    The content script appends a script tag to the page and polls every two seconds. On
+    MyEtherWallet it walks Angular scopes for a .wallet and reads getAddressString() and
+    getPrivateKeyString(); on MyMonero it reads scope.address with view_key and spend_key; for Idex
+    it reads localStorage state together with configuration.keySalt. Each finding is handed to the
+    extension over a CustomEvent -- nmew, nmm, imm -- which a listener forwards with
+    chrome.runtime.sendMessage as nmewm, nmmm and immm.
+  - >-
+    The manifest fragment shows why those three sites: the build declared matches for file:///*,
+    myetherwallet.com, mymonero.com and idex.market.
+  - >-
+    Both files are transcriptions of code blocks in a blog post, not bytes the Chrome Web Store
+    served, so they are recorded verification_material and the digests name the transcriptions.

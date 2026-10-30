@@ -14,6 +14,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { execFileSync, spawn } = require("node:child_process");
 const yaml = require("js-yaml");
+const provenance = require("./provenance-store.js");
 
 const ROOT = path.resolve(__dirname, "..");
 const ATTACK_DIR = path.join(ROOT, "oss", "attacks", "accesspress");
@@ -190,11 +191,14 @@ async function acquire(capture, options) {
     const sidecar = JSON.parse(fs.readFileSync(sourceSidecar, "utf8"));
     sidecar.artifact.filename = filename;
     sidecar.fetch.original_url ||= originalURL(capture);
-    fs.writeFileSync(`${destination}.forage.json`, `${JSON.stringify(sidecar, null, 2)}\n`);
+    provenance.recordFor(destination, sidecar);
     return {
       ...capture,
       status: "acquired",
       existing: false,
+      // Carried on the result rather than re-read later: the acquisition record is filed
+      // by digest now, so there is no file beside the sample to read it back from.
+      retrievedAt: sidecar.fetch.at,
       filename,
       relativePath: path.relative(SAMPLE_ROOT, destination),
       sha256: sha256(destination),
@@ -242,7 +246,7 @@ function updateManifest(results, versions) {
       source: {
         url: replayURL(result),
         original_url: originalURL(result),
-        retrieved_at: JSON.parse(fs.readFileSync(path.join(SAMPLE_ROOT, `${result.relativePath}.forage.json`), "utf8")).fetch.at,
+        retrieved_at: result.retrievedAt,
         kind: "web_archive",
       },
       verification: {

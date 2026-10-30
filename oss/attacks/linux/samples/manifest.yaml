@@ -14,11 +14,17 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - contemporary_lkml_report
         - injected_lines_preserved
         - measured_sha256
     notes:
-      - This preserves the contemporary report containing the injected lines, not the transient CVS file object.
+      - >-
+        This preserves the contemporary report containing the injected lines, not the transient CVS
+        file object.
+    subject: linux
   - artifact_id: linux
     phase: during
     classification: malicious
@@ -33,12 +39,90 @@ samples:
     verification:
       status: payload_only
       basis:
+        - measured_sha256
+      evidence:
         - exact_two_line_injection
         - mailing_list_quote_prefix_removed
         - html_entities_decoded
         - measured_sha256
     notes:
-      - The LKML quote prefix was removed and HTML entities were decoded; no surrounding context was invented.
+      - >-
+        The LKML quote prefix was removed and HTML entities were decoded; no surrounding context was
+        invented.
+    subject: linux
+  - artifact_id: linux
+    phase: before
+    classification: clean
+    version: 2.6.0-test10
+    filename: kernel-exit.c
+    path: linux/before/kernel-exit.c
+    sha256: ca6b73f7ca4b6ea4fe1e101034a7ec502115f192f8a4ed808381407f5c57fe6f
+    size: 28550
+    source:
+      url: >-
+        https://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git/plain/kernel/exit.c?id=v2.6.0-test10
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: official_source_repository
+    verification:
+      status: exact
+      basis:
+        - measured_sha256
+      evidence:
+        - fetched_from_kernel_org_history_git_at_tag_v2_6_0_test10
+        - byte_identical_to_v2_6_0_test11
+        - measured_sha256
+    notes:
+      - >-
+        kernel/exit.c as it stood in the tree the CVS gateway mirrored. The 2003 injection was made
+        against the tree on 5 November, between the test9 and test10 releases.
+      - >-
+        Chosen over test9 because the published hunk header places the injection at line 1114, which
+        is where this file's `retval = -ECHILD;` sits; in test9 it sits at 1107 and in 2.6.0 final
+        at 1131.
+      - Identical to the v2.6.0-test11 blob, so the file did not change across that window.
+    subject: linux
+  - artifact_id: linux
+    phase: during
+    classification: malicious
+    version: 2.6.0-test10
+    filename: kernel-exit-backdoored.c
+    path: linux/during/kernel-exit-backdoored.c
+    sha256: 099cb6a888dd5fc66711fe4f4aed33d02a6398a5082920d4aa79221c71758922
+    size: 28630
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: evidence_fragment_spliced_into_release_member
+        base:
+          path: linux/before/kernel-exit.c
+          sha256: ca6b73f7ca4b6ea4fe1e101034a7ec502115f192f8a4ed808381407f5c57fe6f
+          member: kernel/exit.c
+        overlay:
+          path: linux/during/kernel-exit.c-injected-lines.patch
+          sha256: 014e5dea0ebda8379b54686a19559aa17aead8e50c0c9f9437feb01fc0272228
+          operation: apply
+    verification:
+      status: payload_only
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - rebuilt_from_release_member_and_preserved_evidence_in_this_manifest
+        - injected_lines_land_at_published_hunk_offset_1114
+        - measured_sha256
+    notes:
+      - >-
+        The two preserved lines placed at their reported position in sys_wait4, immediately before
+        `retval = -ECHILD;`.
+      - >-
+        The payload is the assignment hiding in a comparison: `(current->uid = 0)` sets the calling
+        process's uid to root and evaluates false, so the branch it guards never runs and the
+        function returns normally. A reader skims it as `==`.
+      - >-
+        Placement is corroborated: the injected line lands at 1114, the offset the published hunk
+        header gives.
+    subject: linux
 unresolved:
   - artifact_id: linux
     phase: before

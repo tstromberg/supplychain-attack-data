@@ -25,6 +25,10 @@ samples:
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
         - >-
           original_reporter_clean_archive_sha256_53d9da55137f83b1e7571aef090b0784d9f04a980115b5c391455374729393f3
         - >-
@@ -35,6 +39,67 @@ samples:
       - >-
         The measured SHA-256 of the contained monero-wallet-cli is
         5decc690a63aab004bae261630980e631b9d37a0271bbe0c5b477feffcd3f8c2.
+    subject: monero-cli-wallet
+  - artifact_id: monero-cli-wallet
+    phase: during
+    classification: detection_evidence
+    version: 0.15.0.0
+    filename: monero-issue-6151.json
+    path: monero-cli-wallet/during/monero-issue-6151.json
+    sha256: edcbcfedeb011e7dd3054892de342b6d40a8ec4652e0df42a00dabed54dd2a34
+    size: 7096
+    source:
+      url: https://api.github.com/repos/monero-project/monero/issues/6151
+      retrieved_at: '2026-09-02T13:12:00Z'
+      kind: contemporary_project_issue
+    verification:
+      status: verification_material
+      basis:
+        - measured_sha256
+      evidence:
+        - github_api_record
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: 0.15.0.0
+    notes:
+      - >-
+        The discovery, filed 2019-11-18T16:21:07Z, hours into the window. It is the source of both
+        digests this record turns on: 53d9da55... for the GitHub archive and b99009d2... for the one
+        downloads.getmonero.org was serving, plus the per-file comparison that isolated
+        monero-wallet-cli as the only member that differed.
+      - >-
+        Behavioural and identifying evidence, not the binary. The clean archive it names is held in
+        the before phase; the compromised one is unavailable.
+    subject: monero-cli-wallet
+  - artifact_id: monero-cli-wallet
+    phase: during
+    classification: detection_evidence
+    version: 0.15.0.0
+    filename: google-drive-infected-file-notice.html
+    path: monero-cli-wallet/during/google-drive-infected-file-notice.html
+    sha256: 6a4e3cc586a1f139a96b391a6bd0f1a0e033a741234d02aed91802173b07d8ca
+    size: 1697
+    source:
+      url: >-
+        https://drive.usercontent.google.com/download?id=1A3Uu3fN27OYDHR6evJ-4poP4hPLV89OW&export=download&confirm=t
+      retrieved_at: '2026-09-02T13:12:00Z'
+      kind: contemporary_sample_lead
+    verification:
+      status: verification_material
+      basis:
+        - measured_sha256
+      evidence:
+        - measured_sha256
+    notes:
+      - >-
+        The reporter's mirror of the malicious monero-wallet-cli still exists on Google Drive; this
+        is what asking for it returns. Google answers "Google Drive - Infected file", so the copy is
+        withheld rather than gone.
+      - >-
+        Kept because it changes what the unresolved record means: the bytes survive with an
+        identified holder, and the block is a provider policy that the file's owner can lift.
+    subject: monero-cli-wallet
 unresolved:
   - artifact_id: monero-cli-wallet
     phase: during
@@ -52,7 +117,17 @@ unresolved:
         Triage has no file analysis for SHA256
         b99009d2e47989262c23f7277808f7bb0115075e7467061d54fd80c51a22e63d; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:29.246Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:14:57.948-04:00 level=ERROR msg="command failed"
+        error="hash b99009d2e47989262c23f7277808f7bb0115075e7467061d54fd80c51a22e63d unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/b99009d2e47989262c23f7277808f7bb0115075e7467061d54fd80c51a22e63d;
+        malwarebazaar: MalwareBazaar has no sample for
+        b99009d2e47989262c23f7277808f7bb0115075e7467061d54fd80c51a22e63d: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        b99009d2e47989262c23f7277808f7bb0115075e7467061d54fd80c51a22e63d; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:14:57.961Z'
   - artifact_id: monero-cli-wallet
     phase: during
     filename: monero-wallet-cli

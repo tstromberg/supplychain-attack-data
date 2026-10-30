@@ -2,14 +2,14 @@
   title: MiMi installers carried Iron Tiger backdoors
   synopsis: >-
     Iron Tiger compromised MiMi's official desktop installers. Windows builds carried
-    HyperBro, while macOS and Linux installers delivered rshell for cross-platform
+    HyperBro, while the macOS installer delivered rshell for cross-platform
     remote access.
   story: |
     MiMi was an Electron chat application distributed from the vendor's own site. Trend Micro reported that attackers replaced or built official desktop packages with malware for Windows, macOS, and Linux, so users received a working chat client and a covert access channel.
 
-    The Windows compromise was closest to the build. Trend Micro found backdoor code inserted before the main MiMi window was created, then compiled into MiMi 2.2.0 and 2.2.1. The added loader started HyperBro and passed control back to the application.
+    Trend Micro found MiMi 2.2.0 and 2.2.1 carried similar additions to `electron-main.js`, the same post-build JavaScript injection applied to installers on the compromised host server rather than code compiled into the released binaries. The added loader started HyperBro and passed control back to the application.
 
-    The macOS and Linux path delivered rshell. SEKOIA documented a MiMi 2.3.0 DMG hosted at `mimi.mimi3.org` on 2022-05-26, with the payload placed under `MiMi.app/Contents/Resources/rshell`. The implant collected host data and opened a remote shell.
+    The macOS path delivered rshell. SEKOIA documented a MiMi 2.3.0 DMG hosted at `mimi.mimi3.org` on 2022-05-26, with the payload placed under `MiMi.app/Contents/Resources/rshell`. The implant collected host data and opened a remote shell.
 
     Public reporting attributed the operation to Iron Tiger, also tracked as LuckyMouse or APT27. The campaign was espionage-focused and cross-platform; public sources did not give a reliable victim count.
   start_date: 2021-11-23
@@ -33,7 +33,6 @@
     - backdoor
     - remote_access
     - data_theft
-    users: 0
   indicators:
   - kind: family
     value: HyperBro
@@ -92,7 +91,7 @@
       value: mimi32 2.exe 4f69806411cea9c8525ce6f9dd7408a6522bcdcc33ea1cb788d377ac8a4c98d7
     notes:
     - Trend Micro reported that the Windows backdoor code was present in MiMi 2.2.0
-      and 2.2.1 before compilation.
+      and 2.2.1 as an addition to electron-main.js, applied to the hosted installers.
   - id: mimi-macos
     name: MiMi macOS DMG
     package: MiMi
@@ -156,6 +155,22 @@
       value: rshell 8019b7deaf41b48c38b8b48e016f208a28e0909d437d4e35e3e35f7995758564
     notes:
     - Public sources did not name a specific affected Linux package version.
+  notes:
+  - >-
+    Trend Micro counted 13 targets: five HyperBro (four in Taiwan, one in the Philippines) and
+    eight rshell (six Taiwan, one Philippines, one both), including a Taiwanese game developer.
+  - >-
+    No cited source documents a trojanised MiMi installer for Linux. MiMi's desktop builds are
+    Windows and macOS; Trend Micro found rshell ELF samples of the same family, which is not the
+    same as a poisoned Linux installer.
+  - >-
+    The host mimi.mimi3.org used throughout this record appears in none of the cited references.
+    Sekoia names the application's site as www.mmimchat[.]com, developed by Xiamen Baiquan
+    Information Technology Co. Ltd.
+  - >-
+    Sekoia could not establish that MiMi is a legitimate application or that its stated
+    developer is a real company, and considered it plausible the app was built or repurposed as
+    a surveillance tool.
   references:
   - url: 
       https://www.trendmicro.com/en_us/research/22/h/irontiger-compromises-chat-app-Mimi-targets-windows-mac-linux-users.html

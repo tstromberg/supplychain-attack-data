@@ -36,13 +36,17 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The Ultralytics attack began in CI, not in PyPI. The project used a `pull_request_target` workflow and passed a privileged token into a custom action. That action then evaluated a user-controlled branch name inside a shell command.</p>
+      <p>The Ultralytics attack began in CI, not in PyPI. The project used a <code>pull_request_target</code> workflow and passed a privileged token into a custom action. That action then evaluated a user-controlled branch name inside a shell command.</p>
     
       <p>The attacker named the branch as a command substitution. When the workflow ran, the branch name fetched and executed a remote shell script from GitHub, turning formatting automation into code execution on a privileged runner.</p>
     
       <p>The attacker used that path to publish compromised PyPI releases. Versions 8.3.41, 8.3.42, 8.3.45, and 8.3.46 carried cryptomining changes, while the public repository did not contain matching malicious source. The package still looked like a normal computer-vision library release to downstream users.</p>
+      <figure class="pull-quote">
+        <blockquote>The payload was the branch name. Ultralytics' custom action dropped an unsanitized branch name into a shell <code>run</code> block, so a fork branch named as a command substitution ran <code>curl | bash</code> on a privileged runner.</blockquote>
+        <figcaption>the branch name was the exploit</figcaption>
+      </figure>
     
-      <p>The project cleaned up the releases and GitHub published GHSA-32hc-9xrg-cc9g. The durable lesson is simple: `pull_request_target` can be safe only when untrusted fork input is kept out of privileged execution.</p>
+      <p>The project cleaned up the releases and GitHub published GHSA-32hc-9xrg-cc9g. The durable lesson is simple: <code>pull_request_target</code> can be safe only when untrusted fork input is kept out of privileged execution.</p>
     
   </div>
   
@@ -95,6 +99,15 @@
 
   
 
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file_sha256:b6ea1681855ec2f73c643ea2acfcf7ae084a9648f888d4bd1e3e119ec15c3495.sample b6ea1681855ec2f73c643ea2acfcf7ae084a9648f888d4bd1e3e119ec15c3495</code></li>
+    
+      <li><code>file_sha256:4347625838a5cb0e9d29f3ec76ed8365b31b281103b716952bf64d37cf309785.sample 4347625838a5cb0e9d29f3ec76ed8365b31b281103b716952bf64d37cf309785</code></li>
+    
+  </ul>
   
 
   

@@ -18,14 +18,14 @@
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> sendmail · <a href="https://ftp.sendmail.org" target="_blank">website</a></div>
     <div class="meta-item"><strong>Date:</strong> 2002-09-28 to 2002-10-06 (8 days)</div>
-    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> daemon</div>
     <div class="meta-item"><strong>Language:</strong> C</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
     <div class="meta-item"><strong>Motive:</strong> unauthorized_access_control</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
     <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution</div>
-    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>User Impact:</strong> 200</div>
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
   </div>
 
@@ -36,13 +36,17 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>From about September 28 to October 6, 2002, the official Sendmail FTP server distributed trojaned copies of the 8.12.6 source archives. The compromise hit one of the Internet&#39;s default pieces of mail infrastructure: administrators who fetched source from the trusted FTP path could build a backdoored Sendmail without ever touching an exploit against a running daemon.</p>
+      <p>From about September 28 to October 6, 2002, the official Sendmail FTP server distributed trojaned copies of the 8.12.6 source archives. The compromise hit one of the Internet's default pieces of mail infrastructure: administrators who fetched source from the trusted FTP path could build a backdoored Sendmail without ever touching an exploit against a running daemon.</p>
     
-      <p>The delivery was limited but dangerous. The `.tar.gz` and `.tar.Z` archives on FTP were affected; HTTP downloads were not believed affected. The Register later quoted Eric Allman saying the attacker may have modified the FTP program itself so that roughly one in ten downloads received the backdoor while the original package remained untouched.</p>
+      <p>The delivery was limited but dangerous. The <code>.tar.gz</code> and <code>.tar.Z</code> archives on FTP were affected; HTTP downloads were not believed affected. The Register later quoted Eric Allman saying the attacker may have modified the FTP program itself so that roughly one in ten downloads received the backdoor while the original package remained untouched.</p>
+      <figure class="pull-quote">
+        <blockquote>Eric Allman's first read was that the attacker modified the FTP program serving the files, so about one download in ten carried the backdoor while the archive on the server was never touched.</blockquote>
+        <figcaption>the tarball was clean, the server was not</figcaption>
+      </figure>
     
-      <p>The code diff shows the backdoor inserted into `libsm/t-shm.c`. It declared `shm64`, called it from the shared-memory test path, decoded an embedded payload into a temporary `test` script, and executed it with `system(&quot;sh ./test 2&gt;/dev/null&quot;)`.</p>
+      <p>The code diff shows the backdoor inserted into <code>libsm/t-shm.c</code>. It declared <code>shm64</code>, called it from the shared-memory test path, decoded an embedded payload into a temporary <code>test</code> script, and executed it with <code>system(&quot;sh ./test 2&gt;/dev/null&quot;)</code>. That payload forked a process and connected to <code>spatula.aclue.com</code> at 66.37.138.99 on TCP/6667. From there, the attacker could open a shell with the privileges of the build user. Analysts also noted that its one-letter command syntax resembled the OpenSSH backdoor from the same year: <code>A</code> killed the exploit, <code>D</code> executed a command, and <code>M</code> put it to sleep. Nobody was ever identified, and the analyst who drew the OpenSSH comparison allowed that it could have been a copycat.</p>
     
-      <p>That payload forked a process and connected to `spatula.aclue.com` at 66.37.138.99 on TCP/6667. From there, the attacker could open a shell with the privileges of the build user. Analysts also noted that its one-letter command syntax resembled the OpenSSH backdoor from the same year: `A` killed the exploit, `D` executed a command, and `M` put it to sleep.</p>
+      <p>The defense already existed and went unused. The Sendmail Consortium shipped a detached PGP signature alongside the source, <code>sendmail.8.12.6.tar.sig</code>, and CERT CA-2002-28 published its MD5 checksum next to those of the two clean archives. Any administrator who verified the signature before building would have caught the substitution at the moment of download.</p>
     
   </div>
   

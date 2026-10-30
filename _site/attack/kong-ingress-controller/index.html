@@ -36,11 +36,15 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>Kong had already received a November 2024 report about a Pwn Request path in the KIC repository. The active branches were changed, but old unused branches still had workflows triggered by `pull_request_target`. On December 23, an attacker opened a pull request against one of those branches and used it to reach CI secrets.</p>
+      <p>Kong had already received a November 2024 report about a Pwn Request path in the KIC repository. The active branches were changed, but old unused branches still had workflows triggered by <code>pull_request_target</code>. On December 23, an attacker opened a pull request against one of those branches and used it to reach CI secrets.</p>
     
-      <p>The attacker obtained a GitHub personal access token used by KIC automation. Kong later said the malicious payload was probably inserted through a transiently compromised GitHub Actions pipeline, not by direct theft of a DockerHub token. The attacker pushed an unauthorized image so the DockerHub `:latest`, `:3.4`, and `:3.4.0` tags pointed to the compromised build.</p>
+      <p>The attacker obtained a GitHub personal access token used by KIC automation. Kong later said the malicious payload was probably inserted through a transiently compromised GitHub Actions pipeline, not by direct theft of a DockerHub token. The attacker pushed an unauthorized image so the DockerHub <code>:latest</code>, <code>:3.4</code>, and <code>:3.4.0</code> tags pointed to the compromised build.</p>
     
-      <p>Users reported high CPU usage on December 29. Kong reproduced the behavior on January 2 and found the public 3.4.0 image making DNS requests to subdomains of `supportxmr.com`. Third-party analysis concluded that the only malicious payload was XMRig. ARMO also described runtime behavior consistent with cryptomining, including high CPU use, communication with `pool.supportxmr.com`, and fileless execution through `memfd_create`.</p>
+      <p>Users reported high CPU usage on December 29. Kong reproduced the behavior on January 2 and found the public 3.4.0 image making DNS requests to subdomains of <code>supportxmr.com</code>. Third-party analysis concluded that the only malicious payload was XMRig. ARMO also described runtime behavior consistent with cryptomining, including high CPU use, communication with <code>pool.supportxmr.com</code>, and fileless execution through <code>memfd_create</code>.</p>
+      <figure class="pull-quote">
+        <blockquote>Kong reverted the risky trigger in November after a researcher's report, applying the fix to master and every actively developed branch. It missed some old unused branches, and that is where the pull request landed.</blockquote>
+        <figcaption>patched everywhere but the dead branches</figcaption>
+      </figure>
     
       <p>Kong deleted the affected 3.4.0 tag, rebuilt from a clean environment, published 3.4.1, and moved clean images back under the 3.4 and latest tags. The advisory told users who pulled 3.4.0 between December 22, 2024 and January 3, 2025 to remove the image from clusters and internal registries and pull the remediated image.</p>
     
@@ -66,7 +70,7 @@
           <td>
             <strong>kong-ingress-controller</strong>
             <br><code>kong/kubernetes-ingress-controller</code>
-            <br><span>docker · oci_image</span>
+            <br><span>docker hub · oci_image</span>
             <br><a href="https://docker.io" target="_blank">https://docker.io</a>
             <br><a href="https://github.com/Kong/kubernetes-ingress-controller" target="_blank">https://github.com/Kong/kubernetes-ingress-controller</a>
           </td>

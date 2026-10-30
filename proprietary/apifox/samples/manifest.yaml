@@ -1,51 +1,350 @@
 schema_version: 1
-samples: []
+interpretation:
+  - >-
+    The artifact is a CDN URL, not a release, so the sample is whatever cdn.apifox.com returned at a
+    moment inside the window. The Internet Archive holds nine captures of that URL in total and
+    exactly one from the incident window, 2026-03-05.
+  - >-
+    That capture is the clean file with 40332 bytes appended: its first 37859 bytes are
+    byte-identical to the 2025-12-02 capture. The 2026-05-27 capture is back to 37965 bytes, which
+    brackets the compromise on both sides from the archive alone.
+  - >-
+    The measured digest does not equal the SHA-256 the incident record publishes for this artifact.
+    Neither the decoded bytes nor the archived gzip container matches it. The window ran eighteen
+    days and this is a single moment inside it, so the reported digest most likely describes a
+    different revision of the payload; it is left in meta.yaml, annotated rather than replaced, and
+    the unresolved record keeps the question open.
+samples:
+  - artifact_id: apifox-app-event-tracking
+    phase: before
+    classification: clean
+    filename: apifox-app-event-tracking.min.js
+    path: apifox-app-event-tracking/before/apifox-app-event-tracking.min.js
+    sha256: 6a36767ac556c8abbc87f2e02809dfa26ee35a44540fae7db47545e3fcce83a2
+    size: 37859
+    source:
+      url: >-
+        https://web.archive.org/web/20251202072718id_/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js
+      original_url: https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js
+      retrieved_at: '2026-09-02T14:25:00Z'
+      kind: wayback
+    verification:
+      status: probable_exact
+      basis:
+        - web_archive_replay
+        - payload_indicator_present
+        - measured_sha256
+      evidence:
+        - exact_wayback_capture
+        - prefix_of_the_malicious_capture
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: '20260305051418'
+    notes:
+      - >-
+        The last capture before the compromise. Its bytes are the exact prefix of the malicious
+        file, which is what establishes that the attack appended rather than rewrote.
+    subject: apifox-app-event-tracking
+    commit: '20251202072718'
+  - artifact_id: apifox-app-event-tracking
+    phase: during
+    classification: malicious
+    filename: apifox-app-event-tracking.min.js
+    path: apifox-app-event-tracking/during/apifox-app-event-tracking.min.js
+    sha256: 806e5162f3b1020b2b70770fabdc897e5911ebc47f6ad889487ea4da7db71764
+    size: 78191
+    source:
+      url: >-
+        https://web.archive.org/web/20260305051418id_/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js
+      original_url: https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js
+      retrieved_at: '2026-09-02T14:25:00Z'
+      kind: wayback
+    verification:
+      status: probable_exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - exact_wayback_capture
+        - capture_inside_incident_window
+        - clean_prefix_plus_appended_payload
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: '20251202072718'
+      - phase: after
+        version: '20260527124515'
+    notes:
+      - >-
+        The tracking script as Apifox's CDN served it on 2026-03-05, the day after the window opens.
+        The Electron client loaded this file at startup, which is why a CDN script reached SSH keys
+        and git credentials.
+      - >-
+        Does not match the reported SHA-256
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; the archived gzip
+        container hashes to 6d462af1a9ba8f1fac633593c79396dd968b6e39a7e8dcbc3e5953d28c577c61 and
+        does not match it either. See the unresolved record.
+      - >-
+        The archived response was stored gzip-encoded; these are the decoded bytes, as recorded in
+        the sidecar.
+    subject: apifox-app-event-tracking
+    commit: '20260305051418'
+  - artifact_id: apifox-app-event-tracking
+    phase: during
+    classification: malicious
+    filename: appended-payload.js
+    path: apifox-app-event-tracking/during/appended-payload.js
+    sha256: 27f436ffc8548b229d3111fad2d5c3e22943b7b329c46a941a1ad6f36f5acac2
+    size: 40332
+    source:
+      url: >-
+        https://web.archive.org/web/20260305051418id_/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js
+      retrieved_at: '2026-09-02T14:25:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - byte_range_of_the_retained_capture
+        - measured_sha256
+    notes:
+      - >-
+        The injected half on its own, taken verbatim from the end of the capture. Obfuscated with a
+        rotated string array, so none of the reported indicator domains (apifox.it.com,
+        cdn.openroute.dev, upgrade.feishu.it.com, ns.openroute.dev, system.toshinkyo.or.jp) appears
+        as plaintext; resolving them would mean running the payload's own decoder, which this
+        workflow does not do.
+    subject: apifox-app-event-tracking
+    commit: '20260305051418'
+  - artifact_id: apifox-app-event-tracking
+    phase: after
+    classification: remediated
+    filename: apifox-app-event-tracking.min.js
+    path: apifox-app-event-tracking/after/apifox-app-event-tracking.min.js
+    sha256: d5b14c9f9cb95021ebefd9a9dafcac586cf9241bd14284ad88a1c270647011cd
+    size: 37965
+    source:
+      url: >-
+        https://web.archive.org/web/20260527124515id_/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js
+      original_url: https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js
+      retrieved_at: '2026-09-02T14:25:00Z'
+      kind: wayback
+    verification:
+      status: probable_exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - exact_wayback_capture
+        - measured_sha256
+    notes:
+      - >-
+        Back to the size of an ordinary tracking script, two months after the window closed. Not
+        byte-identical to the before capture; the file had moved on for unrelated reasons.
+    subject: apifox-app-event-tracking
+    commit: '20260527124515'
 unresolved:
   - artifact_id: apifox-app-event-tracking
     phase: during
-    status: unavailable
-    hashes:
-      - 'sha256: 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1'
-    locations: []
+    filename: apifox-app-event-tracking.min.js
+    status: reported_digest_unmatched
+    reported_hash: sha256:91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1
+    notes:
+      - >-
+        A malicious capture is held, but not the one the reported digest names. The window is
+        eighteen days long and the Archive caught it once, so a rotated payload is the likeliest
+        explanation.
+      - >-
+        Resolving this needs either the researcher's own copy or another capture. The distinguishing
+        test is cheap: any candidate should begin with the 37859-byte clean prefix held in the
+        before phase.
     attempts:
       - >-
-        Forager SHA-256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
-        time=2026-08-10T11:05:00.416-04:00 level=INFO msg="Post
-        \"https://otlp-gateway-prod-us-east-3.grafana.net/otlp/v1/logs\": dial tcp: lookup
-        otlp-gateway-prod-us-east-3.grafana.net: no such host"
+        Internet Archive: all nine captures of the URL enumerated; only 20260305051418 falls inside
+        the window, and its decoded and gzip-container digests both differ from the reported one.
+      - MalwareBazaar, Triage, Malshare: no sample for the reported SHA-256.
       - >-
-        Forager SHA-256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
-        time=2026-08-10T11:07:47.087-04:00 level=INFO msg=downloading
-        url=http://10.9.8.5:8081/api/file/91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1
+        Forager SHA256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
+        time=2026-09-02T11:28:47.388-04:00 level=ERROR msg="command failed" error="hash
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1;
+        malwarebazaar: MalwareBazaar has no sample for
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
+        time=2026-09-02T11:30:45.205-04:00 level=ERROR msg="command failed" error="hash
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1;
+        malwarebazaar: MalwareBazaar has no sample for
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
+        time=2026-09-02T11:47:03.318-04:00 level=ERROR msg="command failed" error="hash
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1;
+        malwarebazaar: MalwareBazaar has no sample for
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
+        time=2026-09-02T11:48:30.897-04:00 level=ERROR msg="command failed" error="hash
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1;
+        malwarebazaar: MalwareBazaar has no sample for
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
+        time=2026-09-02T12:12:46.284-04:00 level=ERROR msg="command failed" error="hash
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1;
+        malwarebazaar: MalwareBazaar has no sample for
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
+        returned status 404"
+      - >-
+        Forager SHA256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
+        time=2026-09-02T19:52:11.477-04:00 level=ERROR msg="command failed" error="hash
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
+        returned status 404"
       - >-
         Forager URL
         https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
-        time=2026-08-10T11:20:36.306-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        time=2026-09-02T19:52:11.521-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
         failed"
       - >-
         Direct URL
         https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
-        downloaded SHA-256 e6d5c0695b29b46ac5acd735b3252f000f836beb1a4db47fd0273fdd81d79b84 did not
+        downloaded SHA-256 e8788be9db1517bfac3c606109ea6e23796f1d60cc3e5f5ce4f800ca37f73bb4 did not
         match reported hashes
       - >-
-        Forager SHA-256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
-        time=2026-08-10T11:29:45.132-04:00 level=ERROR msg="command failed" error="SHA-256
-        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
-        sources: hopper: unexpected status code 404 from
-        http://10.9.8.5:8081/api/file/91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1;
-        malwarebazaar: MalwareBazaar has no sample for
-        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
-        Triage has no file analysis for SHA-256
-        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
-        returned status 404; virustotal: file download requires a VirusTotal Premium (Intelligence)
-        key"
-      - >-
         Forager SHA256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
-        time=2026-08-10T13:52:11.596-04:00 level=ERROR msg="command failed" error="hash
+        time=2026-09-03T05:38:42.312-04:00 level=ERROR msg="command failed" error="hash
         91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
         sources: malwarebazaar: MalwareBazaar has no sample for
         91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
-        Triage has no file analysis for SHA256
+        triage has no file analysis for SHA256
         91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:52:12.675Z'
+      - >-
+        Forager URL
+        https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
+        time=2026-09-03T05:38:42.383-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Direct URL
+        https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
+        downloaded SHA-256 47d62fe8ed839fcad0250d490209b534ebbe9895c08ad3498765cff39260c446 did not
+        match reported hashes
+      - >-
+        Forager SHA256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
+        time=2026-09-03T05:58:38.125-04:00 level=ERROR msg="command failed" error="hash
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1;
+        malwarebazaar: MalwareBazaar has no sample for
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
+        returned status 404"
+      - >-
+        Forager URL
+        https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
+        time=2026-09-03T05:58:38.173-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Direct URL
+        https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
+        downloaded SHA-256 811d965a3c1fe2d98732ef1279093517f9da87f4fb34112b7226f6d45194ed13 did not
+        match reported hashes
+      - >-
+        Forager SHA256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
+        time=2026-09-03T08:39:26.789-04:00 level=ERROR msg="command failed" error="hash
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1;
+        malwarebazaar: MalwareBazaar has no sample for
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
+        returned status 404"
+      - >-
+        Forager URL
+        https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
+        time=2026-09-03T08:39:26.834-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Direct URL
+        https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
+        downloaded SHA-256 12d8ef463b17916d598f985320dfab5f48268c50a1c4d44a09b43f18a6a8575c did not
+        match reported hashes
+      - >-
+        Forager SHA256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
+        time=2026-09-05T11:06:46.458-04:00 level=ERROR msg="command failed" error="hash
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
+        sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1;
+        malwarebazaar: MalwareBazaar has no sample for
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
+        returned status 404"
+      - >-
+        Forager URL
+        https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
+        time=2026-09-05T11:06:46.500-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Direct URL
+        https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
+        downloaded SHA-256 6faacac2b4d03565b544180d874bcbf7cae7a54de82c418b418957b8ba8bf97e did not
+        match reported hashes
+      - >-
+        Forager SHA256 91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1:
+        time=2026-09-10T10:58:02.880-04:00 level=ERROR msg="command failed" error="hash
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1 unavailable from configured
+        sources: malwarebazaar: MalwareBazaar has no sample for
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        91d48ee33a92acef02d8c8153d1de7e7fe8ffa0f3b6e5cebfcb80b3eeebc94f1; malshare: download
+        returned status 404"
+      - >-
+        Forager URL
+        https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
+        time=2026-09-10T10:58:02.903-04:00 level=ERROR msg="command failed" error="1 of 1 downloads
+        failed"
+      - >-
+        Direct URL
+        https://web.archive.org/web/20260305051418/https://cdn.apifox.com/www/assets/js/apifox-app-event-tracking.min.js:
+        downloaded SHA-256 b7b90a770e71ebc3be43516d53fba8b97ad0efbe0672ffd3b29ff331fda5cb6a did not
+        match reported hashes
+    last_attempted_at: '2026-09-10T14:58:04.139Z'
+  - artifact_id: apifox-desktop-client
+    phase: during
+    status: unavailable
+    hashes: []
+    locations: []
+    attempts: []
+    last_attempted_at: '2026-09-10T14:58:04.141Z'

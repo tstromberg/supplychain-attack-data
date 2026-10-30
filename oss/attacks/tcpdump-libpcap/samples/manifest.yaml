@@ -24,12 +24,16 @@ samples:
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - debian_security_advisory_md5_6bc8da35f9eed4e675bfdf04ce312248
         - debian_security_advisory_size_380635
         - debian_confirmed_source_safe_for_incident
         - measured_sha256
     notes:
       - Renamed from Debian's tcpdump_3.6.2.orig.tar.gz to the upstream filename.
+    subject: tcpdump-3-6-2
   - artifact_id: tcpdump-3-7-1
     phase: before
     classification: clean
@@ -45,8 +49,11 @@ samples:
     verification:
       status: exact
       basis:
+        - measured_sha256
+      evidence:
         - cert_update_md5_03e5eac68c65b7e6ce8da03b0b0b225e
         - measured_sha256
+    subject: tcpdump-3-7-1
   - artifact_id: libpcap-0-7-1
     phase: before
     classification: clean
@@ -62,8 +69,11 @@ samples:
     verification:
       status: exact
       basis:
+        - measured_sha256
+      evidence:
         - cert_update_md5_0597c23e3496a5c108097b2a0f1bd0c7
         - measured_sha256
+    subject: libpcap-0-7-1
   - artifact_id: tcpdump-libpcap-evidence
     phase: during
     classification: malicious
@@ -79,12 +89,16 @@ samples:
     verification:
       status: payload_only
       basis:
+        - payload_indicator_present
+        - measured_sha256
+      evidence:
         - original_hlug_disclosure_mailing_list_copy
         - poisoned_archive_md5s
         - malicious_source_diffs
         - measured_sha256
     notes:
       - Preserves the contemporary disclosure and evidence, not a poisoned release archive.
+    subject: tcpdump-libpcap-evidence
   - artifact_id: libpcap-0-7-1
     phase: during
     classification: malicious
@@ -100,6 +114,8 @@ samples:
     verification:
       status: payload_only
       basis:
+        - measured_sha256
+      evidence:
         - original_hlug_disclosure_relevant_diff
         - measured_sha256
     relates_to:
@@ -110,6 +126,7 @@ samples:
       - >-
         This is an incident-published excerpt rather than a mechanically reconstructed full-file
         patch.
+    subject: libpcap-0-7-1
   - artifact_id: tcpdump-libpcap-configure
     phase: during
     classification: malicious
@@ -125,11 +142,14 @@ samples:
     verification:
       status: payload_only
       basis:
+        - measured_sha256
+      evidence:
         - original_hlug_disclosure_relevant_diff
         - measured_sha256
     notes:
       - HTML entities were decoded; the complete visible relevant configure excerpt was preserved.
       - The excerpt applies to poisoned tcpdump and libpcap configure scripts.
+    subject: tcpdump-libpcap-configure
   - artifact_id: tcpdump-libpcap-services
     phase: during
     classification: malicious
@@ -145,6 +165,9 @@ samples:
     verification:
       status: payload_only
       basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
         - original_hlug_complete_services_payload
         - wayback_identity_replay
         - embedded_shell_script_and_conftes_source
@@ -154,6 +177,7 @@ samples:
       - >-
         The malicious shell script begins at line 1001 inside an otherwise plausible services
         listing.
+    subject: tcpdump-libpcap-services
   - artifact_id: tcpdump-libpcap-services
     phase: during
     classification: malicious
@@ -169,6 +193,10 @@ samples:
     verification:
       status: payload_only
       basis:
+        - payload_indicator_present
+        - web_archive_replay
+        - measured_sha256
+      evidence:
         - original_hlug_published_non_obfuscated_excerpt
         - wayback_identity_replay
         - measured_sha256
@@ -178,22 +206,169 @@ samples:
       - >-
         HLUG described this as the non-obfuscated portion, excerpted from the complete services
         payload.
+    subject: tcpdump-libpcap-services
+  - artifact_id: libpcap-0-7-1
+    phase: during
+    classification: malicious
+    version: 0.7.1
+    filename: configure-backdoored
+    path: libpcap-0-7-1/during/configure-backdoored
+    sha256: 3412d21e84b339823e1f9e48b164aa6d47231086f7522243b6990169efa45a25
+    size: 77815
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: evidence_fragment_spliced_into_release_member
+        base:
+          path: libpcap-0-7-1/before/libpcap-0.7.1.tar.gz
+          sha256: 044396c8e7a385f33ab8048ec1df882d0aae9b564e3b5f0b4c3fabd0bbd91a8f
+          member: configure
+        overlay:
+          path: tcpdump-libpcap/during/tcpdump-libpcap-configure-backdoor.diff
+          sha256: 650658c183e4e5996709b565acf48f99f1cb9532c9475ef947051bf455d7cf0e
+          operation: apply
+          hunks: 1
+    verification:
+      status: payload_only
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - rebuilt_from_release_member_and_preserved_evidence_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        The preserved excerpt placed ahead of option parsing so it runs the moment the victim
+        configures the build: it tries wget, lynx and fetch in turn against a fixed URL and pipes
+        whatever comes back to sh, backgrounded with both streams discarded. The excerpt's
+        context-diff markers were stripped; nothing else was altered.
+      - >-
+        The preserved evidence alone is not loadable source. This is configure as the victim would
+        have received it, so the payload is analysable in the file that gives it effect.
+      - >-
+        Only this member is carried: the incident altered no other file, and the rest of the release
+        is already represented by the clean baseline in this manifest.
+    subject: libpcap-0-7-1
+  - artifact_id: libpcap-0-7-1
+    phase: before
+    classification: clean
+    version: 0.7.1
+    filename: configure
+    path: libpcap-0-7-1/before/configure
+    sha256: 675ac25f6d2c715de3c7fa164c94523f428bf539481f678028951f91d609bfed
+    size: 77531
+    source:
+      url: https://www.tcpdump.org/release/libpcap-0.7.1.tar.gz
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: official_distribution_member
+      container:
+        path: libpcap-0-7-1/before/libpcap-0.7.1.tar.gz
+        sha256: 044396c8e7a385f33ab8048ec1df882d0aae9b564e3b5f0b4c3fabd0bbd91a8f
+        member: configure
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - extracted_from_the_official_release_archive_held_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        configure exactly as the official release ships it, carried as its own sample so the
+        backdoored counterpart can be diffed against it directly.
+      - >-
+        The bytes were taken from libpcap-0-7-1/before/libpcap-0.7.1.tar.gz, which is held in this
+        manifest and verified against the release URL below; they were not fetched separately.
+      - Pairs with configure-backdoored in the during phase.
+    subject: libpcap-0-7-1
 unresolved:
   - artifact_id: tcpdump-3-6-2
     phase: during
     version: 3.6.2
     hash: md5:3a1c2dd3471486f9c7df87029bf2f1e9
     status: original_distribution_unavailable_payload_and_configure_diff_recovered
+    attempts:
+      - >-
+        The archived hlug.org/trojan/ index (Wayback, 2003) names the mirrors that served the
+        trojaned files:
+        www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/{libpcap-0.7.1,tcpdump-3.6.2,tcpdump-3.7.1}.tar.gz
+        and the tcpdump.org release paths.
+      - >-
+        Wayback CDX, 2026-09-10: neither host has a capture from the November 2002 window. The
+        earliest tcpdump.org captures of these files are 2004-2005 and hash to the clean releases
+        already held as before samples; every ibiblio capture is a 2006-or-later 301 or 404. The
+        trojaned tarballs were never archived.
+      - >-
+        forager identify, 2026-09-10: the reported md5s (73ba7af9..., 3a1c2dd3..., 3c410d84...) are
+        unknown to MalwareBazaar, Triage and ReversingLabs, so no digest lane reaches them either.
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 3 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 3. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+      - >-
+        Digest sweep, 2026-09-10: the 2 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'
   - artifact_id: tcpdump-3-7-1
     phase: during
     version: 3.7.1
     hash: md5:3c410d8434e63fb3931fe77328e4dd88
     status: original_distribution_unavailable_payload_and_configure_diff_recovered
+    attempts:
+      - >-
+        The archived hlug.org/trojan/ index (Wayback, 2003) names the mirrors that served the
+        trojaned files:
+        www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/{libpcap-0.7.1,tcpdump-3.6.2,tcpdump-3.7.1}.tar.gz
+        and the tcpdump.org release paths.
+      - >-
+        Wayback CDX, 2026-09-10: neither host has a capture from the November 2002 window. The
+        earliest tcpdump.org captures of these files are 2004-2005 and hash to the clean releases
+        already held as before samples; every ibiblio capture is a 2006-or-later 301 or 404. The
+        trojaned tarballs were never archived.
+      - >-
+        forager identify, 2026-09-10: the reported md5s (73ba7af9..., 3a1c2dd3..., 3c410d84...) are
+        unknown to MalwareBazaar, Triage and ReversingLabs, so no digest lane reaches them either.
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 3 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 3. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+      - >-
+        Digest sweep, 2026-09-10: the 2 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'
   - artifact_id: libpcap-0-7-1
     phase: during
     version: 0.7.1
     hash: md5:73ba7af963aff7c9e23fa1308a793dca
     status: original_distribution_unavailable_payload_and_source_diffs_recovered
+    attempts:
+      - >-
+        The archived hlug.org/trojan/ index (Wayback, 2003) names the mirrors that served the
+        trojaned files:
+        www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/{libpcap-0.7.1,tcpdump-3.6.2,tcpdump-3.7.1}.tar.gz
+        and the tcpdump.org release paths.
+      - >-
+        Wayback CDX, 2026-09-10: neither host has a capture from the November 2002 window. The
+        earliest tcpdump.org captures of these files are 2004-2005 and hash to the clean releases
+        already held as before samples; every ibiblio capture is a 2006-or-later 301 or 404. The
+        trojaned tarballs were never archived.
+      - >-
+        forager identify, 2026-09-10: the reported md5s (73ba7af9..., 3a1c2dd3..., 3c410d84...) are
+        unknown to MalwareBazaar, Triage and ReversingLabs, so no digest lane reaches them either.
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 3 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 3. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'
   - artifact_id: libpcap-0-7-1
     phase: during
     coordinate: md5:73ba7af963aff7c9e23fa1308a793dca
@@ -205,7 +380,31 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for 73ba7af963aff7c9e23fa1308a793dca:
         hash_not_found; triage: Triage has no file analysis for MD5
         73ba7af963aff7c9e23fa1308a793dca; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:56:58.375Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:16:33.555-04:00 level=ERROR msg="command failed"
+        error="hash 73ba7af963aff7c9e23fa1308a793dca unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for 73ba7af963aff7c9e23fa1308a793dca: hash_not_found; triage: triage has no file analysis
+        for MD5 73ba7af963aff7c9e23fa1308a793dca; malshare: download returned status 404"
+      - >-
+        The archived hlug.org/trojan/ index (Wayback, 2003) names the mirrors that served the
+        trojaned files:
+        www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/{libpcap-0.7.1,tcpdump-3.6.2,tcpdump-3.7.1}.tar.gz
+        and the tcpdump.org release paths.
+      - >-
+        Wayback CDX, 2026-09-10: neither host has a capture from the November 2002 window. The
+        earliest tcpdump.org captures of these files are 2004-2005 and hash to the clean releases
+        already held as before samples; every ibiblio capture is a 2006-or-later 301 or 404. The
+        trojaned tarballs were never archived.
+      - >-
+        forager identify, 2026-09-10: the reported md5s (73ba7af9..., 3a1c2dd3..., 3c410d84...) are
+        unknown to MalwareBazaar, Triage and ReversingLabs, so no digest lane reaches them either.
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 3 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 3. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'
   - artifact_id: tcpdump-3-6-2
     phase: during
     coordinate: md5:3a1c2dd3471486f9c7df87029bf2f1e9
@@ -217,7 +416,36 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for 3a1c2dd3471486f9c7df87029bf2f1e9:
         hash_not_found; triage: Triage has no file analysis for MD5
         3a1c2dd3471486f9c7df87029bf2f1e9; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:56:58.653Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:16:34.681-04:00 level=ERROR msg="command failed"
+        error="hash 3a1c2dd3471486f9c7df87029bf2f1e9 unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for 3a1c2dd3471486f9c7df87029bf2f1e9: hash_not_found; triage: triage has no file analysis
+        for MD5 3a1c2dd3471486f9c7df87029bf2f1e9; malshare: download returned status 404"
+      - >-
+        The archived hlug.org/trojan/ index (Wayback, 2003) names the mirrors that served the
+        trojaned files:
+        www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/{libpcap-0.7.1,tcpdump-3.6.2,tcpdump-3.7.1}.tar.gz
+        and the tcpdump.org release paths.
+      - >-
+        Wayback CDX, 2026-09-10: neither host has a capture from the November 2002 window. The
+        earliest tcpdump.org captures of these files are 2004-2005 and hash to the clean releases
+        already held as before samples; every ibiblio capture is a 2006-or-later 301 or 404. The
+        trojaned tarballs were never archived.
+      - >-
+        forager identify, 2026-09-10: the reported md5s (73ba7af9..., 3a1c2dd3..., 3c410d84...) are
+        unknown to MalwareBazaar, Triage and ReversingLabs, so no digest lane reaches them either.
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 3 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 3. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+      - >-
+        Digest sweep, 2026-09-10: the 2 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'
   - artifact_id: tcpdump-3-7-1
     phase: during
     coordinate: md5:3c410d8434e63fb3931fe77328e4dd88
@@ -229,4 +457,33 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for 3c410d8434e63fb3931fe77328e4dd88:
         hash_not_found; triage: Triage has no file analysis for MD5
         3c410d8434e63fb3931fe77328e4dd88; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:56:58.816Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:16:35.327-04:00 level=ERROR msg="command failed"
+        error="hash 3c410d8434e63fb3931fe77328e4dd88 unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for 3c410d8434e63fb3931fe77328e4dd88: hash_not_found; triage: triage has no file analysis
+        for MD5 3c410d8434e63fb3931fe77328e4dd88; malshare: download returned status 404"
+      - >-
+        The archived hlug.org/trojan/ index (Wayback, 2003) names the mirrors that served the
+        trojaned files:
+        www.ibiblio.org/pub/Linux/distributions/gentoo/distfiles/{libpcap-0.7.1,tcpdump-3.6.2,tcpdump-3.7.1}.tar.gz
+        and the tcpdump.org release paths.
+      - >-
+        Wayback CDX, 2026-09-10: neither host has a capture from the November 2002 window. The
+        earliest tcpdump.org captures of these files are 2004-2005 and hash to the clean releases
+        already held as before samples; every ibiblio capture is a 2006-or-later 301 or 404. The
+        trojaned tarballs were never archived.
+      - >-
+        forager identify, 2026-09-10: the reported md5s (73ba7af9..., 3a1c2dd3..., 3c410d84...) are
+        unknown to MalwareBazaar, Triage and ReversingLabs, so no digest lane reaches them either.
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 3 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 3. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+      - >-
+        Digest sweep, 2026-09-10: the 2 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'

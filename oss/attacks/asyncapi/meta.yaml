@@ -79,19 +79,21 @@
   - kind: technique
     value: systemd user service persistence
   notes:
-  - Initial access was a pull_request_target GitHub Actions workflow in the AsyncAPI
-    generator repository, which exposes base-repository secrets to a workflow that checks
-    out contributor-controlled code. The stolen npm automation token was then used to
-    publish directly.
-  - Execution occurs on module import rather than through an install hook, so
-    `npm install --ignore-scripts` does not prevent it. The first stage launches a
-    detached `node -e` process that retrieves the encrypted second stage from IPFS.
-  - Socket reported the second stage as an 8.25 MB encrypted payload. Combined weekly
-    downloads across the four affected packages were reported at approximately 2.9
-    million.
-  - Unit 42 described the command-and-control design as decentralized fallback
-    infrastructure spanning IPFS, Ethereum, and Nostr relays, so blocking any single
-    retrieval channel does not sever the second-stage fetch.
+  - >-
+    Initial access was a pull_request_target workflow in the AsyncAPI generator repository,
+    which exposes base-repository secrets to contributor-controlled code. The stolen npm
+    automation token was then used to publish directly.
+  - >-
+    Execution occurs on module import rather than through an install hook, so npm install
+    --ignore-scripts does not prevent it. The first stage launches a detached node -e process
+    that retrieves the encrypted second stage from IPFS.
+  - >-
+    Socket reported the second stage as an 8.25 MB encrypted payload. Combined weekly downloads
+    across the four affected packages were reported at approximately 2.9 million.
+  - >-
+    Unit 42 described the command-and-control design as decentralized fallback infrastructure
+    spanning IPFS, Ethereum and Nostr relays, so blocking any single retrieval channel does not
+    sever the second-stage fetch.
   artifacts:
   - id: asyncapi-generator-helpers
     name: '@asyncapi/generator-helpers'
@@ -104,9 +106,14 @@
     - 1.1.1
     hashes:
     - sha256:34014776d3d3ff11bc4439b02fd7ac0f02a887eb3a052eeafff236e2f6db8ad1
+    - sha1:1f5c2e809d1ebd369d34ac22b771c522ced6e5b4
+    - sha512:2699517e64106748e3be661dce8576b24a9d547bf1ffa0c97fa5dfaf8b8c209950096e157057bb54e0585f61b8a712d61b203a168bfb6f77b4e0c5d4a986c94d
     locations:
     - uri: https://www.npmjs.com/package/@asyncapi/generator-helpers
       role: distribution
+    notes:
+    - OSSF MAL-2025-190657 maps the SHA-1 and SHA-512 checksums to the complete
+      generator-helpers-1.1.1.tgz npm archive.
   - id: asyncapi-generator-components
     name: '@asyncapi/generator-components'
     package: '@asyncapi/generator-components'
@@ -118,9 +125,14 @@
     - 0.7.1
     hashes:
     - sha256:082d733db0687dcd768104972b065d4b58cb1e6043688c6c20fa3702337f36ab
+    - sha1:ef2d28477befaa103031c7182a6f0dd6b4bb82dd
+    - sha512:5e4d6f25fc2bb9322c841900650b649a4285c22d510d000a47d8dec3b87daaca1b9fad0dfc477cf3e03db90e44e80d0ba70ddbb6cd0d46520b2f6b0c059e2ac8
     locations:
     - uri: https://www.npmjs.com/package/@asyncapi/generator-components
       role: distribution
+    notes:
+    - OSSF MAL-2025-190656 maps the SHA-1 and SHA-512 checksums to the complete
+      generator-components-0.7.1.tgz npm archive.
   - id: asyncapi-generator
     name: '@asyncapi/generator'
     package: '@asyncapi/generator'
@@ -132,9 +144,14 @@
     - 3.3.1
     hashes:
     - sha256:bfaeb987faa6de2b5a5eb63b1233d055215b09b0349a9394f2175fd7cdf385e4
+    - sha1:93d8cffab1171a115228808e526d9bd7fe935e4e
+    - sha512:74482eabfa257ee53a410c0a90a7a0d8de70129148513411d6e3a4fd2e0657a156638ae1d88329f613fda7985e453d59d890bac7500079d0b9ca1298fcf415db
     locations:
     - uri: https://www.npmjs.com/package/@asyncapi/generator
       role: distribution
+    notes:
+    - OSSF MAL-2025-190636 maps the SHA-1 and SHA-512 checksums to the complete
+      generator-3.3.1.tgz npm archive.
   - id: asyncapi-specs
     name: '@asyncapi/specs'
     package: '@asyncapi/specs'
@@ -148,6 +165,8 @@
     hashes:
     - sha256:9b2e65db653ca8575c9b10eefb9a80c6006404812c2ec212bf5675e3c690233b
     - sha256:d425e4583cc6185d41e95c45eda00550045a5d1919b9a012236a4520d009dbd7
+    - sha1:9b65b9f1bb27cef7b8a2b0327a47a539b8e473fb
+    - sha512:ed60e3753753d63563faf1e9cb2beb6f11e19e4b302a1c5dc66379a44f2815a1bdfb4d5c97438409ca23f1f66042202f3ee0ead2cb771d9b20267f5030891064
     locations:
     - uri: https://www.npmjs.com/package/@asyncapi/specs
       role: distribution
@@ -155,6 +174,10 @@
     - The two SHA-256 values are Socket's whole-tarball checksums for 6.11.2 and
       6.11.2-alpha.1, respectively. The generator-family artifacts likewise use
       Socket's published whole-tarball SHA-256 values.
+    - OSSF MAL-2025-190643 maps the SHA-1 and SHA-512 checksums specifically to
+      the complete specs-6.11.2.tgz npm archive.
+    - The complete specs archives remain unavailable; samples/asyncapi-specs/during retains
+      the exact report-rendered detached downloader excerpt as payload-only evidence.
   references:
   - url: https://socket.dev/blog/asyncapi-supply-chain-attack
     title: Compromised npm Packages in the AsyncAPI Namespace Deliver Miasma Botnet Loader
@@ -170,3 +193,11 @@
     title: Miasma Worm Returns to npm - JFrog Security Research
   - url: https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/
     title: 'The npm Threat Landscape: Attack Surface and Mitigations - Unit 42'
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/@asyncapi/generator-helpers/MAL-2025-190657.json
+    title: OSSF MAL-2025-190657 package-integrity record for @asyncapi/generator-helpers
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/@asyncapi/generator-components/MAL-2025-190656.json
+    title: OSSF MAL-2025-190656 package-integrity record for @asyncapi/generator-components
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/@asyncapi/generator/MAL-2025-190636.json
+    title: OSSF MAL-2025-190636 package-integrity record for @asyncapi/generator
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/@asyncapi/specs/MAL-2025-190643.json
+    title: OSSF MAL-2025-190643 package-integrity record for @asyncapi/specs

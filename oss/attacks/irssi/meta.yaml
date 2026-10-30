@@ -1,10 +1,10 @@
 - id: irssi
   title: Irssi configure script backdoored
   synopsis: >-
-    The irssi.org server was cracked, and the official Irssi 0.8.4 source distribution served
-    a modified configure script for about two months.
+    The irssi.org server was cracked, and `irssi-0.8.4.tar.gz` served a modified configure
+    script for about two months. The bzip2 archive of the same release was untouched.
   story: |
-    In March 2002, irssi.org was cracked and the Irssi 0.8.4 source distribution was altered through its `configure` script. For roughly two months, users building from the official source archive could execute attacker-added C code before they ever ran the IRC client. The project disclosed the compromise on May 25 and noted that binaries were not affected.
+    In March 2002, irssi.org was cracked and `irssi-0.8.4.tar.gz` was altered through its `configure` script. Only that one file was hit: the project's advisory records that the `.tar.bz2` of the same release, CVS, the nightly snapshots, the Debian sources and every binary were clean, which is why the FreeBSD port escaped by fetching the bzip2 archive. For roughly two months, users building from the official source archive could execute attacker-added C code before they ever ran the IRC client. GLib sources fetched from irssi.org during the build carried the same block, so the reach was not limited to Irssi's own code. The project disclosed the compromise on May 25.
 
     The delivery point was the build system. The archive still looked like Irssi source, but `configure` carried the hostile logic. That made the user's normal compile step the execution point, before package install, service startup, or IRC traffic.
 
@@ -49,12 +49,19 @@
     end_date: 2002-05-25
     versions:
     - 0.8.4
+    hashes:
+    - md5: 57bf9d89638be3d377be211f0b0d7049
+      of: archive
+      role: clean
+      note: the clean irssi-0.8.4 tarball, published by the project and by Debian DSA-157-1
     locations:
     - uri: https://irssi.org/files/irssi-0.8.4.tar.gz
       role: distribution
     indicators:
     - kind: observable
       value: 204.120.36.206:6667
+    - kind: ip
+      value: 209.164.15.215
     - kind: file
       value: configure
     - kind: observable
@@ -67,8 +74,11 @@
       path: samples/irssi/during/irssi-backdoor-advisory.html
       role: contemporary_advisory_and_fragment_source
   references:
+  - url: https://web.archive.org/web/20021213094217/http://www.irssi.org/?page=backdoor
+    title: Irssi project advisory on the backdoored 0.8.4 tarball
   - url: https://seclists.org/bugtraq/2002/Aug/333
-    title: 'Debian DSA-157-1: signed checksums for the clean Irssi 0.8.4 source archive'
+    title: 'Debian DSA-157-1: an unrelated irssi-text denial-of-service advisory, cited only
+      because it publishes the clean 0.8.4 MD5'
   - url: 
       https://irssi.org/2002/05/25/irssi.org-cracked-irssis-configure-backdoored-for-past-two-months/
     title: irssi.org cracked, irssi's configure backdoored for past two months

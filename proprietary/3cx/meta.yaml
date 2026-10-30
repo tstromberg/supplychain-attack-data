@@ -11,6 +11,14 @@
     The shipped Desktop App malware ran SUDDENICON, which pulled command-and-control data from encrypted icon files hosted on GitHub. The decrypted infrastructure was then used to retrieve ICONICSTEALER, a dataminer focused on browser and application configuration data. Mandiant tied the activity to UNC4736, assessed as a suspected North Korean cluster with overlap to financially motivated AppleJeus activity.
 
     The early response added another lesson. The Register reported that SentinelOne saw suspicious activity on March 22, 2023, but 3CX treated the alert as a likely false positive after VirusTotal checks came back clean. CrowdStrike reporting on March 29 forced the issue into the open, and 3CX told customers to move to the PWA while the desktop app was investigated.
+  pull_quote:
+    text: >-
+      3CX met SentinelOne's March 22 detection by double-checking its own
+      desktop app on VirusTotal; the all-clear made the alert a false
+      positive. "It's not unusual for VoIP apps," CEO Nick Galea told The
+      Register.
+    caption: the all-clear that outranked the alert
+    after: 3
   start_date: 2022-12-07
   end_date: 2023-03-30
   target:
@@ -21,18 +29,17 @@
     name: UNC4736
     kind: state
     country: North Korea
-  language: C
+  language: JavaScript
   method:
     cause: build_system_compromise
     phase: ci_cd
-    motive: espionage
+    motive: financial_gain
     transitive: true
   impact:
     types:
     - backdoor
     - data_theft
     - remote_access
-    users: 600000
   locations:
   - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.407.msi
     role: distribution
@@ -42,8 +49,7 @@
     role: distribution
   - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg
     role: distribution
-  - uri: 
-      https://malware-research.org/3cx-supply-chain-attack-iocs-indicators-of-compromise/
+  - uri: https://malware-research.org/3cx-supply-chain-attack-iocs-indicators-of-compromise/
     role: mirror
   - uri: 
       https://www.crowdstrike.com/blog/crowdstrike-detects-and-prevents-active-intrusion-campaign-targeting-3cxdesktopapp-customers/
@@ -76,8 +82,24 @@
     - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.msi
       role: distribution
     hashes:
-    - sha256:53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4
-    - sha256:2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43
+    - sha256: 59e1edf4d82fae4978e97512b0331b7eb21dd4b838b850ba46794d9c7a2c0983
+      of: archive
+      role: malicious
+      note: >-
+        3CXDesktopApp-18.12.416.msi, 102555648 bytes. Verified: its CAB contains the
+        trojanized ffmpeg.dll and d3dcompiler_47.dll byte for byte, and its MSI summary
+        stream names 3CX Ltd. with a 2023-03-13 build date.
+    - sha256: 53a44c2396d15c3a03723fa5e5db54cafd527b9eceb8f99aeffcf6f8c609e5f4
+      of: archive
+      role: malicious
+      note: >-
+        Unverifiable. VirusTotal and MalwareBazaar have both never seen this digest, and no
+        cited reference in this record states it. Retained as a historical claim, not as the
+        artifact's identity.
+    - sha256: 2b5fe5a62855dc3e818d0d1359e0ba773bdd2ec3fa3a770be87b4dd6baf02c43
+      of: archive
+      role: malicious
+      note: Unverifiable on the same basis as the value above.
     indicators:
     - kind: malware
       value: SUDDENICON
@@ -101,7 +123,7 @@
   - id: 3cxdesktopapp-macos
     name: 3CX Desktop App for macOS
     package: 3CXDesktopApp
-    ecosystem: macos disk image
+    ecosystem: macos dmg
     kind: binary_archive
     website: https://3cx.com
     start_date: 2022-12-07
@@ -117,8 +139,18 @@
     - uri: https://downloads.3cx.com/downloads/3CXDesktopApp-18.12.416.dmg
       role: distribution
     hashes:
-    - sha256:e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be
-    - sha256:7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5
+    - sha256: e3364af12a49468c61480c2f7c76a593ea6cb89bedc86b3f9b989697c08977be
+      of: archive
+      role: malicious
+      note: >-
+        Unverifiable. Neither VirusTotal nor MalwareBazaar has seen this digest. The macOS
+        component that is corroborated is libffmpeg.dylib
+        a64fa9f1c76457ecc58402142a8728ce34ccba378c17318b3340083eeb7acc67, which both hold and
+        which this record's samples include.
+    - sha256: 7145fbd6ccce5469270baa43ea5dcb323f64d0ca0ee210ac9ba7e2c3ea3162e5
+      of: archive
+      role: malicious
+      note: Unverifiable on the same basis as the value above.
     indicators:
     - kind: malware
       value: POOLRAT
@@ -127,8 +159,8 @@
     - kind: domain
       value: journalide.org
     - kind: observable
-      value: Mandiant determined the macOS build server carried POOLRAT rather than a 
-        new SIMPLESEA family.
+      value: Mandiant determined the macOS build server carried POOLRAT rather than a new SIMPLESEA 
+        family.
   - id: x-trader
     name: X_TRADER installer
     package: X_TRADER
@@ -143,6 +175,13 @@
     - uri: https://www.tradingtechnologies.com
       role: distribution
     hashes:
+    - sha256: fbc50755913de619fb830fb95882e9703dbfda67dbd0f75bc17eadc9eda61370
+      of: archive
+      role: malicious
+      note: >-
+        Resolved from the MD5 ef4ab22e565684424b4142b1294f1f4d above through a VirusTotal lookup on
+        2026-09-02, which reports it as 'stub32', 107885440 bytes. No provider will serve it yet;
+        the SHA-256 is recorded so the digest lanes can reach it without repeating the lookup.
     - md5:ef4ab22e565684424b4142b1294f1f4d
     indicators:
     - kind: file
@@ -162,16 +201,24 @@
     - kind: url
       value: www.tradingtechnologies[.]com/trading/order-management
     notes:
-    - Mandiant identified the trojanized X_TRADER installer as the initial intrusion 
-      vector into 3CX's network, making this a supply-chain attack that led to another 
-      supply-chain attack.
+  notes:
+  - >-
+    The widely quoted 600,000 is 3CX's customer count, not users; Volexity gives 600,000
+    customers and 12 million users. No user figure is recorded rather than mislabelling one.
+  - >-
+    Mandiant assesses UNC4736 as most likely linked to financially motivated North Korean
+    actors, with a moderate-confidence tie to AppleJeus. An earlier motive of espionage
+    contradicted this record's own source.
+  - >-
+    Mandiant identified the trojanized X_TRADER installer as the initial intrusion vector into
+    3CX's network, making this a supply-chain attack that led to another supply-chain attack.
   references:
   - url: https://www.mandiant.com/resources/blog/3cx-software-supply-chain-compromise
     title: 3CX Software Supply Chain Compromise
   - url: 
       https://cloud.google.com/blog/topics/threat-intelligence/3cx-software-supply-chain-compromise
-    title: 3CX Software Supply Chain Compromise Initiated by a Prior Software Supply 
-      Chain Compromise
+    title: 3CX Software Supply Chain Compromise Initiated by a Prior Software Supply Chain 
+      Compromise
   - url: 
       https://www.volexity.com/blog/2023/03/30/3cx-supply-chain-compromise-leads-to-iconic-incident/
     title: 3CX Supply Chain Compromise Leads to ICONIC Incident

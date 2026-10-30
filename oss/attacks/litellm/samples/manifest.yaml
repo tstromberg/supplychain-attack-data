@@ -1,5 +1,41 @@
 schema_version: 1
+interpretation:
+  - >-
+    The complete malicious PyPI source distributions for both affected releases were recovered from
+    an incident-day public analysis repository. Their measured whole-archive SHA-256 values
+    reproduce independently published package hashes, and their embedded metadata and payload
+    locations match the incident reports.
 samples:
+  - artifact_id: litellm
+    phase: during
+    classification: malicious
+    filename: litellm-injection-excerpts.fragment
+    path: litellm/during/litellm-injection-excerpts.fragment
+    sha256: 116c3b0e2753a75858ef6c42d90020d41b3ece3b8defa95d412e8b5624e095fa
+    size: 692
+    source:
+      url: https://www.stepsecurity.io/blog/litellm-credential-stealer-hidden-in-pypi-wheel
+      retrieved_at: '2026-08-14T22:45:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - reconstruction_documented
+        - measured_sha256
+      evidence:
+        - stitched_exact_report_code_excerpts
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: 1.82.7
+      - phase: during
+        version: 1.82.8
+    notes:
+      - >-
+        Preserves the report's .pth RECORD line and injection excerpts for both affected versions;
+        omitted base64 is intentionally not reconstructed. The complete 1.82.8 litellm_init.pth
+        member is retained separately below.
+    subject: litellm
   - artifact_id: litellm
     phase: during
     classification: malicious
@@ -16,26 +52,140 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - reported_litellm_init_pth_sha256
         - measured_sha256
     notes:
       - >-
-        Exact malicious .pth member from 1.82.8 only; no complete retained wheel manifest is
-        available, so a distribution reconstruction was not attempted.
-unresolved:
+        Exact malicious .pth member from 1.82.8 retained independently of the complete source
+        distribution recovered below.
+    subject: litellm
   - artifact_id: litellm
     phase: during
+    classification: malicious
     coordinate: pkg:pypi/litellm@1.82.7
-    status: timed_out
-    attempts:
-      - 'Forager PURL: per-target timeout'
-      - 'Forager batch: per-target timeout'
-    last_attempted_at: '2026-08-12T02:00:06.739Z'
+    version: 1.82.7
+    filename: litellm-1.82.7.tar.gz
+    path: litellm/during/litellm-1.82.7.tar.gz
+    sha256: 8a2a05fd8bdc329c8a86d2d08229d167500c01ecad06e40477c49fb0096efdea
+    size: 17383897
+    source:
+      url: >-
+        https://raw.githubusercontent.com/actions-security-demo/compromised-packages/5cd977f165bd16ed15a782ea095383ae1841f899/litellm-1.82.7.tar.gz
+      retrieved_at: '2026-09-05T19:13:32Z'
+      kind: public_incident_analysis_fixture
+      original_record: https://pypi.org/project/litellm/1.82.7/#files
+    verification:
+      status: exact
+      basis:
+        - publisher_digest_reproduced
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - independently_published_whole_archive_sha256_reproduced
+        - incident_day_repository_commit_169eb6f39ecd702c1eab39134b1325ce4fe264ea
+        - embedded_pkg_info_name_and_version
+        - reported_proxy_server_payload_present
+        - measured_sha256_and_size
+    notes:
+      - Complete original source distribution; no files were reconstructed or patched.
+    subject: litellm
   - artifact_id: litellm
     phase: during
+    classification: malicious
     coordinate: pkg:pypi/litellm@1.82.8
-    status: timed_out
-    attempts:
-      - 'Forager PURL: per-target timeout'
-      - 'Forager batch: per-target timeout'
-    last_attempted_at: '2026-08-12T02:00:06.742Z'
+    version: 1.82.8
+    filename: litellm-1.82.8.tar.gz
+    path: litellm/during/litellm-1.82.8.tar.gz
+    sha256: d39f4e7a218053cce976c91eacf184cf09a6960c731cc9d66d8e1a53406593a5
+    size: 17401988
+    source:
+      url: >-
+        https://raw.githubusercontent.com/actions-security-demo/compromised-packages/5cd977f165bd16ed15a782ea095383ae1841f899/litellm-1.82.8.tar.gz
+      retrieved_at: '2026-09-05T19:13:32Z'
+      kind: public_incident_analysis_fixture
+      original_record: https://pypi.org/project/litellm/1.82.8/#files
+    verification:
+      status: exact
+      basis:
+        - publisher_digest_reproduced
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - independently_published_whole_archive_sha256_reproduced
+        - incident_day_repository_commit_6b416dca8fadb1b8d68fa6689cbefd3aaf2ac188
+        - embedded_pkg_info_name_and_version
+        - embedded_litellm_init_pth_sha256_matches_reported_member
+        - measured_sha256_and_size
+    notes:
+      - Complete original source distribution; no files were reconstructed or patched.
+    subject: litellm
+  - artifact_id: litellm
+    phase: before
+    classification: clean
+    coordinate: pkg:pypi/litellm@1.82.6
+    version: 1.82.6
+    filename: litellm-1.82.6.tar.gz
+    path: litellm/before/litellm-1.82.6.tar.gz
+    sha256: 2aa1c2da21fe940c33613aa447119674a3ad4d2ad5eb064e4d5ce5ee42420136
+    size: 17414147
+    source:
+      url: >-
+        https://files.pythonhosted.org/packages/29/75/1c537aa458426a9127a92bc2273787b2f987f4e5044e21f01f2eed5244fd/litellm-1.82.6.tar.gz
+      kind: distribution
+      retrieved_at: '2026-09-04T02:02:15Z'
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - official_registry_download
+        - registry_published_digest_reproduced
+        - measured_sha256
+    notes:
+      - The highest release below the earliest compromised version.
+      - >-
+        This artifact's record carries no package field, so the name was taken from its own artifact
+        id, litellm, which resolves to a real package in the pypi registry the record names. The
+        compromised versions themselves are no longer published there, which is consistent with the
+        incident, so the identity rests on the id and the ecosystem rather than on finding those
+        versions.
+    subject: litellm
+  - artifact_id: litellm
+    phase: after
+    classification: remediated
+    coordinate: pkg:pypi/litellm@1.83.0
+    version: 1.83.0
+    filename: litellm-1.83.0.tar.gz
+    path: litellm/after/litellm-1.83.0.tar.gz
+    sha256: 860bebc76c4bb27b4cf90b4a77acd66dba25aced37e3db98750de8a1766bfb7a
+    size: 17333062
+    source:
+      url: >-
+        https://files.pythonhosted.org/packages/22/92/6ce9737554994ca8e536e5f4f6a87cc7c4774b656c9eb9add071caf7d54b/litellm-1.83.0.tar.gz
+      kind: distribution
+      retrieved_at: '2026-09-04T02:02:15Z'
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - official_registry_download
+        - registry_published_digest_reproduced
+        - measured_sha256
+    notes:
+      - The first release above the last compromised version, which is the remediated build.
+      - >-
+        This artifact's record carries no package field, so the name was taken from its own artifact
+        id, litellm, which resolves to a real package in the pypi registry the record names. The
+        compromised versions themselves are no longer published there, which is consistent with the
+        incident, so the identity rests on the id and the ecosystem rather than on finding those
+        versions.
+    subject: litellm
+unresolved: []

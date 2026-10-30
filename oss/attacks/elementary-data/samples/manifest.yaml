@@ -1,5 +1,110 @@
 schema_version: 1
-samples: []
+interpretation:
+  - >-
+    GitHub still serves malicious commit b1e4b1f3aad0d489ab0e9208031c67402bbb8480 by exact object ID
+    even though it is unreachable from advertised refs. The commit adds the 246,691-byte
+    elementary.pth payload and changes pyproject.toml from 0.23.2 to 0.23.3 while adding that file
+    to Poetry's package set.
+  - >-
+    The repository's release workflow builds with `python -m build --sdist --wheel --outdir dist .`.
+    Running its sdist portion against that exact commit produced a 1,384,600-byte archive with
+    BLAKE2b-256 2211e4da100e382242b5e00e60f9da48fe9927b31c8fa4ea331162c137321feb. PyPI Inspector's
+    retained URL embeds the same BLAKE2b-256 as the content-addressed storage path for
+    elementary-data-0.23.3.tar.gz, proving the rebuilt bytes are the published sdist exactly.
+  - >-
+    Because byte identity is proven, this sample uses the ordinary published filename rather than a
+    RECONSTRUCTED label. The original PyPI CDN object now returns 404; the exact build procedure and
+    independent digest comparison are retained here and in the provenance sidecar.
+samples:
+  - artifact_id: elementary-data
+    phase: during
+    classification: malicious
+    coordinate: pkg:pypi/elementary-data@0.23.3
+    version: 0.23.3
+    filename: elementary-data-0.23.3.tar.gz
+    path: elementary-data/during/elementary-data-0.23.3.tar.gz
+    sha256: e06db3fdea8102f3954875b733a1f770e5c7e06bca110742e0bac6580216d90a
+    size: 1384600
+    source:
+      url: >-
+        https://github.com/elementary-data/elementary/commit/b1e4b1f3aad0d489ab0e9208031c67402bbb8480
+      retrieved_at: '2026-08-13T11:48:44Z'
+      kind: reproducible_build
+      original_url: >-
+        https://files.pythonhosted.org/packages/22/11/e4da100e382242b5e00e60f9da48fe9927b31c8fa4ea331162c137321feb/elementary-data-0.23.3.tar.gz
+    verification:
+      status: exact
+      basis:
+        - measured_sha256
+      evidence:
+        - exact_retained_git_commit_object
+        - repository_release_workflow_build_command
+        - rebuilt_blake2b_256_matches_pypi_content_address
+        - measured_sha256_and_size
+    notes:
+      - >-
+        Build command: `python -m build --sdist --outdir dist .` from commit
+        b1e4b1f3aad0d489ab0e9208031c67402bbb8480. The isolated backend resolved poetry-core from the
+        commit's `poetry-core>=1.0.0` build-system requirement.
+      - >-
+        Independent identity check: BLAKE2b-256
+        2211e4da100e382242b5e00e60f9da48fe9927b31c8fa4ea331162c137321feb equals the
+        content-addressed PyPI Inspector path recorded for this exact filename and version.
+    subject: elementary-data
+  - artifact_id: elementary-data
+    phase: before
+    classification: clean
+    coordinate: pkg:pypi/elementary-data@0.23.2
+    version: 0.23.2
+    filename: elementary_data-0.23.2.tar.gz
+    path: elementary-data/before/elementary_data-0.23.2.tar.gz
+    sha256: 11ab9d821100ea9280ce52d639169af58204358d4934619795c7ce59ac5fd81c
+    size: 1302975
+    source:
+      url: >-
+        https://files.pythonhosted.org/packages/57/e1/d685a9894945c8b51fa9dddab82e77e1201bb6825d6645a22a2a4e4bc2e8/elementary_data-0.23.2.tar.gz
+      kind: distribution
+      retrieved_at: '2026-09-03T22:49:37Z'
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - official_registry_download
+        - registry_published_digest_reproduced
+        - measured_sha256
+    notes:
+      - The highest release below the earliest compromised version.
+    subject: elementary-data
+  - artifact_id: elementary-data
+    phase: after
+    classification: remediated
+    coordinate: pkg:pypi/elementary-data@0.23.4
+    version: 0.23.4
+    filename: elementary_data-0.23.4.tar.gz
+    path: elementary-data/after/elementary_data-0.23.4.tar.gz
+    sha256: 5cf8f4c3fa0b7e84cb0096c94eb9af941ea632c9acffa002d0db3b3c1d9ef97e
+    size: 1302675
+    source:
+      url: >-
+        https://files.pythonhosted.org/packages/34/d3/e3ce98610cedb2709034d94daf7f085c9b2a3d870ab6c8357dc5b112507a/elementary_data-0.23.4.tar.gz
+      kind: distribution
+      retrieved_at: '2026-09-03T22:49:37Z'
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - official_registry_download
+        - registry_published_digest_reproduced
+        - measured_sha256
+    notes:
+      - The first release published above the last compromised version.
+    subject: elementary-data
 unresolved:
   - artifact_id: elementary-data
     phase: during
@@ -23,19 +128,71 @@ unresolved:
         Triage has no file analysis for SHA256
         31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:55:59.458Z'
+      - >-
+        Hopper 31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255: HTTP 404 from
+        http://10.9.8.10:8081/api/file/31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255,
+        queried directly on 2026-09-03. The older attempts on this record name http://10.9.8.5:8081,
+        which was decommissioned; a connection failure against that host was never evidence that
+        Hopper lacks the file, and this is the first real answer.
+    last_attempted_at: '2026-09-03T10:19:18.955207Z'
   - artifact_id: elementary-data
     phase: during
-    coordinate: pkg:pypi/elementary-data@0.23.3
+    coordinate: sha1:55d0161a5992267e4da5a7ef8de85b84748cf903
     status: unavailable
     attempts:
-      - 'Forager PURL/SHA-256: per-target timeout'
-      - 'Forager PURL without hash constraint: per-target timeout'
-      - "Forager PURL/SHA-256:   -v\tenable verbose logging"
       - >-
-        Forager PURL/SHA-256: time=2026-08-10T15:59:41.876-04:00 level=ERROR msg="command failed"
-        error="1 of 1 downloads failed"
+        Forager PURL/SHA-256: time=2026-09-02T11:39:59.190-04:00 level=ERROR msg="command failed"
+        error="hash 55d0161a5992267e4da5a7ef8de85b84748cf903 unavailable from configured sources:
+        hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has
+        no sample for 55d0161a5992267e4da5a7ef8de85b84748cf903: hash_not_found; triage: triage has
+        no file analysis for SHA1 55d0161a5992267e4da5a7ef8de85b84748cf903; malshare: download
+        returned status 404"
       - >-
-        Forager PURL without hash constraint: time=2026-08-10T16:00:14.219-04:00 level=ERROR
-        msg="command failed" error="1 of 1 downloads failed"
-    last_attempted_at: '2026-08-10T20:00:15.420Z'
+        Forager PURL/SHA-256: time=2026-09-03T06:12:44.786-04:00 level=ERROR msg="command failed"
+        error="hash 55d0161a5992267e4da5a7ef8de85b84748cf903 unavailable from configured sources:
+        hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has
+        no sample for 55d0161a5992267e4da5a7ef8de85b84748cf903: hash_not_found; triage: triage has
+        no file analysis for SHA1 55d0161a5992267e4da5a7ef8de85b84748cf903; malshare: download
+        returned status 404"
+      - >-
+        Hopper 31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255: HTTP 404 from
+        http://10.9.8.10:8081/api/file/31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255,
+        queried directly on 2026-09-03. The older attempts on this record name http://10.9.8.5:8081,
+        which was decommissioned; a connection failure against that host was never evidence that
+        Hopper lacks the file, and this is the first real answer.
+    last_attempted_at: '2026-09-03T10:19:18.955207Z'
+  - artifact_id: ghcr-io-elementary-data-elementary
+    phase: during
+    coordinate: sha256:31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:40:16.044-04:00 level=ERROR msg="command failed"
+        error="hash 31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255;
+        malwarebazaar: MalwareBazaar has no sample for
+        31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255; malshare: download
+        returned status 404"
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:12:45.348-04:00 level=ERROR msg="command failed"
+        error="hash 31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255;
+        malwarebazaar: MalwareBazaar has no sample for
+        31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        31ecc5939de6d24cf60c50d4ca26cf7a8c322db82a8ce4bd122ebd89cf634255; malshare: download
+        returned status 404"
+      - >-
+        Container registry lane, 2026-09-10: ghcr.io/elementary-data/elementary:0.23.3 no longer
+        resolves and the manifest is not served by digest either. Only :latest resolves, to an
+        unrelated current build.
+      - >-
+        Digest sweep, 2026-09-10: the 1 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'

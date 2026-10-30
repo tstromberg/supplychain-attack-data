@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BindsNET repository carried a forged merge commit that ran malware on folder open</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>BindsNET repository carried a forged merge commit that ran malware on folder open</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> BindsNET · <a href="https://github.com/BindsNET/bindsnet" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-08-29 to 2026-09-02 (4 days)</div>
+    <div class="meta-item"><strong>Actor:</strong> PolinRider (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> false</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, remote_code_execution, cryptocurrency_theft</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> source</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">An attacker with a BindsNET collaborator&#39;s credentials force-pushed a forged copy of an existing merge commit over 20 branches on 2026-08-29, adding a hidden Visual Studio Code task that ran malware disguised as a font. A Dependabot merge carried it into master two days later.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>At 18:25 UTC on Saturday, August 29, 2026, someone holding the credentials
+of a BindsNET collaborator spent 47 seconds force-pushing a single commit
+over 20 branches of the project. The commit was a copy of a merge that had
+landed three weeks earlier, carrying the same message, the same author, and
+the same timestamp. It also carried 21 files that no one had ever reviewed,
+and one of them ran automatically the moment a developer opened the folder
+in Visual Studio Code. BindsNET is an open-source library for simulating
+spiking neural networks on top of PyTorch, developed at the University of
+Massachusetts Amherst and widely used in neuromorphic-computing research.
+It has roughly 1,700 stars and 350 forks on GitHub, and researchers
+typically work from a clone rather than from a package index.</p>
+    
+      <p>The attacker did not write new code so much as rebuild an old commit. Pull
+request #775 had been merged normally on August 4 as <code>bbafb9ae</code>. The forged
+replacement, <code>9cb1eab5</code>, kept both of that merge's parents and all of its
+metadata but added files to the merged tree. Because those files existed in
+neither parent, they appeared in no pull request diff and in no file
+history: running <code>git log -- .vscode/tasks.json</code> on a poisoned clone
+returned nothing at all, an artifact of the history simplification git
+performs on merges. One of the 20 overwritten branches was
+<code>dependabot/pip/gitpython-3.1.58</code>. On August 31 at 20:17 UTC a maintainer
+merged the matching Dependabot pull request, #779, as a routine dependency
+bump, and that merge carried the forged commit into <code>master</code>. Every clone
+or pull taken over the next two days got it.</p>
+      <figure class="pull-quote">
+        <blockquote>The 21 files were in neither parent of the merge, so they appeared in no pull request diff and in no file history. On the poisoned clone, git log on the malicious path returned nothing at all.</blockquote>
+        <figcaption>a merge commit is a place to hide</figcaption>
+      </figure>
+    
+      <p>The trigger was <code>.vscode/tasks.json</code>, a task labeled <code>eslint-check</code> with
+<code>&quot;runOn&quot;: &quot;folderOpen&quot;</code>, <code>&quot;hide&quot;: true</code>, and <code>&quot;reveal&quot;: &quot;never&quot;</code>. Its
+command ran <code>node ./public/fonts/fa-solid-400.woff2</code>, tried once through
+the Unix <code>command -v</code> and once through the Windows <code>where</code>, falling back to
+an empty <code>echo</code> when Node.js was absent. The file it ran was not a font. It
+was 32,645 bytes of obfuscated JavaScript sitting among 15 genuine
+FontAwesome files and a README describing the font requirements of a
+&quot;Blockchain Explorer application&quot; that has nothing to do with BindsNET. The
+same commit added a <code>.vscode/settings.json</code> that set
+<code>task.allowAutomaticTasks</code> to true, hid the integrated terminal on startup,
+and told the debug view never to open, and it extended <code>.gitignore</code> to
+cover <code>temp_auto_push.bat</code>, <code>branch_structure.json</code>, and <code>.gitignore</code>
+itself, the same push-automation filenames OpenSourceMalware has documented
+in other repositories hit by this campaign. The loader leaves nothing to
+block. It reads <code>ETH_RPC_URL</code> from the environment and otherwise falls back
+to four public Ethereum endpoints, <code>1rpc.io/eth</code>, <code>eth.drpc.org</code>,
+<code>ethereum-rpc.publicnode.com</code>, and <code>eth-mainnet.public.blastapi.io</code>, plus
+the Blockscout API, and asks them for the most recent transactions sent by
+the wallet <code>0xa322E5f3d311D3080e6f0121063e9aDC2490Ef1a</code>. The command
+server's address is written into the recipient field: the first four bytes
+of the destination address are an IPv4 address, and the rest spell
+<code>helloipbot!!</code> in ASCII. That wallet has been publishing an address every
+15 minutes or so since late July, rotating through <code>166.88.134.62</code>,
+<code>23.27.13.135</code>, <code>166.88.73.46</code>, and <code>193.247.144.38</code>. During the BindsNET
+window it resolved to <code>166.88.73.46</code>. The loader then requested
+<code>http://166.88.73.46:443/0x/cls</code> and <code>/0x/ls</code>, cleartext HTTP on the port a
+network monitor expects to carry TLS, behind a spoofed Chrome user agent.
+The second stage arrived base64 encoded in an <code>x-payload-b64</code> response
+header, was prefixed with globals naming the campaign build, <code>A10-*020</code>,
+and the current server, then both passed to <code>eval</code> and relaunched as a
+detached <code>node -e</code> child with <code>stdio: 'ignore'</code> and <code>windowsHide</code>, so it
+outlived the editor that started it.</p>
+    
+      <p>Marius Benthin reported the compromise in issue #781 at 05:50 UTC on
+September 2, identifying it as PolinRider, the North Korean campaign that
+Socket researcher Karlo Zanki has tied to the Contagious Interview and
+Famous Chollima activity clusters. Socket counted 162 malicious release
+artifacts across 108 packages spanning npm, Go, Packagist, and the Chrome
+Web Store; OpenSourceMalware, which tracks the GitHub side of the same
+operation, has counted compromise traces in more than 1,900 repositories.
+Maintainer Hananel Hazan removed all 21 files in commit <code>6fabee03</code> at 21:21
+UTC on September 2, restored the 20 overwritten branches to their real
+pre-attack commits, audited all 654 merge commits in the project's history,
+and published an advisory that evening. The account used for the
+force-push is now read-only, force-pushes are blocked on every branch, and
+<code>master</code> requires a pull request and signed commits. No BindsNET source
+file was modified and no package release was affected. Anyone who cloned or
+pulled between August 29 and September 2, opened the folder in VS Code,
+Cursor, or VSCodium, and had Node.js on their <code>PATH</code> was told to treat the
+machine as compromised and rotate SSH keys, GitHub tokens, cloud
+credentials, and wallet keys before recloning. Because the second stage was
+fetched at run time, the repository cannot say what any individual machine
+received.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>BindsNET git repository</strong>
+            
+            <br><span>github · revision_control_system</span>
+            
+            <br><a href="https://github.com/BindsNET/bindsnet" target="_blank">https://github.com/BindsNET/bindsnet</a>
+          </td>
+          <td>2026-08-29<br>to 2026-09-02</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha1:9cb1eab50557991212b84ea52977257f8392274e</code><br><code>sha256:780abb9d268a2b1890bf4873d0d89d21fc86be44da685b932a54a738d2699810</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>file:public/fonts/fa-solid-400.woff2</code></li>
+    
+      <li><code>file:.vscode/tasks.json</code></li>
+    
+      <li><code>file:.vscode/settings.json</code></li>
+    
+      <li><code>file:temp_auto_push.bat</code></li>
+    
+      <li><code>file:branch_structure.json</code></li>
+    
+      <li><code>file_sha256:public/fonts/fa-solid-400.woff2 780abb9d268a2b1890bf4873d0d89d21fc86be44da685b932a54a738d2699810</code></li>
+    
+      <li><code>commit:9cb1eab50557991212b84ea52977257f8392274e</code></li>
+    
+      <li><code>string:eslint-check</code></li>
+    
+      <li><code>string:helloipbot!!</code></li>
+    
+      <li><code>string:A10-*020</code></li>
+    
+      <li><code>string:x-payload-b64</code></li>
+    
+      <li><code>wallet:0xa322E5f3d311D3080e6f0121063e9aDC2490Ef1a</code></li>
+    
+      <li><code>ip:166.88.73.46</code></li>
+    
+      <li><code>ip:166.88.134.62</code></li>
+    
+      <li><code>ip:23.27.13.135</code></li>
+    
+      <li><code>ip:193.247.144.38</code></li>
+    
+      <li><code>url:http://166.88.73.46:443/0x/cls</code></li>
+    
+      <li><code>url:http://166.88.73.46:443/0x/ls</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://github.com/BindsNET/bindsnet/security/advisories/GHSA-6f2q-w3r8-xxhj" target="_blank">GHSA-6f2q-w3r8-xxhj: Malicious code executed on clone between 2026-08-29 and 2026-09-02</a></li>
+    
+      <li><a href="https://github.com/BindsNET/bindsnet/issues/781" target="_blank">[SECURITY] Supply Chain Attack by DPRK (North-Korean Threat Actors)</a></li>
+    
+      <li><a href="https://github.com/BindsNET/bindsnet/commit/9cb1eab50557991212b84ea52977257f8392274e" target="_blank">Forged merge commit 9cb1eab5 adding 21 files to the tree of pull request 775</a></li>
+    
+      <li><a href="https://github.com/BindsNET/bindsnet/commit/6fabee0332500c3c65ed3cae195bafe7179ea513" target="_blank">security: remove PolinRider malware injected by merge 9cb1eab5</a></li>
+    
+      <li><a href="https://socket.dev/blog/polinrider-north-korea-linked-supply-chain-campaign-expands" target="_blank">PolinRider North Korea-linked supply chain campaign expands across open source ecosystems</a></li>
+    
+      <li><a href="https://opensourcemalware.com/blog/polinrider-caused-dozens-of-npm-and-go-compromises" target="_blank">PolinRider caused dozens of npm, Go, PHP compromises</a></li>
+    
+      <li><a href="https://opensourcemalware.com/blog/polinrider-rides-again-north-korean-attack-expands-across-github" target="_blank">PolinRider DPRK attack expands across GitHub</a></li>
+    
+      <li><a href="https://opensourcemalware.com/blog/developer-guide-getting-over-polinrider" target="_blank">A developer&#39;s guide to getting rid of PolinRider</a></li>
+    
+      <li><a href="https://thehackernews.com/2026/07/north-korean-hackers-publish-108.html" target="_blank">North Korean hackers publish 108 malicious packages and extensions in PolinRider campaign</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

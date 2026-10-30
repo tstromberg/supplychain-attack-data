@@ -29,13 +29,13 @@
     <div class="meta-item"><strong>Phase:</strong> distribution</div>
     <div class="meta-item"><strong>Campaigns:</strong>
       
-        <a href="/campaign/miasma-2026/">Miasma worm burrowed through npm for two months</a>
+        <a href="/campaign/miasma-2026/">Miasma worm rode a build-config file through npm</a>
       
     </div>
   </div>
 
   <h2>Synopsis</h2>
-  <p class="synopsis">In late June 2026 the Miasma worm republished 23 LeoPlatform and RStreams npm packages with a malicious binding.gyp, then reached the Verana Blockchain Go module. It was the campaign&#39;s first move outside npm and into the Go ecosystem.</p>
+  <p class="synopsis">In late June 2026 the Miasma worm republished 23 LeoPlatform and RStreams npm packages with a malicious binding.gyp, then reached the Verana Blockchain Go module. It was the campaign&#39;s first move outside npm, though Socket notes the execution path is not Go-native.</p>
 
   
   <h2>Story</h2>
@@ -43,34 +43,38 @@
     
       <p>A late-June 2026 wave of the Miasma worm poisoned 23 npm packages belonging to
 the LeoPlatform and RStreams data-streaming projects, along with three packages
-published by the account `llxlr`. Socket, which analyzed the wave, also found
+published by the account <code>llxlr</code>. Socket, which analyzed the wave, also found
 compromise indicators in a Go module for the Verana Blockchain project. That
 made it the first time the campaign reached outside npm.</p>
+      <figure class="pull-quote">
+        <blockquote>The Verana Go module carried the payload but never executed it as Go. The observed trigger was a VS Code folder-open task running <code>node .claude/setup.mjs</code>.</blockquote>
+        <figcaption>not a go compromise</figcaption>
+      </figure>
     
       <p>LeoPlatform and RStreams publish serverless data-streaming libraries for AWS.
 The malicious releases went out in a tight window, inserted as new patch
 versions across every supported major release series at once, so a project
 pinned to any maintained line would pick one up. The delivery reused the
-technique from the June 3 wave: a weaponized `binding.gyp` that runs during
-`npm install` when `node-gyp` evaluates it, rather than a lifecycle script that
+technique from the June 3 wave: a weaponized <code>binding.gyp</code> that runs during
+<code>npm install</code> when <code>node-gyp</code> evaluates it, rather than a lifecycle script that
 an install-time scanner would flag.</p>
     
       <p>From there the chain ran through a ROT Caesar layer, AES-GCM decryption, and a
-downloaded Bun runtime used to execute the JavaScript payload outside Node&#39;s
+downloaded Bun runtime used to execute the JavaScript payload outside Node's
 own security hooks. It collected npm tokens, GitHub secrets, SSH keys, and
 cloud credentials, and searched for GitHub Actions workflows with publishing
-permissions to extract more. The marker string `RevokeAndItGoesKaboom` tied the
+permissions to extract more. The marker string <code>RevokeAndItGoesKaboom</code> tied the
 wave to earlier GitHub Actions compromises in the same family.</p>
     
       <p>The persistence is what distinguishes this wave. Rather than relying on the
 package staying installed, the malware wrote hooks into developer tooling
 configuration for Claude, VS Code, Cursor, and Copilot, staging payloads in a
-`.claude` folder with a VS Code folder-open task that invokes
-`node .claude/setup.mjs`. A developer who merely opened a poisoned repository
+<code>.claude</code> folder with a VS Code folder-open task that invokes
+<code>node .claude/setup.mjs</code>. A developer who merely opened a poisoned repository
 later would execute it, which extends the blast radius well past whoever ran
 the original install. Socket advised rotating exposed credentials from a clean
 machine and auditing repositories for injected workflows, unexpected branches,
-and `.claude/` or `.github/` configuration files. Researchers track the family
+and <code>.claude/</code> or <code>.github/</code> configuration files. Researchers track the family
 under the overlapping names Mini Shai-Hulud, Miasma, and Hades.</p>
     
   </div>
@@ -476,7 +480,7 @@ under the overlapping names Mini Shai-Hulud, Miasma, and Hades.</p>
           </td>
           <td>
             
-              <code>sha1:24a0d9e496ec07ca978fab602d5f5e0b39fa03a0</code><br><code>sha512:6d4d679fe5e90f68d4e7db7c1daa5ca216531f017068860a71abc812ed3671520d234c39bcbfe68a5709e2321f369c14e4446474a6d7dae10ba04044a327adc5</code>
+              <code>sha1:24a0d9e496ec07ca978fab602d5f5e0b39fa03a0</code><br><code>sha256:3967738a03a83d6e526f59256233ff2539d90c7093a5c50692c51bc8db301304</code><br><code>sha512:6d4d679fe5e90f68d4e7db7c1daa5ca216531f017068860a71abc812ed3671520d234c39bcbfe68a5709e2321f369c14e4446474a6d7dae10ba04044a327adc5</code>
             
           </td>
         </tr>
@@ -767,6 +771,12 @@ under the overlapping names Mini Shai-Hulud, Miasma, and Hades.</p>
       <li><a href="https://cybersecurefox.com/en/shai-hulud-miasma-supply-chain-attack-leoplatform-go/" target="_blank">Shai-Hulud Miasma Supply Chain Attack On LeoPlatform - CyberSecureFox</a></li>
     
       <li><a href="https://github.com/ossf/malicious-packages" target="_blank">OSSF malicious-packages database</a></li>
+    
+      <li><a href="https://github.com/actions-security-demo/compromised-packages/blob/f48593aaba546179817e2531f44cd6ca3b30f7fe/.github/workflows/main.yml" target="_blank">Immutable StepSecurity workflow that captured leo-logger 1.0.8 with npm pack</a></li>
+    
+      <li><a href="https://github.com/actions-security-demo/compromised-packages/actions/runs/28148212692" target="_blank">Successful StepSecurity leo-logger capture run</a></li>
+    
+      <li><a href="https://api.github.com/repos/actions-security-demo/compromised-packages/actions/artifacts/7869265804" target="_blank">GitHub Actions metadata for the retained leo-logger-tarballs artifact</a></li>
     
   </ul>
   

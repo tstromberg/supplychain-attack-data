@@ -11,6 +11,14 @@
     The delivery was the official CCleaner installer. On August 2, attackers replaced the normal build path with a backdoored CCleaner release, and version 5.33.6162 was later downloaded by roughly 2.27 million users. The first stage collected system information and contacted command-and-control, acting less like broad ransomware and more like a filter for targets worth a second step.
 
     The second stage went to 40 computers at major technology and telecommunications companies. Cisco Talos detected the malicious official download on September 13 and notified Avast; with FBI help, Avast took down the command-and-control server within three days. The lasting lesson was bleak and simple: a free utility with a trusted update path can become an intelligence platform if its build chain is owned.
+  pull_quote:
+    text: >-
+      Selection ran on the C2, not in the binary: every machine reported
+      hostname, domain, installed software and running processes, and the
+      server's PHP matched that against a target list the operators could edit
+      at any time.
+    caption: the target list lived on the server
+    after: 3
   start_date: 2017-03-11
   end_date: 2017-09-12
   target:
@@ -40,8 +48,7 @@
     role: distribution
   - uri: https://www.ccleaner.com/ccleaner/download/standard
     role: distribution
-  - uri: 
-      https://github.com/InQuest/malware-samples/tree/master/2017-09-CCleaner-Supply-Chain-Attack
+  - uri: https://github.com/InQuest/malware-samples/tree/master/2017-09-CCleaner-Supply-Chain-Attack
     role: mirror
   - uri: 
       https://www.virustotal.com/gui/file/1a4a5123d7b2c534cb3e3168f7032cf9ebf38b9a2a97226d0fdb7933cf6030ff
@@ -79,6 +86,15 @@
     hashes:
     - sha256:1a4a5123d7b2c534cb3e3168f7032cf9ebf38b9a2a97226d0fdb7933cf6030ff
     - md5:5d4a6ae5ed7de98404bedfe504dbfb4a
+    - sha256: 6f7840c77f99049d788155c1351e1560b62b8ad18ad0e9adda8218b9f432f0a9
+      of: payload
+      role: malicious
+      note: "The trojanized CCleaner.exe carried inside the 5.33.6162 installer, not the installer itself.
+        Talos listed this digest alongside the installer's without distinguishing them, which is how it
+        came to be absent here while its bytes were already held. Confirmed on 2026-09-02 by extracting
+        the installer in this record's samples and measuring its members: CCleaner.exe matches exactly,
+        and the 64-bit CCleaner64.exe does not, being 70dd6da9d21c00ea759880aae779920675227cc19f54db514876de66552d088b
+        and untampered."
   - id: ccleaner-cloud
     name: CCleaner Cloud
     package: CCleaner Cloud
@@ -89,6 +105,19 @@
     end_date: 2017-09-12
     versions:
     - 1.07.3191
+    notes:
+    - >-
+      No digest for this build appears in any retained source, searched 2026-09-02. Talos,
+      eSentire, VulnCheck and Piriform's own notification publish the same three SHA-256s in one
+      block, all attributed here to the 5.33.6162 side.
+    - >-
+      MalwareBazaar's Floxif corpus was searched too. Its one CCleaner-shaped candidate,
+      CCSetup.exe 99d9b3e4..., is an InstallShield package with no Piriform string, where
+      CCleaner shipped NSIS, so it was rejected.
+    - >-
+      This is a research gap in the public reporting rather than an artifact no archive will
+      serve, and it stays unresolved until a source names a digest for the Cloud build
+      specifically.
   - id: ccleaner-second-stage-dll
     name: CCleaner second-stage payload
     package: CCleaner second-stage DLL
@@ -100,16 +129,16 @@
     hashes:
     - sha256:36b36ee9515e0a60629d2c722b006b33e543dce1c8c2611053e0651a0bfdb2e9
     notes:
-    - Second-stage DLL deployed only to selected high-value targets after the 
-      first-stage CCleaner compromise.
-    - Avast reported 40 selected second-stage victims at major technology and 
-      telecommunications companies.
+    - Second-stage DLL deployed only to selected high-value targets after the first-stage CCleaner 
+      compromise.
+    - Avast reported 40 selected second-stage victims at major technology and telecommunications 
+      companies.
   references:
   - url: https://blog.avast.com/ccleaner-incident-report-now-and-then-avast
     title: CCleaner incident report - now and then
   - url: https://blog.avast.com/update-ccleaner-attackers-entered-via-teamviewer
-    title: Recent findings from CCleaner APT investigation reveal that attackers entered
-      the Piriform network via TeamViewer
+    title: Recent findings from CCleaner APT investigation reveal that attackers entered the 
+      Piriform network via TeamViewer
   - url: https://blogs.cisco.com/talos/ccleaner-c2-goes-down
     title: CCleaner Command and Control Causes Concern
   - url: https://www.talosintelligence.com/reports/TALOS-2017-0481

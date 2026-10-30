@@ -21,6 +21,9 @@ samples:
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - contemporary_mailing_list_size_4166609
         - contemporary_mailing_list_md5_8571bd78874b557e98480ed48e2df1d2
         - contemporary_mailing_list_sha256
@@ -28,6 +31,7 @@ samples:
     relates_to:
       - phase: during
         version: 1.3.3c
+    subject: proftpd
   - artifact_id: proftpd
     phase: during
     classification: malicious
@@ -43,6 +47,8 @@ samples:
     verification:
       status: payload_only
       basis:
+        - measured_sha256
+      evidence:
         - original_mailing_list_attachment
         - complete_diff_for_configure_src_help_c_and_tests_tests_c
         - measured_sha256
@@ -50,6 +56,186 @@ samples:
       - >-
         The attachment URL basename was 1; the descriptive filename published by the mailing list
         was restored.
+    subject: proftpd
+  - artifact_id: proftpd
+    phase: during
+    classification: malicious
+    version: 1.3.3c
+    filename: help-backdoored.c
+    path: proftpd/during/help-backdoored.c
+    sha256: b6e7b13b45166bb516b37c4a7cec983657768d4bc3a15ee9efba24f0b208acfa
+    size: 4264
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: patch_application_on_official_release_member
+        base:
+          path: proftpd/before/proftpd-1.3.3c.tar.bz2
+          sha256: ea7f02e21f81e6ce79ebde8bbbd334bd269a039ac9137196a35309f791b24db1
+          member: src/help.c
+        overlay:
+          path: proftpd/during/proftpd-1.3.3c-rootkit.patch
+          sha256: 60e06731d7520ef07da55cdb9e966c5ed65263d3c29c4d9133b8fc59c3784db7
+          operation: apply
+    verification:
+      status: payload_only
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - rebuilt_from_release_member_and_preserved_patch_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        The magic-credential handler: a literal comparison against ACIDBITCHEZ guards setuid(0),
+        setgid(0) and a shell, so any client that sends the sentinel gets root.
+      - >-
+        Filed as an individual member rather than a repacked archive: the patch altered only these
+        files, and the rest of the release is represented by the clean baseline in this manifest.
+    subject: proftpd
+  - artifact_id: proftpd
+    phase: during
+    classification: malicious
+    version: 1.3.3c
+    filename: configure-backdoored
+    path: proftpd/during/configure-backdoored
+    sha256: f80f222f2df744305f86091b9479fcd8526bce88776b254ff4be6f038c4aa7a5
+    size: 959361
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: patch_application_on_official_release_member
+        base:
+          path: proftpd/before/proftpd-1.3.3c.tar.bz2
+          sha256: ea7f02e21f81e6ce79ebde8bbbd334bd269a039ac9137196a35309f791b24db1
+          member: configure
+        overlay:
+          path: proftpd/during/proftpd-1.3.3c-rootkit.patch
+          sha256: 60e06731d7520ef07da55cdb9e966c5ed65263d3c29c4d9133b8fc59c3784db7
+          operation: apply
+    verification:
+      status: payload_only
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - rebuilt_from_release_member_and_preserved_patch_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        The build-time half: compile tests/tests.c, run it in the background with both streams
+        discarded, then delete the source and the binary so the tree the victim later inspects looks
+        untouched.
+      - >-
+        Filed as an individual member rather than a repacked archive: the patch altered only these
+        files, and the rest of the release is represented by the clean baseline in this manifest.
+    subject: proftpd
+  - artifact_id: proftpd
+    phase: during
+    classification: malicious
+    version: 1.3.3c
+    filename: tests-backdoored.c
+    path: proftpd/during/tests-backdoored.c
+    sha256: 4aa2b4e26ba68fbf1c4166b299a64edd4ebf60179e98d340ec8fe4377509ab5c
+    size: 1318
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: patch_application_on_official_release_member
+        base:
+          path: proftpd/before/proftpd-1.3.3c.tar.bz2
+          sha256: ea7f02e21f81e6ce79ebde8bbbd334bd269a039ac9137196a35309f791b24db1
+          member: tests/tests.c
+        overlay:
+          path: proftpd/during/proftpd-1.3.3c-rootkit.patch
+          sha256: 60e06731d7520ef07da55cdb9e966c5ed65263d3c29c4d9133b8fc59c3784db7
+          operation: apply
+    verification:
+      status: payload_only
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - rebuilt_from_release_member_and_preserved_patch_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        The added helper the configure hunk compiles and erases. It resolves a hardcoded address,
+        connects on a fixed port under an alarm timeout, and sends a fixed request, telling the
+        operator who is building the package.
+      - >-
+        Filed as an individual member rather than a repacked archive: the patch altered only these
+        files, and the rest of the release is represented by the clean baseline in this manifest.
+    subject: proftpd
+  - artifact_id: proftpd
+    phase: before
+    classification: clean
+    version: 1.3.3c
+    filename: help.c
+    path: proftpd/before/help.c
+    sha256: ccb61537366019bd508cd92c049d82ee6b6c54ec15a82aa787c21d924fc1471f
+    size: 4125
+    source:
+      url: https://ftp.ntu.edu.tw/proftpd/historic/source/proftpd-1.3.3c.tar.bz2
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: official_distribution_member
+      container:
+        path: proftpd/before/proftpd-1.3.3c.tar.bz2
+        sha256: ea7f02e21f81e6ce79ebde8bbbd334bd269a039ac9137196a35309f791b24db1
+        member: src/help.c
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - extracted_from_the_official_release_archive_held_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        src/help.c exactly as the official release ships it, carried as its own sample so the
+        backdoored counterpart can be diffed against it directly.
+      - >-
+        The bytes were taken from proftpd/before/proftpd-1.3.3c.tar.bz2, which is held in this
+        manifest and verified against the release URL below; they were not fetched separately.
+      - Pairs with help-backdoored.c in the during phase.
+    subject: proftpd
+  - artifact_id: proftpd
+    phase: before
+    classification: clean
+    version: 1.3.3c
+    filename: configure
+    path: proftpd/before/configure
+    sha256: d07ced4c0b942c24dbd4f3b4db20d9a2e00b986633bd537c421c91f1f39294e6
+    size: 959186
+    source:
+      url: https://ftp.ntu.edu.tw/proftpd/historic/source/proftpd-1.3.3c.tar.bz2
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: official_distribution_member
+      container:
+        path: proftpd/before/proftpd-1.3.3c.tar.bz2
+        sha256: ea7f02e21f81e6ce79ebde8bbbd334bd269a039ac9137196a35309f791b24db1
+        member: configure
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - extracted_from_the_official_release_archive_held_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        configure exactly as the official release ships it, carried as its own sample so the
+        backdoored counterpart can be diffed against it directly.
+      - >-
+        The bytes were taken from proftpd/before/proftpd-1.3.3c.tar.bz2, which is held in this
+        manifest and verified against the release URL below; they were not fetched separately.
+      - Pairs with configure-backdoored in the during phase.
+    subject: proftpd
 unresolved:
   - artifact_id: proftpd
     phase: during
@@ -75,7 +261,13 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for a43df54cc0b16c9e63a1045129d7b144:
         hash_not_found; triage: Triage has no file analysis for MD5
         a43df54cc0b16c9e63a1045129d7b144; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:56:51.144Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:15:39.499-04:00 level=ERROR msg="command failed"
+        error="hash a43df54cc0b16c9e63a1045129d7b144 unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for a43df54cc0b16c9e63a1045129d7b144: hash_not_found; triage: triage has no file analysis
+        for MD5 a43df54cc0b16c9e63a1045129d7b144; malshare: download returned status 404"
+    last_attempted_at: '2026-09-03T10:15:39.540Z'
   - artifact_id: proftpd
     phase: during
     coordinate: sha256:d56d6d643534fe618b26807948b3cfe43c02b3f7abf7f4a073778c9c1666d1eb
@@ -89,4 +281,14 @@ unresolved:
         Triage has no file analysis for SHA256
         d56d6d643534fe618b26807948b3cfe43c02b3f7abf7f4a073778c9c1666d1eb; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:52.229Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:15:55.953-04:00 level=ERROR msg="command failed"
+        error="hash d56d6d643534fe618b26807948b3cfe43c02b3f7abf7f4a073778c9c1666d1eb unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/d56d6d643534fe618b26807948b3cfe43c02b3f7abf7f4a073778c9c1666d1eb;
+        malwarebazaar: MalwareBazaar has no sample for
+        d56d6d643534fe618b26807948b3cfe43c02b3f7abf7f4a073778c9c1666d1eb: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        d56d6d643534fe618b26807948b3cfe43c02b3f7abf7f4a073778c9c1666d1eb; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:15:55.968Z'

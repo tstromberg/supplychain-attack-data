@@ -11,12 +11,19 @@
     The payload chain then moved from project infection to host persistence. The first-stage dropper unpacked `octopus.dat`, installed autostart or scheduled-task persistence depending on platform, and spawned a remote administration tool that attempted to reach command-and-control infrastructure. GitHub reported that the C2 servers did not appear active during analysis, but the repositories still exposed anyone who cloned and built them.
 
     GitHub removed or cleaned affected projects and published hashes for defenders. This record treats the 26 projects as artifact scope, not as a human victim count. The important lesson is the trust boundary: source review may miss a build-system backdoor if the project file that orchestrates compilation is already part of the attack.
+  pull_quote:
+    text: >-
+      The `-post-jar` hook wrote two empty marker files,
+      `.netbeans_automatic_build` and `.netbeans_update_resources`, so
+      NetBeans read the build as up to date and would not replace the infected
+      JAR.
+    caption: why a rebuild did not clean it
+    after: 2
   start_date: 2018-08-01
   end_date: 2020-05-28
   target:
     name: NetBeans projects on GitHub
     kind: application
-    repo: https://github.com/advisories
   actor:
     name: Unknown attacker
     kind: unknown
@@ -38,7 +45,6 @@
     ecosystem: github
     kind: source_archive
     website: https://github.com
-    repo: https://github.com/advisories
     start_date: 2018-08-01
     end_date: 2020-05-28
     locations:
@@ -68,6 +74,10 @@
     - GitHub's analysis found four infected NetBeans-project variants. Some infected
       build outputs and dependencies, while one variant performed local system infection
       without touching build artifacts.
+    - >-
+      A bounded report-derived execution trace is retained under samples/;
+      it preserves the documented NetBeans paths, build hooks, persistence command,
+      and cache.dat MD5 values. The unavailable JAR samples are not reconstructed.
   references:
   - url:
       https://github.blog/security/vulnerability-research/the-octopus-scanner-malware-attacking-the-open-source-supply-chain/

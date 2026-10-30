@@ -1,10 +1,9 @@
 schema_version: 1
 interpretation:
   - >-
-    Debian Archive's preserved orig tarball is byte-identical to Irssi's clean original
-    0.8.4 release: its MD5 and exact size match Debian's signed 2002 advisory. Irssi later
-    reissued these same bytes under the 0.8.4a filename to distinguish them from the
-    poisoned mutable download.
+    Debian Archive's preserved orig tarball is byte-identical to Irssi's clean original 0.8.4
+    release: its MD5 and exact size match Debian's signed 2002 advisory. Irssi later reissued these
+    same bytes under the 0.8.4a filename to distinguish them from the poisoned mutable download.
 samples:
   - artifact_id: irssi
     phase: before
@@ -15,12 +14,16 @@ samples:
     sha256: b655033556b154ae1d3b60d087a903e922c9b35438b472edcafad876b6b0ee8c
     size: 952304
     source:
-      url: https://archive.debian.org/debian-security/pool/updates/main/i/irssi-text/irssi-text_0.8.4.orig.tar.gz
+      url: >-
+        https://archive.debian.org/debian-security/pool/updates/main/i/irssi-text/irssi-text_0.8.4.orig.tar.gz
       retrieved_at: '2026-08-09T23:48:45Z'
       kind: distribution_mirror
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - debian_signed_advisory_md5_57bf9d89638be3d377be211f0b0d7049
         - debian_signed_advisory_size_952304
         - irssi_0_8_4a_same_bytes_as_original_0_8_4
@@ -28,6 +31,7 @@ samples:
     notes:
       - Renamed from Debian's irssi-text_0.8.4.orig.tar.gz to the original upstream filename.
       - These clean bytes also represent Irssi's post-incident 0.8.4a reissue.
+    subject: irssi
   - artifact_id: irssi
     phase: during
     classification: malicious
@@ -43,11 +47,17 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - cited_incident_advisory
         - configure_backdoor_fragment_preserved
         - measured_sha256
     notes:
-      - This is an advisory capture containing the modified configure code fragment, not the original tarball.
+      - >-
+        This is an advisory capture containing the modified configure code fragment, not the
+        original tarball.
+    subject: irssi
   - artifact_id: irssi
     phase: during
     classification: malicious
@@ -63,14 +73,125 @@ samples:
     verification:
       status: payload_only
       basis:
+        - measured_sha256
+      evidence:
         - published_configure_code_fragment
         - html_entities_decoded
         - source_line_endings_preserved
         - measured_sha256
     notes:
-      - The fragment was extracted as published; escaped quote characters and CRLF line endings were preserved.
+      - >-
+        The fragment was extracted as published; escaped quote characters and CRLF line endings were
+        preserved.
+    subject: irssi
+  - artifact_id: irssi
+    phase: during
+    classification: malicious
+    version: 0.8.4
+    filename: configure-backdoored
+    path: irssi/during/configure-backdoored
+    sha256: 62ceef574cdfb5ecb8fa74e064ef0435c9af67b8aa2dabb10248b09c54bbbfe4
+    size: 174612
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: evidence_fragment_spliced_into_release_member
+        base:
+          path: irssi/before/irssi-0.8.4.tar.gz
+          sha256: b655033556b154ae1d3b60d087a903e922c9b35438b472edcafad876b6b0ee8c
+          member: configure
+        overlay:
+          path: irssi/during/configure-backdoor.c.fragment
+          sha256: 0a435695c4e39f425d5fe794b42ce4087b227176e90fc483fbc54ab0463e8820
+          operation: apply
+          hunks: 1
+    verification:
+      status: payload_only
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - rebuilt_from_release_member_and_preserved_evidence_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        The preserved C block placed in the body of an existing autoconf conftest program, in the
+        one file the project advisory records as altered. It forks, opens a TCP socket to a fixed
+        address and port, and moves stdin, stdout and stderr onto it.
+      - >-
+        The preserved evidence alone is not loadable source. This is configure as the victim would
+        have received it, so the payload is analysable in the file that gives it effect.
+      - >-
+        Only this member is carried: the incident altered no other file, and the rest of the release
+        is already represented by the clean baseline in this manifest.
+    subject: irssi
+  - artifact_id: irssi
+    phase: before
+    classification: clean
+    version: 0.8.4
+    filename: configure
+    path: irssi/before/configure
+    sha256: af346fc5f34976b8075a2715dbfbb4254aeaccb7be86df4d12f151369e311cab
+    size: 174038
+    source:
+      url: >-
+        https://archive.debian.org/debian-security/pool/updates/main/i/irssi-text/irssi-text_0.8.4.orig.tar.gz
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: official_distribution_member
+      container:
+        path: irssi/before/irssi-0.8.4.tar.gz
+        sha256: b655033556b154ae1d3b60d087a903e922c9b35438b472edcafad876b6b0ee8c
+        member: configure
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - extracted_from_the_official_release_archive_held_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        configure exactly as the official release ships it, carried as its own sample so the
+        backdoored counterpart can be diffed against it directly.
+      - >-
+        The bytes were taken from irssi/before/irssi-0.8.4.tar.gz, which is held in this manifest
+        and verified against the release URL below; they were not fetched separately.
+      - Pairs with configure-backdoored in the during phase.
+    subject: irssi
 unresolved:
   - artifact_id: irssi
     phase: during
     version: 0.8.4
     status: original_distribution_unavailable_fragment_recovered
+    attempts:
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'
+  - artifact_id: irssi
+    phase: during
+    coordinate: md5:57bf9d89638be3d377be211f0b0d7049
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:45:44.847-04:00 level=ERROR msg="command failed"
+        error="hash 57bf9d89638be3d377be211f0b0d7049 unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for 57bf9d89638be3d377be211f0b0d7049: hash_not_found; triage: triage has no file analysis
+        for MD5 57bf9d89638be3d377be211f0b0d7049; malshare: download returned status 404"
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:14:09.188-04:00 level=ERROR msg="command failed"
+        error="hash 57bf9d89638be3d377be211f0b0d7049 unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for 57bf9d89638be3d377be211f0b0d7049: hash_not_found; triage: triage has no file analysis
+        for MD5 57bf9d89638be3d377be211f0b0d7049; malshare: download returned status 404"
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'

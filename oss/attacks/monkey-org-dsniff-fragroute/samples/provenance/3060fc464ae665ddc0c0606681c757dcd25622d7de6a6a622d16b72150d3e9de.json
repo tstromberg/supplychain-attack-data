@@ -1,0 +1,73 @@
+{
+  "schema_version": 2,
+  "sha256": "3060fc464ae665ddc0c0606681c757dcd25622d7de6a6a622d16b72150d3e9de",
+  "size_bytes": 277490,
+  "acquisitions": [
+    {
+      "schema_version": "1.0",
+      "artifact": {
+        "filename": "fragrouter-1.6-RECONSTRUCTED.tar.gz",
+        "sha256": "3060fc464ae665ddc0c0606681c757dcd25622d7de6a6a622d16b72150d3e9de",
+        "size_bytes": 277490
+      },
+      "package": {
+        "ecosystem": "source release",
+        "name": "fragrouter-1-6",
+        "version": "1.6",
+        "feed": "derived"
+      },
+      "fetch": {
+        "collector": "local+block-insertion",
+        "category": "reconstructed",
+        "at": "2026-09-10T14:15:00Z",
+        "url": "https://seclists.org/bugtraq/2002/May/290",
+        "derivation": [
+          "fragrouter-1.6 rebuilt with that block applied, so the attack is analyzable as the archive a victim would have unpacked."
+        ]
+      },
+      "provenance": {
+        "reconstruction": {
+          "method": "upstream_tarball_plus_published_diff",
+          "direction": "The block published as the fragroute-1.2 backdoor, applied forward to the clean fragrouter-1.6 tarball.",
+          "base": {
+            "path": "fragrouter-1-6/before/fragrouter-1.6.tar.gz",
+            "sha256": "db066e3e55a97f5623e5bfbd742d5eb934037b4f3b467e1e1535c40778bdcbe8",
+            "member_count": 392
+          },
+          "retained_manifest": {
+            "url": "https://seclists.org/bugtraq/2002/May/290",
+            "path": "fragrouter-1-6/during/fragrouter-1.6-configure-backdoor.diff",
+            "sha256": "4d44d0048897ff756299abf5510be07928ef61bb21d516cd56d42f6d3ddebd07",
+            "member_count": 1,
+            "member_hash": "diff_hunk_target_paths"
+          },
+          "overlays": [
+            {
+              "path": "configure",
+              "operation": "block_inserted",
+              "sha256": "6e1bfe39da73115b23e1dbafbf9421eab9935a7afdd22b94da9a46ef9cd9321c"
+            }
+          ],
+          "insertion_point": {
+            "established": false,
+            "line": 1336,
+            "anchor": "immediately after the -lsocket check closes, before the net/ethernet.h header test",
+            "reasoning": "Two constraints agree on this point and no source states it. The block's own compile line is `gcc $LIBS conftest.c`, so it has to run after the socket library check has put -lsocket into $LIBS or the payload would not link where socket() lives outside libc; and the fragroute-1.2 copy, the one position that was published, sits at exactly this relative point, immediately after its socket/nsl checks and before the next test."
+          },
+          "unchanged_members": {
+            "count": 391,
+            "verification": "inherited_byte_for_byte_from_the_verified_upstream_tarball"
+          },
+          "packaging": {
+            "format": "tar.gz",
+            "path_order": "sorted",
+            "normalized": "member mtime, uid/gid and owner names zeroed; gzip mtime 0",
+            "framing": "ustar, REGTYPE; reproduces the fragroute-1.2 reconstruction byte for byte from its own inputs",
+            "original_archive_bytes_recovered": false
+          },
+          "complete_attack_record": true
+        }
+      }
+    }
+  ]
+}

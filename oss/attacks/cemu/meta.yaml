@@ -7,7 +7,7 @@
   story: |
     Roughly 21,000 Linux users who downloaded the popular Wii U emulator Cemu between May 7 and May 12, 2026 instead received a trojanized build that installed a credential stealer disguised as a PostgreSQL monitoring agent, according to maintainer disclosures and follow-on research from Datadog Security Labs.
 
-    Cemu is the leading open-source Wii U emulator. Its 2.6 release was tagged on February 6, 2026, with the original assets uploaded by GitHub's `github-actions[bot]`. On May 7 at 22:55 UTC, a co-author with the GitHub handle `MangelSpec` replaced the Ubuntu zip, `cemu-2.6-ubuntu-22.04-x64.zip`; roughly three hours later, at 01:41 UTC on May 8, the same account replaced the Linux AppImage. The Windows zip, the macOS dmg, the v2.6 git tag, and the Flatpak build were left untouched, and the release page went on displaying the original February publication date, so a casual visitor saw a four-month-old release carrying current assets. The compromise surfaced publicly on May 12, when a user filed issue #1911 noticing that two Linux assets had been deleted and re-uploaded by a different account than the bot that built them. By then the malicious AppImage had been downloaded 19,897 times and the Ubuntu zip 1,957 times. Maintainers later traced the entry point to a malicious binary `MangelSpec` had run inside Windows Subsystem for Linux, which leaked the GitHub credentials he used for release uploads; because the Linux assets carried no CI provenance, anyone with upload rights could overwrite them directly.
+    Cemu is the leading open-source Wii U emulator. Its 2.6 release was published on February 6, 2025, with the original assets uploaded by GitHub's `github-actions[bot]`. On May 7 at 22:55 UTC, a co-author with the GitHub handle `MangelSpec` replaced the Ubuntu zip, `cemu-2.6-ubuntu-22.04-x64.zip`; roughly three hours later, at 01:41 UTC on May 8, the same account replaced the Linux AppImage. The Windows zip, the macOS dmg, the v2.6 git tag, and the Flatpak build were left untouched, and the release page went on displaying the original February publication date, so a casual visitor saw a fifteen-month-old release carrying current assets. The compromise surfaced publicly on May 12, when a user filed issue #1911 noticing that two Linux assets had been deleted and re-uploaded by a different account than the bot that built them. By then the malicious AppImage had been downloaded 19,897 times and the Ubuntu zip 1,957 times. Maintainers later traced the entry point to a malicious binary `MangelSpec` had run inside Windows Subsystem for Linux, which leaked the GitHub credentials he used for release uploads; because the Linux assets carried no CI provenance, anyone with upload rights could overwrite them directly.
 
     Both backdoored archives bundled a Python zipapp called `startup.pyz`. Datadog said the payload wrote a `pgmonitor.py` file on execution and registered it as a systemd service named `pgsql-monitor.service`, a name chosen to read as a benign database tool. The collector targeted SSH keys, GitHub tokens, AWS Secrets Manager and SSM, Azure Key Vault, GCP Secret Manager, Kubernetes secrets, HashiCorp Vault, and local password-manager state. Stolen material was POSTed to `83.142.209.194/v1/weights`, with a fallback resolver that pulled RSA-signed C2 addresses out of public GitHub commits tagged `FIRESCALE`. The malware ran only on Linux, skipped systems using a Russian locale, and required more than four CPU cores to proceed. A "roulette" routine inspected the locale for Israeli and Iranian indicators and, on a one-in-six roll, played an audio file and executed `rm -rf` across the filesystem.
 
@@ -62,17 +62,21 @@
   - kind: account
     value: MangelSpec
   notes:
-  - Download counts are point-in-time figures from GitHub release metadata at disclosure
-    on 2026-05-12, with 19,897 for the AppImage and 1,957 for the Ubuntu zip. The impact
-    users field is the sum and represents downloads, not confirmed executions.
-  - The original v2.6 release was tagged on 2025-02-06 by github-actions[bot]. Only the
-    Linux release assets were replaced; the git tag, source archive, Windows zip, macOS
-    dmg, and Flatpak build were unchanged.
-  - Maintainers attribute the MangelSpec account compromise to malicious software the
-    co-author ran inside WSL, which exposed GitHub credentials.
-  - The C2 address 83.142.209.194 and the pgsql-monitor.service persistence are shared
-    with the durabletask PyPI compromise on 2026-05-19, tying this incident to TeamPCP's
-    Mini Shai-Hulud activity.
+  - >-
+    Download counts are point-in-time figures from GitHub release metadata at disclosure on
+    2026-05-12: 19,897 for the AppImage and 1,957 for the Ubuntu zip. The impact users field is
+    their sum and counts downloads, not executions.
+  - >-
+    The original v2.6 release was tagged on 2025-02-06 by github-actions[bot]. Only the Linux
+    release assets were replaced; the git tag, source archive, Windows zip, macOS dmg, and
+    Flatpak build were unchanged.
+  - >-
+    Maintainers attribute the MangelSpec account compromise to malicious software the co-author
+    ran inside WSL, which exposed GitHub credentials.
+  - >-
+    The C2 address 83.142.209.194 and the pgsql-monitor.service persistence are shared with the
+    durabletask PyPI compromise on 2026-05-19, tying this incident to TeamPCP's Mini Shai-Hulud
+    activity.
   artifacts:
   - id: cemu-appimage
     name: Cemu AppImage
@@ -82,7 +86,7 @@
     start_date: 2026-05-08
     end_date: 2026-05-12
     versions:
-    - 2.6
+    - "2.6"
     hashes:
     - sha256:d07a29c4458d00e42d5d9e6345932592e91644d6b821bacdb7a543c628e0b41a
     locations:
@@ -101,7 +105,7 @@
     start_date: 2026-05-07
     end_date: 2026-05-12
     versions:
-    - 2.6
+    - "2.6"
     hashes:
     - sha256:f140e76236b96adf7cdc796227af9808665143bc674debb77729fa3e4b8327cc
     locations:

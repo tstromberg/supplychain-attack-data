@@ -7,9 +7,9 @@
     MC' modpack series, was compromised. Attackers uploaded malicious versions of the modpacks
     (e.g., BMC3 for Forge 1.19.2).
   story: |
-    Better MC mattered because it was a modpack, not a single small mod. A compromised Luna Pixel Studios publishing account let attackers place Fracturiser into releases that players installed as trusted bundles. The named affected scope included Better MC Forge BMC3, Better MC Forge BMC2, and Better MC Fabric, packages that pulled together many mods under a familiar project name, so the malicious upload inherited trust from both the modpack brand and its dependency graph.
+    Better MC mattered because it was a modpack, not a single small mod. No attacker logged into Luna Pixel Studios' account. A developer there tried out one of the malicious uploads, fractureiser infected the jars on that machine, and the studio published the result as trusted bundles. The named affected scope included Better MC Forge BMC3, Better MC Forge BMC2, and Better MC Fabric, packages that pulled together many mods under a familiar project name, so the malicious upload inherited trust from both the modpack brand and its dependency graph.
 
-    Fracturiser used the Minecraft loader path as execution. Once a poisoned JAR was loaded, the staged malware reached beyond the game and targeted host data on Windows and Linux, including secrets useful for accounts and for further spread.
+    Fractureiser used the Minecraft loader path as execution. Once a poisoned JAR was loaded, the staged malware reached beyond the game and targeted host data on Windows and Linux, including secrets useful for accounts and for further spread.
 
     The cleanup problem was therefore not just "remove one mod." Players had to treat the whole affected modpack install as suspect, then scan for active infection and for dormant JARs that could restart the chain later.
 
@@ -24,7 +24,7 @@
     kind: group
   language: Java
   method:
-    cause: compromised_account_credentials
+    cause: compromised_build_system
     phase: distribution
     motive: credential_theft
     transitive: false
@@ -54,6 +54,35 @@
   - sha1:c2d0c87a1fe99e3c44a52c48d8bcf65a67b3e9a5
   - sha1:e299bf5a025f5c3fff45d017c3c2f467fa599915
   artifacts:
+  - id: fractureiser-stage0
+    name: fractureiser stage 0 infected mod jar
+    ecosystem: curseforge
+    kind: binary
+    start_date: 2023-04-01
+    end_date: 2023-06-08
+    locations:
+    - uri: https://legacy.curseforge.com/minecraft/mc-mods/dungeonx/files/4551100
+      role: distribution
+    - uri: https://modrinth.com/mod/dungeonz/version/Ukjd4XYm
+      role: mirror
+    hashes:
+    - sha1: 2db855a7f40c015f8c9ca7cbab69e1f1aafa210b
+      of: archive
+      role: malicious
+      note: >-
+        Dungeonz, uploaded by the single-use account "fractureiser". Listed in the
+        investigation team's affected-mod table.
+    notes:
+    - >-
+      The malware that rode inside the Better MC uploads, recorded as its own artifact because
+      the modpack files cannot be acquired. A stage 0 jar loads a class named Utility over plain
+      HTTP from 85.217.144.130:8080/dl and calls run() on it.
+    - >-
+      Luna Pixel Studios was infected by testing one of these seed mods, so this is the upstream
+      of the Better MC compromise rather than a separate incident.
+    - >-
+      Modrinth's exact clean DungeonZ 1.0.1 build for Minecraft 1.19.2 is retained as a complete
+      comparator for the infected jar with the same embedded mod version and target.
   - id: better-mc-forge-bmc3
     name: Better MC Forge BMC3 modpack
     package: Better MC [Forge] - BMC3
@@ -99,6 +128,34 @@
     notes:
     - Named affected modpack release; exact file URL is not captured in the current 
       record.
+  - id: skyblock-core
+    name: Skyblock Core
+    package: skyblock-core
+    ecosystem: curseforge
+    kind: binary_archive
+    start_date: 2023-06-01
+    end_date: 2023-06-08
+    locations:
+    - uri: https://www.curseforge.com/minecraft/mc-mods/skyblock-core/files/4570565
+      role: distribution
+    hashes:
+    - sha1: 33677ca0e4c565b1f34baa74a79c09a3b690bf41
+      of: archive
+      role: malicious
+      note: >-
+        The infected Skyblock Core upload, from the affected-file table the fractureiser
+        investigation team publishes in docs/tech.md.
+    indicators:
+    - kind: technique
+      value: static initializer calls an injected static void method
+    notes:
+    - >-
+      The Luna Pixel Studios mod that actually carried the infection under their own
+      account. The investigation team records that Luna Pixel Studios was compromised
+      after a developer tested one of the attacker's seed mods.
+    - >-
+      Its injected method sits in com.bmc.coremod.BMCSkyblockCore, the Better MC core
+      mod, which is what ties this file to this record rather than to the seed uploads.
   references:
   - url: 
       https://support.curseforge.com/en/support/solutions/articles/9000228509-june-2023-infected-mods-detection-tool-and-report

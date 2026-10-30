@@ -1,5 +1,128 @@
 schema_version: 1
-samples: []
+samples:
+  - artifact_id: kong-ingress-controller
+    phase: before
+    classification: clean
+    coordinate: docker://docker.io/kong/kubernetes-ingress-controller:3.4.0
+    version: 3.4.0
+    filename: manager
+    path: kong-ingress-controller/before/manager
+    sha256: b4d96e0491a14eb6200ee4f9526f71afa0b0095e8cb02fed2d9e4706fc239eaa
+    size: 58454168
+    source:
+      url: >-
+        local:/Users/t/data/supplychain/cases/linux_elf/2024.kong-ingress-controller/kong-ingress-controller/artifacts/clean/manager
+      retrieved_at: '2026-08-15T15:00:00Z'
+      kind: local_case_corpus_comparator
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - exact_local_case_artifact
+        - xz_decompression_byte_equivalence
+        - measured_sha256_and_size
+    notes:
+      - >-
+        Clean manager-member comparator from the local case corpus. It is not asserted to be the
+        complete clean 3.4.0 image or its image digest.
+    subject: kong-ingress-controller
+  - artifact_id: kong-ingress-controller
+    phase: during
+    classification: malicious
+    coordinate: >-
+      docker://docker.io/kong/kubernetes-ingress-controller:3.4.0@sha256:a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43
+    version: 3.4.0
+    filename: manager
+    path: kong-ingress-controller/during/manager
+    sha256: 0492d814e60c424463e1b0fe6458e1447240ff6aa2d1e6a9d37888c123d7ad69
+    size: 78487704
+    source:
+      url: >-
+        local:/Users/t/data/supplychain/cases/linux_elf/2024.kong-ingress-controller/kong-ingress-controller/artifacts/compromised/manager
+      retrieved_at: '2026-08-15T15:00:00Z'
+      kind: local_case_corpus_extracted_member
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - exact_local_case_artifact
+        - xz_decompression_byte_equivalence
+        - local_case_metadata_identifies_compromised_member
+        - measured_sha256_and_size
+    notes:
+      - >-
+        Exact uncompressed ELF copied from the local case corpus. Its member SHA-256 is distinct
+        from the malicious image digest and the three component/XMRig digests already recorded in
+        meta.yaml; it must not be substituted for any of those identities.
+    subject: kong-ingress-controller
+  - artifact_id: kong-ingress-controller
+    phase: during
+    classification: detection_evidence
+    coordinate: docker://docker.io/kong/kubernetes-ingress-controller:3.4.0
+    version: 3.4.0
+    filename: xmrig-runtime-indicators.fragment
+    path: kong-ingress-controller/during/xmrig-runtime-indicators.fragment
+    sha256: 8664edeb46c4470ede3204f62fdbbd7453ae61f0dd583558e5e17f6092c7145b
+    size: 706
+    source:
+      url: https://www.armosec.io/blog/kong-ingress-controller-cryptojacking/
+      retrieved_at: '2026-08-15T14:45:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: verification_material
+      basis:
+        - reported_digest_matched
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - exact_reported_malicious_image_digests
+        - exact_reported_xmrig_and_pool_indicators
+        - exact_reported_memfd_create_behavior
+        - archived_source_capture_sha256
+        - measured_sha256_and_size
+    relates_to:
+      - phase: during
+        version: 3.4.0
+        artifact_id: kong-ingress-controller
+    notes:
+      - >-
+        Bounded runtime evidence from ARMO's report. The malicious OCI image and its layers remain
+        unavailable; this fragment is non-executable and does not reconstruct XMRig, an image layer,
+        or a wallet address.
+    subject: kong-ingress-controller
+  - artifact_id: kong-ingress-controller
+    phase: after
+    classification: clean
+    coordinate: pkg:docker/kong/kubernetes-ingress-controller@3.4.1
+    version: 3.4.1
+    filename: kong-kic-3.4.1.oci.tar
+    path: kong-ingress-controller/after/kong-kic-3.4.1.oci.tar
+    sha256: 09865ebac1afc3f344950193ac2ca6031a52205634c6bbd250cf4171138afea6
+    size: 18163712
+    source:
+      url: https://registry-1.docker.io/v2/kong/kubernetes-ingress-controller/manifests/3.4.1
+      retrieved_at: '2026-09-11T00:10:11.558Z'
+      kind: distribution
+    verification:
+      status: probable_exact
+      basis:
+        - measured_sha256
+      evidence:
+        - registry_manifest_digest
+        - measured_sha256
+    notes:
+      - >-
+        The remediated image this record names as the fix. Docker Hub resolves
+        kong/kubernetes-ingress-controller:3.4.1 to manifest digest
+        sha256:45da0da02c395bfdb6a324370b87eca39098bad42b184b57d56a44d5d95da99e.
+      - >-
+        Exported with crane for platform linux/amd64. A docker-save tar is a local rendering, so the
+        image identity is the manifest digest rather than this file's sha256.
+    subject: kong-ingress-controller
 unresolved:
   - artifact_id: kong-ingress-controller
     phase: during
@@ -23,7 +146,17 @@ unresolved:
         Triage has no file analysis for SHA256
         a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:19.616Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:14:30.144-04:00 level=ERROR msg="command failed"
+        error="hash a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43;
+        malwarebazaar: MalwareBazaar has no sample for
+        a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        a00659df0771d076fc9d0baf1f2f45e81ec9f13179f499d4cd940f57afc75d43; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:14:30.156Z'
   - artifact_id: kong-ingress-controller
     phase: during
     coordinate: sha256:4e3bbca1ba0bf9f0d53c8b1cc07bf92d9b1d41b3f066fdf4aec7cdd8c21ca3b7
@@ -46,7 +179,17 @@ unresolved:
         Triage has no file analysis for SHA256
         4e3bbca1ba0bf9f0d53c8b1cc07bf92d9b1d41b3f066fdf4aec7cdd8c21ca3b7; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:22.058Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:14:30.327-04:00 level=ERROR msg="command failed"
+        error="hash 4e3bbca1ba0bf9f0d53c8b1cc07bf92d9b1d41b3f066fdf4aec7cdd8c21ca3b7 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/4e3bbca1ba0bf9f0d53c8b1cc07bf92d9b1d41b3f066fdf4aec7cdd8c21ca3b7;
+        malwarebazaar: MalwareBazaar has no sample for
+        4e3bbca1ba0bf9f0d53c8b1cc07bf92d9b1d41b3f066fdf4aec7cdd8c21ca3b7: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        4e3bbca1ba0bf9f0d53c8b1cc07bf92d9b1d41b3f066fdf4aec7cdd8c21ca3b7; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:14:30.338Z'
   - artifact_id: kong-ingress-controller
     phase: during
     coordinate: sha256:e164e6e21c661679c556d16638300c25e16d86bb2d567ad66b4181f1a65f4788
@@ -69,7 +212,17 @@ unresolved:
         Triage has no file analysis for SHA256
         e164e6e21c661679c556d16638300c25e16d86bb2d567ad66b4181f1a65f4788; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:22.059Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:14:30.055-04:00 level=ERROR msg="command failed"
+        error="hash e164e6e21c661679c556d16638300c25e16d86bb2d567ad66b4181f1a65f4788 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/e164e6e21c661679c556d16638300c25e16d86bb2d567ad66b4181f1a65f4788;
+        malwarebazaar: MalwareBazaar has no sample for
+        e164e6e21c661679c556d16638300c25e16d86bb2d567ad66b4181f1a65f4788: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        e164e6e21c661679c556d16638300c25e16d86bb2d567ad66b4181f1a65f4788; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:14:30.067Z'
   - artifact_id: kong-ingress-controller
     phase: during
     coordinate: sha256:56ff46874f0536c289ff38af4cb308af8f7e6156e3f9d9227b71004d2042a4e6
@@ -92,4 +245,14 @@ unresolved:
         Triage has no file analysis for SHA256
         56ff46874f0536c289ff38af4cb308af8f7e6156e3f9d9227b71004d2042a4e6; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:22.363Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:14:30.319-04:00 level=ERROR msg="command failed"
+        error="hash 56ff46874f0536c289ff38af4cb308af8f7e6156e3f9d9227b71004d2042a4e6 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/56ff46874f0536c289ff38af4cb308af8f7e6156e3f9d9227b71004d2042a4e6;
+        malwarebazaar: MalwareBazaar has no sample for
+        56ff46874f0536c289ff38af4cb308af8f7e6156e3f9d9227b71004d2042a4e6: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        56ff46874f0536c289ff38af4cb308af8f7e6156e3f9d9227b71004d2042a4e6; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:14:30.333Z'

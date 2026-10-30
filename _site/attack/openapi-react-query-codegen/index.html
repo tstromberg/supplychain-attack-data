@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Actions comment trigger published malicious openapi-react-query-codegen</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>GitHub Actions comment trigger published malicious openapi-react-query-codegen</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> @7nohe/openapi-react-query-codegen · <a href="https://www.npmjs.com/package/@7nohe/openapi-react-query-codegen" target="_blank">website</a> · <a href="https://github.com/7nohe/openapi-react-query-codegen" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-08-28 to 2026-08-29 (1 day)</div>
+    <div class="meta-item"><strong>Actor:</strong> Advanced Persistent Threat (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> JavaScript</div>
+    <div class="meta-item"><strong>Cause:</strong> ci_cd_exploit</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, data_exfiltration, self_propagation, backdoor</div>
+    <div class="meta-item"><strong>User Impact:</strong> 150000</div>
+    <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">A GitHub Actions release workflow fired on any pull request comment reading &quot;npm publish&quot;, with no check on who wrote it. An attacker used it to build, sign and publish ten malicious versions of @7nohe/openapi-react-query-codegen from their own fork.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>A GitHub account created for the purpose spent twenty minutes on the
+evening of August 28, 2026 turning a convenience feature in one npm
+project's release pipeline into a package-publishing machine. Ten malicious
+versions of <code>@7nohe/openapi-react-query-codegen</code> went out during that
+window, each of them built, signed, and provenance-attested by the
+maintainer's own automation. The repository itself was never touched. The
+package generates React Query hooks from an OpenAPI schema, the kind of
+code-generation step that lives in a front-end project's devDependencies
+rather than its production bundle, and Socket and Mend both put it at
+roughly 150,000 downloads a week.</p>
+    
+      <p>The way in was a GitHub Actions trigger the project had carried since 2024.
+Its release workflow listened for <code>issue_comment</code> events: comment
+<code>npm publish</code> on any pull request and the job would fetch that pull
+request's head, check it out, run <code>pnpm install</code>, and publish a
+<code>0.0.0-&lt;sha&gt;</code> prerelease. The job never checked who was commenting. In
+March 2026 the project moved that same workflow to npm trusted publishing,
+which meant it also held <code>id-token: write</code> and could exchange a GitHub OIDC
+assertion for a real npm token. An account named <code>p00paboot</code>, using the
+address <code>braps43929432@tutamail.com</code>, opened pull requests #215 and #216 and
+pushed a one-line change to <code>package.json</code> in each: first a <code>preinstall</code>
+that piped Bun's installer into <code>bash</code> and ran a script called
+<code>is_it_this_simple.js</code>, then nineteen minutes later <code>node nu.js</code>. Neither
+script shipped in the published tarball, because neither needed to. The
+point was to execute inside the runner during <code>pnpm install</code>, in a job that
+could ask GitHub for a publishing credential.</p>
+      <figure class="pull-quote">
+        <blockquote>The job then checked out the PR head and ran <code>pnpm install</code>, so a fork's <code>preinstall</code> script executed inside a job holding <code>id-token: write</code> — enough to mint an npm trusted publishing token and publish arbitrary versions.</blockquote>
+        <figcaption>from the maintainer&#39;s fix commit</figcaption>
+      </figure>
+    
+      <p>npm's publication log shows what followed. At 20:00:43 UTC <code>0.5.4</code>
+appeared, then <code>1.6.3</code> five seconds later, <code>2.2.1</code> at 20:00:53, and <code>3.0.3</code>
+at 20:02:08, four stable releases spanning every maintained line of the
+package, the first three landing seconds before the workflow reached its
+own prerelease step. The second comment produced the same pattern at 20:19:
+<code>3.0.4</code>, <code>1.6.4</code>, <code>2.2.2</code>, and <code>0.5.5</code>. All eight carried an 828-byte
+<code>binding.gyp</code> and a single-line loader named <code>3FWCvzduYZg.js</code> running
+between 4.4 MB and 6.4 MB. The <code>binding.gyp</code> is the more interesting half.
+Its <code>conditions</code> block holds a Python expression that walks
+<code>().__class__.__base__.__subclasses__()</code> to reach <code>os.system</code>, with every
+identifier written as <code>\U000000xx</code> escapes so no readable string appears
+anywhere in the file, ending in <code>node 3FWCvzduYZg.js</code>. npm hands any package
+containing a <code>binding.gyp</code> to <code>node-gyp rebuild</code>, and that path is not
+covered by <code>--ignore-scripts</code>. The four wave-1 versions carried no install
+hook at all and relied on it entirely; the wave-2 four added
+<code>&quot;preinstall&quot;: &quot;node 3FWCvzduYZg.js&quot;</code> as a fallback. As Mend's Alina Podoba
+noted, detection has to match on the files, not just on the hooks.</p>
+    
+      <p>The loader is an array of integers XORed with the byte 229, yielding
+JavaScript that decrypts an AES-128-GCM blob with a hardcoded key, IV, and
+tag, unpacking a roughly 800 KB obfuscated bundle that downloads Bun 1.4.0
+into a temporary directory prefixed <code>trinnyyyy-</code> and re-executes under it.
+Researchers at Socket, SafeDep, StepSecurity, and Mend all identified the
+result as the Mini Shai-Hulud toolkit seen in the SAP CAP compromise in
+April and the @antv mass compromise in May. Socket described it reading AWS
+IMDSv2, Azure and Google Cloud metadata, HashiCorp Vault, Kubernetes service
+account tokens, registry credentials for npm, PyPI, RubyGems and JFrog,
+<code>gh auth token</code> output, and the configuration files of a long list of AI
+coding assistants, then creating public GitHub repositories to hold
+encrypted exfiltrated data and installing a token monitor that polls once a
+minute under a LaunchAgent or systemd unit named <code>sysvinit-detect-fash</code>.
+Charlie Eriksen filed issue #217 at 20:18:44 UTC listing four bad versions,
+about a minute before the second wave began. Maintainer Daiki Urata pushed a
+fix at 22:50:03 that deleted the <code>issue_comment</code> trigger outright, dropped
+<code>issues: write</code>, disabled credential persistence in the checkout, and pinned
+installs to the lockfile; releases now run on tag push only. The OpenSSF
+malicious-packages feed published MAL-2026-15494 at 22:59:24, Mend recorded
+a GHSA at 23:51 scored CVSS 9.6, and npm removed all ten versions at about
+04:11 UTC on August 29, restoring the <code>latest</code> tag to 3.0.2. Every malicious
+artifact in the incident carries valid provenance signed by npm's own
+infrastructure and bound to the project's real <code>release.yml</code>, because the
+workflow that produced them was, in the strictest sense, the legitimate one.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>@7nohe/openapi-react-query-codegen</strong>
+            
+            <br><span>npm · source_archive</span>
+            
+            <br><a href="https://github.com/7nohe/openapi-react-query-codegen" target="_blank">https://github.com/7nohe/openapi-react-query-codegen</a>
+          </td>
+          <td>2026-08-28<br>to 2026-08-29</td>
+          <td>
+            
+              <code>0.5.4</code><br><code>0.5.5</code><br><code>1.6.3</code><br><code>1.6.4</code><br><code>2.2.1</code><br><code>2.2.2</code><br><code>3.0.3</code><br><code>3.0.4</code><br><code>0.0.0-365d4eb738d3146583431948d3ba6e27a32556be</code><br><code>0.0.0-ec7876d6c917dad516ba69bbfafc948b834bf0ab</code>
+            
+          </td>
+          <td>
+            
+              <code>3.0.2</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+  <h2>Locations</h2>
+  <ul>
+    
+      <li><code>distribution</code>: <code>https://www.npmjs.com/package/@7nohe/openapi-react-query-codegen</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>account:github.com/p00paboot</code></li>
+    
+      <li><code>commit_author:braps43929432@tutamail.com</code></li>
+    
+      <li><code>file:binding.gyp</code></li>
+    
+      <li><code>file:3FWCvzduYZg.js</code></li>
+    
+      <li><code>file:is_it_this_simple.js</code></li>
+    
+      <li><code>file:nu.js</code></li>
+    
+      <li><code>file:updater.py</code></li>
+    
+      <li><code>file:~/.local/bin/sysvinit-detect-fash.sh</code></li>
+    
+      <li><code>file:~/.config/sysvinit-detect-fash/</code></li>
+    
+      <li><code>file:~/Library/LaunchAgents/com.user.sysvinit-detect-fash.plist</code></li>
+    
+      <li><code>file:~/.config/systemd/user/sysvinit-detect-fash.service</code></li>
+    
+      <li><code>file:/var/tmp/.shit</code></li>
+    
+      <li><code>file_sha256:binding.gyp d3246926b20a8d021ed7de0ac8e9eee1dda986088f84ba18f31cb2042a121f5d</code></li>
+    
+      <li><code>file_sha256:3FWCvzduYZg.js 0.5.4 b49afb7dba04cd99b357ce7c652c823a3707f28e130bd5c6645851a7adc030d6</code></li>
+    
+      <li><code>file_sha256:3FWCvzduYZg.js 0.5.5 709af2fdeb50324229e94c44c679a0fab18bd8e17d3864405989c526cbb63ad8</code></li>
+    
+      <li><code>file_sha256:3FWCvzduYZg.js 1.6.3 59370c67b54a0ccaedd265e2356f04540b2fba1e1845300ef6de4d5437d99380</code></li>
+    
+      <li><code>file_sha256:3FWCvzduYZg.js 1.6.4 e1f1162ece9a6e6ea21a20399cbf31c563a8149d433a68711f4223870c203d5a</code></li>
+    
+      <li><code>file_sha256:3FWCvzduYZg.js 2.2.1 8e5d1af68ca340ae0c6e8132cb00c686ec2d60502c1994d94ce353d1472ad5a3</code></li>
+    
+      <li><code>file_sha256:3FWCvzduYZg.js 2.2.2 b6012b2ff87f08f93ee53921c48db907ddbcf5461b03bb988083b01a36886237</code></li>
+    
+      <li><code>file_sha256:3FWCvzduYZg.js 3.0.3 778d6f0058045d6a2ab9a7e1d3e3be8e7e6b4d9cc217d13949bf1dfbab759a7c</code></li>
+    
+      <li><code>file_sha256:3FWCvzduYZg.js 3.0.4 b24d121667f21f492cb9db34fbfd515d5922a8dd30b9c45215c7220abbb10ca8</code></li>
+    
+      <li><code>string:trinnyyyy-</code></li>
+    
+      <li><code>string:doubletrinnys-</code></li>
+    
+      <li><code>string:sysvinit-detect-fash</code></li>
+    
+      <li><code>string:preinstall: node 3FWCvzduYZg.js</code></li>
+    
+      <li><code>command:gh auth token</code></li>
+    
+      <li><code>command:git credential-manager github list --no-ui</code></li>
+    
+      <li><code>technique:issue_comment workflow trigger without author-association gate</code></li>
+    
+      <li><code>technique:node-gyp binding.gyp execution bypassing --ignore-scripts</code></li>
+    
+      <li><code>technique:GitHub Actions OIDC exchanged for an npm trusted-publishing token</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+  <h2>Commits</h2>
+  <ul>
+    
+      <li><code>365d4eb738d3146583431948d3ba6e27a32556be</code></li>
+    
+      <li><code>ec7876d6c917dad516ba69bbfafc948b834bf0ab</code></li>
+    
+      <li><code>8330895b4df0dda16ade7d8067004f0c5580ac5c</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://safedep.io/mini-shai-hulud-openapi-react-query-codegen-compromised/" target="_blank">Mini Shai-Hulud: @7nohe/openapi-react-query-codegen Compromised - SafeDep</a></li>
+    
+      <li><a href="https://socket.dev/blog/openapi-react-query-codegen-npm-compromise" target="_blank">openapi-react-query-codegen Compromised in Mini Shai-Hulud Attack - Socket</a></li>
+    
+      <li><a href="https://www.stepsecurity.io/blog/7nohe-openapi-react-query-codegen-compromised-npm-publishing-workflow" target="_blank">@7nohe/openapi-react-query-codegen Compromised Through an npm Publishing Workflow - StepSecurity</a></li>
+    
+      <li><a href="https://www.mend.io/blog/mini-shai-hulud-hits-openapi-react-query-codegen/" target="_blank">Mini Shai-Hulud Hits openapi-react-query-codegen - Mend.io</a></li>
+    
+      <li><a href="https://github.com/7nohe/openapi-react-query-codegen/issues/217" target="_blank">[URGENT] Malicious NPM packages published</a></li>
+    
+      <li><a href="https://github.com/7nohe/openapi-react-query-codegen/commit/8330895b4df0dda16ade7d8067004f0c5580ac5c" target="_blank">fix(ci): remove the unauthenticated issue_comment publish trigger</a></li>
+    
+      <li><a href="https://api.github.com/repos/7nohe/openapi-react-query-codegen/commits/365d4eb738d3146583431948d3ba6e27a32556be" target="_blank">Attacker commit adding the first preinstall hook (GitHub API; the web UI no longer renders it)</a></li>
+    
+      <li><a href="https://api.github.com/repos/7nohe/openapi-react-query-codegen/commits/ec7876d6c917dad516ba69bbfafc948b834bf0ab" target="_blank">Attacker commit adding the second preinstall hook (GitHub API; the web UI no longer renders it)</a></li>
+    
+      <li><a href="https://osv.dev/vulnerability/MAL-2026-15494" target="_blank">MAL-2026-15494 - Malicious code in @7nohe/openapi-react-query-codegen (npm)</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

@@ -5,6 +5,11 @@ interpretation:
     archive rather than a standalone payload. Its embedded extension/package.json identifies
     amazonwebservices.amazon-q-vscode version 1.84.0, and the measured SHA-256 matches the reported
     whole-archive indicator. It is an exact captured distribution, not a reconstruction.
+  - >-
+    The before and after comparators are Amazon Q, matching the captured attack's embedded product
+    identity. Earlier comparators downloaded amazonwebservices.aws-toolkit-vscode, a different
+    extension; their files and original sidecars are preserved under refs/wrong-product-comparators,
+    but are not valid clean or remediated releases of Amazon Q.
 samples:
   - artifact_id: aws-toolkit-vscode
     phase: during
@@ -24,6 +29,9 @@ samples:
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - reported_sha256
         - measured_sha256
         - structurally_valid_complete_vsix_zip
@@ -35,4 +43,67 @@ samples:
         Reported digest sha256:47f7840ecab6312d2733e1274c513050405886c70f2037fb2f1e9099872b0464
         resolves to these bytes.
       - Complete captured VSIX distribution; no reconstruction or repackaging was performed.
+    subject: aws-toolkit-vscode
+  - artifact_id: aws-toolkit-vscode
+    phase: before
+    classification: clean
+    coordinate: pkg:vscode-extension/amazonwebservices.amazon-q-vscode@1.83.0
+    version: 1.83.0
+    filename: amazonwebservices.amazon-q-vscode-1.83.0.vsix
+    path: aws-toolkit-vscode/before/amazonwebservices.amazon-q-vscode-1.83.0.vsix
+    sha256: 06270c545a42986dff367049506e70f01ff9d37f525b1ea402ff120be55a8f97
+    size: 18624812
+    source:
+      url: >-
+        https://marketplace.visualstudio.com/_apis/public/gallery/publishers/amazonwebservices/vsextensions/amazon-q-vscode/1.83.0/vspackage
+      kind: distribution
+      retrieved_at: '2026-09-10T13:03:33Z'
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+        - file_format_confirmed
+        - archive_declares_version
+      evidence:
+        - official_marketplace_download
+        - measured_sha256
+        - vsix_zip_signature_present
+        - vsixmanifest_identity_matches
+        - embedded_package_json_identity_matches
+    notes:
+      - Amazon Q release preceding the compromised 1.84.0, not the distinct AWS Toolkit extension.
+      - The download's gzip transport encoding was decoded; the VSIX contents were not repackaged.
+    subject: aws-toolkit-vscode
+  - artifact_id: aws-toolkit-vscode
+    phase: after
+    classification: remediated
+    coordinate: pkg:vscode-extension/amazonwebservices.amazon-q-vscode@1.85.0
+    version: 1.85.0
+    filename: amazonwebservices.amazon-q-vscode-1.85.0.vsix
+    path: aws-toolkit-vscode/after/amazonwebservices.amazon-q-vscode-1.85.0.vsix
+    sha256: 00864c8f5bf4ce3f59539c95d8c421caa813fb5976d173c86fa2d8ed444475be
+    size: 18682294
+    source:
+      url: >-
+        https://marketplace.visualstudio.com/_apis/public/gallery/publishers/amazonwebservices/vsextensions/amazon-q-vscode/1.85.0/vspackage
+      kind: distribution
+      retrieved_at: '2026-09-10T13:03:36Z'
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+        - file_format_confirmed
+        - archive_declares_version
+      evidence:
+        - official_marketplace_download
+        - measured_sha256
+        - vsix_zip_signature_present
+        - vsixmanifest_identity_matches
+        - embedded_package_json_identity_matches
+    notes:
+      - Amazon Q 1.85.0 is the remediation release identified by AWS-2025-015.
+      - The download's gzip transport encoding was decoded; the VSIX contents were not repackaged.
+    subject: aws-toolkit-vscode
 unresolved: []

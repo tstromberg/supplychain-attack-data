@@ -37,31 +37,35 @@
   <div class="story">
     
       <p>Just after midnight UTC on March 31, 2026, an attacker with access to the
-lead maintainer&#39;s npm account published two malicious versions of axios,
+lead maintainer's npm account published two malicious versions of axios,
 the most widely used HTTP client in the JavaScript ecosystem. The window
 was narrow, less than three hours, but the dependency graph beneath axios
 is enormous, and one of the projects that pulled the bad version was
-OpenAI&#39;s macOS app-signing pipeline.</p>
+OpenAI's macOS app-signing pipeline.</p>
+      <figure class="pull-quote">
+        <blockquote>OpenAI's stated root cause was a workflow misconfiguration: the action used a floating tag rather than a commit hash, with no <code>minimumReleaseAge</code> set. A three-hour npm window reached its macOS signing certificate.</blockquote>
+        <figcaption>a floating tag reached the certificate</figcaption>
+      </figure>
     
       <p>The axios project later published a postmortem describing the entry point
 as a compromised maintainer workstation reached through a targeted social
 engineering campaign and a remote access trojan. The attacker did not
-bother rewriting the library&#39;s public API. Instead, axios 1.14.1 and
-0.30.4 were published with a new dependency on `plain-crypto-js@4.2.1`,
+bother rewriting the library's public API. Instead, axios 1.14.1 and
+0.30.4 were published with a new dependency on <code>plain-crypto-js@4.2.1</code>,
 a helper package the same actor had pushed to npm the day before. A
 normal fresh install during the window pulled the poisoned axios, then
 pulled the malicious helper, which installed a multi-platform RAT
 covering macOS, Windows, and Linux. Operators of affected machines were
-told to watch for outbound traffic to `sfrclak.com` or `142.11.206.73` on
+told to watch for outbound traffic to <code>sfrclak.com</code> or <code>142.11.206.73</code> on
 TCP port 8000.</p>
     
       <p>The clock ran fast. Axios 1.14.1 went live at 00:21 UTC, 0.30.4 followed
 around 01:00 UTC, community detections started almost immediately, an
 axios collaborator opened a deprecation PR at 01:38 UTC, and npm pulled
-the two axios versions by 03:15 UTC, with `plain-crypto-js` removed at
+the two axios versions by 03:15 UTC, with <code>plain-crypto-js</code> removed at
 03:29 UTC. Socket reported a week later that the malicious axios had
-been pulled into OpenAI&#39;s macOS app-signing GitHub Actions workflow,
-which used a floating tag with no `minimumReleaseAge` set. OpenAI
+been pulled into OpenAI's macOS app-signing GitHub Actions workflow,
+which used a floating tag with no <code>minimumReleaseAge</code> set. OpenAI
 responded by revoking and rotating its macOS code-signing certificate
 and rebuilding ChatGPT Desktop, Codex, and Atlas with new credentials,
 setting a May 8 deadline after which older signed versions would stop
@@ -111,7 +115,7 @@ on any one personal npm account.</p>
           </td>
           <td>
             
-              <code>sha256:e10b1fa84f1d6481625f741b69892780140d4e0e7769e7491e5f4d894c2e0e09</code>
+              <code>sha1:2553649f2322049666871cea80a5d0d6adc700ca</code><br><code>sha1:d6f3f62fd3b9f5432f5782b62d8cfd5247d5ee71</code>
             
           </td>
         </tr>
@@ -137,7 +141,7 @@ on any one personal npm account.</p>
           </td>
           <td>
             
-              N/A
+              <code>sha1:07d889e2dadce6f3910dcbc253317d28ca61c766</code>
             
           </td>
         </tr>
@@ -164,6 +168,10 @@ on any one personal npm account.</p>
       <li><a href="https://socket.dev/blog/axios-supply-chain-attack-reaches-openai-macos-signing-pipeline-forces-certificate-rotation" target="_blank">Axios Supply Chain Attack Reaches OpenAI macOS Signing Pipeline, Forces Certificate Rotation</a></li>
     
       <li><a href="https://github.com/axios/axios/issues/10636" target="_blank">Post Mortem: axios npm supply chain compromise</a></li>
+    
+      <li><a href="https://www.trendmicro.com/content/dam/trendmicro/global/ja/research/26/d-apr/axios-npm-package-compromised/IOCs.pdf" target="_blank">Axios npm package compromise indicators of compromise - Trend Micro</a></li>
+    
+      <li><a href="https://safedep.io/axios-npm-supply-chain-compromise/" target="_blank">axios Compromised: npm Supply Chain Attack via Dependency Injection</a></li>
     
   </ul>
   

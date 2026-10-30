@@ -16,8 +16,8 @@
   <h1>Linux bk2cvs mirror received backdoor</h1>
   
   <div class="metadata-grid">
-    <div class="meta-item"><strong>Target:</strong> linux · <a href="https://www.kernel.org" target="_blank">website</a> · <a href="https://git.kernel.org" target="_blank">repo</a></div>
-    <div class="meta-item"><strong>Date:</strong> 2003-11-05</div>
+    <div class="meta-item"><strong>Target:</strong> linux · <a href="https://www.kernel.org" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2003-11-04 to 2003-11-05 (1 day)</div>
     <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> os</div>
     <div class="meta-item"><strong>Language:</strong> C</div>
@@ -36,11 +36,15 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>In November 2003, the Linux kernel was maintained in BitKeeper, with a separate CVS mirror available for developers who could not or would not use BitKeeper directly. An attacker modified the CVS-side `kernel/exit.c` history on kernel.bkbits.net instead of landing a real BitKeeper changeset. That distinction mattered: the poisoned revisions appeared in the mirror, but not in the authoritative development tree used for mainline integration.</p>
+      <p>In November 2003, the Linux kernel was maintained in BitKeeper, with a separate CVS mirror available for developers who could not or would not use BitKeeper directly. An attacker modified the CVS-side <code>kernel/exit.c</code> history instead of landing a real BitKeeper changeset; Larry McVoy could only narrow the entry point to someone who had touched the file &quot;either on kernel.bkbits.net or managed to get in through the pserver.&quot; That distinction mattered: the poisoned revisions appeared in the mirror, but not in the authoritative development tree used for mainline integration.</p>
     
-      <p>The change was small enough to be read and large enough to matter. It lived in `kernel/exit.c`, in the wait path, and looked like an error check. The planted CVS revisions lacked normal BitKeeper logical-change backlinks, which made the source-control metadata as important as the C code.</p>
+      <p>The change was small enough to be read and large enough to matter. It lived in <code>kernel/exit.c</code>, in the wait path, and looked like an error check. The three forged revisions were stamped 2003/11/04 between 16:22 and 16:44 and logged under <code>author: davem</code>, borrowing the name of kernel maintainer David S. Miller, who denied making them. The planted CVS revisions lacked normal BitKeeper logical-change backlinks, which made the source-control metadata as important as the C code.</p>
+      <figure class="pull-quote">
+        <blockquote>The two-line change read as an error check, but <code>=</code> is not <code>==</code>. It was caught without anyone reading the C: the forged CVS revisions lacked the <code>(Logical change)</code> backlink every BitKeeper-generated revision carries.</blockquote>
+        <figcaption>flagged by metadata, not by code</figcaption>
+      </figure>
     
-      <p>The inserted code checked for `options == (__WCLONE|__WALL)` and then evaluated `current-&gt;uid = 0`, turning what looked like a comparison into an assignment that would make the caller root. BitMover&#39;s conversion checks caught the fraud quickly because normal CVS mirror entries carried logical-change backlinks to BitKeeper changesets, while the planted revisions did not. The incident became an early, concrete example of why source-control provenance matters as much as code review.</p>
+      <p>The inserted code checked for <code>options == (__WCLONE|__WALL)</code> and then evaluated <code>current-&gt;uid = 0</code>, turning what looked like a comparison into an assignment that would make the caller root. BitMover's conversion checks caught the fraud quickly because normal CVS mirror entries carried logical-change backlinks to BitKeeper changesets, while the planted revisions did not. The incident became an early, concrete example of why source-control provenance matters as much as code review.</p>
     
       <p>The attack failed because the mirror was not the source of truth. That is the important distinction for this record: the code change was malicious, but the project workflow still had an authoritative history that let maintainers separate a forged mirror revision from a real kernel change.</p>
     
@@ -70,7 +74,7 @@
             <br><a href="https://bkbits.net" target="_blank">https://bkbits.net</a>
             
           </td>
-          <td>2003-11-05</td>
+          <td>2003-11-04<br>to 2003-11-05</td>
           <td>
             
               N/A
@@ -105,6 +109,8 @@
     
       <li><code>code:options == (__WCLONE|__WALL)</code></li>
     
+      <li><code>commit_author:davem</code></li>
+    
   </ul>
   
 
@@ -123,8 +129,6 @@
       <li><a href="https://lwn.net/Articles/57137/" target="_blank">BK2CVS problem</a></li>
     
       <li><a href="https://lwn.net/Articles/57237/" target="_blank">LWN: Almost right</a></li>
-    
-      <li><a href="http://phrack.org/issues/62/4.html#article" target="_blank">Phrack: Linux on-the-fly kernel patching without LKM</a></li>
     
   </ul>
   

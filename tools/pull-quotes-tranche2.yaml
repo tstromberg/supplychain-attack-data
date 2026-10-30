@@ -1,0 +1,118 @@
+# Tranche 2 (2002–2012). Nineteen records audited, twelve warranted a quote.
+#
+#   node tools/apply-pull-quotes.js tools/pull-quotes-tranche2.yaml --dry-run
+#
+# Declined, each because its mechanism is the tranche's shared shape or is
+# ground an existing quote already holds: openssh (2002), vsftpd,
+# phpmyadmin-2012, wordpress (2007), monkey-org-dsniff-fragroute,
+# squirrelmail-plugins, samsung-spf85h-frame-manager.
+
+- id: linux
+  text: >-
+    The two-line change read as an error check, but `=` is not `==`. It was
+    caught without anyone reading the C: the forged CVS revisions lacked the
+    `(Logical change)` backlink every BitKeeper-generated revision carries.
+  caption: flagged by metadata, not by code
+  after: 2
+  source: https://lwn.net/Articles/57135/
+
+- id: sendmail
+  text: >-
+    Eric Allman's first read was that the attacker modified the FTP program
+    serving the files, so about one download in ten carried the backdoor while
+    the archive on the server was never touched.
+  caption: the tarball was clean, the server was not
+  after: 2
+  source: https://www.theregister.com/2002/10/11/sendmail_trojan_looks_familiar/
+
+- id: tcpdump-libpcap
+  text: >-
+    The poisoned libpcap compiled `not port 1963` into every filter it built, so
+    a tcpdump freshly built from the same tarball could not show the backdoor's
+    own callbacks.
+  caption: the sniffer compiled its own blind spot
+  after: 2
+  source: https://seclists.org/cert/2002/35
+
+- id: irssi
+  text: >-
+    Only `irssi-0.8.4.tar.gz` was backdoored; the `.bz2` of the same release was
+    clean, which is why the FreeBSD port escaped. GLib sources fetched from
+    irssi.org during the build carried the same block.
+  caption: gzip backdoored, bzip2 clean
+  after: 2
+  source: https://web.archive.org/web/20021213094217/http://www.irssi.org/?page=backdoor
+
+- id: squirrelmail
+  text: >-
+    SquirrelMail first judged the change harmless because `HTTP_BASE_PATH` was a
+    PHP variable it could not track down. Web servers build `$_SERVER['HTTP_*']`
+    from arbitrary client headers, so the two inserted lines let any request set
+    `SM_PATH`.
+  caption: the diff that read as broken code
+  after: 2
+  source: https://marc.info/?l=squirrelmail-devel&m=119765235203392&w=2
+
+- id: redhat-openssh
+  text: >-
+    The tampered RPMs were signed with the Red Hat Enterprise Linux key, not
+    Fedora's, so `rpm --checksig` would have passed them. Red Hat's answer was
+    the channel: RHN, it said, never carried them.
+  caption: the channel held, not the signature
+  after: 2
+  source: https://access.redhat.com/errata/RHSA-2008:0855.html
+
+- id: unrealircd
+  text: >-
+    The `AB` check ran on the raw recv() buffer in `read_packet()`, before any
+    IRC parsing, so a passworded server — or a hub configured to let no users in
+    at all — was equally exploitable.
+  caption: why a passworded hub was no defense
+  after: 3
+  source: https://forums.unrealircd.org/viewtopic.php?t=6562
+
+- id: energizer-duo-usb-charger
+  text: >-
+    The firewall prompt asked about `rundll32.exe`, not the charger, so
+    unblocking it excluded any DLL on any port. CERT/CC noted the exclusion
+    remained after the Energizer software had been uninstalled.
+  caption: the exclusion outlived the product
+  after: 2
+  source: https://www.kb.cert.org/vuls/id/154421
+
+- id: proftpd
+  text: >-
+    The ProFTPD core team believed the way into `ftp.proftpd.org` was a ProFTPD
+    vulnerability that had already been announced and fixed upstream, but sat
+    unpatched on the project's own distribution server.
+  caption: the fix shipped, the server stayed unpatched
+  after: 2
+  source: https://www.theregister.com/2010/12/02/proftpd_backdoored/
+
+- id: wordpress-plugin-repository-2011
+  text: >-
+    The WPtouch commit contained no `eval` and no encoded blob: it pulled two
+    strings out of a cookie with a `preg_match` and called the first as a
+    function with the second as its argument.
+  caption: the function name came in the cookie
+  after: 2
+  source: https://blog.sucuri.net/2011/06/wordpress-plugins-hacked-understanding-the-backdoor.html
+
+- id: openx
+  text: >-
+    2.8.9 and 2.8.11 read the video player file with `echo file_get_contents()`;
+    in 2.8.10 that call became `MAX_commonReadFile()`, whose `require_once($arg)`
+    made PHP parse a minified JavaScript asset as source.
+  caption: the read that became a require
+  after: 2
+  source: https://www.clearmind.cc/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/
+
+- id: juniper-screenos
+  text: >-
+    Juniper said ScreenOS filtered Dual EC output through an ANSI X9.31
+    generator, which would have killed the backdoor. Reseeding left
+    `prng_output_index` at 32, the filter loop's own counter, so the filter
+    never ran.
+  caption: the countermeasure that never ran
+  after: 3
+  source: https://eprint.iacr.org/2016/376

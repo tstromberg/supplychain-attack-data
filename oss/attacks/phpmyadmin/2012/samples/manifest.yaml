@@ -1,12 +1,11 @@
 schema_version: 1
 interpretation:
   - >-
-    The official phpMyAdmin archive service still publishes the clean 3.5.2.2
-    all-languages ZIP and its SHA-256 checksum file. The recovered archive
-    matches that checksum and the clean MD5 reported during the incident, and
-    it does not contain server_sync.php. The compromised cdnetworks-kr-1 ZIP
-    remains unavailable: neither Wayback nor Arquivo.pt reports a capture of
-    the mirror path, and the previously recorded MD5 could not be substantiated.
+    The official phpMyAdmin archive service still publishes the clean 3.5.2.2 all-languages ZIP and
+    its SHA-256 checksum file. The recovered archive matches that checksum and the clean MD5
+    reported during the incident, and it does not contain server_sync.php. The compromised
+    cdnetworks-kr-1 ZIP remains unavailable: neither Wayback nor Arquivo.pt reports a capture of the
+    mirror path, and the previously recorded MD5 could not be substantiated.
 samples:
   - artifact_id: phpmyadmin-2012
     phase: before
@@ -23,6 +22,9 @@ samples:
     verification:
       status: exact
       basis:
+        - measured_sha256
+        - reported_digest_matched
+      evidence:
         - project_published_sha256
         - contemporary_report_clean_md5_6f284e973809af8cda998eeaa9aa7884
         - server_sync_php_absent
@@ -30,6 +32,7 @@ samples:
     relates_to:
       - phase: during
         version: 3.5.2.2
+    subject: phpmyadmin-2012
   - artifact_id: phpmyadmin-2012
     phase: before
     classification: clean
@@ -45,9 +48,47 @@ samples:
     verification:
       status: verification_material
       basis:
+        - measured_sha256
+      evidence:
         - project_archive_service
         - checksum_matches_recovered_clean_archive
         - measured_sha256
+    subject: phpmyadmin-2012
+  - artifact_id: phpmyadmin-2012
+    phase: during
+    classification: detection_evidence
+    version: 3.5.2.2
+    filename: phpmyadmin_3522_backdoor.rb
+    path: phpmyadmin/during/phpmyadmin_3522_backdoor.rb
+    sha256: 59077add4c187d53c147d92602048e756381c136f672e418d6ccc8272b22fa12
+    size: 2067
+    source:
+      url: >-
+        https://raw.githubusercontent.com/rapid7/metasploit-framework/3ade5a07e7bb1b1f915a6421f3f1df0895e6f16d/modules/exploits/multi/http/phpmyadmin_3522_backdoor.rb
+      retrieved_at: '2026-09-02T12:38:00Z'
+      kind: contemporary_incident_response_copy
+    verification:
+      status: verification_material
+      basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - written_on_disclosure_day_2012_09_25
+        - measured_sha256
+    relates_to:
+      - phase: before
+        version: 3.5.2.2
+    notes:
+      - >-
+        The backdoored ZIP has not been recovered, so this is the closest surviving description of
+        what it did: HD Moore's Metasploit module, committed 2012-09-25T15:47:30Z, the day
+        PMASA-2012-5 was published.
+      - >-
+        It records the backdoor's interface exactly: a POST to <base>/server_sync.php whose single
+        parameter c carries PHP source that the file evaluates. This is behavioural evidence, not
+        the malicious file, and is classified accordingly.
+    subject: phpmyadmin-2012
 unresolved:
   - artifact_id: phpmyadmin-2012
     phase: during
@@ -56,7 +97,9 @@ unresolved:
     status: original_distribution_unavailable
     historical_hash_claim: md5:cee5fa3565412733e42a8e461a2bcb39
     notes:
-      - The historical hash claim was removed from meta.yaml because no cited source binds it to the malicious ZIP.
+      - >-
+        The historical hash claim was removed from meta.yaml because no cited source binds it to the
+        malicious ZIP.
     attempts:
       - Hopper cannot query MD5 identities.
       - MalwareBazaar returned hash_not_found.

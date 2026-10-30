@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adform tracking script hijacked to serve crypto clipper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>Adform tracking script hijacked to serve crypto clipper</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> Adform · <a href="https://www.adform.com" target="_blank">website</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-07-26 to 2026-07-27 (1 day)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> service</div>
+    <div class="meta-item"><strong>Language:</strong> javascript</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
+    <div class="meta-item"><strong>Motive:</strong> cryptocurrency_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> cryptocurrency_theft</div>
+    <div class="meta-item"><strong>User Impact:</strong> 0</div>
+    <div class="meta-item"><strong>Phase:</strong> distribution</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">Between 2026-07-26 and 2026-07-27 the official `trackpoint-async.js` served from Adform&#39;s `s2.adform.net` carried a clipboard hijacker that swapped Bitcoin, Ethereum, and TRON wallet addresses on the roughly 14,000 sites embedding the tracker.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>On July 30, 2026, security researcher Kevin Beaumont reported that Adform, a European
+ad-tech company, had been serving a cryptocurrency stealer from one of its own
+JavaScript files. The compromised script, <code>trackpoint-async.js</code>, is hosted on
+<code>s2.adform.net</code> and loaded by roughly 14,000 businesses that use Adform's advertising
+technology, so the malicious code reached ordinary visitors of thousands of unrelated
+websites.</p>
+      <figure class="pull-quote">
+        <blockquote>Beaumont found that the file, its URLs, its domains, and its IP address returned zero detections across every vendor on VirusTotal. Reputation scanning cannot flag a crypto stealer served from the vendor's own hostname.</blockquote>
+        <figcaption>clean across every vendor</figcaption>
+      </figure>
+    
+      <p>Adform sells advertising and measurement services, and its tracker is the sort of
+third-party file a marketing team adds once and never revisits. The injected code took
+advantage of exactly that. It polled the visitor's clipboard every three seconds and,
+whenever it found something shaped like a Bitcoin, Ethereum, or TRON wallet address,
+replaced it with an address the attackers controlled. It also rewrote wallet addresses
+displayed on the page itself, so a victim who checked the screen before pasting saw
+the attacker's address rather than the one they intended to pay.</p>
+    
+      <p>The script reported back to a bare IP address, <code>84.32.102.230</code>, on port 7744, sending
+the visitor's address and the page they had come from in a request shaped like
+<code>/p?h=example.com&amp;u=/test</code>. Beaumont noted that neither the file nor its associated
+URLs, domains, or IP address returned a single detection on VirusTotal while the
+campaign was live, which is a reasonable illustration of how little reputation
+scanning helps against a trusted vendor's own hostname.</p>
+    
+      <p>Adform removed the malicious code and notified customers, and the injected script had
+begun disappearing while Beaumont's write-up was being published. Anyone who visited a
+site carrying the Adform tracker during the window was advised to clear browser
+cookies. Beaumont published a SHA-256 for the served file, which is the one
+durable indicator the campaign left behind.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>trackpoint-async.js</strong>
+            
+            <br><span>javascript cdn · source_archive</span>
+            <br><a href="https://www.adform.com" target="_blank">https://www.adform.com</a>
+            
+          </td>
+          <td>2026-07-26<br>to 2026-07-27</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>url:https://s2.adform.net/banners/scripts/st/trackpoint-async.js</code></li>
+    
+      <li><code>domain:s2.adform.net</code></li>
+    
+      <li><code>ipv4:84.32.102.230</code></li>
+    
+      <li><code>url:http://84.32.102.230:7744/p</code></li>
+    
+      <li><code>port:7744</code></li>
+    
+      <li><code>technique:clipboard polled every three seconds for Bitcoin, Ethereum, and TRON addresses</code></li>
+    
+      <li><code>technique:wallet addresses rendered on the page rewritten in place</code></li>
+    
+      <li><code>technique:beacon carries the visitor address and referring page as h and u parameters</code></li>
+    
+  </ul>
+  
+
+  
+  <h2>Hashes</h2>
+  <ul class="hashes">
+    
+      <li><code>sha256:02ff86c7f9fe609a753ff15bda90baa3c3e0d4a2e559ec4fcf8a3de0954b7c55</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://doublepulsar.com/adform-compromised-to-serve-crypto-stealer-via-supply-chain-attack-2f1ec024f33e" target="_blank">Adform compromised to serve crypto stealer via supply chain attack - Kevin Beaumont, DoublePulsar</a></li>
+    
+      <li><a href="https://www.bleepingcomputer.com/news/security/online-ad-firm-adforms-script-compromised-to-steal-cryptocurrency/" target="_blank">Online ad firm Adform&#39;s script compromised to steal cryptocurrency - BleepingComputer</a></li>
+    
+      <li><a href="https://thehackernews.com/2026/08/hackers-poison-adform-script-to-swap.html" target="_blank">Hackers Poison Adform Script to Swap Crypto Wallet Addresses Across Customer Sites - The Hacker News</a></li>
+    
+      <li><a href="https://www.scworld.com/brief/adform-supply-chain-attack-replaced-crypto-wallet-addresses" target="_blank">Adform supply-chain attack replaced crypto wallet addresses - SC Media</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

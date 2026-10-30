@@ -11,6 +11,13 @@
     The incident was not a compromise of the original open-source polyfill project so much as a hostile change in the delivery authority for a widely embedded CDN domain. Andrew Betts, the original project creator, had already warned that the domain transfer created supply-chain risk and advised site owners to remove the dependency.
 
     The practical guidance was simple: stop loading scripts from polyfill.io. Cloudflare and Fastly offered safer mirrors for temporary compatibility, and Google warned advertisers whose sites still embedded impacted third-party library URLs. The count of affected websites was exposure, not a count of confirmed exploited visitors.
+  pull_quote:
+    text: >-
+      The redirect fired only on mobile, stood down for any browser carrying
+      an admin_id cookie, and delayed itself where it found an analytics
+      script, staying out of the stats and away from anyone able to report it.
+    caption: invisible to admins and to analytics
+    after: 2
   start_date: 2024-02-01
   end_date: 2024-06-27
   target:
@@ -57,19 +64,18 @@
   - kind: cookie
     value: adminlevels
   - kind: technique
-    value: payload served only to mobile visitors, and only in certain hours
+    value: payload served only to mobile visitors; hour buckets varied the firing probability rather than gating it
   - kind: technique
     value: execution suppressed when an admin user or a web analytics script is detected
   notes:
-  - No file hash is recorded for the injected script, and none is expected. Sansec
-    describes the payload as served conditionally, varying by device, hour, cookie, and
-    whether an admin or an analytics script was present, so the bytes differed between
-    requests and no single digest identifies what was distributed. Absence here reflects
-    the delivery mechanism rather than incomplete research.
-  - Sansec attributed bootcdn.net, bootcss.com, staticfile.net, staticfile.org,
-    unionadjs.com, xhsbpza.com, union.macoms.la, and newcrbpc.com to the same operator,
-    active since at least June 2023. They are recorded as actor infrastructure, not as
-    distribution surfaces for this incident.
+  - >-
+    No file hash is recorded for the injected script, and none is expected. Sansec describes the
+    payload as served conditionally by device, hour, cookie and page context, so the bytes
+    differed between requests.
+  - >-
+    Sansec attributed bootcdn.net, bootcss.com, staticfile.net, staticfile.org, unionadjs.com,
+    xhsbpza.com, union.macoms.la and newcrbpc.com to the same operator, active since at least
+    June 2023, as actor infrastructure.
   artifacts:
   - id: polyfill-io
     name: polyfill.io
@@ -98,8 +104,6 @@
     - More than 100,000 websites were reported to embed polyfill.io code; this is 
       exposure count, not a confirmed victim count.
   references:
-  - url: https://github.com/advisories/GHSA-6p56-6fvv-f2p2
-    title: GitHub Advisory GHSA-6p56-6fvv-f2p2
   - url: 
       https://www.theregister.com/security/2024/06/26/remove-polyfillio-code-from-your-website-immediately/1049285
     title: Remove Polyfill.io code from your website immediately

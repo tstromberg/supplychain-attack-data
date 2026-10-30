@@ -11,6 +11,13 @@
     The malware mix was messy, which matters. `PrintExp.exe` carried XRed, a Delphi backdoor with keylogging, screenshots, file operations, downloads, command shell access, and a bundled clean program resource. Other files carried SnipVex, a .NET clipbanker and prepending file infector that monitored drives for `.exe` files and replaced cryptocurrency addresses in the clipboard.
 
     G DATA favored poor hygiene over a targeted implant: old malware, inactive C2, and file-infection spread through software preparation or distribution systems. Procolored removed the downloads around 2025-05-08, investigated, and later provided clean replacement packages for verification.
+  pull_quote:
+    text: >-
+      XRed's command-and-control server had been offline since February 2024,
+      so the backdoor could not phone home for most of the exposure window.
+      SnipVex's eight-line clipboard swap still took in about 9.3 BTC.
+    caption: the dumb half made the money
+    after: 2
   start_date: 2024-10-01
   end_date: 2025-05-08
   target:
@@ -31,7 +38,6 @@
     - backdoor
     - credential_theft
     - file_infection
-    users: 1000
   hashes:
   - sha256:531d08606455898408672d88513b8a1ac284fdf1fe011019770801b7b46d5434
   - sha256:39df537aaefb0aa31019d053a61fabf93ba5f8f3934ad0d543cde6db1e8b35d1
@@ -56,7 +62,8 @@
   - kind: file_sha256
     value: epson-l800_drv_x64.exe 81de4cedda6109eacc9a3903a30e3a11622668ce6af533f94beadad052f591fb
   - kind: file_sha256
-    value: L800_x86_672HomeExportAsia_MP.exe 6d86f66c81c2c3e1a524fd8a8598e76d939bdf3cd8f7411036f7d5ca15afe622
+    value: L800_x86_672HomeExportAsia_MP.exe 
+      6d86f66c81c2c3e1a524fd8a8598e76d939bdf3cd8f7411036f7d5ca15afe622
   - kind: file_sha256
     value: DEVICEOP.EXE 7f9657992c3c6169f629a8a12885eb5468482eba23e5f310d37ef0458ae8f87a
   - kind: file_sha256
@@ -78,17 +85,20 @@
   notes:
   - >-
     G Data identified two families in the downloads, the Delphi backdoor
-    Win32.Backdoor.XRedRAT.A and a .NET file infector it nicknamed SnipVex, detected as
-    MSIL.Trojan-Stealer.CoinStealer.H. It counted 39 infected files across the packages, of
-    which 20 carried distinct hashes.
+    Win32.Backdoor.XRedRAT.A and a .NET file infector it nicknamed SnipVex. It counted 39
+    infected files across the packages, of which 20 carried distinct hashes.
   - >-
-    The archive hash recorded on f13-pro, v11-pro, and vf13-pro is the same file. G Data lists
+    The archive hash on f13-pro, v11-pro and vf13-pro is the same file: G Data lists
     PrintExp_X64_V5.7.6.5.77.2024.06.25.Single.zip as shared across those three models, so one
     set of bytes was served for all of them.
   - >-
-    The command-and-control server had been offline since February 2024, before the downloads
-    were pulled, so infected hosts could not reach it during much of the exposure window.
-    Procolored initially dismissed the detections as false positives.
+    The C2 server had been offline since February 2024, before the downloads were pulled, so
+    infected hosts could not reach it during much of the exposure window. Procolored initially
+    dismissed the detections as false positives.
+  - >-
+    The six MEGA folders cited as mirrors were walked on 2026-09-03. The v11-pro and v6 links
+    are transposed against their contents, and none still serves a compromised build: every
+    PrintExp package is 5.7.6.5.94.
   artifacts:
   - id: v11-pro-dto
     name: v11 Pro DTO software downloads
@@ -102,10 +112,19 @@
     - uri: https://mega.nz/folder/TNAWTDKL#zR5Atn68a807Qn17FjXFxA
       role: mirror
     notes:
-    - G DATA reported six Procolored product download folders on Mega; shared malware 
-      hashes remain at the attack level because not every hash is mapped to a product 
-      folder. Hackster's review is the primary first-hand account of the vendor-supplied
-      USB media finding.
+    - >-
+      G DATA reported six Procolored download folders on Mega; shared malware hashes stay at
+      attack level because not every hash maps to a product folder. Hackster's review is the
+      first-hand account of the vendor-supplied USB media finding.
+    - >-
+      No digest exists for this artifact for a specific reason, established 2026-09-03: G DATA's
+      file list covers five model folders and contains no V11 Pro DTO entry. That model name
+      appears only in the hackster.io reviewer's own printer.
+    - >-
+      The software G DATA examined for the plain V11 Pro is the same PrintExp package this
+      record holds under f13-pro, digest
+      84ef938a63641cf95a87ceaeb3b4893eb720fb5b42a5f42021c29ba11bda0f39, so the payload is in the
+      corpus regardless.
   - id: f8
     name: F8 software downloads
     package: F8
@@ -132,6 +151,48 @@
       role: mirror
     hashes:
     - sha256:84ef938a63641cf95a87ceaeb3b4893eb720fb5b42a5f42021c29ba11bda0f39
+    - sha256: 531d08606455898408672d88513b8a1ac284fdf1fe011019770801b7b46d5434
+      of: payload
+      role: malicious
+      note: PrintExp.exe from inside the PrintExp zip this record holds, not a separately 
+        distributed file. Confirmed on 2026-09-03 by unpacking the held archive and measuring its 
+        members against the file list G DATA published; all six of their listed members match byte 
+        for byte. This one is the XRed backdoor itself, the sample G DATA chose for its analysis.
+    - sha256: 4de65f542bc2a144d0e220e93f367c08bf008045fcc1fddbc4e54af62e7da847
+      of: payload
+      role: malicious
+      note: .PrintExp.exe from inside the PrintExp zip this record holds, not a separately 
+        distributed file. Confirmed on 2026-09-03 by unpacking the held archive and measuring its 
+        members against the file list G DATA published; all six of their listed members match byte 
+        for byte.
+    - sha256: 0f8bf833d6673dcba58347b9bde618969b948268d42fbb17d48f68cbc925109e
+      of: payload
+      role: malicious
+      note: ._cache_PrintExp.exe from inside the PrintExp zip this record holds, not a separately 
+        distributed file. Confirmed on 2026-09-03 by unpacking the held archive and measuring its 
+        members against the file list G DATA published; all six of their listed members match byte 
+        for byte.
+    - sha256: bfb9d8af2c57f055c1e35effb1f42410238981bc16cee96f045aca50ff495550
+      of: payload
+      role: malicious
+      note: NWReceive.exe from inside the PrintExp zip this record holds, not a separately 
+        distributed file. Confirmed on 2026-09-03 by unpacking the held archive and measuring its 
+        members against the file list G DATA published; all six of their listed members match byte 
+        for byte.
+    - sha256: b14c855ad7600ac9fda2c46b290acac1342d0e08dc1a95901504d8c5aa206606
+      of: payload
+      role: malicious
+      note: .NWReceive.exe from inside the PrintExp zip this record holds, not a separately 
+        distributed file. Confirmed on 2026-09-03 by unpacking the held archive and measuring its 
+        members against the file list G DATA published; all six of their listed members match byte 
+        for byte.
+    - sha256: 332deb26f74b6e6633214fe3ca7e95e4c6861d6eac0f9a792c3f2154adea73c7
+      of: payload
+      role: malicious
+      note: ._cache_NWReceive.exe from inside the PrintExp zip this record holds, not a separately 
+        distributed file. Confirmed on 2026-09-03 by unpacking the held archive and measuring its 
+        members against the file list G DATA published; all six of their listed members match byte 
+        for byte.
   - id: v6
     name: V6 software downloads
     package: V6
@@ -175,8 +236,7 @@
   - url: 
       https://www.hackster.io/news/the-maker-s-toolbox-procolored-v11-pro-dto-uv-printer-review-680d491e17e3
     title: "The Maker's Toolbox: Procolored V11 Pro DTO UV Printer Review"
-  - url: 
-      https://blog.gdatasoftware.com/2025/05/38200-printer-infected-software-downloads
+  - url: https://blog.gdatasoftware.com/2025/05/38200-printer-infected-software-downloads
     title: Printer company provided infected software downloads for half a year
   - url: 
       https://www.bleepingcomputer.com/news/security/printer-maker-procolored-offered-malware-laced-drivers-for-months/
@@ -188,5 +248,4 @@
     title: This Printer Company Served You Malware for Months
   - url: 
       https://www.neowin.net/news/this-printer-company-served-you-malware-for-months-and-dismissed-it-as-false-positives/
-    title: This printer company served you malware for months and dismissed it as
-      false positives
+    title: This printer company served you malware for months and dismissed it as false positives

@@ -22,7 +22,7 @@
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
     <div class="meta-item"><strong>Language:</strong> C</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
-    <div class="meta-item"><strong>Motive:</strong> unauthorized_access</div>
+    <div class="meta-item"><strong>Motive:</strong> unauthorized_access_control</div>
     <div class="meta-item"><strong>Transitive:</strong> false</div>
     <div class="meta-item"><strong>Impact:</strong> backdoor, remote_code_execution</div>
     <div class="meta-item"><strong>User Impact:</strong> 0</div>
@@ -36,13 +36,17 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>In November 2002, the tcpdump.org HTTP distribution path began serving trojaned source archives for both tcpdump and libpcap. CERT and CIAC identified modified copies of `tcpdump-3.6.2.tar.gz`, `tcpdump-3.7.1.tar.gz`, and `libpcap-0.7.1.tar.gz`; the poisoned downloads appeared around 10:14 GMT on November 11 and were disabled at 15:05:19 GMT on November 13.</p>
+      <p>In November 2002, the tcpdump.org HTTP distribution path began serving trojaned source archives for both tcpdump and libpcap. CERT and CIAC identified modified copies of <code>tcpdump-3.6.2.tar.gz</code>, <code>tcpdump-3.7.1.tar.gz</code>, and <code>libpcap-0.7.1.tar.gz</code>; the poisoned downloads appeared around 10:14 GMT on November 11 and were disabled at 15:05:19 GMT on November 13.</p>
     
       <p>The delivery split across related tools. tcpdump carried build-time code that fetched and compiled a payload. libpcap, the packet capture library under it, was changed to hide traffic on the port the payload used.</p>
+      <figure class="pull-quote">
+        <blockquote>The poisoned libpcap compiled <code>not port 1963</code> into every filter it built, so a tcpdump freshly built from the same tarball could not show the backdoor's own callbacks.</blockquote>
+        <figcaption>the sniffer compiled its own blind spot</figcaption>
+      </figure>
     
-      <p>This compromise was more elaborate than a single hidden shell. The poisoned configure scripts attempted to fetch a shell script named `services` over HTTP, generate `conftes.c`, compile it, and run it. The resulting program connected to a fixed address on TCP/1963 and accepted byte-sized commands to exit, sleep, or spawn an XOR-obfuscated shell. Libpcap was also changed in `gencode.c` to hide traffic on port 1963, bending the sniffer&#39;s own eyes away from the backdoor.</p>
+      <p>This compromise was more elaborate than a single hidden shell. The poisoned tcpdump configure script attempted to fetch a shell script named <code>services</code> from <code>mars.raketti.net</code> over HTTP, generate <code>conftes.c</code>, compile it, and run it. The resulting program connected back to the same host, 212.146.0.34, on TCP/1963 and accepted byte-sized commands to exit, sleep, or spawn a shell whose traffic was obfuscated by XORing every byte with the constant 0x89. Libpcap was also changed in <code>gencode.c</code> to hide traffic on port 1963, bending the sniffer's own eyes away from the backdoor.</p>
     
-      <p>That pairing is why the incident still stands out. The attacker did not just compromise a network diagnostic tool; they also altered the capture library so the diagnostic stack was less likely to see the backdoor&#39;s own traffic. Verification had to cover both archives, not only the obvious tcpdump executable.</p>
+      <p>That pairing is why the incident still stands out. The attacker did not just compromise a network diagnostic tool; they also altered the capture library so the diagnostic stack was less likely to see the backdoor's own traffic. Verification had to cover both archives, not only the obvious tcpdump executable.</p>
     
   </div>
   
@@ -120,7 +124,7 @@
             
             <br><span>tcpdump.org source release · source_archive</span>
             <br><a href="https://tcpdump.org" target="_blank">https://tcpdump.org</a>
-            
+            <br><a href="https://github.com/the-tcpdump-group/libpcap" target="_blank">https://github.com/the-tcpdump-group/libpcap</a>
           </td>
           <td>2002-11-11<br>to 2002-11-13</td>
           <td>
@@ -163,7 +167,7 @@
     
       <li><a href="https://bbs.archlinux.org/viewtopic.php?id=165" target="_blank">Arch Linux forum thread on trojaned tcpdump/libpcap sources</a></li>
     
-      <li><a href="https://www.theregister.com/security/2002/11/14/popular-packet-sniffing-packages_contaminated_by_trojan/" target="_blank">Popular packet sniffing packages contaminated by Trojan</a></li>
+      <li><a href="https://www.theregister.com/2002/11/14/popular_packet_sniffing_packages_contaminated/" target="_blank">Popular packet sniffing packages contaminated by Trojan</a></li>
     
       <li><a href="https://linuxsecurity.com/news/hackscracks/libpcap-and-tcpdump-sources-trojaned" target="_blank">libpcap and tcpdump sources trojaned</a></li>
     

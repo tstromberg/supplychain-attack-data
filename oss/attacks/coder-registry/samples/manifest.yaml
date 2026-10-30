@@ -1,0 +1,186 @@
+schema_version: 1
+interpretation:
+  - >-
+    The compromised artifacts are not held and are unlikely to become available. The attack did not
+    modify anything in Coder's registry or repository; unauthorized IP addresses in the Cloudflare
+    pool answered for registry.coder.com and returned different bytes for the same module
+    coordinates during a fourteen-hour window. Once those addresses were removed there was no
+    compromised version left anywhere in the trusted path to fetch.
+  - >-
+    What is held instead is the legitimate module for each affected coordinate, retrieved through
+    the same Terraform module protocol a Coder template uses. These are comparators rather than
+    before samples: they are not a predecessor version, they are the same coordinate served
+    correctly. Each was checked on retrieval and contains no dlp.sh, no dlp-docker.sh and no
+    data.external telemetry block.
+  - >-
+    The advisory publishes SHA-256 values for six payload scripts. Two of them, dlp-docker.sh and
+    the common dlp.sh, are known to VirusTotal and were first submitted at 2026-08-31T20:32Z, inside
+    the incident window. Neither those two nor the other four are held by Hopper, MalwareBazaar,
+    Triage, Malshare or Software Heritage, and a free VirusTotal key cannot download them.
+  - >-
+    Why the incident has no affected version numbers, from the migration's own comments:
+    provisionerd stores a template version's module archive as a files row and points
+    template_version_terraform_values.cached_module_files at it. Archives are deduplicated on hash
+    and creator, so files.created_at is the moment that content first entered a given database. The
+    only thing separating a poisoned archive from a good one is when it arrived, which is why every
+    query Coder published selects on time rather than on a digest or a version.
+  - >-
+    Coder's remediation code uses a different window than its advisory. The advisory's prose and its
+    manual SQL bound the incident at 2026-08-31 07:35 to 21:45 UTC. The shipped cleanup, first as
+    migration 000589 in commit dd1aa88914 and then as the dbpurge one-off in 10fd510ada that
+    replaced it, deletes cached archives created between 08:00 and 22:00 UTC. The automatic purge
+    misses the first twenty-five minutes of the window the advisory names and extends fifteen
+    minutes past its end. A deployment that cached a module between 07:35 and 08:00 is cleaned by
+    the manual query and not by the patch. This record does not resolve which window is correct.
+  - >-
+    Remediation destroys the artifact. The purge deletes the cached archives outright and its down
+    migration is a deliberate no-op, recorded in the commit as 'the deleted module archives and the
+    template version rows that referenced them cannot be reconstructed'. Every deployment that
+    installed the patch or ran the advisory's SQL removed its own copy of the malicious module, so
+    the population of surviving samples shrinks as remediation proceeds. That is the main reason no
+    compromised archive is held here.
+  - >-
+    The compromised module archives were searched for on 2026-09-04 and none was found. The Internet
+    Archive crawled registry.coder.com on 2026-08-30, the day before, and has no capture inside the
+    window and none of any module download URL; coder-infra.com has never been archived. GitHub code
+    search finds the indicators only in threat-intelligence feeds and daily-intel notes, not in any
+    committed module, and the three forks of coder/registry contain no dlp file. Coder publishes no
+    OCI artifact for the registry or its modules, so a container pull reaches nothing:
+    ghcr.io/coder/coder is the server image, which fetches modules at run time rather than embedding
+    them.
+  - >-
+    Infrastructure detail from VirusTotal, checked 2026-09-04. coder-infra.com was registered at
+    2026-08-28T07:05:09Z through Fewmoretaps OU, trading as Trustname.com, three days and about half
+    an hour before the serving window opened. The advisory's address for it, 199.91.220.205, is
+    announced by BL Networks in the United States, but VirusTotal records no resolution to that
+    address: its first observations are at 2026-09-01T07:21Z, roughly nine and a half hours after
+    the window closed, resolving to 104.21.10.65 and 172.67.144.184 with Cloudflare nameservers. The
+    operator appears to have moved the domain behind Cloudflare after the fact. Three engines flag
+    the domain and one flags the address. The /cli/check endpoint was not requested from here: it is
+    live attacker infrastructure and probing it would generate traffic from whoever runs this
+    tooling.
+samples:
+  - artifact_id: coder-module-zed
+    phase: before
+    classification: clean
+    coordinate: pkg:terraform/coder/zed@1.1.5
+    version: 1.1.5
+    filename: zed-1.1.5.tar.gz
+    path: coder-module-zed/before/zed-1.1.5.tar.gz
+    sha256: 928f780be1ddc8c19c3d55fbe438b835b160bb8d41e274eedf3a291e22077ab3
+    size: 3334
+    source:
+      url: https://registry.coder.com/terraform_protocol/coder/zed/coder/1.1.5/download
+      original_url: https://registry.coder.com/modules/coder/zed
+      kind: clean_comparator_distribution
+      retrieved_at: '2026-09-04T10:58:43Z'
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_distribution_endpoint
+        - measured_sha256
+        - no_dlp_script_or_telemetry_block_present
+    notes:
+      - >-
+        The legitimate module for this coordinate. The compromised copy was served by rogue IP
+        addresses and is not held.
+      - >-
+        Re-phased from during to before: this is the unmodified artifact, not the state the attack
+        left it in, so it is a comparator rather than an affected sample.
+    subject: coder-module-zed
+  - artifact_id: coder-module-aider
+    phase: before
+    classification: clean
+    coordinate: pkg:terraform/coder/aider@2.0.1
+    version: 2.0.1
+    filename: aider-2.0.1.tar.gz
+    path: coder-module-aider/before/aider-2.0.1.tar.gz
+    sha256: 32a0b12c41daff3e42e9b55785d71d0276bc14079fbdf73a0ced28325c2ec8f1
+    size: 6742
+    source:
+      url: https://registry.coder.com/terraform_protocol/coder/aider/coder/2.0.1/download
+      original_url: https://registry.coder.com/modules/coder/aider
+      kind: clean_comparator_distribution
+      retrieved_at: '2026-09-04T10:58:43Z'
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_distribution_endpoint
+        - measured_sha256
+        - no_dlp_script_or_telemetry_block_present
+    notes:
+      - >-
+        The legitimate module for this coordinate. The compromised copy was served by rogue IP
+        addresses and is not held.
+      - >-
+        Re-phased from during to before: this is the unmodified artifact, not the state the attack
+        left it in, so it is a comparator rather than an affected sample.
+    subject: coder-module-aider
+  - artifact_id: coder-module-rstudio-server
+    phase: before
+    classification: clean
+    coordinate: pkg:terraform/coder/rstudio-server@0.9.1
+    version: 0.9.1
+    filename: rstudio-server-0.9.1.tar.gz
+    path: coder-module-rstudio-server/before/rstudio-server-0.9.1.tar.gz
+    sha256: 86cb16f252309ba632e292ea3b98f34a1f4b66908915bfddd5fab3f754b02365
+    size: 2310
+    source:
+      url: https://registry.coder.com/terraform_protocol/coder/rstudio-server/coder/0.9.1/download
+      original_url: https://registry.coder.com/modules/coder/rstudio-server
+      kind: clean_comparator_distribution
+      retrieved_at: '2026-09-04T10:58:43Z'
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_distribution_endpoint
+        - measured_sha256
+        - no_dlp_script_or_telemetry_block_present
+    notes:
+      - >-
+        The legitimate module for this coordinate. The compromised copy was served by rogue IP
+        addresses and is not held.
+      - >-
+        Re-phased from during to before: this is the unmodified artifact, not the state the attack
+        left it in, so it is a comparator rather than an affected sample.
+    subject: coder-module-rstudio-server
+  - artifact_id: coder-module-windows-rdp
+    phase: before
+    classification: clean
+    coordinate: pkg:terraform/coder/windows-rdp@1.3.1
+    version: 1.3.1
+    filename: windows-rdp-1.3.1.tar.gz
+    path: coder-module-windows-rdp/before/windows-rdp-1.3.1.tar.gz
+    sha256: 16cd86472f49c0f3c7af4c5190e06c686b26357ee1395bee80e19f310904a6f7
+    size: 107050
+    source:
+      url: https://registry.coder.com/terraform_protocol/coder/windows-rdp/coder/1.3.1/download
+      original_url: https://registry.coder.com/modules/coder/windows-rdp
+      kind: clean_comparator_distribution
+      retrieved_at: '2026-09-04T10:58:43Z'
+    verification:
+      status: probable_exact
+      basis:
+        - official_distribution_endpoint
+        - measured_sha256
+      evidence:
+        - official_distribution_endpoint
+        - measured_sha256
+        - no_dlp_script_or_telemetry_block_present
+    notes:
+      - >-
+        The legitimate module for this coordinate. The compromised copy was served by rogue IP
+        addresses and is not held.
+      - >-
+        Re-phased from during to before: this is the unmodified artifact, not the state the attack
+        left it in, so it is a comparator rather than an affected sample.
+    subject: coder-module-windows-rdp

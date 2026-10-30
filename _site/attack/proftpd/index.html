@@ -18,7 +18,7 @@
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> proftpd · <a href="https://ftp.proftpd.org" target="_blank">website</a> · <a href="https://github.com/proftpd/proftpd" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2010-11-28 to 2010-12-02 (4 days)</div>
-    <div class="meta-item"><strong>Actor:</strong> Individual Hacker (person)</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown attacker (unknown)</div>
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
     <div class="meta-item"><strong>Language:</strong> C</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_infrastructure</div>
@@ -36,13 +36,17 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>Around 20:00 UTC on November 28, 2010, attackers compromised ProFTPD&#39;s main distribution server, `ftp.proftpd.org`, which also acted as the project&#39;s rsync source for official mirrors. They replaced ProFTPD 1.3.3c source archives with modified copies, so anyone downloading from the official site or mirrors through December 2 could receive poisoned source through the normal project channel.</p>
+      <p>Around 20:00 UTC on November 28, 2010, attackers compromised ProFTPD's main distribution server, <code>ftp.proftpd.org</code>, which also acted as the project's rsync source for official mirrors. They replaced ProFTPD 1.3.3c source archives with modified copies, so anyone downloading from the official site or mirrors through December 2 could receive poisoned source through the normal project channel.</p>
     
-      <p>Delivery happened twice: first through the source archive, then through the build. The modified `configure` path compiled `tests/tests.c` and ran it, so a builder could call out before a daemon was installed. The runtime daemon carried a separate patch in `src/help.c`.</p>
+      <p>Delivery happened twice: first through the source archive, then through the build. The modified <code>configure</code> path compiled <code>tests/tests.c</code> and ran it, so a builder could call out before a daemon was installed. The runtime daemon carried a separate patch in <code>src/help.c</code>.</p>
+      <figure class="pull-quote">
+        <blockquote>The ProFTPD core team believed the way into <code>ftp.proftpd.org</code> was a ProFTPD vulnerability that had already been announced and fixed upstream, but sat unpatched on the project's own distribution server.</blockquote>
+        <figcaption>the fix shipped, the server stayed unpatched</figcaption>
+      </figure>
     
-      <p>The backdoor had two faces. At build time, the modified `configure` script compiled and ran `tests/tests.c`, which attempted an HTTP callback to 212.26.42.47 on port 9090. At runtime, a patch in `src/help.c` gave unauthenticated users root shell execution when they issued `HELP ACIDBITCHEZ`. The published diff and hashes turned the incident into a compact lesson in source-release trust: a project server, a mirror network, and a small source patch were enough to turn a widely deployed FTP daemon into a root shell.</p>
+      <p>The backdoor had two faces. At build time, the modified <code>configure</code> script compiled and ran <code>tests/tests.c</code>, which attempted an HTTP callback to 212.26.42.47 on port 9090. At runtime, a patch in <code>src/help.c</code> gave unauthenticated users root shell execution when they issued <code>HELP ACIDBITCHEZ</code>. The published diff and hashes turned the incident into a compact lesson in source-release trust: a project server, a mirror network, and a small source patch were enough to turn a widely deployed FTP daemon into a root shell.</p>
     
-      <p>ProFTPD&#39;s response was to tell users to verify checksums and replace any 1.3.3c source obtained during the exposure window. That is the practical cleanup burden in source-distribution attacks: downstream packagers and administrators have to ask not only which version they built, but which copy of that version they built from.</p>
+      <p>ProFTPD's response was to tell users to verify checksums and replace any 1.3.3c source obtained during the exposure window. That is the practical cleanup burden in source-distribution attacks: downstream packagers and administrators have to ask not only which version they built, but which copy of that version they built from.</p>
     
   </div>
   
@@ -105,15 +109,13 @@
   <h2>References</h2>
   <ul>
     
-      <li><a href="https://www.theregister.com/2010/12/02/proftpd_backdoor/" target="_blank">Backdoor sneaked into ProFTPD source code</a></li>
+      <li><a href="https://www.theregister.com/2010/12/02/proftpd_backdoored/" target="_blank">Hackers poison well of open-source FTP app</a></li>
     
       <li><a href="https://www.zdnet.com/article/open-source-proftpd-hacked-backdoor-planted-in-source-code/" target="_blank">Open source ProFTPD hacked, backdoor planted in source code</a></li>
     
       <li><a href="https://www.aldeid.com/wiki/Exploits/proftpd-1.3.3c-backdoor" target="_blank">Exploits/proftpd-1.3.3c-backdoor</a></li>
     
-      <li><a href="https://lwn.net/Articles/418326/" target="_blank">ProFTPD source archive backdoored</a></li>
-    
-      <li><a href="https://www.linux-magazine.com/Online/News/ProFTPD-Backdoor-Discovered" target="_blank">ProFTPD Backdoor Discovered</a></li>
+      <li><a href="https://lwn.net/Articles/418478/" target="_blank">Back door in ProFTPD FTP server (The H)</a></li>
     
       <li><a href="https://sourceforge.net/p/proftp/mailman/proftp-user/thread/alpine.LSU.2.02.1012011556230.25361%40schiller.dip.t-dialin.net/" target="_blank">Distribution file rootkit-compromised - ProFTPD user mailing list</a></li>
     

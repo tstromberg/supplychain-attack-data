@@ -26,8 +26,9 @@
     believed customers updating through RHN were not at risk. The risk sat
     with people who might have obtained Red Hat binary packages outside the subscriber channel. To
     make that concrete, Red Hat published `openssh-blacklist-1.0.sh`, a signed detection script that
-    checked installed packages or candidate RPM files against the SIGMD5 values of the known
-    tampered packages.
+    checked installed packages or candidate RPM files against a list of the known tampered
+    packages. The published page documents its PASS and ALERT output and its RPM-filename
+    arguments; how it compares them is not stated there.
 
 
     The tampered versions were compact but high-value: `openssh-3.9p1-8.RHEL4.24`,
@@ -62,7 +63,6 @@
     types:
       - backdoor
       - unknown_impact
-    users: 0
   indicators:
     - kind: package
       value: openssh-3.9p1-8.RHEL4.24 (i386, x86_64)
@@ -159,20 +159,18 @@
     - kind: rpm_sigmd5
       value: fc814c0e28b674da8afcfbdeecd1e18e
   notes:
-    - >-
-      Red Hat's openssh-blacklist-1.0.sh lists the SIGMD5 of every tampered package, 43 in
-      total across the four builds and their subpackages. SIGMD5 is the RPM header and payload
-      signature that uniquely identifies a built package; it is not the digest md5sum returns
-      for the .rpm file, so it is recorded as rpm_sigmd5 rather than as a file hash.
-    - >-
-      The tampered builds Red Hat named were openssh-3.9p1-8.RHEL4.24 (i386, x86_64),
-      openssh-3.9p1-9.el4 (i386, x86_64), openssh-4.3p2-26 (x86_64), openssh-4.3p2-26.el5
-      (x86_64). The affected package and subpackage names were openssh, openssh-askpass,
-      openssh-askpass-gnome, openssh-clients, openssh-debuginfo, openssh-server.
-    - >-
-      No digest of the distributed .rpm files themselves has been published. The packages were
-      signed with the Red Hat production key, which is why identification relies on the
-      signature rather than on a download hash.
+  - >-
+    Red Hat's openssh-blacklist-1.0.sh lists the SIGMD5 of all 43 tampered packages. SIGMD5
+    identifies the RPM header and payload, not the .rpm file's md5sum, so it is recorded as
+    rpm_sigmd5 rather than a file hash.
+  - >-
+    The tampered builds were openssh-3.9p1-8.RHEL4.24 (i386, x86_64), openssh-3.9p1-9.el4 (i386,
+    x86_64), openssh-4.3p2-26 (x86_64) and openssh-4.3p2-26.el5 (x86_64), across the openssh,
+    askpass, clients, debuginfo and server subpackages.
+  - >-
+    No digest of the distributed .rpm files themselves has been published. The packages were
+    signed with the Red Hat production key, which is why identification relies on the signature
+    rather than on a download hash.
   artifacts:
     - id: rhel4-openssh-3-9p1-8-rhel4-24
       name: openssh

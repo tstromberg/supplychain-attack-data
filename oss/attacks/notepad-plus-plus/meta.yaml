@@ -25,7 +25,7 @@
     2025. Early chains delivered a Cobalt Strike Beacon through
     Metasploit-style loaders; later chains swapped in different infrastructure
     and custom backdoor components, with the C2 hostname `cdncheck.it.com`
-    fronted by IPs including `45.76.155.202` and `45.77.31.210`. The operation
+    reached through `45.77.31.210`, which served the Cobalt Strike beacon before the hostname replaced it in the beacon config, while `45.76.155.202` hosted the malicious `update.exe`. The operation
     was narrow: Kaspersky said it observed roughly a dozen affected machines
     spread across individuals and organizations, consistent with targeted
     espionage rather than mass deployment.
@@ -34,6 +34,13 @@
     affected. The value to the attacker was the updater trust boundary itself:
     a user who asked Notepad++ to update could receive attacker code through
     infrastructure that both the project and its users expected to be boring.
+  pull_quote:
+    text: >-
+      Kaspersky noted the attackers avoided DLL sideloading in the first
+      chain, likely because the technique now draws too much attention, and
+      instead abused a ProShow vulnerability dating to the early 2010s.
+    caption: sideloading draws too much attention
+    after: 3
   start_date: 2025-06-01T00:00:00.000Z
   end_date: 2025-12-02T00:00:00.000Z
   target:
@@ -42,8 +49,8 @@
     website: https://notepad-plus-plus.org
     repo: https://github.com/notepad-plus-plus/notepad-plus-plus
   actor:
-    name: Nation-state (Lotus Blossom)
-    kind: state
+    name: Lotus Blossom (moderate confidence)
+    kind: unknown
   language: C++
   method:
     cause: compromised_infrastructure
@@ -66,6 +73,8 @@
       start_date: 2025-06-01T00:00:00.000Z
       end_date: 2025-12-02T00:00:00.000Z
       locations:
+        - uri: https://github.com/notepad-plus-plus/notepad-plus-plus/releases/tag/v8.8.1
+          role: mirror
         - uri: https://notepad-plus-plus.org/news/hijacked-incident-info-update/
           role: distribution
         - uri: https://github.com/notepad-plus-plus/notepad-plus-plus
@@ -98,6 +107,10 @@
         - kind: ip
           value: 45.77.31.210
       notes:
+        - >-
+          A complete official v8.8.1 portable archive from before the documented compromise window
+          is retained under samples/notepad-plus-plus/before and verifies against the project's
+          published SHA-256 manifest.
         - >-
           Reporting described the affected range as < 8.8.9 rather than naming the releases, so the
           individual versions are not enumerated here.

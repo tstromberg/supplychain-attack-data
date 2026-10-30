@@ -39,20 +39,24 @@
       <p>Between July 18 and 19, 2026, malicious versions of two long-dormant Ruby gems
 appeared on RubyGems.org, published from maintainer accounts that had been
 quiet for years. Researchers named the campaign SleeperGem.</p>
+      <figure class="pull-quote">
+        <blockquote>A normal pipeline install shows no malicious behavior at all. StepSecurity had to strip the CI environment variables before the loader would believe it was on a developer machine and run.</blockquote>
+        <figcaption>why your ci saw nothing</figcaption>
+      </figure>
     
-      <p>The tell was the publishing history. `Dendreo`, a gem whose public release line
+      <p>The tell was the publishing history. <code>Dendreo</code>, a gem whose public release line
 had stopped at 1.1.2 in 2020, gained versions 1.1.3 and 1.1.4 on July 18.
-`fastlane-plugin-run_tests_firebase_testlab`, untouched since 2019, gained
-0.3.2 on July 19. The two gems belong to different maintainers, `LR-DEV` and
-`pinkroom`, which points to at least two compromised accounts rather than one.
-A third gem in the campaign, `git_credential_manager`, was newly created to
-impersonate Microsoft&#39;s Git Credential Manager, and is not treated here as a
+<code>fastlane-plugin-run_tests_firebase_testlab</code>, untouched since 2019, gained
+0.3.2 on July 19. The two gems belong to different maintainers, <code>LR-DEV</code> and
+<code>pinkroom</code>, which points to at least two compromised accounts rather than one.
+A third gem in the campaign, <code>git_credential_manager</code>, was newly created to
+impersonate Microsoft's Git Credential Manager, and is not treated here as a
 compromised project.</p>
     
       <p>The stage-one Ruby code disabled TLS certificate verification with
-`OpenSSL::SSL::VERIFY_NONE` and fetched a second stage from an
-attacker-controlled Forgejo instance at `git.disroot.org`, then spawned
-`/bin/sh` or PowerShell. Before doing any of that it looked around. The loader
+<code>OpenSSL::SSL::VERIFY_NONE</code> and fetched a second stage from an
+attacker-controlled Forgejo instance at <code>git.disroot.org</code>, then spawned
+<code>/bin/sh</code> or PowerShell. Before doing any of that it looked around. The loader
 checked roughly thirty CI-related environment variables and exited if it
 believed it was running inside GitHub Actions, GitLab CI, CircleCI, Jenkins,
 Travis, or Vercel. That is the inversion worth noting: most 2026 npm and PyPI
@@ -60,11 +64,11 @@ worms went hunting for build runners because that is where the cloud
 credentials live. SleeperGem deliberately avoided them, presumably because
 build systems are monitored and laptops are not.</p>
     
-      <p>On a developer machine it dropped a native daemon into `~/.local/share/gcm/`
-and installed redundant persistence through both a `systemd --user` unit and
-cron, with an attempted privilege escalation by way of `/usr/local/sbin/ping6`.
-The operators iterated visibly across the four `git_credential_manager`
-releases over about nine hours, moving execution into the `require()` path in
+      <p>On a developer machine it dropped a native daemon into <code>~/.local/share/gcm/</code>
+and installed redundant persistence through both a <code>systemd --user</code> unit and
+cron, with a setuid-root shell planted after passwordless sudo had already granted root by way of <code>/usr/local/sbin/ping6</code>.
+The operators iterated visibly across the four <code>git_credential_manager</code>
+releases over about nine hours, moving execution into the <code>require()</code> path in
 2.8.2 with the final script commented out, then re-enabling it in 2.8.3, which
 the rubygems-security-team yanked.</p>
     
@@ -107,7 +111,7 @@ the rubygems-security-team yanked.</p>
           </td>
           <td>
             
-              N/A
+              <code>sha256:dd75857ec8f3cc768931592b83c1c3b13eee3723c6aefde7f50c4069b19b2765</code><br><code>sha256:cd37b55603dea2ec624e255124f270681b5689a26905dfad02cc3bab9f6905df</code>
             
           </td>
         </tr>
@@ -133,7 +137,7 @@ the rubygems-security-team yanked.</p>
           </td>
           <td>
             
-              N/A
+              <code>sha256:c55d9f4bbe6b82bb44464bf6703392e595455b0037fb77dd41ade58a8b0ce9a2</code>
             
           </td>
         </tr>
@@ -190,6 +194,12 @@ the rubygems-security-team yanked.</p>
       <li><a href="https://www.developer-tech.com/news/sleepergem-rubygems-attack-evades-ci-to-hit-developer-laptops/" target="_blank">SleeperGem RubyGems attack evades CI to hit developer laptops - Developer Tech</a></li>
     
       <li><a href="https://www.aikido.dev/blog/sleepergem-rubygems-supply-chain-attack" target="_blank">SleeperGem: RubyGems supply chain attack targets dormant maintainer accounts - Aikido</a></li>
+    
+      <li><a href="https://rubygems.org/gems/Dendreo/versions/1.1.3" target="_blank">Dendreo 1.1.3 - RubyGems.org</a></li>
+    
+      <li><a href="https://rubygems.org/gems/Dendreo/versions/1.1.4" target="_blank">Dendreo 1.1.4 - RubyGems.org</a></li>
+    
+      <li><a href="https://rubygems.org/gems/fastlane-plugin-run_tests_firebase_testlab/versions/0.3.2" target="_blank">fastlane-plugin-run_tests_firebase_testlab 0.3.2 - RubyGems.org</a></li>
     
   </ul>
   

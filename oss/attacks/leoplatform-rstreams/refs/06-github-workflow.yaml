@@ -1,0 +1,75 @@
+
+name: Analyze leo-logger Compromised Package (Miasma / Phantom Gyp)
+
+on:
+  workflow_dispatch:
+  
+permissions:
+  contents: read
+
+jobs:
+  download-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Harden Runner
+        uses: h0x0er/harden-runner@int-pr3
+        with:
+          egress-policy: audit
+
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Download compromised tarball (npm pack does NOT run install scripts)
+        run: |
+          mkdir -p /tmp/packages
+          cd /tmp/packages
+          # `npm pack` only fetches + repacks the tarball; binding.gyp/node-gyp does
+          # NOT fire here. This job is safe collection for archival/static analysis.
+          npm pack leo-logger@1.0.8 || true
+          ls -la /tmp/packages
+
+      - name: Upload package tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: leo-logger-tarballs
+          path: /tmp/packages/*.tgz
+          retention-days: 90
+
+  install-compromised-package:
+    runs-on: ubuntu-latest
+    needs: download-package
+    timeout-minutes: 12
+    steps:
+      - name: Harden Runner
+        uses: h0x0er/harden-runner@int-pr3
+        with:
+          egress-policy: audit
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Detonate - install leo-logger@1.0.8 (binding.gyp fires via node-gyp)
+        continue-on-error: true
+        run: |
+          mkdir -p /tmp/victim-project && cd /tmp/victim-project
+          npm init -y
+          # Installation alone triggers the payload through the Phantom Gyp path.
+          npm install leo-logger@1.0.8 --foreground-scripts 2>&1 || true
+
+      - name: Import package to trigger any runtime payload
+        continue-on-error: true
+        run: |
+          cd /tmp/victim-project
+          node -e "try { require('leo-logger'); } catch(e) { console.log('Import error:', e.message); }" 2>&1 || true
+
+      - name: Wait for malware network activity
+        run: |
+          echo "Waiting 30 seconds for staged network activity (Bun fetch, C2, exfil)..."
+          echo "Harden-Runner audit will record every outbound connection."
+          sleep 30

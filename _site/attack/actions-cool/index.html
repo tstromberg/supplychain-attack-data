@@ -42,10 +42,14 @@
   <div class="story">
     
       <p>On the evening of May 18, 2026, an attacker calling itself TeamPCP quietly rewrote every version tag on two widely used GitHub Actions, redirecting thousands of automated workflows to malicious code designed to steal whatever secrets the runner could touch.</p>
+      <figure class="pull-quote">
+        <blockquote>The attacker generated a unique imposter commit for each of the 53 tags, every one messaged &quot;Build action for vX.Y.Z&quot; to mimic the maintainer. All were dangling, reachable only through the rewritten tags.</blockquote>
+        <figcaption>one fake commit per tag</figcaption>
+      </figure>
     
-      <p>The targets, `actions-cool/issues-helper` and `actions-cool/maintain-one-comment`, handle routine issue and comment triage. Issues-helper alone was referenced by roughly 3,000 public workflow configurations at the time of the compromise, according to the cloud security firm StepSecurity, which published the first detailed account of the incident. Between 19:10:24 and 19:13:40 UTC, the attacker re-pointed all 53 version tags on issues-helper to a single attacker-controlled commit, and all 15 tags on maintain-one-comment moved within a 39-second window. Tag `v3.8.0` was moved to commit `1c9e803c80cc7fed000022d4c94f4b5bc2e90062`, and `v3.3.0` on maintain-one-comment to `7f6120bb10c870b9fde146961a18e5bf0b3d4401`. The destination commits, labeled &quot;Build action for vX.Y.Z&quot; to mimic a normal release marker, were orphans: they sat on no branch and could only be reached through the rewritten tags. Workflows that pinned the actions by tag would pick up the malicious code on their next run. Workflows that pinned by full commit SHA were unaffected.</p>
+      <p>The targets, <code>actions-cool/issues-helper</code> and <code>actions-cool/maintain-one-comment</code>, handle routine issue and comment triage. Issues-helper alone was referenced by roughly 3,000 public workflow configurations at the time of the compromise, according to the cloud security firm StepSecurity, which published the first detailed account of the incident. Between 19:10:24 and 19:13:40 UTC, the attacker re-pointed all 53 version tags on issues-helper to attacker-controlled commits, a distinct one for each tag, and all 15 tags on maintain-one-comment moved within a 39-second window. Tag <code>v3.8.0</code> was moved to commit <code>1c9e803c80cc7fed000022d4c94f4b5bc2e90062</code>, and <code>v3.3.0</code> on maintain-one-comment to <code>7f6120bb10c870b9fde146961a18e5bf0b3d4401</code>. The destination commits, labeled &quot;Build action for vX.Y.Z&quot; to mimic a normal release marker, were orphans: they sat on no branch and could only be reached through the rewritten tags. Workflows that pinned the actions by tag would pick up the malicious code on their next run. Workflows that pinned by full commit SHA were unaffected.</p>
     
-      <p>The malicious `action.yaml` step downloaded the Bun JavaScript runtime to `/home/runner/.bun/bin/bun`, then spawned a Python process that read `/proc/&lt;PID&gt;/mem` of the GitHub Actions `Runner.Worker` process, the part of the runner that holds workflow secrets in decrypted form. StepSecurity researchers said the script filtered runner memory for the `&quot;isSecret&quot;:true` marker that GitHub uses to flag protected values, extracted the workflow&#39;s `GITHUB_TOKEN`, ran `gh auth token` as a backup, and used `sudo python3` where passwordless sudo was permitted. Everything went out over HTTPS to `t.m-kosche.com`, a domain the same attacker used the same day in the @antv npm wave, the durabletask PyPI publish, and the Nx Console extension compromise.</p>
+      <p>The malicious <code>action.yaml</code> step downloaded the Bun JavaScript runtime to <code>/home/runner/.bun/bin/bun</code>, then spawned a Python process that read <code>/proc/&lt;PID&gt;/mem</code> of the GitHub Actions <code>Runner.Worker</code> process, the part of the runner that holds workflow secrets in decrypted form. StepSecurity researchers said the script filtered runner memory for the <code>&quot;isSecret&quot;:true</code> marker that GitHub uses to flag protected values, extracted the workflow's <code>GITHUB_TOKEN</code>, ran <code>gh auth token</code> as a backup, and used <code>sudo python3</code> where passwordless sudo was permitted. Everything went out over HTTPS to <code>t.m-kosche.com</code>, a domain the same attacker used the same day in the @antv npm wave, the durabletask PyPI publish, and the Nx Console extension compromise.</p>
     
       <p>StepSecurity said its Harden-Runner product caught the imposter commits and the runner-memory reads in real time, added the C2 host to a global block list, and shipped a policy to keep customers from executing the affected refs. GitHub subsequently disabled both repositories outright, an unusual step that suggests it treated the entire actions-cool namespace as untrusted; that blocks the malicious tags from new clones but does not retroactively protect workflows that already cached the bad commit SHAs. The incident appears to have been the opening move in a 24-hour spree the security firm Wiz later attributed to TeamPCP, running about five hours before the @antv npm wave began at 01:56 UTC the following morning. The Actions tokens harvested here are a plausible source of the credentials that fed the same-day compromises tracked separately as [[nx-console]] and [[durabletask-pypi]]. The cross-ecosystem aggregate sits on [[shai-hulud-here-we-go-again]]; this record holds the GitHub Actions evidence.</p>
     
@@ -71,7 +75,7 @@
           <td>
             <strong>actions-cool/issues-helper</strong>
             
-            <br><span>github actions · ci_cd_action</span>
+            <br><span>github actions · github_action</span>
             
             
           </td>
@@ -97,7 +101,7 @@
           <td>
             <strong>actions-cool/maintain-one-comment</strong>
             
-            <br><span>github actions · ci_cd_action</span>
+            <br><span>github actions · github_action</span>
             
             
           </td>
@@ -114,7 +118,7 @@
           </td>
           <td>
             
-              <code>sha1:1c9e803c80cc7fed000022d4c94f4b5bc2e90062</code>
+              <code>sha1:7f6120bb10c870b9fde146961a18e5bf0b3d4401</code>
             
           </td>
         </tr>
@@ -171,6 +175,8 @@
   <ul>
     
       <li><code>1c9e803c80cc7fed000022d4c94f4b5bc2e90062</code></li>
+    
+      <li><code>7f6120bb10c870b9fde146961a18e5bf0b3d4401</code></li>
     
   </ul>
   

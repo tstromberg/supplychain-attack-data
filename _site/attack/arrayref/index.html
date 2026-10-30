@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>arrayref crates.io account published build-script dropper dependency</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Courier+Prime&family=Metal+Mania&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="attack-detail">
+  <a href="/" class="back-link">&larr; Return to Chronicle</a>
+  <h1>arrayref crates.io account published build-script dropper dependency</h1>
+  
+  <div class="metadata-grid">
+    <div class="meta-item"><strong>Target:</strong> arrayref · <a href="https://github.com/droundy/arrayref" target="_blank">repo</a></div>
+    <div class="meta-item"><strong>Date:</strong> 2026-08-20</div>
+    <div class="meta-item"><strong>Actor:</strong> Unknown (group)</div>
+    <div class="meta-item"><strong>Target Kind:</strong> library</div>
+    <div class="meta-item"><strong>Language:</strong> Rust</div>
+    <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
+    <div class="meta-item"><strong>Motive:</strong> credential_theft</div>
+    <div class="meta-item"><strong>Transitive:</strong> true</div>
+    <div class="meta-item"><strong>Impact:</strong> credential_theft, remote_code_execution, data_exfiltration</div>
+    <div class="meta-item"><strong>User Impact:</strong> 2285</div>
+    <div class="meta-item"><strong>Phase:</strong> dependency</div>
+  </div>
+
+  <h2>Synopsis</h2>
+  <p class="synopsis">A compromised crates.io account republished arrayref, internment, and append-only-vec on 2026-08-20 with a dependency on the typosquat proc-macro1, whose build script downloaded and ran a second stage at compile time. The releases stood 86 to 107 minutes.</p>
+
+  
+  <h2>Story</h2>
+  <div class="story">
+    
+      <p>At 07:15 UTC on August 20, 2026, someone using the crates.io account of
+David Roundy, who has maintained the Rust crate <code>arrayref</code> since 2015,
+published version 0.3.10. The library source did not change by a single
+byte. What changed was one line of the manifest, and that line was enough
+to run code on every machine that compiled it.</p>
+    
+      <p><code>arrayref</code> is a small set of macros that let a Rust program take a
+fixed-size array reference out of a slice. It is the kind of dependency
+nobody thinks about: 245 million downloads over its lifetime, beneath <code>blake3</code>,
+<code>tiny-skia</code>, <code>libsecp256k1</code>, and a long tail of Solana and Ethereum tooling.
+The new manifest added <code>proc-macro1 = &quot;1.0.107&quot;</code>. That crate is not
+<code>proc-macro2</code>, the near-universal macro library written by David Tolnay; it
+was a copy of it, published five hours earlier that morning by an account
+named <code>dtolney</code>, created at 01:17 UTC the same night, and carrying a forged
+author line reading <code>David Tolnay &lt;rchaitm@gmail.com&gt;</code>. Everything in it was genuine proc-macro2 code except
+<code>build.rs</code>, and Cargo runs <code>build.rs</code> during compilation, before any of the
+library's own code is ever called.</p>
+      <figure class="pull-quote">
+        <blockquote>Reviewing the crate's Rust source would have shown nothing at all. Cargo runs a dependency's build script during compilation, and the whole attack lived one manifest line away from code anyone would have read.</blockquote>
+        <figcaption>review the manifest, not just the code</figcaption>
+      </figure>
+    
+      <p>The build script reassembled a URL from five base64 fragments, which decode
+to <code>https://23.254.165.112:9089/</code>, and fetched a platform-specific binary
+named <code>rust-crate_0.1.0</code> through <code>rust-crate_0.4.0</code> for Linux, Windows, and
+both macOS architectures. It did so over TLS with a certificate verifier
+that approved every certificate presented to it. On Unix the payload was
+written to <code>/tmp/rust-setup</code>, made executable, and spawned with its output
+discarded and the C2 address <code>23.254.165.112:443</code> as its only argument. On
+Windows the script was dropped to <code>%TEMP%\rust-setup.ps1</code> and launched
+through a <code>rust-setup-launch.vbs</code> shim under <code>wscript.exe</code>, then forgotten
+with <code>std::mem::forget</code> so it would outlive the job object Cargo uses to
+reap build-script children. The build then finished normally and printed
+nothing unusual. StepSecurity and Wiz reported the second stage as an
+implant that harvested credentials from Chrome, Brave, and Edge profiles,
+persisted through systemd units, LaunchAgents, and Registry Run keys, and
+beaconed to <code>/49890878</code> on Hostwinds infrastructure.</p>
+    
+      <p>The attacker also yanked <code>arrayref</code> 0.3.5 through 0.3.9 in the sixteen
+seconds after publishing, a detail preserved in the crates.io index commits.
+A yank does not remove a version, but it does make Cargo warn about it, and
+the natural response is <code>cargo update</code>, which would have resolved to 0.3.10.
+The same account republished <code>internment</code> 0.8.7 at 07:34 and
+<code>append-only-vec</code> 0.1.9 at 07:37 with the same dependency. The Rust Security
+Response working group received a report about <code>proc-macro1</code> at 07:15 UTC,
+credited in the project's write-up to the research team at Nextron Systems
+GmbH, and deleted the malicious crates, locked the accounts, and reversed
+the attacker's yanks. <code>arrayref</code> 0.3.10 was gone 86 minutes after it
+appeared, having been downloaded 2,285 times. The Rust team said it did not
+believe the maintainer had acted maliciously and that his computer or
+credentials were likely compromised; no commit or tag for 0.3.10 ever
+existed in the repository, and the published crate lacked the
+<code>.cargo_vcs_info.json</code> file Cargo writes when publishing from a git
+checkout. Wiz found the beacon path, the TLS certificate issuer, and the
+23.254.164.0/23 address range shared with the Mastra npm compromise that
+Microsoft attributed to the North Korean actor Sapphire Sleet, and with the
+axios attack Google linked to UNC1069.</p>
+    
+  </div>
+  
+
+  
+  <h2>Affected Artifacts</h2>
+  <div class="artifact-table-wrap">
+    <table class="artifact-table">
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Dates</th>
+          <th>Versions</th>
+          <th>Fixed</th>
+          <th>Hashes</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>
+            <strong>arrayref</strong>
+            
+            <br><span>crates.io · source_archive</span>
+            
+            <br><a href="https://github.com/droundy/arrayref" target="_blank">https://github.com/droundy/arrayref</a>
+          </td>
+          <td>2026-08-20</td>
+          <td>
+            
+              <code>0.3.10</code>
+            
+          </td>
+          <td>
+            
+              <code>0.3.9</code>
+            
+          </td>
+          <td>
+            
+              <code>sha256:25ad700976873c76af785cb99b33c48db7df8b81f21d1e9e06b3676b9a9373ae</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>internment</strong>
+            
+            <br><span>crates.io · source_archive</span>
+            
+            <br><a href="https://github.com/droundy/internment" target="_blank">https://github.com/droundy/internment</a>
+          </td>
+          <td>2026-08-20</td>
+          <td>
+            
+              <code>0.8.7</code>
+            
+          </td>
+          <td>
+            
+              <code>0.8.6</code>
+            
+          </td>
+          <td>
+            
+              <code>sha256:ee71e794e746165ea0f8711f7eb3d52703ef57dd192b92a3f095080a2902d291</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>append-only-vec</strong>
+            
+            <br><span>crates.io · source_archive</span>
+            
+            <br><a href="https://github.com/droundy/append-only-vec" target="_blank">https://github.com/droundy/append-only-vec</a>
+          </td>
+          <td>2026-08-20</td>
+          <td>
+            
+              <code>0.1.9</code>
+            
+          </td>
+          <td>
+            
+              <code>0.1.8</code>
+            
+          </td>
+          <td>
+            
+              <code>sha256:48eb13393abb9a16e800f20b5f848e344e9444632df46f60b69d831b41cc9416</code>
+            
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
+            <strong>proc-macro1</strong>
+            
+            <br><span>crates.io · source_archive</span>
+            
+            
+          </td>
+          <td>2026-08-20</td>
+          <td>
+            
+              <code>1.0.106</code><br><code>1.0.107</code>
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:61198155da51b838772eecf5bfaac6cbc4dcc388dccc56658fc28a8e831b34d4</code><br><code>sha256:b5c1b5b0763a8809a644a8f92224653f0aca623a98eecc714d27f74b80fbe436</code>
+            
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  
+
+  
+  <h2>Indicators</h2>
+  <ul>
+    
+      <li><code>url:https://23.254.165.112:9089/</code></li>
+    
+      <li><code>ip:23.254.165.112</code></li>
+    
+      <li><code>ip:23.254.167.107</code></li>
+    
+      <li><code>ip:23.254.167.216</code></li>
+    
+      <li><code>domain:hwsrv-798836.hostwindsdns.com</code></li>
+    
+      <li><code>file:/tmp/rust-setup</code></li>
+    
+      <li><code>file:rust-setup.ps1</code></li>
+    
+      <li><code>file:rust-setup-launch.vbs</code></li>
+    
+      <li><code>file:rust-crate_0.1.0</code></li>
+    
+      <li><code>file:MonoService</code></li>
+    
+      <li><code>file:MonoXpc</code></li>
+    
+      <li><code>file:$HOME/.config/AzureKits</code></li>
+    
+      <li><code>file:$HOME/.config/ServiceKit</code></li>
+    
+      <li><code>url:/49890878</code></li>
+    
+      <li><code>account:dtolney</code></li>
+    
+  </ul>
+  
+
+  
+
+  
+
+  
+  <h2>References</h2>
+  <ul>
+    
+      <li><a href="https://blog.rust-lang.org/2026/08/20/supply-chain-attack-on-arrayref" target="_blank">Supply chain attack on arrayref</a></li>
+    
+      <li><a href="https://rustsec.org/advisories/RUSTSEC-2026-0260.html" target="_blank">RUSTSEC-2026-0260 arrayref 0.3.10 removed from crates.io</a></li>
+    
+      <li><a href="https://rustsec.org/advisories/RUSTSEC-2026-0265.html" target="_blank">RUSTSEC-2026-0265 proc-macro1 removed from crates.io</a></li>
+    
+      <li><a href="https://www.stepsecurity.io/blog/arrayref-rust-crate-supply-chain-attack" target="_blank">arrayref Rust crate supply chain attack</a></li>
+    
+      <li><a href="https://www.wiz.io/blog/rust-supply-chain-attack-on-arrayref-significant-overlap-with-dprk-campaigns" target="_blank">Rust supply chain attack on arrayref shows significant overlap with DPRK campaigns</a></li>
+    
+      <li><a href="https://www.compilersutra.com/docs/articles/rust-arrayref-supply-chain-attack/" target="_blank">The arrayref supply chain attack</a></li>
+    
+  </ul>
+  
+</div>
+
+  </div>
+</body>
+</html>

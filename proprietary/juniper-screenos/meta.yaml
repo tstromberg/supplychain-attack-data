@@ -57,33 +57,21 @@
     value: CVE-2015-7756
   notes:
   - >-
-    Rapid7 recovered the authentication backdoor as a hardcoded password disguised to read
-    as a debug format string, and located it in the SSG5 and SSG20 ARM firmware at
-    sub_13DBEC. Any username paired with that password authenticated over SSH or Telnet
-    regardless of whether the account existed.
+    Rapid7 recovered the authentication backdoor as a hardcoded password disguised as a debug
+    format string, at sub_13DBEC in the SSG5 and SSG20 ARM firmware. Any username with that
+    password authenticated over SSH or Telnet.
   - >-
-    No file hash is recorded for the affected firmware images. Juniper's advisory identifies
-    the affected builds by version rather than by digest, and the published analyses worked
-    from decompressed binaries without stating a digest for the distributed image.
+    No file hash is recorded for the affected firmware. Juniper's advisory identifies builds by
+    version, and the published analyses worked from decompressed binaries without stating a
+    digest for the distributed image.
   - >-
-    No cited source attributes the unauthorized code to a specific actor. Juniper did not name
-    one, and Checkoway et al. explicitly decline to attribute, so the actor is recorded as
-    unknown despite widespread press speculation about a state operator.
+    No cited source attributes the code to an actor: Juniper did not name one and Checkoway et
+    al. explicitly decline to. The start date is imprecise too, located only by a diff between
+    ScreenOS 6.2.0r14 and 6.2.0r15.
   - >-
-    The start date is imprecise. The Q parameter change is located only by a version diff
-    between ScreenOS 6.2.0r14 and 6.2.0r15; no source establishes a day, so 2012-09-01 stands
-    in for "the 6.2.0r15 timeframe" rather than a known date.
-  - >-
-    The end date marks the December 2015 out-of-cycle patch, which restored Juniper's original
-    Q value. It does not mark the end of the underlying PRNG weakness: Dual_EC and the skipped
-    ANSI X9.31 filter remained in ScreenOS from the 2008 6.2 release until Juniper announced
-    their removal in January 2016 and shipped the replacement in ScreenOS 6.3.0r22 in April
-    2016.
-  - >-
-    Juniper's advisory was originally published as kb.juniper.net/InfoCenter/index?page=content&id=JSA10713,
-    the identifier cited by Checkoway et al. That URL now redirects to the Juniper support
-    portal article listed in the references, which serves a JavaScript shell with no readable
-    text; the archived PDF alongside this record is the usable copy.
+    The end date marks the December 2015 patch restoring Juniper's Q value, not the end of the
+    PRNG weakness: Dual_EC and the skipped X9.31 filter remained until the replacement shipped
+    in ScreenOS 6.3.0r22 in April 2016.
   artifacts:
   - id: screenos-authentication-backdoor
     name: Juniper ScreenOS SSH and Telnet authentication backdoor
@@ -117,12 +105,13 @@
       value: Any username with the hidden password could receive an administrative shell
         on vulnerable ScreenOS devices.
     notes:
-    - Juniper's original bulletin and CVE text list a broader affected range; Rapid7 
-      reported that the authentication backdoor was not present in earlier 6.2.0 and 
-      6.3.0 samples it examined, and noted Juniper confirmation for 6.3.0r17 through 
-      6.3.0r20.
-    - Rapid7 estimated about 26,000 internet-facing NetScreen devices with SSH open 
-      shortly after disclosure.
+    - >-
+      Juniper's original bulletin and CVE text list a broader affected range; Rapid7 reported
+      the backdoor absent from earlier 6.2.0 and 6.3.0 samples it examined, and noted Juniper
+      confirmation for 6.3.0r17 through 6.3.0r20.
+    - >-
+      Rapid7 estimated about 26,000 internet-facing NetScreen devices with SSH open shortly
+      after disclosure.
   - id: screenos-vpn-decryption
     name: Juniper ScreenOS VPN decryption weakness
     kind: firmware
@@ -152,12 +141,13 @@
         and holding the corresponding secret.
     notes:
     - Juniper described CVE-2015-7756 as independent of the administrative-access issue.
-    - Public analysis connected the weakness to ScreenOS random number generation and 
-      the replacement of the Dual_EC_DRBG Q parameter.
     - >-
-      Matthew Green summarized the public cryptographic analysis: the 2012 change appeared
-      to replace the Dual_EC Q value and test vectors, letting an attacker piggyback on
-      an existing ScreenOS design weakness rather than add a large new decryption module.
+      Public analysis connected the weakness to ScreenOS random number generation and the
+      replacement of the Dual_EC_DRBG Q parameter.
+    - >-
+      Matthew Green summarized the analysis: the 2012 change appeared to replace the Dual_EC Q
+      value and test vectors, letting an attacker piggyback on an existing ScreenOS design
+      weakness rather than add a new decryption module.
   references:
   - url: 
       https://supportportal.juniper.net/s/article/2015-12-Out-of-Cycle-Security-Bulletin-ScreenOS-Multiple-Security-issues-with-ScreenOS-CVE-2015-7755-CVE-2015-7756

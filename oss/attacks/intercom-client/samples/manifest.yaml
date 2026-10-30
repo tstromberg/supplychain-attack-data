@@ -1,6 +1,34 @@
 schema_version: 1
 samples:
   - artifact_id: intercom-client
+    phase: during
+    classification: malicious
+    filename: intercom-client-loader-diff.fragment
+    path: intercom-client/during/intercom-client-loader-diff.fragment
+    sha256: cc682f980b0c82bcbc5c58d747c10bd21bcbfd17163db7d92710c7047351b90c
+    size: 997
+    source:
+      url: >-
+        https://www.stepsecurity.io/blog/shai-hulud-worm-pivots-to-multi-cloud-intercom-client-hijacked
+      retrieved_at: '2026-08-14T23:15:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - transcribed_from_report
+        - measured_sha256
+      evidence:
+        - exact_report_diff_and_loader_excerpts
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: 7.0.4
+    notes:
+      - >-
+        Preserves the report's package.json diff and simplified Bun loader excerpts. The full
+        setup.mjs and 11.7 MB router_runtime.js payload were not recovered or synthesized.
+    subject: intercom-client
+  - artifact_id: intercom-client
     phase: after
     classification: remediated
     coordinate: pkg:npm/intercom-client@7.0.3
@@ -18,11 +46,101 @@ samples:
       basis:
         - official_distribution_endpoint
         - measured_sha256
+      evidence:
+        - official_distribution_endpoint
+        - measured_sha256
     relates_to:
       - phase: during
         version: 7.0.4
     notes:
       - Known fixed/remediated release identified by the incident record.
+    subject: intercom-client
+  - artifact_id: intercom-client
+    phase: during
+    classification: malicious
+    coordinate: sha256:fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2
+    filename: setup.mjs
+    path: intercom-client/during/setup.mjs
+    sha256: fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2
+    size: 6780
+    source:
+      url: >-
+        https://archive.softwareheritage.org/api/1/content/sha256:fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2/raw/
+      kind: source_archive
+      retrieved_at: '2026-09-03T18:28:44Z'
+    verification:
+      status: payload_only
+      basis:
+        - member_manifest_retained
+        - measured_sha256
+        - web_archive_replay
+      evidence:
+        - retained_member_sha256
+        - measured_sha256
+        - recovered_from_software_heritage
+    notes:
+      - >-
+        The setup.mjs member, not the published archive. The loader the package shipped: a node
+        script that shells out with execFileSync and pulls over https, matching the setup.mjs this
+        record names as an indicator.
+    subject: intercom-client
+  - artifact_id: intercom-client
+    phase: before
+    classification: clean
+    coordinate: pkg:npm/intercom-client@7.0.3
+    version: 7.0.3
+    filename: intercom-client-7.0.3.tgz
+    path: intercom-client/before/intercom-client-7.0.3.tgz
+    sha256: d581c191f657993dc231259ad9231186a9e3318ee266b7c09c3f2b5e509211bd
+    size: 657321
+    source:
+      url: https://registry.npmjs.org/intercom-client/-/intercom-client-7.0.3.tgz
+      kind: distribution
+      retrieved_at: '2026-09-04T02:02:15Z'
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - official_registry_download
+        - registry_published_digest_reproduced
+        - measured_sha256
+    notes:
+      - The highest release below the earliest compromised version.
+      - >-
+        This artifact's record carries no package field, so the name was taken from its own artifact
+        id, intercom-client, which resolves to a real package in the npm registry the record names.
+        The compromised versions themselves are no longer published there, which is consistent with
+        the incident, so the identity rests on the id and the ecosystem rather than on finding those
+        versions.
+    subject: intercom-client
+  - artifact_id: intercom-client
+    phase: during
+    classification: affected
+    coordinate: pkg:npm/intercom-client@7.0.4
+    version: 7.0.4
+    filename: intercom-client-7.0.4.tgz
+    path: intercom-client/during/intercom-client-7.0.4.tgz
+    sha256: 5f748fbc89cde66abefa826439c765a0081a027792e9da8d80fbf23571311622
+    size: 4213098
+    source:
+      url: https://repo.huaweicloud.com/repository/npm/intercom-client/-/intercom-client-7.0.4.tgz
+      original_url: https://registry.npmjs.org/intercom-client/-/intercom-client-7.0.4.tgz
+      retrieved_at: '2026-09-10T12:33:58.070Z'
+      kind: distribution_mirror
+    verification:
+      status: probable_exact
+      basis:
+        - distribution_mirror
+        - coordinate_matches
+        - measured_sha256
+      evidence:
+        - distribution_mirror_retained_published_tarball
+        - exact_package_name_and_version
+        - measured_sha256
+    subject: intercom-client
 unresolved:
   - artifact_id: intercom-client
     phase: during
@@ -46,7 +164,32 @@ unresolved:
         Triage has no file analysis for SHA256
         5f748fbc89cde66abefa826439c765a0081a027792e9da8d80fbf23571311622; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:16.216Z'
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        5f748fbc89cde66abefa826439c765a0081a027792e9da8d80fbf23571311622 as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2 as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        5ae8b2343e97cc3b2c945ec34318b63f27fa2db1e3d8fbaa78c298aa63db52ed as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:13:51.598-04:00 level=ERROR msg="command failed"
+        error="hash 5f748fbc89cde66abefa826439c765a0081a027792e9da8d80fbf23571311622 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/5f748fbc89cde66abefa826439c765a0081a027792e9da8d80fbf23571311622;
+        malwarebazaar: MalwareBazaar has no sample for
+        5f748fbc89cde66abefa826439c765a0081a027792e9da8d80fbf23571311622: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        5f748fbc89cde66abefa826439c765a0081a027792e9da8d80fbf23571311622; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:13:51.614Z'
   - artifact_id: intercom-client
     phase: during
     coordinate: sha256:fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2
@@ -69,7 +212,32 @@ unresolved:
         Triage has no file analysis for SHA256
         fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:19.251Z'
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        5f748fbc89cde66abefa826439c765a0081a027792e9da8d80fbf23571311622 as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2 as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        5ae8b2343e97cc3b2c945ec34318b63f27fa2db1e3d8fbaa78c298aa63db52ed as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:13:56.385-04:00 level=ERROR msg="command failed"
+        error="hash fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2;
+        malwarebazaar: MalwareBazaar has no sample for
+        fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:13:56.400Z'
   - artifact_id: intercom-client
     phase: during
     coordinate: sha256:5ae8b2343e97cc3b2c945ec34318b63f27fa2db1e3d8fbaa78c298aa63db52ed
@@ -92,15 +260,32 @@ unresolved:
         Triage has no file analysis for SHA256
         5ae8b2343e97cc3b2c945ec34318b63f27fa2db1e3d8fbaa78c298aa63db52ed; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:19.243Z'
-  - artifact_id: intercom-client
-    phase: during
-    coordinate: pkg:npm/intercom-client@7.0.4
-    status: timed_out
-    attempts:
-      - 'Forager PURL: per-target timeout'
-      - 'Forager batch: per-target timeout'
-    last_attempted_at: '2026-08-11T19:22:07.156Z'
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        5f748fbc89cde66abefa826439c765a0081a027792e9da8d80fbf23571311622 as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2 as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        5ae8b2343e97cc3b2c945ec34318b63f27fa2db1e3d8fbaa78c298aa63db52ed as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:14:05.603-04:00 level=ERROR msg="command failed"
+        error="hash 5ae8b2343e97cc3b2c945ec34318b63f27fa2db1e3d8fbaa78c298aa63db52ed unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/5ae8b2343e97cc3b2c945ec34318b63f27fa2db1e3d8fbaa78c298aa63db52ed;
+        malwarebazaar: MalwareBazaar has no sample for
+        5ae8b2343e97cc3b2c945ec34318b63f27fa2db1e3d8fbaa78c298aa63db52ed: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        5ae8b2343e97cc3b2c945ec34318b63f27fa2db1e3d8fbaa78c298aa63db52ed; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:14:05.622Z'
   - artifact_id: intercom-client
     phase: during
     coordinate: sha1:1a1b1d0d89fadf7664c42ec628bac7d39a71bd50
@@ -112,4 +297,26 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for 1a1b1d0d89fadf7664c42ec628bac7d39a71bd50:
         hash_not_found; triage: Triage has no file analysis for SHA1
         1a1b1d0d89fadf7664c42ec628bac7d39a71bd50; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:56:21.608Z'
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        5f748fbc89cde66abefa826439c765a0081a027792e9da8d80fbf23571311622 as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        fe64699649591948d6f960705caac86fe99600bf76e3eae29b4517705a58f0e2 as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Corroborated 2026-09-02: reversinglabs recognises
+        5ae8b2343e97cc3b2c945ec34318b63f27fa2db1e3d8fbaa78c298aa63db52ed as
+        pkg:npm/intercom-client@7.0.4. The digest names a real file; what is missing is a source
+        that will serve it.
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:13:39.697-04:00 level=ERROR msg="command failed"
+        error="hash 1a1b1d0d89fadf7664c42ec628bac7d39a71bd50 unavailable from configured sources:
+        hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has
+        no sample for 1a1b1d0d89fadf7664c42ec628bac7d39a71bd50: hash_not_found; triage: triage has
+        no file analysis for SHA1 1a1b1d0d89fadf7664c42ec628bac7d39a71bd50; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:13:39.731Z'

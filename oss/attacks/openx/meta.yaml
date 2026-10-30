@@ -26,8 +26,8 @@
     kind: application
     website: https://openx.com
   actor:
-    name: Cybercriminal Gang
-    kind: group
+    name: Unknown attacker
+    kind: unknown
   language: PHP
   method:
     cause: compromised_infrastructure
@@ -68,18 +68,50 @@
       role: mirror
     - uri: https://www.tenable.com/plugins/nessus/69371
       role: mirror
-    - uri: https://blog.sucuri.net/2013/12/openx-compromise-serving-malware.html
-      role: mirror
     - uri: 
-        https://www.unmaskparasites.com/2013/12/05/ad-networks-openx-source-compromised/
+        https://blog.sucuri.net/2013/08/openx-org-compromised-and-downloads-injected-with-a-backdoor.html
+      role: mirror
+    - uri: https://www.unmaskparasites.com/2013/12/05/ad-networks-openx-source-compromised/
       role: mirror
     hashes:
     - md5:46fbfea4c901de2b168f871eb824875a
     - sha256:de81072439b47e701f5f4aa2b3c49c31ef0c43d9cf71e6f0a94ca3434a6ba276
     - md5:558c80e601fb996e5f6bbc99a9ee0051
+    - sha256: 2691ede48dc1e182097384b76c909f6fbc276a4fcf322ff56dd10aa5a3bce499
+      of: archive
+      role: malicious
+      note: >-
+        Resolved from the md5 558c80e601fb996e5f6bbc99a9ee0051 via VirusTotal on 2026-09-10,
+        reported as 'flowplayer-3.1.1.min.js', 16461 bytes, 29 engines detect it. The bytes are not
+        held; the SHA-256 lets the SHA-256-only digest lanes reach it.
     - md5:fa4991d5fd3bf4a947b6ab0b15ce10b2
-    - md5:5014c31b479094c0b32221ae1f1473ac
-    - md5:6b3459f16238aa717f379565650cb0cf
+    - sha256: 90135d548b06f7f4126106276078a7f0ef99a53a986a356ee4a12ec4cbb36f92
+      of: archive
+      role: malicious
+      note: >-
+        Resolved from the md5 fa4991d5fd3bf4a947b6ab0b15ce10b2 via VirusTotal on 2026-09-10,
+        reported as 'vt-upload-GUFAh', 1302 bytes. The bytes are not held; the SHA-256 lets the
+        SHA-256-only digest lanes reach it.
+    - md5: 5014c31b479094c0b32221ae1f1473ac
+      of: payload
+      role: malicious
+      note: "The tampered lib/max/Delivery/common.php inside the openx-2.8.10.zip release. Confirmed on
+        2026-09-02 by unpacking the release held in this record's samples and measuring its members: 27500
+        bytes. The bytes were already in the corpus; only the record did not say so."
+    - md5: 6b3459f16238aa717f379565650cb0cf
+      of: payload
+      role: malicious
+      note: "The backdoored openXVideoAds.zip plugin carried inside the openx-2.8.10.zip release, not
+        the release archive itself; it was previously recorded as the artifact's own archive digest. Confirmed
+        on 2026-09-02 by unpacking the release held in this record's samples and measuring its members:
+        openx-2.8.10/etc/plugins/openXVideoAds.zip matches exactly, 575801 bytes."
+    - sha256: 77a33701156d7eb05d10a3122cfb2b16cda55ed84e8bccc6a2a9470349435434
+      of: archive
+      role: malicious
+      note: >-
+        Resolved from the md5 6b3459f16238aa717f379565650cb0cf via VirusTotal on 2026-09-10,
+        reported as 'openXVideoAds.zip', 575801 bytes, 14 engines detect it. The bytes are not held;
+        the SHA-256 lets the SHA-256-only digest lanes reach it.
     indicators:
     - kind: cve
       value: CVE-2013-4211
@@ -108,29 +140,25 @@
       path: samples/openx/after/openx-2.8.11.zip
       role: clean_remediation
     notes:
-    - Heise reported that the compromised official downloads covered the ZIP, tgz, and 
-      tbz2 archives and that the backdoor appeared to have been present for almost a 
-      year.
-    - Acunetix recommends upgrading to OpenX 2.8.11 or later and auditing for prior 
-      unauthorized access before trusting an in-place upgrade.
     - >-
-      The MD5 values 6b3459f16238aa717f379565650cb0cf,
-      558c80e601fb996e5f6bbc99a9ee0051,
-      fa4991d5fd3bf4a947b6ab0b15ce10b2, and
-      5014c31b479094c0b32221ae1f1473ac identify the embedded plugin archive
-      and its three malicious files, not the outer OpenX release ZIP.
+      Heise reported that the compromised official downloads covered the ZIP, tgz and tbz2
+      archives and that the backdoor appeared to have been present for almost a year.
     - >-
-      The previously listed MD5 3cf59a7b8996dcc52370cf918f248ee4 had no
-      supporting source and was removed. The captured malicious release ZIP is
-      MD5 46fbfea4c901de2b168f871eb824875a.
+      Acunetix recommends upgrading to OpenX 2.8.11 or later and auditing for prior unauthorized
+      access before trusting an in-place upgrade.
+    - >-
+      The four MD5 values identify the embedded plugin archive and its three malicious files,
+      not the outer OpenX release ZIP.
+    - >-
+      The previously listed MD5 3cf59a7b8996dcc52370cf918f248ee4 had no supporting source and
+      was removed. The captured malicious release ZIP is MD5 46fbfea4c901de2b168f871eb824875a.
   references:
   - url: 
       https://www.clearmind.cc/2013/08/backdoor-found-in-openx-open-source-version-2-8-10-some-thoughts/
     title: Backdoor Found in OpenX Open Source version 2.8.10 - Some Thoughts
   - url: https://seclists.org/oss-sec/2013/q3/295
     title: 'oss-security: CVE request - OpenX 2.8.10 Backdoor'
-  - url: 
-      https://www.cisa.gov/news-events/alerts/2013/08/08/openx-releases-security-update
+  - url: https://www.cisa.gov/news-events/alerts/2013/08/08/openx-releases-security-update
     title: OpenX Releases Security Update
   - url: 
       https://arstechnica.com/information-technology/2013/08/backdoor-in-popular-ad-serving-software-opens-websites-to-remote-hijacking/

@@ -22,6 +22,8 @@ samples:
     verification:
       status: exact
       basis:
+        - measured_sha256
+      evidence:
         - preserved_project_attic
         - authentication_block_matches_certs_clean_side
         - no_quoted_NULL_backdoor_password
@@ -31,10 +33,13 @@ samples:
         version: '2.2'
     notes:
       - This is a clean same-version comparator, not the unavailable trojaned 2.2 distribution.
+    subject: wuftpd
   - artifact_id: wuftpd
     phase: during
     classification: malicious
-    version: 2.1f/2.2
+    version:
+      - 2.1f
+      - '2.2'
     filename: wu-ftpd-trojan-ftpd.c.diff
     path: wuftpd/during/wu-ftpd-trojan-ftpd.c.diff
     sha256: 8392017bc24be75bff50d45dd3827b9e32c1e381a3cf6427c062c764265d9e3a
@@ -46,6 +51,9 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - cert_published_exact_ftpd_c_diff
         - contemporary_bugtraq_corroboration
         - measured_sha256
@@ -55,6 +63,7 @@ samples:
     notes:
       - In CERT's normal diff, the less-than side is malicious and the greater-than side is clean.
       - The diff shows the quoted NULL backdoor password but is not the complete poisoned archive.
+    subject: wuftpd
   - artifact_id: wuftpd
     phase: after
     classification: clean
@@ -70,9 +79,88 @@ samples:
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - original_cert_advisory_md5_e58adc5ce0b6eae34f3f2389e9dc9197
         - original_cert_advisory_size_184616
         - measured_sha256
+    subject: wuftpd
+  - artifact_id: wuftpd
+    phase: during
+    classification: malicious
+    version: 2.2
+    filename: ftpd-backdoored.c
+    path: wuftpd/during/ftpd-backdoored.c
+    sha256: 69b6b6b2de90b9f1b22fb884c4774af2936c7116c811743af3ea7aab42a5a815
+    size: 76409
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: normal_diff_hunk_applied_to_release_member
+        base:
+          path: wuftpd/before/wu-ftpd-2.2.tar.gz
+          sha256: 7404ce43572f614d7ceb2f019149e8085143a60c2a3b3a364a8e3bcc80bde65e
+          member: src/ftpd.c
+        overlay:
+          path: wuftpd/during/wu-ftpd-trojan-ftpd.c.diff
+          sha256: 8392017bc24be75bff50d45dd3827b9e32c1e381a3cf6427c062c764265d9e3a
+          operation: apply
+          hunks: 1
+    verification:
+      status: payload_only
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - rebuilt_from_release_member_and_preserved_evidence_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        The password predicate restored to its trojanized form: the real check is conjoined with
+        strcmp(passwd, "NULL"), so the literal password NULL makes the failure branch unreachable
+        for every account.
+      - >-
+        The preserved evidence alone is not loadable source. This is src/ftpd.c as the victim would
+        have received it, so the payload is analysable in the file that gives it effect.
+      - >-
+        Only this member is carried: the incident altered no other file, and the rest of the release
+        is already represented by the clean baseline in this manifest.
+    subject: wuftpd
+  - artifact_id: wuftpd
+    phase: before
+    classification: clean
+    version: 2.2
+    filename: ftpd.c
+    path: wuftpd/before/ftpd.c
+    sha256: 2ca05b9ea6a5c4ad702cc7cb137330a01bbc8adb4601739264604fd52b0ae800
+    size: 76367
+    source:
+      url: https://ftp.gwdg.de/pub/misc/wu-ftpd/ftp.wu-ftpd.org/wu-ftpd-attic/wu-ftpd-2.2.tar.gz
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: official_distribution_member
+      container:
+        path: wuftpd/before/wu-ftpd-2.2.tar.gz
+        sha256: 7404ce43572f614d7ceb2f019149e8085143a60c2a3b3a364a8e3bcc80bde65e
+        member: src/ftpd.c
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - extracted_from_the_official_release_archive_held_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        src/ftpd.c exactly as the official release ships it, carried as its own sample so the
+        backdoored counterpart can be diffed against it directly.
+      - >-
+        The bytes were taken from wuftpd/before/wu-ftpd-2.2.tar.gz, which is held in this manifest
+        and verified against the release URL below; they were not fetched separately.
+      - Pairs with ftpd-backdoored.c in the during phase.
+    subject: wuftpd
 unresolved:
   - artifact_id: wuftpd
     phase: during

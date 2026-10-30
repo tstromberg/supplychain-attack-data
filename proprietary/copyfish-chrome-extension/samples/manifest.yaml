@@ -1,5 +1,51 @@
 schema_version: 1
-samples: []
+samples:
+  - artifact_id: copyfish
+    phase: during
+    classification: malicious
+    version: 2.8.5
+    filename: background-install-hook.js
+    path: copyfish/during/background-install-hook.js
+    sha256: 7e91b8b00c69f7ce3a43cf8a71101ad9bf19a71900fa1c2eaaf1bafff8734650
+    size: 468
+    source:
+      url: https://ui.vision/blog/chrome-extension-adware/
+      kind: researcher_mirror
+      retrieved_at: '2026-09-03T02:34:11Z'
+    verification:
+      status: verification_material
+      basis:
+        - transcribed_from_report
+        - measured_sha256
+      evidence:
+        - transcribed_from_published_code_block
+        - measured_sha256_and_size
+    notes:
+      - Not the CRX's bytes. The digest names this transcription.
+    subject: copyfish
+  - artifact_id: copyfish
+    phase: during
+    classification: malicious
+    version: 2.8.5
+    filename: background-payload-loader.js
+    path: copyfish/during/background-payload-loader.js
+    sha256: 1f282e500fd1df645ff7083dbcb4027c50f22d36d1bdb04566b39362ba2135fe
+    size: 1128
+    source:
+      url: https://ui.vision/blog/chrome-extension-adware/
+      kind: researcher_mirror
+      retrieved_at: '2026-09-03T02:34:11Z'
+    verification:
+      status: verification_material
+      basis:
+        - transcribed_from_report
+        - measured_sha256
+      evidence:
+        - transcribed_from_published_code_block
+        - measured_sha256_and_size
+    notes:
+      - Not the CRX's bytes. The digest names this transcription.
+    subject: copyfish
 unresolved:
   - artifact_id: copyfish
     phase: during
@@ -7,4 +53,50 @@ unresolved:
     hashes: []
     locations: []
     attempts: []
-    last_attempted_at: '2026-08-10T15:08:03.239Z'
+    last_attempted_at: '2026-09-02T23:53:23.116Z'
+  - artifact_id: copyfish-chrome-extension
+    phase: during
+    filename: Copyfish 2.8.5 CRX
+    status: unavailable
+    notes:
+      - >-
+        A hijacked Chrome extension update is removed by Google within days, and the CRX archives
+        that mirror the Web Store keep the listing's ordinary releases rather than the build that
+        was pulled.
+      - The id above is what any future attempt needs; it is the part that was missing.
+    attempts:
+      - >-
+        The listing is delisted; crx4chrome has no page for the id, so no version history or digest
+        exists to work from.
+    last_attempted_at: '2026-09-02T21:27:15Z'
+interpretation:
+  - >-
+    The extension id eenjdnjldapjajjofmldgmkjaienebbj was recovered on 2026-09-02 from the
+    references retained under refs/ and added to meta.yaml. Until then this record named no id at
+    all, which meant no CRX archive could be asked about it even in principle.
+  - >-
+    The hijacked CRX is not held; what is held is the malicious background script as the extension's
+    own author published it after regaining control. Both files are transcriptions of code blocks,
+    so they are verification_material and their digests name the transcriptions rather than anything
+    the Chrome Web Store served.
+  - >-
+    The loader is worth reading closely because the delivery is the interesting part. It does
+    nothing for the first ten minutes after install or update, which keeps it quiet during review
+    and casual testing. It then takes the extension's own version, replaces the dots with dashes,
+    and builds the name copyfish-npm-2-8-5; it fetches https://unpkg.com/<that name>/<current UTC
+    hour>.js, so the payload rotates across 24 files and can be changed per hour without touching
+    the extension. The URL is assembled from split string fragments ('sc'+'ript',
+    'ht'+'tps://un'+'p'+'kg.com/') so that neither the host nor the tag appears as a literal in the
+    source.
+  - >-
+    That makes the payload host an npm package served through unpkg, which is why the npm registry
+    still carries the trail. registry.npmjs.org holds copyfish-npm-2-8-5 as a security holding
+    package at 0.0.1-security, but its time field still names the three versions that were removed:
+    1.0.1501325940, 1.0.1501413946 and 1.0.1501416918. Read as Unix timestamps those are 29 and 30
+    July 2017, inside the incident.
+  - >-
+    The payload itself is gone. The tarballs 404 on both registry.npmjs.org and
+    registry.npmmirror.com, and the Internet Archive's only capture of the unpkg path is itself a
+    404 taken in 2019. Equivalent package names for the other extensions in this campaign --
+    web-paint, infinity-new-tab, social-fixer -- do not resolve on npm at all, so the mechanism is
+    documented here for Copyfish specifically rather than assumed for the rest.

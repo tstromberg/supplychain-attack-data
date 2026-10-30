@@ -20,10 +20,14 @@ samples:
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - official_advisory_md5_459c1d0262e939d6432f193c7a4ba8a8
         - measured_sha256
     notes:
       - The restored original is byte-identical to the advisory's clean pre-incident archive.
+    subject: openssh-3-4p1
   - artifact_id: openssh-3-4p1
     phase: during
     classification: malicious
@@ -39,6 +43,9 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - contemporary_bugtraq_analysis
         - full_bf-test.c_diff_preserved
         - decoded_payload_preserved
@@ -47,6 +54,7 @@ samples:
       - >-
         This is preserved evidence containing the full malicious diff and decoded payload, not the
         original tarball.
+    subject: openssh-3-4p1
   - artifact_id: openssh-3-4p1
     phase: during
     classification: malicious
@@ -62,6 +70,8 @@ samples:
     verification:
       status: payload_only
       basis:
+        - measured_sha256
+      evidence:
         - complete_published_makefile_and_bf-test.c_diff
         - html_entities_decoded
         - measured_sha256
@@ -79,6 +89,7 @@ samples:
       - >-
         OpenSSH's official advisory identifies bf-test.c as the Trojan in all three affected
         archives; this exact diff was generated from 3.4p1.
+    subject: openssh-3-4p1
   - artifact_id: openssh-3-4
     phase: before
     classification: clean
@@ -94,10 +105,14 @@ samples:
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - official_advisory_md5_39659226ff5b0d16d0290b21f67c46f2
         - measured_sha256
     notes:
       - The restored original is byte-identical to the advisory's clean pre-incident archive.
+    subject: openssh-3-4
   - artifact_id: openssh-3-2-2p1
     phase: before
     classification: clean
@@ -113,24 +128,199 @@ samples:
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - official_advisory_md5_9d3e1e31e8d6cdbfa3036cb183aa4a01
         - measured_sha256
     notes:
       - The restored original is byte-identical to the advisory's clean pre-incident archive.
+    subject: openssh-3-2-2p1
+  - artifact_id: openssh-3-4p1
+    phase: during
+    classification: malicious
+    version: 3.4p1
+    filename: Makefile.in
+    path: openssh-3-4p1/during/Makefile.in
+    sha256: 6d3d7ac277185e01176496eef729fc019bf6a805fb9400abb3772cd4a6547635
+    size: 1147
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: patch_application_on_official_release_member
+        base:
+          path: openssh-3-4p1/before/openssh-3.4p1.tar.gz
+          sha256: cae5777dcb6296d1502d4682bf0ebcb872305f2760d1ed39d4a053add24c2ca7
+          member: openbsd-compat/Makefile.in
+        overlay:
+          path: openssh-3-4p1/during/openssh-3.4p1-backdoor.patch
+          sha256: 841dea2e8abbb4388c9a9f42613a17263fcba8160ec4c9b433f4bac60d2790aa
+          operation: apply
+    verification:
+      status: payload_only
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - rebuilt_from_release_member_and_preserved_patch_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        The one added rule: `all:` compiles bf-test.c, redirects what it prints into bf- test.out,
+        and hands that file to a detached shell. Running make is the trigger.
+      - >-
+        Filed as an individual member rather than a repacked archive: the patch altered only these
+        files, and the rest of the release is represented by the clean baseline in this manifest.
+      - >-
+        The member keeps its exact basename because file identification recognises Makefile.in by
+        name; any decorated variant types as unknown and scores nothing.
+    subject: openssh-3-4p1
+  - artifact_id: openssh-3-4p1
+    phase: during
+    classification: malicious
+    version: 3.4p1
+    filename: bf-test-backdoored.c
+    path: openssh-3-4p1/during/bf-test-backdoored.c
+    sha256: 3f34b8cbce9705d7c2490d683e52c38aa7a645ddec21f31bee76f0e59fc71977
+    size: 12579
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: patch_application_on_official_release_member
+        base:
+          path: openssh-3-4p1/before/openssh-3.4p1.tar.gz
+          sha256: cae5777dcb6296d1502d4682bf0ebcb872305f2760d1ed39d4a053add24c2ca7
+          member: openbsd-compat/bf-test.c
+        overlay:
+          path: openssh-3-4p1/during/openssh-3.4p1-backdoor.patch
+          sha256: 841dea2e8abbb4388c9a9f42613a17263fcba8160ec4c9b433f4bac60d2790aa
+          operation: apply
+    verification:
+      status: payload_only
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - rebuilt_from_release_member_and_preserved_patch_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        The added file the rule above compiles. It reads as a Blowfish compatibility check and is an
+        obfuscated byte table XORed out to a stream, which the recipe then executes as shell.
+      - >-
+        Filed as an individual member rather than a repacked archive: the patch altered only these
+        files, and the rest of the release is represented by the clean baseline in this manifest.
+    subject: openssh-3-4p1
+  - artifact_id: openssh-3-4p1
+    phase: before
+    classification: clean
+    version: 3.4p1
+    filename: Makefile.in
+    path: openssh-3-4p1/before/Makefile.in
+    sha256: c1bb466d819a52688bc0fbf96f9e3f452bc0d993223b652f0eb1a556113034f2
+    size: 1068
+    source:
+      url: https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-3.4p1.tar.gz
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: official_distribution_member
+      container:
+        path: openssh-3-4p1/before/openssh-3.4p1.tar.gz
+        sha256: cae5777dcb6296d1502d4682bf0ebcb872305f2760d1ed39d4a053add24c2ca7
+        member: openbsd-compat/Makefile.in
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - extracted_from_the_official_release_archive_held_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        openbsd-compat/Makefile.in exactly as the official release ships it, carried as its own
+        sample so the backdoored counterpart can be diffed against it directly.
+      - >-
+        The bytes were taken from openssh-3-4p1/before/openssh-3.4p1.tar.gz, which is held in this
+        manifest and verified against the release URL below; they were not fetched separately.
+      - Pairs with Makefile.in in the during phase.
+    subject: openssh-3-4p1
 unresolved:
   - artifact_id: openssh-3-4p1
     phase: during
     version: 3.4p1
     hash: md5:3ac9bc346d736b4a51d676faa2a08a57
     status: original_distribution_unavailable_payload_recovered
+    attempts:
+      - >-
+        Identity attributes recovered 2026-09-10 from the OpenBSD developers' contemporaneous IRC
+        logs (http://miod.online.fr/software/openbsd/stories/trojan.html), which quote the
+        ftp.openbsd.org directory listings and the mirror operator's size diff: openssh-3.4p1.tar.gz
+        went from 837668 to 840574 bytes when it was replaced. The held clean sample is exactly
+        837668 bytes, so the pair is corroborated; a candidate copy of the trojaned archive should
+        be 840574 bytes.
+      - >-
+        Rebuilding the clean tree with the two recovered edits — adding openbsd-compat/bf-test.c and
+        the one-line openbsd-compat/Makefile.in rule — grows the archive by about 2.6 KB against the
+        2,906 bytes observed in 2002. Consistent with those two edits being the whole change, but
+        the compressor of 2002 cannot be reproduced, so it is not a byte-level result and no
+        reconstruction was stored.
+      - >-
+        Wayback CDX, 2026-09-10: no capture of the OpenSSH release paths from the July-August 2002
+        window; the archived copies are later clean releases, already held as before samples.
+      - >-
+        forager identify, 2026-09-10: the reported md5 3ac9bc346d736b4a51d676faa2a08a57 is unknown
+        to MalwareBazaar, Triage and ReversingLabs.
+    last_attempted_at: '2026-09-10T21:03:32Z'
   - artifact_id: openssh-3-4
     phase: during
     version: '3.4'
     status: original_distribution_unavailable_shared_payload_recovered
+    attempts:
+      - >-
+        Identity attributes recovered 2026-09-10 from the OpenBSD developers' contemporaneous IRC
+        logs (http://miod.online.fr/software/openbsd/stories/trojan.html), which quote the
+        ftp.openbsd.org directory listings and the mirror operator's size diff: openssh-3.4.tgz went
+        from 398595 to 401466 bytes when it was replaced. The held clean sample is exactly 398595
+        bytes, so the pair is corroborated; a candidate copy of the trojaned archive should be
+        401466 bytes.
+      - >-
+        Not reconstructable from the clean tree as the portable release was: this is the
+        OpenBSD-native tarball, which has no openbsd-compat directory, and the developer who found
+        it reports the payload in ssh-keygen instead. The corresponding Makefile edit for that tree
+        was never published.
+      - >-
+        Wayback CDX, 2026-09-10: no capture of the OpenSSH release paths from the July-August 2002
+        window; the archived copies are later clean releases, already held as before samples.
+      - >-
+        forager identify, 2026-09-10: the reported md5 3ac9bc346d736b4a51d676faa2a08a57 is unknown
+        to MalwareBazaar, Triage and ReversingLabs.
+    last_attempted_at: '2026-09-10T21:03:32Z'
   - artifact_id: openssh-3-2-2p1
     phase: during
     version: 3.2.2p1
     status: original_distribution_unavailable_shared_payload_recovered
+    attempts:
+      - >-
+        Identity attributes recovered 2026-09-10 from the OpenBSD developers' contemporaneous IRC
+        logs (http://miod.online.fr/software/openbsd/stories/trojan.html), which quote the
+        ftp.openbsd.org directory listings and the mirror operator's size diff:
+        openssh-3.2.2p1.tar.gz went from 822567 to 825630 bytes when it was replaced. The held clean
+        sample is exactly 822567 bytes, so the pair is corroborated; a candidate copy of the
+        trojaned archive should be 825630 bytes.
+      - >-
+        Reconstruction from the clean 3.2.2p1 tree would be wrong. The mirror operator who examined
+        the trojaned archive reported that it unpacks to an openssh-3.2.3 directory and carries
+        bf-test.c, so the attacker packaged a different source tree rather than editing the
+        published one. That tree is not held, and no 3.2.3 release exists to recover it from.
+      - >-
+        Wayback CDX, 2026-09-10: no capture of the OpenSSH release paths from the July-August 2002
+        window; the archived copies are later clean releases, already held as before samples.
+      - >-
+        forager identify, 2026-09-10: the reported md5 3ac9bc346d736b4a51d676faa2a08a57 is unknown
+        to MalwareBazaar, Triage and ReversingLabs.
+    last_attempted_at: '2026-09-10T21:03:32Z'
   - artifact_id: openssh-3-4p1
     phase: during
     coordinate: md5:3ac9bc346d736b4a51d676faa2a08a57
@@ -142,4 +332,16 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for 3ac9bc346d736b4a51d676faa2a08a57:
         hash_not_found; triage: Triage has no file analysis for MD5
         3ac9bc346d736b4a51d676faa2a08a57; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:56:45.642Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:15:25.119-04:00 level=ERROR msg="command failed"
+        error="hash 3ac9bc346d736b4a51d676faa2a08a57 unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for 3ac9bc346d736b4a51d676faa2a08a57: hash_not_found; triage: triage has no file analysis
+        for MD5 3ac9bc346d736b4a51d676faa2a08a57; malshare: download returned status 404"
+      - >-
+        Wayback CDX, 2026-09-10: no capture of the OpenSSH release paths from the July-August 2002
+        window; the archived copies are later clean releases, already held as before samples.
+      - >-
+        forager identify, 2026-09-10: the reported md5 3ac9bc346d736b4a51d676faa2a08a57 is unknown
+        to MalwareBazaar, Triage and ReversingLabs.
+    last_attempted_at: '2026-09-10T21:03:32Z'

@@ -13,6 +13,13 @@
     The first injection followed on 2025-03-12 in 4.13.3, published by `v4v5qc`, and it lived only in the browser bundle `lib/template-web.js`: a `String.fromCharCode`-obfuscated loader that fetched `https://git.youzzjizz.com/git.js`, which in turn loaded Baidu Analytics. The original author posted a GitHub warning that "v4.13.3 contains a virus" and reported the package to npm. npm did not act. The next day `goofychris` published 4.13.4 with the injection removed, explaining in an issue that "we wanted to make simple statistics," then deleted both the warning thread and the explanation. The second wave shipped on 2026-05-19 as 4.13.5 and 2026-05-20 as 4.13.6, again in `lib/template-web.js` and again leaving the Node entry point untouched. This loader pulled `v3.jiathis.com/code/jia.js` from a compromised Chinese social-sharing CDN, pinged Baidu Analytics, and gated on `User-Agent` for iPhone. Matching devices got a zero-pixel iframe hidden behind a closed Shadow DOM pointing at `utaq.cfww.shop/gooll/gooll.html`, which served a 50 KB fingerprinting loader that beaconed every ten seconds and content-addressed each follow-on module against a session key.
 
     The final stage was Coruna itself: fourteen remote modules, about 606 KB, chaining twenty-three Safari and WebKit vulnerabilities. The kit stopped at iOS 17.3, matching the CVE-2024-23222 patch for a JavaScriptCore type-confusion bug, dispatched between ARM64 and ARM64_32 builds, and ran a WebAssembly proof-of-work to confirm it was talking to a real JIT rather than a sandbox. The terminal payload was a 31 KB native shellcode dropper for the PLASMAGRID cryptocurrency-wallet implant; anything outside Safari on iOS 13.0 through 17.2.1 got only the Baidu tracker. Socket attributed the deployment to UNC6691 on Coruna fingerprints previously documented by Google TAG, and SafeDep reached the same attribution independently. Both advised pinning `art-template` and its siblings to 4.13.2 and auditing caches and bundles for the four attacker domains. The harder problem sits upstream of the package manager: a clean legal acquisition leaves none of the forensic seams an account takeover does. The original author has filed npm tickets 3286247 and 4401568, and says the accounts remain active and the malicious versions still cannot be unpublished.
+  pull_quote:
+    text: >-
+      Caught injecting 4.13.3, the new owners published a clean 4.13.4,
+      explained they `wanted to make simple statistics`, deleted the warning
+      thread, then shipped the exploit-kit loader fourteen months later.
+    caption: caught once, withdrawn, then shipped again
+    after: 3
   start_date: 2024-11-17
   end_date: 2026-05-20
   target:
@@ -85,32 +92,22 @@
   - kind: session_key
     value: cecd08aa6ff548c2
   notes:
-  - Ownership of the GitHub repo and npm publisher list was transferred by the original
-    maintainer on 2024-11-17 to KILLER WHAL AI SDN BHD under contract, after the
-    maintainer ran SSM and law-firm due diligence. This is a deliberate transfer, not
-    an account takeover; the seller documented the buyer's chain in
-    https://github.com/aui/blog/issues/3.
-  - The 2025-03-12 4.13.3 injection used a different loader chain — `git.youzzjizz.com`
-    front-loading Baidu Analytics via `hm.baidu.com/hm.js?1351a72534dcecfcf4500eda9c5add00`.
-    The 2026-05 wave moved to `v3.jiathis.com` and the Coruna kit at `utaq.cfww.shop`.
-  - 4.13.4 (2025-03-14) was published from the new owners' account but contains no
-    injection — released the day after the original maintainer's public warning, with
-    a "we made some mistakes" explanation on goofychris/art-template issue 661 that
-    the new maintainers later deleted along with the warning thread.
-  - 4.13.3 (2025-03-12), 4.13.5 (2026-05-19), and 4.13.6 (2026-05-20) are the malicious
-    releases. 4.13.2 (2018-11-13) is the last release shipped by the original `aui`
-    maintainer.
-  - Injection lives in the browser bundle (lib/template-web.js) only; Node consumers
-    using the CommonJS entry point are unaffected. Anything pulling the browser bundle
-    via <script> tag or client-side bundler ships the loader into every page.
-  - Coruna kit gates on Safari/WebKit and iOS 13.0-17.2.1; iOS 17.3 and later, Chrome,
-    Firefox, Edge, and Android receive only the Baidu Analytics tracker. Final payload
-    is the PLASMAGRID cryptocurrency-wallet implant.
-  - UNC6691 attribution is Socket's, based on Coruna kit fingerprints documented by
-    Google TAG. SafeDep notes the same actor and kit independently.
-  - Sibling packages `express-art-template`, `art-template-loader`, and
-    `koa-art-template` saw the same npm publisher turnover and should be treated as
-    potentially affected; public reporting focused on art-template itself.
+  - >-
+    The original maintainer transferred the GitHub repository and npm publisher list on
+    2024-11-17 to KILLER WHAL AI SDN BHD under contract, after SSM and law-firm due diligence. A
+    deliberate transfer, not an account takeover.
+  - >-
+    4.13.3 (2025-03-12), 4.13.5 (2026-05-19) and 4.13.6 (2026-05-20) are the malicious releases;
+    4.13.2 is the last from the original aui maintainer and 4.13.4 carries no injection. Sibling
+    packages saw the same publisher turnover.
+  - >-
+    The injection lives in the browser bundle lib/template-web.js only. Node consumers using the
+    CommonJS entry point are unaffected; anything loading the browser bundle ships the loader
+    into every page.
+  - >-
+    The Coruna kit gates on Safari and WebKit on iOS 13.0 to 17.2.1, serving other browsers only
+    a Baidu Analytics tracker. UNC6691 attribution is Socket's, from kit fingerprints documented
+    by Google TAG.
   artifacts:
   - id: art-template
     name: art-template
@@ -136,13 +133,13 @@
     - uri: https://www.npmjs.com/package/art-template/v/4.13.6
       role: distribution
     notes:
-    - 4.13.4 was published from the same compromised account on 2025-03-14 but
-      contains no injection.
-    - SHA-256 273206e2973df6ba7474aa66693797c98dcf26b794da4c3e863ab8d8c694868d
-      is the measured 4.13.3 npm archive; SHA-256
-      101afde88ff8b5c02fd341eda55022a39203088c2ff11dcb73214911cf5afb77 is
-      the measured 4.13.6 archive recovered through an original Wayback replay.
-      Version 4.13.5 remains without a recovered whole-archive checksum.
+    - >-
+      4.13.4 was published from the same compromised account on 2025-03-14 but contains no
+      injection.
+    - >-
+      273206e2973df6ba7474aa66693797c98dcf26b794da4c3e863ab8d8c694868d is the measured 4.13.3
+      archive and 101afde88ff8b5c02fd341eda55022a39203088c2ff11dcb73214911cf5afb77 the 4.13.6
+      archive, from Wayback replay. 4.13.5 has none.
   references:
   - url: https://github.com/aui/blog/issues/3
     title: 'The Takeover and Suspect Supply Chain Attack of art-template: A Detailed

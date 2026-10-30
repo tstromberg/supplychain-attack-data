@@ -7,11 +7,19 @@
   story: |
     On May 18, 2026, an unidentified attacker spent roughly six hours pushing malicious commits to more than 5,500 public GitHub repositories, planting a booby-trapped workflow file that turned each project's continuous integration pipeline into a credential vacuum.
 
-    Researchers at SafeDep, which first surfaced the campaign and named it "Megalodon," said the operator worked from a single token between 11:36 and 17:48 UTC, ultimately touching 5,561 distinct repositories with 5,718 commits. OX Security, which independently identified the same activity, said the total likely exceeded 5,000 repositories. Every commit landed in the same place, a file under `.github/workflows/`, in one of two variants. The first added a generic `ci.yml` triggered on `push` and `pull_request_target`, which means any fork pull request would fire it. The second overwrote an existing workflow with one named `Optimize-Build` gated on `workflow_dispatch`, leaving a dormant backdoor the attacker could fire on demand through the GitHub API.
+    Researchers at SafeDep, which first surfaced the campaign and named it "Megalodon," said the operator worked from a single token between 11:36 and 17:48 UTC, ultimately touching 5,561 distinct repositories with 5,718 commits. OX Security, which independently identified the same activity, said the total likely exceeded 5,000 repositories. Every commit landed in the same place, a file under `.github/workflows/`, in one of two variants. The first added a workflow SafeDep names SysDiag, triggered on `push` and `pull_request_target`, which means any fork pull request would fire it. The second overwrote an existing workflow with one named `Optimize-Build` gated on `workflow_dispatch`, leaving a dormant backdoor the attacker could fire on demand through the GitHub API.
 
     Both variants delivered the same base64-encoded bash payload, piped through `base64 -d | bash`. Once decoded, the script swept the GitHub Actions runner for AWS, GCP, and Azure credential files, SSH keys, Kubernetes configs, HashiCorp Vault tokens, npm credentials, and the GitHub Actions OIDC tokens minted for the workflow. It also dumped the environment of every running process from `/proc/*/environ` and queried the cloud metadata services on AWS, GCP, and Azure. Everything went to a single host, `216.126.225.129` on port 8443, over plain HTTP. The commits looked benign at a glance: authors were forged to resemble build automation, with names like `build-bot` and `ci-bot` at throwaway domains and messages like "ci: add build optimization step," and the accounts doing the pushing were freshly minted with random eight-character handles, the kind of thing that slides past a maintainer scanning a notification feed.
 
     The most visible downstream casualty was Tiledesk, an open-source LLM agent platform. According to SafeDep, the poisoned workflow file rode along into seven npm releases of `@tiledesk/tiledesk-server`. Because workflow files do not execute on `npm install`, the npm consumer was not directly at risk. Anyone who cloned, forked, or rebuilt from the tarball, however, would inherit the attacker's backdoor in their own CI environment. The Tiledesk leg of the campaign is tracked separately as [[tiledesk]].
+  pull_quote:
+    text: >-
+      The Optimize-Build variant fires only on `workflow_dispatch`, leaving no
+      runs in the Actions tab and no failed builds. GitHub exempts that
+      trigger from its anti-recursion rule, so a `GITHUB_TOKEN` from any other
+      workflow can fire it.
+    caption: a backdoor with no CI history
+    after: 2
   start_date: 2026-05-18
   end_date: 2026-05-18
   actor:
@@ -28,16 +36,17 @@
   - url: https://www.ox.security/blog/megalodon-cicd-malware-github/
     title: 'Megalodon: A New CI/CD Malware Campaign on GitHub - OX Security'
   notes:
-  - SafeDep counted 5,718 malicious commits across 5,561 distinct repositories in the
-    2026-05-18 window from 11:36 to 17:48 UTC. Repositories that received both variants
-    account for the gap. OX Security reached 3,500+ repositories from a base64 payload
-    grep, with a broader estimate of 5,000+. The gap is search methodology, not
-    disagreement.
-  - Commit authorship was forged via `git config user.name` and `user.email`. The visible
-    author on each commit does not match the pushing account.
-  - The `Optimize-Build` variant fires only on `workflow_dispatch`. Compromised refs can
-    sit dormant between detection sweeps; cleanup must remove the file, not just expect
-    no run to occur.
-  - SafeDep's Malysis engine surfaced Megalodon through the workflow file bundled into the
-    `@tiledesk/tiledesk-server` npm tarball. The GitHub-side scope was reconstructed
-    afterward.
+  - >-
+    SafeDep counted 5,718 malicious commits across 5,561 distinct repositories on 2026-05-18
+    between 11:36 and 17:48 UTC; repositories that received both variants account for the gap,
+    which SafeDep does not explain.
+  - >-
+    OX Security reached 3,500-plus repositories from a base64 payload grep, with a broader
+    estimate of 5,000-plus. The difference from SafeDep is search methodology, not disagreement.
+  - >-
+    Commit authorship was forged via git config user.name and user.email, so the visible author
+    on each commit does not match the pushing account.
+  - >-
+    The Optimize-Build variant fires only on workflow_dispatch, so compromised refs can sit
+    dormant between sweeps; cleanup must remove the file. SafeDep found Megalodon through the
+    workflow bundled into @tiledesk/tiledesk-server.

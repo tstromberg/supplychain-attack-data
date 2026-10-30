@@ -43,24 +43,24 @@ the threat group it tracks as TeamPCP, said versions 4.87.1 and 4.87.2
 drew roughly 742,000 downloads in the 30 days before the compromise; that
 is package reach, not a confirmed victim count.</p>
     
-      <p>The malicious logic lived in `telnyx/_client.py` and fired whenever an
+      <p>The malicious logic lived in <code>telnyx/_client.py</code> and fired whenever an
 application imported the package. On Linux and macOS, the SDK fetched
-`ringtone.wav` from `83.142.209.203:8080`, base64-decoded a Python
+<code>ringtone.wav</code> from <code>83.142.209.203:8080</code>, base64-decoded a Python
 credential harvester out of the audio bytes, and ran it in a detached
 subprocess. Results were AES-256-CBC encrypted, RSA-4096 sealed, and
-POSTed back as `tpcp.tar.gz`.</p>
+POSTed back as <code>tpcp.tar.gz</code>.</p>
     
       <p>Windows had its own path, and one operator typo. Release 4.87.1 invoked
-the Windows routine as `Setup()`. The function was defined as `setup()`.
+the Windows routine as <code>Setup()</code>. The function was defined as <code>setup()</code>.
 The release shipped, ran cleanly on Linux and macOS, and silently
-no-op&#39;d on Windows under a NameError. 4.87.2 fixed the case, at which
-point the Windows path decoded a PE binary from `hangup.wav` and wrote
-it to the user&#39;s Startup folder disguised as `msbuild.exe`, giving the
+no-op'd on Windows under a NameError. 4.87.2 fixed the case, at which
+point the Windows path decoded a PE binary from <code>hangup.wav</code> and wrote
+it to the user's Startup folder disguised as <code>msbuild.exe</code>, giving the
 attacker code execution at every login.</p>
     
       <p>StepSecurity tied telnyx to the LiteLLM compromise through three shared
 signals: the same RSA-4096 public key, identical AES/RSA encryption
-sequences, and the `tpcp.tar.gz` exfiltration marker. PyPI removed both
+sequences, and the <code>tpcp.tar.gz</code> exfiltration marker. PyPI removed both
 versions, and downstream users were urged to roll back to 4.87.0 and
 rotate any credential the SDK could have touched.</p>
     

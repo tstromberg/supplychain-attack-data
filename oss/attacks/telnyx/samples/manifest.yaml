@@ -1,13 +1,12 @@
 schema_version: 1
 interpretation:
   - >-
-    The two hash-addressed Hopper samples are complete PyPI source distributions,
-    not extracted payloads. Their archive roots, PKG-INFO metadata, and complete
-    sdist layouts identify versions 4.87.1 and 4.87.2. Their measured SHA-256 values
-    match the whole-archive hashes reported by the incident record, so the files are
-    exact original distributions, not reconstructions. Their hash-addressed storage
-    names are retained because the immutable Hopper sidecars bind those capture-time
-    filenames.
+    The two hash-addressed Hopper samples are complete PyPI source distributions, not extracted
+    payloads. Their archive roots, PKG-INFO metadata, and complete sdist layouts identify versions
+    4.87.1 and 4.87.2. Their measured SHA-256 values match the whole-archive hashes reported by the
+    incident record, so the files are exact original distributions, not reconstructions. Their
+    hash-addressed storage names are retained because the immutable Hopper sidecars bind those
+    capture-time filenames.
 samples:
   - artifact_id: telnyx
     phase: during
@@ -27,6 +26,8 @@ samples:
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+      evidence:
         - reported_whole_archive_sha256
         - measured_sha256_matches_reported_digest
         - embedded_sdist_root_telnyx_4_87_1
@@ -34,8 +35,9 @@ samples:
         - complete_source_distribution_layout
     notes:
       - >-
-        Complete telnyx-4.87.1 source distribution stored under Hopper's original
-        content-addressed filename; the file is not a partial sample.
+        Complete telnyx-4.87.1 source distribution stored under Hopper's original content-addressed
+        filename; the file is not a partial sample.
+    subject: telnyx
   - artifact_id: telnyx
     phase: during
     classification: malicious
@@ -54,6 +56,8 @@ samples:
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+      evidence:
         - reported_whole_archive_sha256
         - measured_sha256_matches_reported_digest
         - embedded_sdist_root_telnyx_4_87_2
@@ -61,8 +65,9 @@ samples:
         - complete_source_distribution_layout
     notes:
       - >-
-        Complete telnyx-4.87.2 source distribution stored under Hopper's original
-        content-addressed filename; the file is not a partial sample.
+        Complete telnyx-4.87.2 source distribution stored under Hopper's original content-addressed
+        filename; the file is not a partial sample.
+    subject: telnyx
   - artifact_id: telnyx
     phase: after
     classification: remediated
@@ -82,6 +87,9 @@ samples:
       basis:
         - official_distribution_endpoint
         - measured_sha256
+      evidence:
+        - official_distribution_endpoint
+        - measured_sha256
     relates_to:
       - phase: during
         version: 4.87.1
@@ -89,3 +97,52 @@ samples:
         version: 4.87.2
     notes:
       - Known fixed/remediated release identified by the incident record.
+    subject: telnyx
+  - artifact_id: telnyx
+    phase: before
+    classification: clean
+    coordinate: pkg:pypi/telnyx@4.87.0
+    version: 4.87.0
+    filename: telnyx-4.87.0.tar.gz
+    path: telnyx/before/telnyx-4.87.0.tar.gz
+    sha256: 3f093a85c313c2b779594f99fc07f453f1a7fd8785878d963688c531ff94d03a
+    size: 1189971
+    source:
+      url: >-
+        https://files.pythonhosted.org/packages/1b/cc/d79e69c7aff6fcb6e50f5f89b1c8e0763e34783d4ca702cef7c7894433c9/telnyx-4.87.0.tar.gz
+      kind: distribution
+      retrieved_at: '2026-09-04T02:02:15Z'
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - official_registry_download
+        - registry_published_digest_reproduced
+        - measured_sha256
+    notes:
+      - The highest release below the earliest compromised version.
+      - >-
+        This artifact's record carries no package field, so the name was taken from its own artifact
+        id, telnyx, which resolves to a real package in the pypi registry the record names. The
+        compromised versions themselves are no longer published there, which is consistent with the
+        incident, so the identity rests on the id and the ecosystem rather than on finding those
+        versions.
+    subject: telnyx
+unresolved:
+  - artifact_id: telnyx
+    phase: during
+    coordinate: pkg:pypi/telnyx@4.87.1
+    status: timed_out
+    attempts:
+      - 'Forager batch: per-target timeout'
+    last_attempted_at: '2026-08-15T16:19:04.104Z'
+  - artifact_id: telnyx
+    phase: during
+    coordinate: pkg:pypi/telnyx@4.87.2
+    status: timed_out
+    attempts:
+      - 'Forager batch: per-target timeout'
+    last_attempted_at: '2026-08-15T16:19:04.112Z'

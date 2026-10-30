@@ -1,14 +1,282 @@
 schema_version: 1
-samples: []
+interpretation:
+  - >-
+    StepSecurity run 27661280135 used npm pack during the incident and uploaded the resulting
+    @mastra/schema-compat 1.2.11 and 1.2.12 tarballs without repacking them. The recovered files are
+    original npm archive bytes, so their ordinary filenames are intentional rather than
+    RECONSTRUCTED names.
+  - >-
+    The embedded manifests verify 1.2.11 as the adjacent clean release and 1.2.12 as the affected
+    release: only 1.2.12 declares easy-day-js ^1.11.21. SHA-1, SHA-256, SHA-512, byte size, and the
+    121-member archive layout were measured locally after download from the surviving Actions
+    artifact.
+  - >-
+    npm removed @mastra/core 1.42.1 and its original tarball. Socket retains a complete 2,639-file
+    manifest and 2,554 Q-addressed member bodies; Forager d4c2240e2dc9 recovered and verified all of
+    those bodies by path, size, and decoded SHA-256.
+  - >-
+    Socket's independently retained manifests for malicious 1.42.1 and clean 1.42.0 contain the same
+    2,639 paths. Their content IDs and sizes are identical for 2,638 members; package.json is the
+    only difference. The live npm 1.42.0 archive matches npm's authoritative SHA-1 and SHA-512, and
+    every one of the 85 opaque S-addressed 1.42.1 members is therefore recovered byte-for-byte from
+    the corresponding member in that verified archive.
+  - >-
+    The malicious package.json was recovered directly from Socket and declares version 1.42.1 and
+    easy-day-js ^1.11.21. Combining it with the 2,638 proven-identical base members reconstructs the
+    complete malicious file tree. The gzip/tar stream is synthetic and no authoritative checksum for
+    the removed publication is available, so the archive remains explicitly RECONSTRUCTED.
+samples:
+  - artifact_id: mastra-schema-compat
+    phase: before
+    classification: clean
+    coordinate: pkg:npm/%40mastra/schema-compat@1.2.11
+    version: 1.2.11
+    filename: mastra-schema-compat-1.2.11.tgz
+    path: mastra-schema-compat/before/mastra-schema-compat-1.2.11.tgz
+    sha256: 31936185bf1a37a4bbbafc287decae1d8b486dd340c77a3b814d803edc377c9d
+    size: 924381
+    source:
+      url: >-
+        https://api.github.com/repos/actions-security-demo/compromised-packages/actions/artifacts/7684492167/zip
+      retrieved_at: '2026-08-13T18:04:48Z'
+      kind: research_corpus
+      original_url: https://registry.npmjs.org/@mastra/schema-compat/-/schema-compat-1.2.11.tgz
+      capture:
+        repository: actions-security-demo/compromised-packages
+        workflow_commit: 7baede450e1c0240939e2b3288c9ac7d72ba9aa8
+        workflow_path: .github/workflows/analyze-mastra-schema-compat.yaml
+        run_id: 27661280135
+        artifact_id: 7684492167
+        artifact_name: mastra-schema-compat-tarballs
+        artifact_zip_sha256: 8f45c112d3adbd434fe691e1ebed8c7f68094a98424418bcf63e06aa517be362
+        command: npm pack @mastra/schema-compat@1.2.11
+    verification:
+      status: exact
+      basis:
+        - archive_declares_version
+        - measured_sha256
+      evidence:
+        - original_npm_pack_tarball_from_contemporaneous_research_capture
+        - embedded_name_and_version
+        - easy_day_js_dependency_absent
+        - measured_sha1_831a584a8f2bec859d2efdebb82a49db4b6b203e
+        - >-
+          measured_sha512_c0df1e4f2fe0d78320de45ae921a088dde52a45b4b43c80e96d6c42def6733646ece6e232bcb45af5659359c2f2d89e9abb3491b96bc1746450a35c5384c31d3
+        - measured_sha256_size_and_121_archive_members
+    relates_to:
+      - phase: during
+        version: 1.2.12
+    subject: mastra-schema-compat
+  - artifact_id: mastra-schema-compat
+    phase: during
+    classification: affected
+    coordinate: pkg:npm/%40mastra/schema-compat@1.2.12
+    version: 1.2.12
+    filename: mastra-schema-compat-1.2.12.tgz
+    path: mastra-schema-compat/during/mastra-schema-compat-1.2.12.tgz
+    sha256: cef843f541c30c47a1ea563fc123ee32b9fffa0ee4a885a3cf16528096b161ee
+    size: 912197
+    source:
+      url: >-
+        https://api.github.com/repos/actions-security-demo/compromised-packages/actions/artifacts/7684492167/zip
+      retrieved_at: '2026-08-13T18:04:48Z'
+      kind: research_corpus
+      original_url: https://registry.npmjs.org/@mastra/schema-compat/-/schema-compat-1.2.12.tgz
+      capture:
+        repository: actions-security-demo/compromised-packages
+        workflow_commit: 7baede450e1c0240939e2b3288c9ac7d72ba9aa8
+        workflow_path: .github/workflows/analyze-mastra-schema-compat.yaml
+        run_id: 27661280135
+        artifact_id: 7684492167
+        artifact_name: mastra-schema-compat-tarballs
+        artifact_zip_sha256: 8f45c112d3adbd434fe691e1ebed8c7f68094a98424418bcf63e06aa517be362
+        command: npm pack @mastra/schema-compat@1.2.12
+    verification:
+      status: exact
+      basis:
+        - archive_declares_version
+        - measured_sha256
+      evidence:
+        - original_npm_pack_tarball_from_contemporaneous_research_capture
+        - immutable_workflow_identifies_1_2_12_as_compromised
+        - embedded_name_and_version
+        - embedded_easy_day_js_dependency_caret_1_11_21
+        - measured_sha1_69dbb8c9c4e988e60c2b4d8d320fbb46acb82fb3
+        - >-
+          measured_sha512_44715d54466e8ed30f2735d3050d5a84189a120aaf5471f1dd94525c40ffd22c33ffb0a49df53a5d62ce317d97ff023dd4856babc7f71e38e4fa53c09f011eac
+        - measured_sha256_size_and_121_archive_members
+    notes:
+      - Original published archive bytes; no RECONSTRUCTED qualifier is required.
+    subject: mastra-schema-compat
+  - artifact_id: mastra-core
+    phase: before
+    classification: clean
+    coordinate: pkg:npm/%40mastra/core@1.42.0
+    version: 1.42.0
+    filename: mastra-core-1.42.0.tgz
+    path: mastra-core/before/mastra-core-1.42.0.tgz
+    sha256: 850ca5b6b806486fb1db466e513a865a14d38d5b6c6a4133442e1c13ed7a1ec0
+    size: 11910389
+    source:
+      url: https://registry.npmjs.org/@mastra/core/-/core-1.42.0.tgz
+      retrieved_at: '2026-08-13T13:51:07Z'
+      kind: official_registry
+    verification:
+      status: exact
+      basis:
+        - publisher_digest_reproduced
+        - archive_declares_version
+        - measured_sha256
+      evidence:
+        - official_npm_registry_distribution
+        - npm_sha1_90f66fe77d9eaca5f70eec56fdfd91683b3a3128_matches_bytes
+        - npm_sha512_integrity_matches_bytes
+        - embedded_name_and_version
+        - 2639_archive_members
+        - easy_day_js_dependency_absent
+        - measured_sha256_and_size
+    relates_to:
+      - phase: during
+        version: 1.42.1
+    subject: mastra-core
+  - artifact_id: mastra-core
+    phase: during
+    classification: affected
+    coordinate: pkg:npm/%40mastra/core@1.42.1
+    version: 1.42.1
+    filename: mastra-core-1.42.1.tgz
+    path: mastra-core/during/mastra-core-1.42.1.tgz
+    sha256: 2e2340f2ab71f321d3ef6fb9a7542fb9f30f3c65ba7ef924fcd8acc63829b5bf
+    size: 11764155
+    source:
+      url: https://repo.huaweicloud.com/repository/npm/%40mastra/core/-/core-1.42.1.tgz
+      original_url: https://registry.npmjs.org/%40mastra/core/-/core-1.42.1.tgz
+      retrieved_at: '2026-09-10T14:37:25.180Z'
+      kind: distribution_mirror
+    verification:
+      status: exact
+      basis:
+        - publisher_digest_reproduced
+        - coordinate_matches
+        - member_manifest_retained
+        - official_distribution_endpoint
+        - all_members_digest_matched
+        - payload_indicator_present
+        - indicator_absent
+        - measured_sha256
+      evidence:
+        - registry_sha512_integrity
+        - registry_shasum
+        - exact_package_name_and_version
+        - retained_socket_manifest_accounts_for_all_2639_members
+        - both_1_42_0_and_1_42_1_manifests_list_identical_path_sets
+        - 2638_members_have_identical_content_IDs_and_sizes_across_both_versions
+        - verified_official_1_42_0_archive_supplies_all_85_opaque_members
+        - 2554_directly_recovered_members_match_decoded_Q_SHA256
+        - exact_malicious_package_json_matches_retained_Q_SHA256
+        - reconstructed_tree_has_zero_missing_extra_or_mismatched_members
+        - OSSF_evidence_file_SHA256_values_match_reconstructed_members
+        - measured_synthetic_archive_sha256_and_size
+        - measured_sha256
+    notes:
+      - >-
+        Bound to the registry's own digest on 2026-09-10: these bytes reproduce the dist.integrity
+        npm published for this version, which settles that they are the archive the registry served
+        rather than a copy that merely claims the coordinate.
+      - >-
+        Replaced the reconstruction held until 2026-09-10: a registry mirror still serves the
+        published tarball, and these are those bytes. The rebuilt archive it supersedes was removed
+        rather than kept beside it, so a synthetic copy cannot be mistaken for the distribution.
+      - >-
+        Complete-tree reconstruction, not the removed npm tarball. The RECONSTRUCTED name and
+        tree_equivalent status are required because no authoritative whole-archive checksum is
+        available for a byte-identity comparison.
+    subject: mastra-core
+  - artifact_id: mastra-schema-compat
+    phase: after
+    classification: remediated
+    coordinate: pkg:npm/%40mastra/schema-compat@1.2.13
+    version: 1.2.13
+    filename: mastra-schema-compat-1.2.13.tgz
+    path: mastra-schema-compat/after/mastra-schema-compat-1.2.13.tgz
+    sha256: 66c761fe56d2a205583b7ff615bc71028bc65e513d23c5516bdcc20ce2f5ee7b
+    size: 924941
+    source:
+      url: https://registry.npmjs.org/@mastra/schema-compat/-/schema-compat-1.2.13.tgz
+      kind: distribution
+      retrieved_at: '2026-09-03T20:22:02Z'
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - official_registry_tarball
+        - npm_dist_integrity_sha512_reproduced
+        - measured_sha256
+    notes:
+      - The remediated release published after the compromise.
+    subject: mastra-schema-compat
+  - artifact_id: mastra-core
+    phase: after
+    classification: remediated
+    coordinate: pkg:npm/%40mastra/core@1.43.0
+    version: 1.43.0
+    filename: mastra-core-1.43.0.tgz
+    path: mastra-core/after/mastra-core-1.43.0.tgz
+    sha256: a56583de299b26270f1992980206acd101199bda38341b6a45e8874eb45c689c
+    size: 12074759
+    source:
+      url: https://registry.npmjs.org/@mastra/core/-/core-1.43.0.tgz
+      kind: distribution
+      retrieved_at: '2026-09-03T20:22:02Z'
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - official_registry_tarball
+        - npm_dist_integrity_sha512_reproduced
+        - measured_sha256
+    notes:
+      - The remediated release published after the compromise.
+    subject: mastra-core
 unresolved:
   - artifact_id: mastra-core
     phase: during
     coordinate: pkg:npm/%40mastra/core@1.42.1
-    status: timed_out
+    status: original_distribution_unavailable_tree_reconstructed
+    attempts:
+      - npm removed the 1.42.1 metadata record and canonical tarball.
+      - Forager partial mode recovered 2554 of 2639 members directly from Socket.
+      - >-
+        Socket rejected 85 opaque S-addressed bodies, but its 1.42.0 and 1.42.1 manifests map every
+        one to the same path, size, and content ID; the exact bytes were recovered from npm's
+        checksum-verified 1.42.0 archive.
+      - >-
+        No authoritative checksum for the original 1.42.1 tarball or gzip stream was found, so only
+        complete member-tree equivalence is claimed.
+    last_attempted_at: '2026-08-13T13:51:57Z'
+  - artifact_id: mastra-schema-compat
+    phase: during
+    coordinate: sha1:69dbb8c9c4e988e60c2b4d8d320fbb46acb82fb3
+    status: unavailable
     attempts:
       - >-
-        Forager batch: time=2026-08-11T09:47:17.544-04:00 level=ERROR msg="download failed"
-        target=pkg:npm/%40mastra/core@1.42.1 error="fetch archive member /CHANGELOG.md: status 400
-        for https://socketusercontent.com/blob/SWJlAhLCXJNAV3IUiooKY8jk08bc4lJGj3Yc_oxPyOoA"
-      - 'Forager batch: per-target timeout'
-    last_attempted_at: '2026-08-12T02:00:06.745Z'
+        Forager PURL/SHA-256: time=2026-09-02T11:51:01.934-04:00 level=ERROR msg="command failed"
+        error="hash 69dbb8c9c4e988e60c2b4d8d320fbb46acb82fb3 unavailable from configured sources:
+        hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has
+        no sample for 69dbb8c9c4e988e60c2b4d8d320fbb46acb82fb3: hash_not_found; triage: triage has
+        no file analysis for SHA1 69dbb8c9c4e988e60c2b4d8d320fbb46acb82fb3; malshare: download
+        returned status 404"
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:14:41.384-04:00 level=ERROR msg="command failed"
+        error="hash 69dbb8c9c4e988e60c2b4d8d320fbb46acb82fb3 unavailable from configured sources:
+        hopper: content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has
+        no sample for 69dbb8c9c4e988e60c2b4d8d320fbb46acb82fb3: hash_not_found; triage: triage has
+        no file analysis for SHA1 69dbb8c9c4e988e60c2b4d8d320fbb46acb82fb3; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:14:41.414Z'

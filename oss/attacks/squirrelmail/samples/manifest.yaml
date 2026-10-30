@@ -9,12 +9,16 @@ samples:
     sha256: 994377b650d9e947f47d1588153a4c6b6e552aced3b5dec34b2a8370e7a49678
     size: 597788
     source:
-      url: https://downloads.sourceforge.net/project/squirrelmail/stable/1.4.10a/squirrelmail-1.4.10a.tar.gz
+      url: >-
+        https://downloads.sourceforge.net/project/squirrelmail/stable/1.4.10a/squirrelmail-1.4.10a.tar.gz
       retrieved_at: '2026-08-09T13:25:43Z'
       kind: official_distribution
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - contemporary_published_md5
         - measured_md5
         - measured_sha256
@@ -23,6 +27,7 @@ samples:
         version: 1.4.11
       - phase: during
         version: 1.4.12
+    subject: squirrelmail-1-4-12
   - artifact_id: squirrelmail-1-4-12
     phase: during
     classification: malicious
@@ -38,11 +43,17 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - contemporary_researcher_diff
         - injected_fragment_preserved
         - measured_sha256
     notes:
-      - This preserves the contemporary message containing the injected code, not a poisoned release archive.
+      - >-
+        This preserves the contemporary message containing the injected code, not a poisoned release
+        archive.
+    subject: squirrelmail-1-4-12
   - artifact_id: squirrelmail-1-4-12
     phase: during
     classification: malicious
@@ -58,11 +69,17 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - exact_injected_fragment
         - contemporary_researcher_diff
         - measured_sha256
     notes:
-      - The four-line fragment was transcribed exactly from Uwe Schindler's contemporary diff report; no surrounding source context was invented.
+      - >-
+        The four-line fragment was transcribed exactly from Uwe Schindler's contemporary diff
+        report; no surrounding source context was invented.
+    subject: squirrelmail-1-4-12
   - artifact_id: squirrelmail-1-4-12
     phase: after
     classification: remediated
@@ -72,12 +89,16 @@ samples:
     sha256: 824ec927a68cdc5517c1987f09d696cf9f7f4a43c50a8c7581a65d3fdbc7cc44
     size: 617035
     source:
-      url: https://downloads.sourceforge.net/project/squirrelmail/stable/1.4.13/squirrelmail-1.4.13.tar.gz
+      url: >-
+        https://downloads.sourceforge.net/project/squirrelmail/stable/1.4.13/squirrelmail-1.4.13.tar.gz
       retrieved_at: '2026-08-09T13:25:43Z'
       kind: official_distribution
     verification:
       status: exact
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - contemporary_published_md5
         - measured_md5
         - measured_sha256
@@ -86,10 +107,308 @@ samples:
         version: 1.4.11
       - phase: during
         version: 1.4.12
+    subject: squirrelmail-1-4-12
+  - artifact_id: squirrelmail-1-4-12
+    phase: during
+    classification: malicious
+    version: 1.4.10a
+    filename: redirect-backdoored.php
+    path: squirrelmail-1-4-12/during/redirect-backdoored.php
+    sha256: ba869f086c2d346f2b476a0b829a55569c66817c4ed1164691642bd161ea7fdb
+    size: 6467
+    source:
+      kind: reconstructed_distribution
+      retrieved_at: '2026-09-03T00:00:00Z'
+      reconstruction:
+        method: evidence_fragment_spliced_into_release_member
+        base:
+          path: squirrelmail/before/squirrelmail-1.4.10a.tar.gz
+          sha256: 994377b650d9e947f47d1588153a4c6b6e552aced3b5dec34b2a8370e7a49678
+          member: src/redirect.php
+        overlay:
+          path: squirrelmail-1-4-12/during/http-base-path-backdoor.php.fragment
+          sha256: 4ae49d0ec43911ed502982bd353feec9815e81596cdb998222077afac3b94726
+          operation: apply
+          hunks: 1
+    verification:
+      status: payload_only
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - rebuilt_from_release_member_and_preserved_evidence_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        The preserved block inserted ahead of the hardcoded define, the only position where it takes
+        effect, so SM_PATH and every require_once built on it become controllable by an HTTP request
+        header.
+      - >-
+        The preserved evidence alone is not loadable source. This is src/redirect.php as the victim
+        would have received it, so the payload is analysable in the file that gives it effect.
+      - >-
+        Only this member is carried: the incident altered no other file, and the rest of the release
+        is already represented by the clean baseline in this manifest.
+    subject: squirrelmail-1-4-12
+  - artifact_id: squirrelmail-1-4-12
+    phase: before
+    classification: clean
+    version: 1.4.10a
+    filename: redirect.php
+    path: squirrelmail-1-4-12/before/redirect.php
+    sha256: ad4a764cedcc4ccb975eb1c7a724566589e4f22d8c0fb0dea3bbf3576c8c6f8b
+    size: 6336
+    source:
+      url: >-
+        https://downloads.sourceforge.net/project/squirrelmail/stable/1.4.10a/squirrelmail-1.4.10a.tar.gz
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: official_distribution_member
+      container:
+        path: squirrelmail/before/squirrelmail-1.4.10a.tar.gz
+        sha256: 994377b650d9e947f47d1588153a4c6b6e552aced3b5dec34b2a8370e7a49678
+        member: src/redirect.php
+    verification:
+      status: exact
+      basis:
+        - derived_from_sample_in_this_record
+        - measured_sha256
+      evidence:
+        - extracted_from_the_official_release_archive_held_in_this_manifest
+        - measured_sha256
+    notes:
+      - >-
+        src/redirect.php exactly as the official release ships it, carried as its own sample so the
+        backdoored counterpart can be diffed against it directly.
+      - >-
+        The bytes were taken from squirrelmail/before/squirrelmail-1.4.10a.tar.gz, which is held in
+        this manifest and verified against the release URL below; they were not fetched separately.
+      - Pairs with redirect-backdoored.php in the during phase.
+    subject: squirrelmail-1-4-12
+  - artifact_id: squirrelmail-sasql
+    phase: before
+    classification: clean
+    filename: sasql-3.2.0.tar.gz
+    path: squirrelmail-sasql/before/sasql-3.2.0.tar.gz
+    sha256: af4d0b37116a532b5a2398620ad7be4b914966e3957da1f2df51f968a1597a56
+    size: 41392
+    source:
+      url: >-
+        https://web.archive.org/web/20071025064405id_/http://www.squirrelmail.org/plugins/sasql-3.2.0.tar.gz
+      original_url: http://www.squirrelmail.org/plugins/sasql-3.2.0.tar.gz
+      retrieved_at: '2026-09-10T13:12:00Z'
+      kind: web_archive
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - reported_md5
+        - wayback_original_replay
+        - measured_sha256
+    notes:
+      - >-
+        Captured 2007-10-25, twenty months before the June 2009 web-server compromise, so these
+        bytes are the plugin as published before any tampering. Their MD5 is exactly the a492922e...
+        value SquirrelMail gave for the restored archive in the 2009-07-30 notice, which establishes
+        that the restoration returned the original bytes and that the poisoned archive differed from
+        both.
+    subject: squirrelmail-sasql
+    version: 3.2.0
+  - artifact_id: squirrelmail-multilogin
+    phase: before
+    classification: clean
+    filename: multilogin-2.4-1.2.9.tar.gz
+    path: squirrelmail-multilogin/before/multilogin-2.4-1.2.9.tar.gz
+    sha256: 02a9f40b0d26920512b3db4c9f2799346605adaca2f596cbae6315d1e1b2061c
+    size: 20473
+    source:
+      url: >-
+        https://web.archive.org/web/20100803013343id_/http://www.squirrelmail.org/plugins/multilogin-2.4-1.2.9.tar.gz
+      original_url: http://www.squirrelmail.org/plugins/multilogin-2.4-1.2.9.tar.gz
+      retrieved_at: '2026-09-10T13:12:00Z'
+      kind: web_archive
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - reported_md5
+        - wayback_original_replay
+        - measured_sha256
+    notes:
+      - >-
+        Captured 2010-08-03, after the restoration. Its MD5 is exactly the b143f2dc... value the
+        2009-07-30 notice published for the clean archive, so these are the restored bytes rather
+        than an unverified later build. No capture exists inside the June-July 2009 poisoned window.
+    subject: squirrelmail-multilogin
+    version: 2.4-1.2.9
+  - artifact_id: squirrelmail-change-pass
+    phase: before
+    classification: clean
+    filename: change_pass-3.0-1.4.0.tar.gz
+    path: squirrelmail-change-pass/before/change_pass-3.0-1.4.0.tar.gz
+    sha256: ba96d8f6487cfd129f790e3ea416efceb8ff2f051af40197231959560e2903a1
+    size: 12637
+    source:
+      url: >-
+        https://web.archive.org/web/20100803015258id_/http://www.squirrelmail.org/plugins/change_pass-3.0-1.4.0.tar.gz
+      original_url: http://www.squirrelmail.org/plugins/change_pass-3.0-1.4.0.tar.gz
+      retrieved_at: '2026-09-10T13:12:00Z'
+      kind: web_archive
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - web_archive_replay
+        - measured_sha256
+      evidence:
+        - reported_md5
+        - wayback_original_replay
+        - measured_sha256
+    notes:
+      - >-
+        Captured 2010-08-03, after the restoration. Its MD5 is exactly the 2cff7c5d... value the
+        2009-07-30 notice published for the clean archive. No capture exists inside the June-July
+        2009 poisoned window.
+    subject: squirrelmail-change-pass
+    version: 3.0-1.4.0
+  - artifact_id: squirrelmail-1-4-11
+    phase: after
+    classification: clean
+    version: 1.4.13
+    filename: squirrelmail-1.4.13.tar.gz
+    path: squirrelmail-1-4-11/after/squirrelmail-1.4.13.tar.gz
+    sha256: 824ec927a68cdc5517c1987f09d696cf9f7f4a43c50a8c7581a65d3fdbc7cc44
+    size: 617035
+    source:
+      url: >-
+        https://downloads.sourceforge.net/project/squirrelmail/stable/1.4.13/squirrelmail-1.4.13.tar.gz
+      retrieved_at: '2026-09-11T00:05:05.446Z'
+      kind: distribution
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - archive_declares_version
+        - measured_sha256
+      evidence:
+        - official_distribution_endpoint
+        - archive_declares_version
+        - measured_sha256
+    notes:
+      - The remediated release this record names as the fix, from the project's own distribution.
+      - The archive's top-level directory is named for version 1.4.13.
+    subject: squirrelmail-1-4-11
 unresolved:
   - artifact_id: squirrelmail-1-4-12
     phase: during
     status: poisoned_release_archives_unavailable_fragment_recovered
+    attempts:
+      - >-
+        Wayback host sweep, 2026-09-10: asked the CDX index for every archived file with an
+        installer extension under squirrelmail.org between 2009-06-18 and 2009-07-30 (three days
+        either side). No capture exists. The vendor download was not archived while it was
+        compromised.
+      - >-
+        Wayback CDX, 2026-09-10: no capture of squirrelmail.org/plugins/ or
+        www.squirrelmail.org/plugins/ at any date in 2009-2010, and none of the countdl.php download
+        endpoint. The project replaced the three tampered archives after discovery, so what the site
+        serves now is the corrected release, and the tampered bytes were never archived.
+    last_attempted_at: '2026-09-10T22:51:24Z'
   - artifact_id: squirrelmail-1-4-11
     phase: during
     status: poisoned_release_archives_unavailable
+    attempts:
+      - >-
+        Wayback host sweep, 2026-09-10: asked the CDX index for every archived file with an
+        installer extension under squirrelmail.org between 2009-06-18 and 2009-07-30 (three days
+        either side). No capture exists. The vendor download was not archived while it was
+        compromised.
+      - >-
+        Wayback CDX, 2026-09-10: no capture of squirrelmail.org/plugins/ or
+        www.squirrelmail.org/plugins/ at any date in 2009-2010, and none of the countdl.php download
+        endpoint. The project replaced the three tampered archives after discovery, so what the site
+        serves now is the corrected release, and the tampered bytes were never archived.
+    last_attempted_at: '2026-09-10T22:51:24Z'
+  - artifact_id: squirrelmail-sasql
+    phase: during
+    status: poisoned_archive_never_captured
+    attempts:
+      - >-
+        The Wayback Machine holds this archive at several dates, but none inside the 2009-06-18 to
+        2009-07-30 window in which SquirrelMail says it was poisoned, and every capture on either
+        side carries the same content digest.
+      - >-
+        SquirrelMail published MD5s only for the restored clean archives, so no digest of the
+        poisoned bytes exists to query the malware feeds with.
+      - >-
+        Distribution mirrors are no help: SourceForge and the distributions packaged from source
+        control, which the project said was never touched, so their copies are the clean archive by
+        construction.
+      - >-
+        Wayback host sweep, 2026-09-10: asked the CDX index for every archived file with an
+        installer extension under squirrelmail.org between 2009-06-18 and 2009-07-30 (three days
+        either side). No capture exists. The vendor download was not archived while it was
+        compromised.
+      - >-
+        Wayback CDX, 2026-09-10: no capture of squirrelmail.org/plugins/ or
+        www.squirrelmail.org/plugins/ at any date in 2009-2010, and none of the countdl.php download
+        endpoint. The project replaced the three tampered archives after discovery, so what the site
+        serves now is the corrected release, and the tampered bytes were never archived.
+    last_attempted_at: '2026-09-10T22:51:24Z'
+  - artifact_id: squirrelmail-multilogin
+    phase: during
+    status: poisoned_archive_never_captured
+    attempts:
+      - >-
+        The Wayback Machine holds this archive at several dates, but none inside the 2009-06-18 to
+        2009-07-30 window in which SquirrelMail says it was poisoned, and every capture on either
+        side carries the same content digest.
+      - >-
+        SquirrelMail published MD5s only for the restored clean archives, so no digest of the
+        poisoned bytes exists to query the malware feeds with.
+      - >-
+        Distribution mirrors are no help: SourceForge and the distributions packaged from source
+        control, which the project said was never touched, so their copies are the clean archive by
+        construction.
+      - >-
+        Wayback host sweep, 2026-09-10: asked the CDX index for every archived file with an
+        installer extension under squirrelmail.org between 2009-06-18 and 2009-07-30 (three days
+        either side). No capture exists. The vendor download was not archived while it was
+        compromised.
+      - >-
+        Wayback CDX, 2026-09-10: no capture of squirrelmail.org/plugins/ or
+        www.squirrelmail.org/plugins/ at any date in 2009-2010, and none of the countdl.php download
+        endpoint. The project replaced the three tampered archives after discovery, so what the site
+        serves now is the corrected release, and the tampered bytes were never archived.
+    last_attempted_at: '2026-09-10T22:51:24Z'
+  - artifact_id: squirrelmail-change-pass
+    phase: during
+    status: poisoned_archive_never_captured
+    attempts:
+      - >-
+        The Wayback Machine holds this archive at several dates, but none inside the 2009-06-18 to
+        2009-07-30 window in which SquirrelMail says it was poisoned, and every capture on either
+        side carries the same content digest.
+      - >-
+        SquirrelMail published MD5s only for the restored clean archives, so no digest of the
+        poisoned bytes exists to query the malware feeds with.
+      - >-
+        Distribution mirrors are no help: SourceForge and the distributions packaged from source
+        control, which the project said was never touched, so their copies are the clean archive by
+        construction.
+      - >-
+        Wayback host sweep, 2026-09-10: asked the CDX index for every archived file with an
+        installer extension under squirrelmail.org between 2009-06-18 and 2009-07-30 (three days
+        either side). No capture exists. The vendor download was not archived while it was
+        compromised.
+      - >-
+        Wayback CDX, 2026-09-10: no capture of squirrelmail.org/plugins/ or
+        www.squirrelmail.org/plugins/ at any date in 2009-2010, and none of the countdl.php download
+        endpoint. The project replaced the three tampered archives after discovery, so what the site
+        serves now is the corrected release, and the tampered bytes were never archived.
+    last_attempted_at: '2026-09-10T22:51:24Z'

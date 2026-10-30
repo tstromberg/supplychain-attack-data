@@ -1,18 +1,19 @@
 - id: pear
   title: PEAR installer served Perl backdoor
   synopsis: >-
-    The official go-pear.phar installer on pear.php.net was replaced for roughly six months.
+    The official go-pear.phar installer on pear.php.net was replaced for roughly a month, between
+    the last clean release on 2018-12-20 and the discovery on 2019-01-19.
     The malicious installer enabled a Perl backdoor and exposed systems that built PEAR from
     the official site.
   story: |-
     PEAR was an old distribution root for PHP code, and `go-pear.phar` was its bootstrap installer. In January 2019, maintainers found that the copy served from `pear.php.net` had been replaced on the project server.
 
-    The exposure window was long. PEAR warned that anyone who downloaded `go-pear.phar` during the prior six months should compare it against the clean GitHub copy. Rapid7 reported that, to PEAR's knowledge at the time, only the copy on `pear.php.net` was known to be affected.
+    PEAR's own follow-up placed the taint after the last official file release on 2018-12-20 and said it had no concrete evidence that anyone downloading before that date received an infected file; thePHP.cc independently bounds the window to 2018-12-20 through 2019-01-18. The widely repeated "six months" was PEAR's precautionary advice about who should re-download, not a measured exposure window, and Rapid7 and cPanel both reported it as speculative. PEAR warned that anyone who downloaded `go-pear.phar` during the prior six months should compare it against the clean GitHub copy. Rapid7 reported that, to PEAR's knowledge at the time, only the copy on `pear.php.net` was known to be affected.
 
     cPanel described the malicious installer as an extractor that enabled a Perl backdoor and opened a shell to a remote infected server. That gave the attacker a path to install applications, run code, and capture sensitive data. DCSO published a MISP event for defenders under UUID `5c46dd16-2ed0-4604-ab12-181cac12042b`.
 
     The project took most of `pear.php.net` offline while it investigated. Users were told to fetch the same release from `pear/pearweb_phars`, compare hashes, and treat mismatches as compromise evidence. This was not dependency confusion or a lookalike package; it was the official installer file, served from the official site, replaced in place.
-  start_date: 2018-06-20
+  start_date: 2018-12-20
   end_date: 2019-01-19
   target:
     name: pear
@@ -37,7 +38,7 @@
     name: pear
     kind: binary_archive
     website: https://pear.php.net
-    start_date: 2018-06-20
+    start_date: 2018-12-20
     end_date: 2019-01-19
     locations:
     - uri: http://pear.php.net/go-pear.phar
@@ -52,6 +53,13 @@
     hashes:
     - sha1:1e623a48b8991980e93896153651135ab7ab82a0
     - md5:1e26d9dd3110af79a9595f1a77a82de7
+    - sha256: f74c4406c53e5b0187b8b1cfeb5b74f88ac9294acca29bdba8bd11371b2245e8
+      of: archive
+      role: malicious
+      note: >-
+        Resolved from the md5 1e26d9dd3110af79a9595f1a77a82de7 via VirusTotal on 2026-09-10,
+        reported as 3604833 bytes, 24 engines detect it. The bytes are not held; the SHA-256 lets
+        the SHA-256-only digest lanes reach it.
     indicators:
     - kind: file
       value: go-pear.phar

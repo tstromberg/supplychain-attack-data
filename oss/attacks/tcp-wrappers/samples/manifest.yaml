@@ -19,11 +19,14 @@ samples:
     verification:
       status: exact
       basis:
+        - measured_sha256
+      evidence:
         - cert_md5_e6fa25f71226d090f34de3f6b122fb5a
         - cert_size_99438
         - measured_sha256
     notes:
       - Debian's filename adds .q, but the bytes match CERT's clean tcp_wrappers_7.6.tar.gz exactly.
+    subject: tcp-wrappers
   - artifact_id: tcp-wrappers
     phase: during
     classification: malicious
@@ -39,6 +42,9 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - maintainer_published_complete_diff
         - independent_bugtraq_archive_corroboration
         - measured_sha256
@@ -46,6 +52,7 @@ samples:
       - >-
         This preserves Wietse Venema's contemporary message and complete malicious diff, not the
         poisoned release archive.
+    subject: tcp-wrappers
   - artifact_id: tcp-wrappers
     phase: during
     classification: malicious
@@ -61,6 +68,9 @@ samples:
     verification:
       status: payload_only
       basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
         - maintainer_published_complete_diff
         - independent_bugtraq_archive_corroboration
         - measured_sha256
@@ -74,12 +84,88 @@ samples:
       - >-
         The mailing-list HTML mirrors may have normalized tabs, so this is reconstruction evidence
         rather than a mechanically verified patch.
+    subject: tcp-wrappers
+  - artifact_id: tcp-wrappers
+    phase: during
+    classification: malicious
+    version: '7.6'
+    filename: tcp_wrappers_7.6-RECONSTRUCTED-PARTIAL.tar.gz
+    path: tcp-wrappers/during/tcp_wrappers_7.6-RECONSTRUCTED-PARTIAL.tar.gz
+    sha256: aecb9ad5c7c48d7782a34ff8ef6c9fd127f8b7866629c8dc6cc4e417ab97abe3
+    size: 97330
+    source:
+      retrieved_at: '2026-09-03T00:00:00Z'
+      kind: reconstructed_distribution
+      reconstruction:
+        method: upstream_tarball_plus_hand_applied_advisory_excerpt
+        direction: >-
+          The retained diff is a 59-line advisory excerpt, not a complete diff: its tcpd.c hunk ends
+          mid-hunk and its Makefile context does not match this distribution of 7.6, so patch(1)
+          cannot apply it. Both documented changes were applied by hand from the excerpt.
+        base:
+          path: tcp-wrappers/before/tcp_wrappers_7.6.tar.gz
+          sha256: 9543d7adedf78a6de0b221ccbbd1952e08b5138717f4ade814039bb489a4315d
+          member_count: 57
+        retained_manifest:
+          url: https://www.opennet.ru/base/netsoft/22.txt.html
+          path: tcp-wrappers/during/tcp_wrappers_7.6-backdoor.diff
+          sha256: b13a9280e9c44a3d704eca728c28dbf79b65c44c6350fd9bdfa5692d8fc33f4f
+          member_count: 2
+          member_hash: diff_hunk_target_paths
+        overlays:
+          - path: tcpd.c
+            operation: hand_applied_from_advisory_excerpt
+            sha256: d8592660d5449d778901bd03e2eb36e3c2fb208aa6751241758ad2460dbe59f1
+          - path: Makefile
+            operation: hand_applied_from_advisory_excerpt
+            sha256: ab94abc0e34d2f4c181be4095064ac0a4f36117dd90ea6f0a70366bbc9adcd2d
+        unchanged_members:
+          count: 54
+          verification: inherited_byte_for_byte_from_the_verified_upstream_tarball
+        packaging:
+          format: tar.gz
+          path_order: sorted
+          normalized: member mtime, uid/gid and owner names zeroed; gzip mtime 0
+          original_archive_bytes_recovered: false
+        complete_attack_record: false
+    verification:
+      status: payload_only
+      basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - clean_upstream_tarball_verified_exact_in_before_phase
+        - both_documented_changes_applied_verbatim_from_advisory_excerpt
+        - trigger_constant_and_beacon_address_present_in_rebuilt_tree
+        - measured_sha256_and_size
+    notes:
+      - >-
+        PARTIAL: derived from a truncated advisory excerpt rather than a complete diff, so the
+        changed members are a faithful transcription of the documented backdoor and not a verified
+        reproduction of the trojaned release. The unchanged members are the authentic upstream.
+      - >-
+        The excerpt's third change comments out KILL_OPT. This distribution of 7.6 already ships it
+        commented, so that change is a no-op here rather than a missing step: the quoted diff was
+        taken against a build that had it enabled.
+      - 'Synthetic archive: member order is sorted and timestamps are normalized.'
+      - >-
+        tcpd.c gains a source-port trigger: a connection arriving from port 421 is sent an IDENT
+        banner and handed an interactive /bin/csh, ahead of every access-control check. The Makefile
+        gains a build-time beacon mailing `whoami` and `uname -a` to the operator.
+    subject: tcp-wrappers
 unresolved:
   - artifact_id: tcp-wrappers
     phase: during
     version: '7.6'
     hash: md5:af7f76fb9960a95a1341c1777b48f1df
     status: original_distribution_unavailable_complete_diff_recovered
+    attempts:
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'
   - artifact_id: tcp-wrappers
     phase: during
     coordinate: md5:af7f76fb9960a95a1341c1777b48f1df
@@ -91,4 +177,15 @@ unresolved:
         malwarebazaar: MalwareBazaar has no sample for af7f76fb9960a95a1341c1777b48f1df:
         hash_not_found; triage: Triage has no file analysis for MD5
         af7f76fb9960a95a1341c1777b48f1df; malshare: download returned status 404"
-    last_attempted_at: '2026-08-10T17:56:57.574Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:16:33.340-04:00 level=ERROR msg="command failed"
+        error="hash af7f76fb9960a95a1341c1777b48f1df unavailable from configured sources: hopper:
+        content-addressed Hopper lookup requires SHA-256; malwarebazaar: MalwareBazaar has no sample
+        for af7f76fb9960a95a1341c1777b48f1df: hash_not_found; triage: triage has no file analysis
+        for MD5 af7f76fb9960a95a1341c1777b48f1df; malshare: download returned status 404"
+      - >-
+        MD5-to-SHA-256 conversion, 2026-09-10: of 1 md5 digest(s) this record names, VirusTotal
+        knows 0 and has never seen 1. Triage and MalShare index SHA-1 and SHA-256 only, so an md5
+        VirusTotal cannot resolve is unreachable by every digest lane; such a digest is either wrong
+        or names a file no public collection holds.
+    last_attempted_at: '2026-09-10T21:29:07Z'

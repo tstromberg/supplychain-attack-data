@@ -30,13 +30,22 @@
 
     Propagation ran two ways. The worm committed binaries into victims' GitHub
     repositories as build hooks, attributing the commits to "claude" so they read
-    as AI tooling output, and it replaced GitHub Actions workflows with versions
+    as AI tooling output, and it carried logic, which JFrog never observed fire in the wild, to replace
+    GitHub Actions workflows with versions
     that exfiltrated `${{ toJSON(secrets) }}`, attributing those to bot identities
     such as `dependabot`. It then abused npm's trusted publishing through OIDC to
     release poisoned versions under the compromised developers' names. JFrog
     counted 57 backdated commits across nine compromised GitHub organizations and
     said it could not match the implant, the rootkit, or the C2 tooling to any
     known family, indicating a custom-built operation.
+  pull_quote:
+    text: >-
+      The credential scanner had a skip list with one entry: a complete
+      twelve-word BIP-39 recovery phrase. The operator taught his wallet
+      stealer not to rob him, and shipped his own seed to everyone who
+      unpacked the binary.
+    caption: the one wallet it skipped
+    after: 1
   start_date: 2026-06-03
   end_date: 2026-06-05
   target:
@@ -77,24 +86,22 @@
   - kind: commit_author
     value: dependabot
   notes:
-  - JFrog enumerated 37 packages with one malicious version each, published from the
-    compromised asteroiddao account and from other maintainer accounts reached through
-    stolen credentials. Those coordinates are recorded on the artifacts here. The record
-    previously carried a single artifact with a placeholder version and an all-zero
-    SHA-256 standing in for unknown bytes; both are replaced.
-  - Reported package counts vary between 36 and 37 depending on source and collection
-    date. JFrog reported 57 backdated commits across nine compromised GitHub organizations,
-    concentrated in the Arweave and WeaveDB ecosystem.
-  - The implant is a 976 KB Rust ELF executed from a preinstall hook. Per-call-site string
-    encryption means each string must be recovered individually, which slowed analysis.
-  - JFrog found no match to any known infostealer, eBPF rootkit framework, or C2 toolkit,
-    and assessed the operation as custom-built with dedicated infrastructure.
-  - The operator's own cryptocurrency wallet recovery phrase was hardcoded into the
-    malware's skip list so the wallet stealer would not target it.
   - >-
-    OSSF malicious-package records preserve complete npm archive checksums for 31 of the
-    releases. Together with four archives already recovered from npm, 35 of the 37 artifact
-    records now have whole-file hashes; wdb-core 0.1.2 and hbsig 0.3.2 remain unavailable.
+    JFrog enumerated 37 packages with one malicious version each, published from the compromised
+    asteroiddao account and from other maintainer accounts reached with stolen credentials.
+    Reported counts vary between 36 and 37 by source.
+  - >-
+    JFrog reported 57 backdated commits across nine compromised GitHub organizations,
+    concentrated in the Arweave and WeaveDB ecosystem, and found no match to any known
+    infostealer, rootkit framework or C2 toolkit.
+  - >-
+    The implant is a 976 KB Rust ELF run from a preinstall hook, with per-call-site string
+    encryption that slowed analysis. The operator's own wallet recovery phrase is hardcoded into
+    its skip list.
+  - >-
+    OSSF records preserve npm checksums for 31 releases; with four from npm and hbsig 0.3.2 from
+    npmmirror, 36 of 37 artifacts have whole-file hashes. wdb-core 0.1.2 is reconstructed in the
+    samples manifest and stays unhashed here.
   artifacts:
   - id: weavedb-lite
     name: weavedb-lite
@@ -476,6 +483,8 @@
     - 0.5.6
     hashes:
     - sha256:a49a3c1b7ec66a7f5ae1931e889425359cd9ee6b4f5c562a02ba359bc1b0e1f2
+    - sha1:7262681647715f30866efa1297c35d613c2a3378
+    - sha512:b9a73f3a68c77f9a281d6fdadb48ea755c0ae44f4e19d3ff0144e4fc3b5929e1df992f012456a8219826e63d257439ff8389558343691c6afcb4959dd82820a1
     locations:
     - uri: https://www.npmjs.com/package/cwao
       role: distribution
@@ -484,6 +493,8 @@
     notes:
     - The SHA-256 identifies the complete 0.5.6 tarball retained by the official npm
       registry; its bytes also match npm's signed SHA-512 integrity record.
+    - OSSF MAL-2026-4544 maps the SHA-1 and SHA-512 checksums to the complete
+      cwao-0.5.6.tgz npm archive.
   - id: weavedb-client
     name: weavedb-client
     package: weavedb-client
@@ -597,6 +608,8 @@
     - 0.1.4
     hashes:
     - sha256:7afae58a05e930bbeaefda90a11b93e553af398b529c886c102a353f41865930
+    - sha1:3a327976602c78a813813713716657dd26b00a82
+    - sha512:fa6ea4349f98e457b5c3b6225497170724d205c16ccff16297913bdfe15d4861647facf4f445c72b40b2ca47fbb947d84dedcf2f75331c11a529d0a93f82e712
     locations:
     - uri: https://www.npmjs.com/package/arjson
       role: distribution
@@ -605,6 +618,8 @@
     notes:
     - The SHA-256 identifies the complete 0.1.4 tarball retained by the official npm
       registry; its bytes also match npm's signed SHA-512 integrity record.
+    - OSSF MAL-2026-5189 maps the SHA-1 and SHA-512 checksums to the complete
+      arjson-0.1.4.tgz npm archive.
   - id: hbsig
     name: hbsig
     package: hbsig
@@ -614,9 +629,20 @@
     end_date: 2026-06-05
     versions:
     - 0.3.2
+    hashes:
+    - sha256:e7a4e87b0dff6621f453c0c25baf908bbb9884df0d69c8e9e98d01d681e6f993
+    - sha1:f6d6e3db49c24a175aa20f7f80379631d5230688
+    - sha512:a357d8023dc943e05b71250a945e099890f3634a054b8b99a71fdb2f0146ead04b79765a245afd8c344d3c7d27815c82abc6c09097d35fc9fc958f866e5fac60
     locations:
     - uri: https://www.npmjs.com/package/hbsig
       role: distribution
+    - uri: https://registry.npmmirror.com/hbsig/-/hbsig-0.3.2.tgz
+      role: mirror
+    notes:
+    - >-
+      npmmirror retained npm's complete 0.3.2 version record and tarball. The 1,088,239-byte
+      archive matches both the retained SHA-1 shasum and the signed SHA-512 integrity value;
+      SHA-256 was measured over those verified bytes.
   - id: zkjson
     name: zkjson
     package: zkjson
@@ -628,6 +654,8 @@
     - 0.8.5
     hashes:
     - sha256:3dcae29780a4658bacb3e220abb7c95d877d627471d8d6799951716d2036c6ab
+    - sha1:9eb45e87eaca9900daff4bb64dc0ca2cd2bd9ab4
+    - sha512:1074eff8fff6516b18676cfb36f952f6727d0340d33d8a3f69634320654884a44a785317bacf37f8183c6f9675a32b1ed91958e34da8ff71c42728dd3b225231
     locations:
     - uri: https://www.npmjs.com/package/zkjson
       role: distribution
@@ -636,6 +664,8 @@
     notes:
     - The SHA-256 identifies the complete 0.8.5 tarball retained by the official npm
       registry; its bytes also match npm's signed SHA-512 integrity record.
+    - OSSF MAL-2026-4739 maps the SHA-1 and SHA-512 checksums to the complete
+      zkjson-0.8.5.tgz npm archive.
   - id: aonote
     name: aonote
     package: aonote
@@ -715,6 +745,8 @@
     - 0.45.3
     hashes:
     - sha256:0c16ee8a8c1f5b51b01bce924e173030f032912d5b66f1a564fd636a67ddbf5f
+    - sha1:7750bab1a6c48831b5a889e6b799d1684d0a4f2a
+    - sha512:142052c2c13605f974de16aeda25b98c507962e6b0d018fa9824bb8abe8f101a04637718ee21821f3905b19670a05031e89fa005711b793caab82feb878291ed
     locations:
     - uri: https://www.npmjs.com/package/weavedb-sdk
       role: distribution
@@ -723,6 +755,8 @@
     notes:
     - The SHA-256 identifies the complete 0.45.3 tarball retained by the official npm
       registry; its bytes also match npm's signed SHA-512 integrity record.
+    - OSSF MAL-2026-4723 maps the SHA-1 and SHA-512 checksums to the complete
+      weavedb-sdk-0.45.3.tgz npm archive.
   references:
   - url: https://research.jfrog.com/post/iron-worm-shai-hulud-rustier-cousin/
     title: 'IronWorm: Shai-Hulud''s rustier cousin - JFrog Security Research'
@@ -735,3 +769,13 @@
     title: IronWorm campaign - SafeDep Threat Intelligence
   - url: https://github.com/ossf/malicious-packages
     title: OSSF malicious-packages database
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/cwao/MAL-2026-4544.json
+    title: OSSF MAL-2026-4544 package-integrity record for cwao 0.5.6
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/arjson/MAL-2026-5189.json
+    title: OSSF MAL-2026-5189 package-integrity record for arjson 0.1.4
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/zkjson/MAL-2026-4739.json
+    title: OSSF MAL-2026-4739 package-integrity record for zkjson 0.8.5
+  - url: https://raw.githubusercontent.com/ossf/malicious-packages/78ab234a240f315d40d2b974e59ac75943a20838/osv/malicious/npm/weavedb-sdk/MAL-2026-4723.json
+    title: OSSF MAL-2026-4723 package-integrity record for weavedb-sdk 0.45.3
+  - url: https://registry.npmmirror.com/hbsig
+    title: npmmirror retained npm metadata and dist integrity for hbsig 0.3.2

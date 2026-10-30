@@ -1,6 +1,38 @@
 schema_version: 1
 samples:
   - artifact_id: solana-web3-js
+    phase: during
+    classification: malicious
+    filename: add-to-queue.fragment
+    path: solana-web3-js/during/add-to-queue.fragment
+    sha256: d57b27bf64c546d010eeb54d7018cee7909bbc06883002c8a7d7ce0806928eaa
+    size: 550
+    source:
+      url: https://socket.dev/blog/supply-chain-attack-solana-web3-js-library
+      retrieved_at: '2026-08-15T00:10:00Z'
+      kind: extracted_research_evidence
+    verification:
+      status: payload_only
+      basis:
+        - measured_sha256
+      evidence:
+        - diff_image_transcription
+        - measured_sha256
+    relates_to:
+      - phase: during
+        version: 1.95.6
+        artifact_id: solana-web3-js
+      - phase: during
+        version: 1.95.7
+        artifact_id: solana-web3-js
+    notes:
+      - >-
+        Bounded transcription of the report's diff screenshots: addToQueue base58-encodes key
+        material, queues it, and POSTs derived header values to sol-rpc.xyz; the shown call sites
+        pass generated secret keys and an imported private key. This is not a reconstructed npm
+        archive and does not establish which surrounding bundle member contained the changes.
+    subject: solana-web3-js
+  - artifact_id: solana-web3-js
     phase: after
     classification: remediated
     coordinate: pkg:npm/%40solana/web3.js@1.95.8
@@ -18,6 +50,9 @@ samples:
       basis:
         - official_distribution_endpoint
         - measured_sha256
+      evidence:
+        - official_distribution_endpoint
+        - measured_sha256
     relates_to:
       - phase: during
         version: 1.95.6
@@ -25,6 +60,78 @@ samples:
         version: 1.95.7
     notes:
       - Known fixed/remediated release identified by the incident record.
+    subject: solana-web3-js
+  - artifact_id: solana-web3-js
+    phase: before
+    classification: clean
+    coordinate: pkg:npm/%40solana/web3.js@1.95.5
+    version: 1.95.5
+    filename: solana-web3.js-1.95.5.tgz
+    path: solana-web3-js/before/solana-web3.js-1.95.5.tgz
+    sha256: 31d3ac6649e797e4f9f2b49a1bfcc58ca60a5d01da429524bc4d5427fa7b3961
+    size: 2135590
+    source:
+      url: https://registry.npmjs.org/@solana/web3.js/-/web3.js-1.95.5.tgz
+      kind: distribution
+      retrieved_at: '2026-09-04T01:16:21Z'
+    verification:
+      status: exact
+      basis:
+        - official_distribution_endpoint
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
+        - official_registry_tarball
+        - npm_dist_integrity_sha512_reproduced
+        - measured_sha256
+    notes:
+      - The highest version the registry still publishes below the earliest compromised release.
+    subject: solana-web3-js
+  - artifact_id: solana-web3-js
+    phase: during
+    classification: malicious
+    coordinate: pkg:npm/%40solana/web3.js@1.95.7
+    version: 1.95.7
+    filename: solana-web3.js-1.95.7.tgz
+    path: solana-web3-js/during/solana-web3.js-1.95.7.tgz
+    sha256: 97c3b6aa63c1956588ce32d4235582d8a4f6c4f92efb75bcd78070fb80cecd1d
+    size: 2149079
+    source:
+      url: https://repo.huaweicloud.com/repository/npm/%40solana/web3.js/-/web3.js-1.95.7.tgz
+      original_url: https://registry.npmjs.org/%40solana/web3.js/-/web3.js-1.95.7.tgz
+      retrieved_at: '2026-09-10T14:44:34.277Z'
+      kind: distribution_mirror
+    verification:
+      status: probable_exact
+      basis:
+        - distribution_mirror
+        - coordinate_matches
+        - publisher_digest_reproduced
+        - payload_indicator_present
+        - measured_sha256
+      evidence:
+        - distribution_mirror_retained_published_tarball
+        - exact_package_name_and_version
+        - all_78_members_match_independent_jsdelivr_sha256_inventory
+        - malicious_addtoqueue_and_sol_rpc_xyz_iocs_present
+        - measured_archive_sha256_and_size
+        - measured_sha256
+    notes:
+      - >-
+        Recorded as tree_equivalent until 2026-09-10 although these bytes came from a registry
+        mirror that still had the published tarball. Re-fetched and found unchanged, so the status
+        was wrong rather than the bytes: this is the published archive, not a reconstruction of one.
+        Any note below calling the container digest mirror-specific is superseded — a caching proxy
+        serves the tarball it cached and does not re-pack one, so the container is npm's.
+      - >-
+        Complete 78-file package tree retained by Huawei Cloud after npm removed 1.95.7. Every
+        member name, size, and SHA-256 matches jsDelivr's independent flat inventory. The archive
+        container's digest is mirror-specific, so this is tree-equivalent rather than claimed as the
+        byte-identical npm tarball.
+      - >-
+        package/lib/index.cjs.js contains addToQueue, sol-rpc.xyz, and the reported private-key call
+        sites, independently confirming that these are the malicious release bytes.
+    subject: solana-web3-js
 unresolved:
   - artifact_id: solana-web3-js
     phase: during
@@ -48,18 +155,25 @@ unresolved:
         Triage has no file analysis for SHA256
         cd9e0af30eee5b6935335e7969f9866d595b0c5301e15a2be54c9373f067f9d3; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:57.353Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:16:36.259-04:00 level=ERROR msg="command failed"
+        error="hash cd9e0af30eee5b6935335e7969f9866d595b0c5301e15a2be54c9373f067f9d3 unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/cd9e0af30eee5b6935335e7969f9866d595b0c5301e15a2be54c9373f067f9d3;
+        malwarebazaar: MalwareBazaar has no sample for
+        cd9e0af30eee5b6935335e7969f9866d595b0c5301e15a2be54c9373f067f9d3: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        cd9e0af30eee5b6935335e7969f9866d595b0c5301e15a2be54c9373f067f9d3; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:16:36.272Z'
   - artifact_id: solana-web3-js
     phase: during
     coordinate: pkg:npm/%40solana/web3.js@1.95.6
-    status: timed_out
+    status: unavailable
     attempts:
       - 'Forager PURL: per-target timeout'
-    last_attempted_at: '2026-08-10T14:53:49.417Z'
-  - artifact_id: solana-web3-js
-    phase: during
-    coordinate: pkg:npm/%40solana/web3.js@1.95.7
-    status: timed_out
-    attempts:
-      - 'Forager PURL: per-target timeout'
-    last_attempted_at: '2026-08-10T14:53:49.426Z'
+      - 'Forager batch: per-target timeout'
+      - 'huaweicloud: HTTP 404'
+      - 'npmmirror: HTTP 404'
+      - 'tencent: HTTP 451'
+    last_attempted_at: '2026-09-10T12:36:01.435Z'

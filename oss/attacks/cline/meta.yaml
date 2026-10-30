@@ -20,7 +20,9 @@
     earlier disclosed a prompt-injection weakness in Cline's AI-driven issue
     triage workflow, showing how a carefully written GitHub issue could
     manipulate the automation that held release credentials. Cline removed the
-    workflow, but the long-lived npm token it relied on was never revoked. A
+    workflow, but the rotation that followed failed: the wrong token was deleted, and
+    npm's org-level token page showed zero active tokens while the exposed one stayed
+    live. A
     different actor later used that token to publish 2.3.0. Endor Labs, which
     reverse-engineered the tarball (SHA-256
     `c5b2c21abdf0606a881f293e1cce61d38b90dac0ae647a943d36464530fbf804`), noted
@@ -35,6 +37,13 @@
     that AI-driven project automation has effectively become release
     infrastructure. When prompt injection can reach that automation, ordinary
     registry credentials are what get left behind.
+  pull_quote:
+    text: >-
+      Cline did try to rotate the npm token. The wrong one was deleted, and
+      npm's org-level token page showed zero active tokens while the exposed
+      token was still live.
+    caption: the token the ui didn't show
+    after: 2
   start_date: 2026-02-17
   end_date: 2026-02-17
   target:
@@ -75,6 +84,8 @@
       role: mirror
     hashes:
     - sha256:c5b2c21abdf0606a881f293e1cce61d38b90dac0ae647a943d36464530fbf804
+    - sha1:a746385d45c949afd1d40e577cfb49da71efcd44
+    - sha512:658a0cbc58586b1cc23363f30c0624cfaa033423e33300c1a98ff67ae154c45c5bdd2084d559d726f8fa882e7435db60102635f79cc85cadacd966f1faab831e
     indicators:
     - kind: lifecycle_hook
       value: postinstall npm install -g openclaw@latest
@@ -87,6 +98,9 @@
       PT to 11:30 AM PT.
     - Endor Labs reported the compromised npm tarball SHA-256 as 
       c5b2c21abdf0606a881f293e1cce61d38b90dac0ae647a943d36464530fbf804.
+    - Endor Labs also preserved npm's `dist.shasum` and `dist.integrity` for that
+      same cline-2.3.0.tgz archive; the SHA-512 above is the integrity value
+      decoded from base64 to the repository's hexadecimal hash convention.
     - The Register reported about 4,000 downloads before deprecation; Endor Labs cited 
       418,545 cline monthly downloads for January 19 to February 17 as broader exposure 
       context.

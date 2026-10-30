@@ -1,0 +1,140 @@
+schema_version: 1
+interpretation:
+  - >-
+    GitHub deletes a release asset when it is replaced, so neither trojanized archive can be
+    downloaded from the release any more. The assets served today were re-uploaded by the
+    maintainers on 2026-05-12 and hash to
+    0c20c4aeb800bb13d9bab9474ef45a6f8fcde6402cad9b32ac2a1bbd03186313 (AppImage) and
+    5e4592d0dae394fa0614cb8c875eff3f81b23170b349511de318d9caf7215e1b (Ubuntu zip), neither of which
+    is a reported malicious digest. That confirms the release is remediated and that meta.yaml's two
+    digests describe the replaced files rather than the current ones.
+  - >-
+    The payload inside them did survive. A copy of squashfs-root/usr/share/Cemu/scripts/ startup.pyz
+    was submitted to Triage on 2026-05-16 and matches the SHA-256 Datadog published, so the corpus
+    holds the malicious stage even though the containers are gone.
+samples:
+  - artifact_id: cemu-appimage
+    phase: during
+    classification: malicious
+    version: '2.6'
+    filename: startup.pyz
+    path: cemu-appimage/during/startup.pyz
+    sha256: 0f35abda19fb69430c32228465396094b866d887427bf551e353ab31256a9dd6
+    size: 23385
+    source:
+      url: https://tria.ge/api/v0/samples/260516-1fk7vahy7z/sample
+      original_url: https://github.com/cemu-project/Cemu/releases/download/v2.6/Cemu-2.6-x86_64.AppImage
+      retrieved_at: '2026-09-02T12:48:37Z'
+      kind: malware_sandbox
+    verification:
+      status: exact
+      basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - datadog_reported_sha256
+        - measured_sha256
+    notes:
+      - >-
+        The Python payload the trojanized build ran at startup, carried inside the AppImage at
+        squashfs-root/usr/share/Cemu/scripts/startup.pyz. It is the stage, not the container: the
+        AppImage itself remains unrecovered.
+      - >-
+        Triage submission 260516-1fk7vahy7z, 2026-05-16T21:35:32Z, four days after the swap was
+        found. Its archive members are the python_mistral_cemu_files tree Datadog documented.
+    subject: cemu-appimage
+unresolved:
+  - artifact_id: cemu-appimage
+    phase: during
+    version: '2.6'
+    filename: Cemu-2.6-x86_64.AppImage
+    status: unavailable
+    reported_hash: sha256:d07a29c4458d00e42d5d9e6345932592e91644d6b821bacdb7a543c628e0b41a
+    notes:
+      - >-
+        Replaced on 2026-05-08 at 01:41 UTC and deleted when the maintainers restored the release.
+        19,897 people downloaded it; none of the queried sources holds a copy.
+    attempts:
+      - GitHub release: asset replaced; the current file is the clean re-upload.
+      - MalwareBazaar, Triage, Malshare: no sample for the reported SHA-256.
+      - VirusTotal: file download requires a Premium/Intelligence key.
+      - Wayback: no capture of the release download path.
+  - artifact_id: cemu-ubuntu-zip
+    phase: during
+    version: '2.6'
+    filename: cemu-2.6-ubuntu-22.04-x64.zip
+    status: unavailable
+    reported_hash: sha256:f140e76236b96adf7cdc796227af9808665143bc674debb77729fa3e4b8327cc
+    notes:
+      - >-
+        Replaced on 2026-05-07 at 22:55 UTC, three hours before the AppImage, and downloaded 1,957
+        times. Its own copy of the payload is reported as __main__.py
+        7718b9ded0efa2d65998a4727d68ff9c959f5f25c5e7894025f745f6ee680acb; the AppImage's is
+        c234e6e5f5366cf1a703e62a995a7a0511583ca703c7c9d0590965342eb4c4e8.
+    attempts:
+      - GitHub release: asset replaced; the current file is the clean re-upload.
+      - MalwareBazaar, Triage, Malshare: no sample for the reported SHA-256.
+      - Wayback: no capture of the release download path.
+      - >-
+        Digest sweep, 2026-09-10: the 1 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'
+  - artifact_id: cemu-appimage
+    phase: during
+    coordinate: sha256:d07a29c4458d00e42d5d9e6345932592e91644d6b821bacdb7a543c628e0b41a
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:37:24.191-04:00 level=ERROR msg="command failed"
+        error="hash d07a29c4458d00e42d5d9e6345932592e91644d6b821bacdb7a543c628e0b41a unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/d07a29c4458d00e42d5d9e6345932592e91644d6b821bacdb7a543c628e0b41a;
+        malwarebazaar: MalwareBazaar has no sample for
+        d07a29c4458d00e42d5d9e6345932592e91644d6b821bacdb7a543c628e0b41a: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        d07a29c4458d00e42d5d9e6345932592e91644d6b821bacdb7a543c628e0b41a; malshare: download
+        returned status 404"
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:12:23.854-04:00 level=ERROR msg="command failed"
+        error="hash d07a29c4458d00e42d5d9e6345932592e91644d6b821bacdb7a543c628e0b41a unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/d07a29c4458d00e42d5d9e6345932592e91644d6b821bacdb7a543c628e0b41a;
+        malwarebazaar: MalwareBazaar has no sample for
+        d07a29c4458d00e42d5d9e6345932592e91644d6b821bacdb7a543c628e0b41a: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        d07a29c4458d00e42d5d9e6345932592e91644d6b821bacdb7a543c628e0b41a; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:12:23.879Z'
+  - artifact_id: cemu-ubuntu-zip
+    phase: during
+    coordinate: sha256:f140e76236b96adf7cdc796227af9808665143bc674debb77729fa3e4b8327cc
+    status: unavailable
+    attempts:
+      - >-
+        Forager PURL/SHA-256: time=2026-09-02T11:37:39.862-04:00 level=ERROR msg="command failed"
+        error="hash f140e76236b96adf7cdc796227af9808665143bc674debb77729fa3e4b8327cc unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/f140e76236b96adf7cdc796227af9808665143bc674debb77729fa3e4b8327cc;
+        malwarebazaar: MalwareBazaar has no sample for
+        f140e76236b96adf7cdc796227af9808665143bc674debb77729fa3e4b8327cc: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        f140e76236b96adf7cdc796227af9808665143bc674debb77729fa3e4b8327cc; malshare: download
+        returned status 404"
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:12:24.858-04:00 level=ERROR msg="command failed"
+        error="hash f140e76236b96adf7cdc796227af9808665143bc674debb77729fa3e4b8327cc unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/f140e76236b96adf7cdc796227af9808665143bc674debb77729fa3e4b8327cc;
+        malwarebazaar: MalwareBazaar has no sample for
+        f140e76236b96adf7cdc796227af9808665143bc674debb77729fa3e4b8327cc: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        f140e76236b96adf7cdc796227af9808665143bc674debb77729fa3e4b8327cc; malshare: download
+        returned status 404"
+      - >-
+        Digest sweep, 2026-09-10: the 1 digest(s) this record names for artifacts with no during
+        sample were asked of MalwareBazaar, Triage and ReversingLabs. None is known to any of them.
+        An earlier sweep covered only records holding no during sample at all, so these had never
+        been probed; they have been now.
+    last_attempted_at: '2026-09-11T01:45:18Z'

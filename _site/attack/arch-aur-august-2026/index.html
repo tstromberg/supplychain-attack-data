@@ -44,31 +44,31 @@
       <p>Six weeks after the Atomic Arch campaign, the Arch User Repository was hit
 again by the same technique, and this time the project shut the door. On July
 30, 2026, Robin Candau, posting as &quot;Antiz&quot; for the Arch Linux DevOps team,
-told the distribution&#39;s mailing list that attackers were adopting neglected
+told the distribution's mailing list that attackers were adopting neglected
 packages and quietly injecting malicious code through follow-up commits. Arch
 disabled AUR package adoption that day. On August 1 it paused AUR pushes
 entirely while it investigated.</p>
     
-      <p>The pattern was a refinement of June&#39;s. Rather than adopting a package and
+      <p>The pattern was a refinement of June's. Rather than adopting a package and
 immediately rewriting its build script, the operators took ownership and waited,
 then landed the malicious change in a later commit, where it read as ordinary
 maintenance rather than the act of a new owner. Researchers corroborated at
 least 89 package names, catalogued in three batches of 27, 42, and 19, spanning
 security tooling, desktop utilities, and AI-themed packages. Named examples
-included `openconnect-sso`, `i915-sriov-dkms`, `rtk-git`, `boringssl-git`,
-`warp-terminal-git`, `weather-display`, and `astro-box`.</p>
+included <code>openconnect-sso</code>, <code>i915-sriov-dkms</code>, <code>rtk-git</code>, <code>boringssl-git</code>,
+<code>warp-terminal-git</code>, <code>weather-display</code>, and <code>astro-box</code>.</p>
     
-      <p>The `openconnect-sso` update was the clearest case. It introduced a binary
-called `validator` into the package build path, which executed with sudo
+      <p>The <code>openconnect-sso</code> update was the clearest case. It introduced a binary
+called <code>validator</code> into the package build path, which executed with sudo
 privileges during the build. That is a step beyond the June waves, which pulled
 a malicious npm dependency: here the executable went directly into the build
 process, where AUR helpers already run with elevated privileges as a matter of
 course. The second stage reused the Tor-backed delivery infrastructure from
 Atomic Arch, which is what tied the two waves together.</p>
     
-      <p>Corgea&#39;s assessment was that package adoption itself now belongs in the threat
+      <p>Corgea's assessment was that package adoption itself now belongs in the threat
 model, and that once malicious content reaches the build path the trusted
-package name is mostly camouflage. Arch&#39;s response conceded the point. Halting
+package name is mostly camouflage. Arch's response conceded the point. Halting
 adoptions removes the mechanism the attackers were using, and pausing pushes
 stopped the follow-up commits, but both are blunt instruments against a
 repository whose model assumes that users read the build scripts they run.</p>
@@ -143,6 +143,32 @@ repository whose model assumes that users read the build scripts they run.</p>
           </td>
         </tr>
         
+        <tr>
+          <td>
+            <strong>meshcore-open-git malicious AUR snapshot</strong>
+            <br><code>meshcore-open-git</code>
+            <br><span>aur · source_archive</span>
+            
+            
+          </td>
+          <td>2026-07-30<br>to 2026-08-01</td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              N/A
+            
+          </td>
+          <td>
+            
+              <code>sha256:b97a762f886fa62a3908568cdf8695409d9d5e42a9f85e0ff5ee737f172c78d4</code>
+            
+          </td>
+        </tr>
+        
       </tbody>
     </table>
   </div>
@@ -160,6 +186,20 @@ repository whose model assumes that users read the build scripts they run.</p>
   
   <h2>Indicators</h2>
   <ul>
+    
+      <li><code>commit:9d107786fa851c6305dadb3573aab5330a041524</code></li>
+    
+      <li><code>commit:meshcore-open-git malicious snapshot 80529dcb0d9ee567fbb963cd8b7b33566de3f31c</code></li>
+    
+      <li><code>file_sha256:meshcore-open-git optimizer e73a35b3e75e94746428d1a207703d6335933deadee7d1d9c9d0328df7b9df77</code></li>
+    
+      <li><code>file_sha256:meshcore-open-git PKGBUILD 6126c3e44406592f002ce9465014c2fe869bd8f308e2c86286f6a13042e521e1</code></li>
+    
+      <li><code>file_sha256:validator (stage 1) 2d25d2ea313767fae5808164224cf6ad610ab09546d1e5a6f033eedbfd98a281</code></li>
+    
+      <li><code>file_sha256:stage 2 stealer 06c857c8ca798d50c765b4de39e6c4f272ecb57bc8316a8ed4c0fdf02fb59502</code></li>
+    
+      <li><code>domain:p4ayykxcrxfyzrgfbbkazernntjbz43hgclrheguylzd7kijmtce6zqd.onion</code></li>
     
       <li><code>file:validator</code></li>
     
@@ -185,6 +225,18 @@ repository whose model assumes that users read the build scripts they run.</p>
       <li><a href="https://cybersecuritynews.com/arch-linux-disables-aur-package/" target="_blank">Arch Linux Disables AUR Package Takeovers as Attackers Push Malicious Commits - Cyber Security News</a></li>
     
       <li><a href="https://www.hexnode.com/blogs/arch-linux-aur-malware-campaign/" target="_blank">Arch Linux AUR Malware Halts Adoption and Pushes - Hexnode</a></li>
+    
+      <li><a href="https://discourse.ifin.network/t/new-aur-attack-prompts-adoption-lock/698" target="_blank">New AUR Attack Prompts Adoption Lock - IFIN</a></li>
+    
+      <li><a href="https://gist.github.com/ysf/502a324ff301d0c738e8ae011272fd59" target="_blank">AUR validator malware stage-one analysis</a></li>
+    
+      <li><a href="https://gist.github.com/ysf/57850cdee152da066ac51c07a452e883" target="_blank">AUR validator malware stage-two analysis</a></li>
+    
+      <li><a href="https://gist.github.com/orhun/a966583226df9b160e180ecf0ea9dcb6" target="_blank">Analysis Report: Malicious meshcore-open-git AUR Package</a></li>
+    
+      <li><a href="https://gist.githubusercontent.com/orhun/a966583226df9b160e180ecf0ea9dcb6/raw" target="_blank">Raw Markdown for the meshcore-open-git static-analysis report</a></li>
+    
+      <li><a href="https://github.com/lenucksi/aur-malware-check/issues/52" target="_blank">AUR malware tracker discussion documenting the two stage-one loader hashes</a></li>
     
   </ul>
   

@@ -38,13 +38,11 @@
     
       <p>Kaspersky published the Russian disclosure on April 17, 2025 after finding the backdoor during an incident response. The victims were large Russian organizations connected to ViPNet networks, including government, finance, and industrial targets.</p>
     
-      <p>This was not described as a public vendor update-server compromise. InfoTeCS confirmed targeted attacks against some users and said the vector required access to a ViPNet node with operating-system administrator rights, deep knowledge of ViPNet network mechanics, and a signing key for a valid certificate in the organization&#39;s internal trust space.</p>
+      <p>This was not described as a public vendor update-server compromise. InfoTeCS confirmed targeted attacks against some users and said the vector required access to a ViPNet node with operating-system administrator rights, deep knowledge of ViPNet network mechanics, and a signing key for a valid certificate in the organization's internal trust space. The attacker then misused the ViPNet <code>mftp</code> transport protocol to imitate software-update envelopes: the malicious LZH archives looked like ViPNet update packages, each containing <code>action.inf</code>, a legitimate <code>lumpdiag.exe</code>, a small malicious <code>msinfo32.exe</code>, and an encrypted payload file whose name varied by archive.</p>
     
-      <p>The attacker then misused the ViPNet `mftp` transport protocol to imitate software-update envelopes. The malicious LZH archives looked like ViPNet update packages: each contained `action.inf`, a legitimate `lumpdiag.exe`, a small malicious `msinfo32.exe`, and an encrypted payload file whose name varied by archive.</p>
+      <p>The update service component <code>itcsrvup64.exe</code> processed <code>action.inf</code> and executed <code>lumpdiag.exe --msconfig</code>. The legitimate executable was susceptible to path substitution, so the attacker-controlled <code>msinfo32.exe</code> ran in its context, decrypted the payload, and mapped the backdoor into memory.</p>
     
-      <p>The update service component `itcsrvup64.exe` processed `action.inf` and executed `lumpdiag.exe --msconfig`. The legitimate executable was susceptible to path substitution, so the attacker-controlled `msinfo32.exe` ran in its context, decrypted the payload, and mapped the backdoor into memory.</p>
-    
-      <p>The backdoor connected to command-and-control over TCP, could steal files, and could launch additional malicious components. InfoTeCS said the target security functions of ViPNet products were not affected, issued updates for ViPNet Client 4 and ViPNet Coordinator HW4, and published customer checks for `msinfo32.exe`, event ID 4688 process creation, and suspicious ViPNet-node traffic.</p>
+      <p>The backdoor connected to command-and-control over TCP, could steal files, and could launch additional malicious components. InfoTeCS said the target security functions of ViPNet products were not affected, issued updates for ViPNet Client 4 and ViPNet Coordinator HW4, and published customer checks for <code>msinfo32.exe</code>, event ID 4688 process creation, and suspicious ViPNet-node traffic.</p>
     
   </div>
   

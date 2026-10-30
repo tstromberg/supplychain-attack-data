@@ -1,0 +1,228 @@
+- id: arrayref
+  title: arrayref crates.io account published build-script dropper dependency
+  synopsis: >-
+    A compromised crates.io account republished arrayref, internment, and append-only-vec on
+    2026-08-20 with a dependency on the typosquat proc-macro1, whose build script downloaded and
+    ran a second stage at compile time. The releases stood 86 to 107 minutes.
+  story: |-
+    At 07:15 UTC on August 20, 2026, someone using the crates.io account of
+    David Roundy, who has maintained the Rust crate `arrayref` since 2015,
+    published version 0.3.10. The library source did not change by a single
+    byte. What changed was one line of the manifest, and that line was enough
+    to run code on every machine that compiled it.
+
+    `arrayref` is a small set of macros that let a Rust program take a
+    fixed-size array reference out of a slice. It is the kind of dependency
+    nobody thinks about: 245 million downloads over its lifetime, beneath `blake3`,
+    `tiny-skia`, `libsecp256k1`, and a long tail of Solana and Ethereum tooling.
+    The new manifest added `proc-macro1 = "1.0.107"`. That crate is not
+    `proc-macro2`, the near-universal macro library written by David Tolnay; it
+    was a copy of it, published five hours earlier that morning by an account
+    named `dtolney`, created at 01:17 UTC the same night, and carrying a forged
+    author line reading `David Tolnay <rchaitm@gmail.com>`. Everything in it was genuine proc-macro2 code except
+    `build.rs`, and Cargo runs `build.rs` during compilation, before any of the
+    library's own code is ever called.
+
+    The build script reassembled a URL from five base64 fragments, which decode
+    to `https://23.254.165.112:9089/`, and fetched a platform-specific binary
+    named `rust-crate_0.1.0` through `rust-crate_0.4.0` for Linux, Windows, and
+    both macOS architectures. It did so over TLS with a certificate verifier
+    that approved every certificate presented to it. On Unix the payload was
+    written to `/tmp/rust-setup`, made executable, and spawned with its output
+    discarded and the C2 address `23.254.165.112:443` as its only argument. On
+    Windows the script was dropped to `%TEMP%\rust-setup.ps1` and launched
+    through a `rust-setup-launch.vbs` shim under `wscript.exe`, then forgotten
+    with `std::mem::forget` so it would outlive the job object Cargo uses to
+    reap build-script children. The build then finished normally and printed
+    nothing unusual. StepSecurity and Wiz reported the second stage as an
+    implant that harvested credentials from Chrome, Brave, and Edge profiles,
+    persisted through systemd units, LaunchAgents, and Registry Run keys, and
+    beaconed to `/49890878` on Hostwinds infrastructure.
+
+    The attacker also yanked `arrayref` 0.3.5 through 0.3.9 in the sixteen
+    seconds after publishing, a detail preserved in the crates.io index commits.
+    A yank does not remove a version, but it does make Cargo warn about it, and
+    the natural response is `cargo update`, which would have resolved to 0.3.10.
+    The same account republished `internment` 0.8.7 at 07:34 and
+    `append-only-vec` 0.1.9 at 07:37 with the same dependency. The Rust Security
+    Response working group received a report about `proc-macro1` at 07:15 UTC,
+    credited in the project's write-up to the research team at Nextron Systems
+    GmbH, and deleted the malicious crates, locked the accounts, and reversed
+    the attacker's yanks. `arrayref` 0.3.10 was gone 86 minutes after it
+    appeared, having been downloaded 2,285 times. The Rust team said it did not
+    believe the maintainer had acted maliciously and that his computer or
+    credentials were likely compromised; no commit or tag for 0.3.10 ever
+    existed in the repository, and the published crate lacked the
+    `.cargo_vcs_info.json` file Cargo writes when publishing from a git
+    checkout. Wiz found the beacon path, the TLS certificate issuer, and the
+    23.254.164.0/23 address range shared with the Mastra npm compromise that
+    Microsoft attributed to the North Korean actor Sapphire Sleet, and with the
+    axios attack Google linked to UNC1069.
+  pull_quote:
+    text: >-
+      Reviewing the crate's Rust source would have shown nothing at all. Cargo
+      runs a dependency's build script during compilation, and the whole attack
+      lived one manifest line away from code anyone would have read.
+    caption: review the manifest, not just the code
+    after: 2
+  start_date: 2026-08-20
+  end_date: 2026-08-20
+  target:
+    name: arrayref
+    kind: library
+    repo: https://github.com/droundy/arrayref
+  actor:
+    name: Unknown
+    kind: group
+  language: Rust
+  method:
+    cause: compromised_account_credentials
+    phase: dependency
+    motive: credential_theft
+    transitive: true
+  impact:
+    types:
+    - credential_theft
+    - remote_code_execution
+    - data_exfiltration
+    users: 2285
+  artifacts:
+  - id: arrayref
+    name: arrayref
+    package: arrayref
+    ecosystem: crates.io
+    kind: source_archive
+    repo: https://github.com/droundy/arrayref
+    start_date: 2026-08-20
+    end_date: 2026-08-20
+    versions:
+    - 0.3.10
+    fixed_versions:
+    - 0.3.9
+    locations:
+    - uri: https://crates.io/api/v1/crates/arrayref/0.3.10/download
+      role: distribution
+    - uri: https://mirrors.ustc.edu.cn/crates.io/api/v1/crates/arrayref/0.3.10/download
+      role: mirror
+    hashes:
+    - sha256:25ad700976873c76af785cb99b33c48db7df8b81f21d1e9e06b3676b9a9373ae
+    indicators:
+    - kind: file
+      value: Cargo.toml
+  - id: internment
+    name: internment
+    package: internment
+    ecosystem: crates.io
+    kind: source_archive
+    repo: https://github.com/droundy/internment
+    start_date: 2026-08-20
+    end_date: 2026-08-20
+    versions:
+    - 0.8.7
+    fixed_versions:
+    - 0.8.6
+    locations:
+    - uri: https://crates.io/api/v1/crates/internment/0.8.7/download
+      role: distribution
+    - uri: https://mirrors.ustc.edu.cn/crates.io/api/v1/crates/internment/0.8.7/download
+      role: mirror
+    hashes:
+    - sha256:ee71e794e746165ea0f8711f7eb3d52703ef57dd192b92a3f095080a2902d291
+  - id: append-only-vec
+    name: append-only-vec
+    package: append-only-vec
+    ecosystem: crates.io
+    kind: source_archive
+    repo: https://github.com/droundy/append-only-vec
+    start_date: 2026-08-20
+    end_date: 2026-08-20
+    versions:
+    - 0.1.9
+    fixed_versions:
+    - 0.1.8
+    locations:
+    - uri: https://crates.io/api/v1/crates/append-only-vec/0.1.9/download
+      role: distribution
+    - uri: https://mirrors.ustc.edu.cn/crates.io/api/v1/crates/append-only-vec/0.1.9/download
+      role: mirror
+    hashes:
+    - sha256:48eb13393abb9a16e800f20b5f848e344e9444632df46f60b69d831b41cc9416
+  - id: proc-macro1
+    name: proc-macro1
+    package: proc-macro1
+    ecosystem: crates.io
+    kind: source_archive
+    start_date: 2026-08-20
+    end_date: 2026-08-20
+    versions:
+    - 1.0.106
+    - 1.0.107
+    locations:
+    - uri: https://crates.io/api/v1/crates/proc-macro1/1.0.107/download
+      role: distribution
+    - uri: https://rsproxy.cn/api/v1/crates/proc-macro1/1.0.107/download
+      role: mirror
+    hashes:
+    - sha256:61198155da51b838772eecf5bfaac6cbc4dcc388dccc56658fc28a8e831b34d4
+    - sha256:b5c1b5b0763a8809a644a8f92224653f0aca623a98eecc714d27f74b80fbe436
+    indicators:
+    - kind: file
+      value: build.rs
+    - kind: email
+      value: rchaitm@gmail.com
+  indicators:
+  - kind: url
+    value: https://23.254.165.112:9089/
+  - kind: ip
+    value: 23.254.165.112
+  - kind: ip
+    value: 23.254.167.107
+  - kind: ip
+    value: 23.254.167.216
+  - kind: domain
+    value: hwsrv-798836.hostwindsdns.com
+  - kind: file
+    value: /tmp/rust-setup
+  - kind: file
+    value: rust-setup.ps1
+  - kind: file
+    value: rust-setup-launch.vbs
+  - kind: file
+    value: rust-crate_0.1.0
+  - kind: file
+    value: MonoService
+  - kind: file
+    value: MonoXpc
+  - kind: file
+    value: $HOME/.config/AzureKits
+  - kind: file
+    value: $HOME/.config/ServiceKit
+  - kind: url
+    value: /49890878
+  - kind: account
+    value: dtolney
+  references:
+  - url: https://blog.rust-lang.org/2026/08/20/supply-chain-attack-on-arrayref
+    title: Supply chain attack on arrayref
+  - url: https://rustsec.org/advisories/RUSTSEC-2026-0260.html
+    title: RUSTSEC-2026-0260 arrayref 0.3.10 removed from crates.io
+  - url: https://rustsec.org/advisories/RUSTSEC-2026-0265.html
+    title: RUSTSEC-2026-0265 proc-macro1 removed from crates.io
+  - url: https://www.stepsecurity.io/blog/arrayref-rust-crate-supply-chain-attack
+    title: arrayref Rust crate supply chain attack
+  - url: https://www.wiz.io/blog/rust-supply-chain-attack-on-arrayref-significant-overlap-with-dprk-campaigns
+    title: Rust supply chain attack on arrayref shows significant overlap with DPRK campaigns
+  - url: https://www.compilersutra.com/docs/articles/rust-arrayref-supply-chain-attack/
+    title: The arrayref supply chain attack
+  notes:
+  - >-
+    crates.io deletes malicious releases rather than yanking them, and its API and CDN then
+    answer 403. All four crate files were recovered from regional mirrors, each digest matching
+    the cksum in the crates.io-index git history.
+  - >-
+    The clean decoy proc-macro1 1.0.106 was not held by any mirror that was asked and remains
+    unrecovered.
+  - >-
+    No remediated release exists for any of the three legitimate crates. crates.io restored the
+    prior versions by reversing the attacker's yanks, so the remediated state is byte-identical
+    to the before samples.

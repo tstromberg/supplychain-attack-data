@@ -6,11 +6,11 @@
   story: |-
     WordPress 2.1.1 was released as a normal maintenance build on February 21, 2007. Days later, a report to the WordPress security address pointed to strange, highly exploitable code in the official download. The project took the site down and investigated the package.
 
-    The attacker had user-level access to a server behind wordpress.org and modified the release file. WordPress said two files were changed to allow remote PHP execution. The Subversion repository was not touched; the damage was in the generated archive that users trusted.
+    The attacker had user-level access to a server behind wordpress.org and modified the release file. Two files were changed, and the additions were named to read as WordPress internals: `comment_text_phpfilter()` in `wp-includes/feed.php` wrapped `eval($_GET["ix"])`, and `get_theme_mcommand()` in `wp-includes/theme.php` wrapped `passthru($_GET["iz"])`. The Subversion repository was not touched; the damage was in the generated archive that users trusted.
 
     The project declared all 2.1.1 downloads from the affected window dangerous, even though not every download was necessarily altered. WordPress 2.1.2 followed with verified files, and users were told to overwrite the full tree, especially `wp-includes`.
 
-    The lesson was plain: the release archive is production code. If the download path is writable, signed source control history is not enough. WordPress responded with server lockdown, password resets, and external checks of release packages.
+    The lesson was plain: the release archive is production code. The Subversion history was intact and irrelevant, because nothing verified that the published archive matched it; WordPress had no release signing at the time, which is why the response promised external verification of the download package. WordPress responded with server lockdown, password resets, and external checks of release packages.
   start_date: 2007-02-25
   end_date: 2007-03-02
   target:
@@ -46,21 +46,16 @@
       role: distribution
     - uri: https://wordpress.org/wordpress-2.1.1.tar.gz
       role: distribution
-    - uri: https://blog.sucuri.net/2017/01/website-backdoor-wp-php-info.html
-      role: mirror
-    - uri: https://wpvulndb.com/vulnerabilities/6231
-      role: mirror
     hashes:
-    - md5:9b2e021b99f71846a99db1f3975e108d
-    - sha1:43e08637c4b60b9208ee160483f4e9241241bc5e
+    - md5: 9b2e021b99f71846a99db1f3975e108d
+      of: archive
+    - sha1: 43e08637c4b60b9208ee160483f4e9241241bc5e
+      of: archive
+    notes:
+    - The recorded digests are of the 2.1.1 archive, but no source we hold establishes
+      whether they cover the trojaned copy or a clean rebuild, so neither is claimed.
   references:
   - url: https://wordpress.org/news/2007/03/upgrade-212/
     title: WordPress 2.1.1 dangerous, Upgrade to 2.1.2
   - url: https://ifsec.blogspot.com/2007/03/wordpress-code-compromised-to-enable.html
     title: WordPress source code compromised to enable remote code execution
-  - url: 
-      https://threatpost.com/wordpress-fixes-security-issues-in-core-engine-021622/21404/
-    title: WordPress Fixes Security Issues in Core Engine
-  - url: 
-      https://www.thetechherald.com/tech-news/wordpress-211-infected-with-backdoor-code/
-    title: WordPress 2.1.1 infected with backdoor code

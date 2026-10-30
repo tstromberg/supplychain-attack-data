@@ -36,13 +36,17 @@
   <h2>Story</h2>
   <div class="story">
     
-      <p>The important package in this incident was not `mailparser` itself. On May 2, 2018, npm received a community report that `getcookies`, a package presented as a cookie parser, contained a backdoor. Two other packages, `express-cookies` and `http-fetch-cookies`, depended on it. Three `mailparser` releases then depended on `http-fetch-cookies`, pulling the chain into a deprecated but still heavily downloaded package.</p>
+      <p>The important package in this incident was not <code>mailparser</code> itself. On May 2, 2018, npm received a community report that <code>getcookies</code>, a package presented as a cookie parser, contained a backdoor. Two other packages, <code>express-cookies</code> and <code>http-fetch-cookies</code>, depended on it. Three <code>mailparser</code> releases then depended on <code>http-fetch-cookies</code>, pulling the chain into a deprecated but still heavily downloaded package.</p>
     
-      <p>npm&#39;s analysis found a header-driven remote-code path. The code stringified `request.headers`, searched for attacker-formatted markers, used control values to reset or append to an in-memory code buffer, and executed the buffer with `vm.runInThisContext`. In a server path that actually used the malicious module, that meant a crafted HTTP request could become arbitrary Node.js code.</p>
+      <p>npm's analysis found a header-driven remote-code path. The code stringified <code>request.headers</code>, searched for attacker-formatted markers, used control values to reset or append to an in-memory code buffer, and executed the buffer with <code>vm.runInThisContext</code>. In a server path that actually used the malicious module, that meant a crafted HTTP request could become arbitrary Node.js code.</p>
     
-      <p>The attempted reach was the story. npm said download counts for `getcookies`, `express-cookies`, and `http-fetch-cookies` spiked around the time a `mailparser` version began depending on `http-fetch-cookies`. `mailparser` still had about 64,000 weekly downloads despite being deprecated, so the chain made a small cookie parser look more legitimate and gave it a path toward real production installations.</p>
+      <p>The attempted reach was the story. npm said download counts for <code>getcookies</code>, <code>express-cookies</code>, and <code>http-fetch-cookies</code> spiked around the time a <code>mailparser</code> version began depending on <code>http-fetch-cookies</code>. <code>mailparser</code> still had about 64,000 weekly downloads despite being deprecated, so the chain made a small cookie parser look more legitimate and gave it a path toward real production installations.</p>
+      <figure class="pull-quote">
+        <blockquote>The three <code>mailparser</code> releases declared <code>http-fetch-cookies</code> and never called it. npm's Adam Baldwin believed the dependency existed to inflate download counts, borrowing a deprecated package's traffic until a stranger's cookie parser looked popular enough to adopt.</blockquote>
+        <figcaption>a dependency added to be counted</figcaption>
+      </figure>
     
-      <p>npm also drew an important boundary: published `mailparser` versions that depended on `http-fetch-cookies` did not use the dependency in a way that triggered the backdoor. npm removed `getcookies`, `express-cookies`, `http-fetch-cookies`, and `mailparser` versions 2.2.1 through 2.2.3, then reset the `mailparser` maintainer&#39;s npm tokens. This was a near miss in a dependency chain, not evidence that `mailparser` users were compromised.</p>
+      <p>npm also drew an important boundary: published <code>mailparser</code> versions that depended on <code>http-fetch-cookies</code> did not use the dependency in a way that triggered the backdoor. npm removed <code>getcookies</code>, <code>express-cookies</code>, <code>http-fetch-cookies</code>, and <code>mailparser</code> versions 2.2.1 through 2.2.3, then reset the <code>mailparser</code> maintainer's npm tokens. This was a near miss in a dependency chain, not evidence that <code>mailparser</code> users were compromised.</p>
     
   </div>
   

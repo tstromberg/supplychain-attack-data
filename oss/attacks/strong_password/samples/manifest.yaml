@@ -5,8 +5,10 @@ interpretation:
     strength_checker.rb and preserved the Pastebin response observed on 2019-06-28. The latter is
     stored exactly as published, including its apparently incomplete final wrapper.
   - >-
-    Official RubyGems archives for clean predecessor 0.0.6 and remediated 0.0.8 are preserved as
-    before and after comparators.
+    A complete 0.0.7 gem was recovered from Backstabber's Knife Collection. Its embedded gemspec,
+    publication date, internal checksums, and malicious strength_checker.rb member all verify, but
+    the yanked registry no longer exposes an authoritative whole-archive digest, so it is recorded
+    as probable-exact. Official clean 0.0.6 and remediated 0.0.8 gems provide comparators.
 samples:
   - artifact_id: strong-password
     phase: before
@@ -23,8 +25,44 @@ samples:
     verification:
       status: exact
       basis:
+        - publisher_digest_reproduced
+        - measured_sha256
+      evidence:
         - rubygems_api_sha256_620f1150e68611908c1294a6f938d0a99f7f7b451647c6e83d9253ace13b4ab6
         - measured_sha256_and_size
+    subject: strong-password
+  - artifact_id: strong-password
+    phase: during
+    classification: malicious
+    coordinate: pkg:gem/strong_password@0.0.7
+    version: 0.0.7
+    filename: strong_password-0.0.7.gem
+    path: strong-password/during/strong_password-0.0.7.gem
+    sha256: c6f68075bd3c935e9ad182974451bdc43ce3a49b0b88c19aaadbfb24718d2a7c
+    size: 57344
+    source:
+      url: >-
+        https://github.com/cybertier/Backstabbers-Knife-Collection/blob/54e71f528a5ab67d7356969dbc2e84fe8d5fa97b/samples/gem/strong_password/0.0.7/strong_password-0.0.7.gem
+      retrieved_at: '2026-09-06T20:56:00Z'
+      kind: research_corpus
+    verification:
+      status: probable_exact
+      basis:
+        - reported_digest_matched
+        - measured_sha256
+      evidence:
+        - complete_gem_from_manually_curated_attack_corpus
+        - corpus_index_purl_pkg_gem_strong_password_0_0_7
+        - embedded_gemspec_name_version_and_2019_06_25_date
+        - gem_internal_metadata_and_data_sha256_checksums_reproduced
+        - malicious_member_matches_discoverer_reported_injection
+        - measured_sha256_and_size
+    notes:
+      - >-
+        Complete malicious gem, not a reconstruction. The yanked RubyGems record no longer exposes
+        its original whole-file checksum, so corpus identity and independent content evidence
+        support probable-exact rather than checksum-verified status.
+    subject: strong-password
   - artifact_id: strong-password
     phase: during
     classification: malicious
@@ -40,11 +78,14 @@ samples:
     verification:
       status: exact_reported_fragment
       basis:
+        - measured_sha256
+      evidence:
         - discoverer_downloaded_and_diffed_0_0_7
         - copied_verbatim_from_published_four_line_fragment
         - measured_sha256_and_size
     notes:
       - Exact appended fragment only; the complete malicious strength_checker.rb is unavailable.
+    subject: strong-password
   - artifact_id: strong-password
     phase: during
     classification: malicious
@@ -60,6 +101,9 @@ samples:
     verification:
       status: exact_reported_fragment
       basis:
+        - transcribed_from_report
+        - measured_sha256
+      evidence:
         - discoverer_preserved_pastebin_seen_2019_06_28T20_00_00Z
         - copied_verbatim_from_published_code_block
         - measured_sha256_and_size
@@ -67,6 +111,7 @@ samples:
       - >-
         The published code block ends without closing the final _! wrapper; no bytes were
         synthesized.
+    subject: strong-password
   - artifact_id: strong-password
     phase: after
     classification: clean
@@ -82,9 +127,14 @@ samples:
     verification:
       status: exact
       basis:
+        - publisher_digest_reproduced
+        - remediation_release_identified
+        - measured_sha256
+      evidence:
         - rubygems_api_sha256_1534cb9cbcbd47abf89d71591d56d437793dca6d73876e7f875038c68e1d309e
         - legitimate_maintainer_remediation_release
         - measured_sha256_and_size
+    subject: strong-password
 unresolved:
   - artifact_id: strong-password
     phase: during
@@ -95,6 +145,10 @@ unresolved:
       - RubyGems download endpoint returns 403 because 0.0.7 is yanked.
       - Exact appended fragment and published second-stage fragment recovered.
       - >-
+        A complete probable-exact 0.0.7 gem was recovered from Backstabber's Knife Collection with
+        SHA-256 c6f68075bd3c935e9ad182974451bdc43ce3a49b0b88c19aaadbfb24718d2a7c. The separately
+        reported c3a46b97 digest still cannot be mapped to bytes and is retained here unresolved.
+      - >-
         Forager PURL/SHA-256: time=2026-08-10T13:56:56.470-04:00 level=ERROR msg="command failed"
         error="hash c3a46b979b941ecc456639033754f3bad3f5d379df064d4ccd0b54d0fb8e46ea unavailable
         from configured sources: malwarebazaar: MalwareBazaar has no sample for
@@ -102,4 +156,14 @@ unresolved:
         Triage has no file analysis for SHA256
         c3a46b979b941ecc456639033754f3bad3f5d379df064d4ccd0b54d0fb8e46ea; malshare: download
         returned status 404"
-    last_attempted_at: '2026-08-10T17:56:57.570Z'
+      - >-
+        Forager PURL/SHA-256: time=2026-09-03T06:16:36.565-04:00 level=ERROR msg="command failed"
+        error="hash c3a46b979b941ecc456639033754f3bad3f5d379df064d4ccd0b54d0fb8e46ea unavailable
+        from configured sources: hopper: unexpected status code 404 from
+        http://10.9.8.10:8081/api/file/c3a46b979b941ecc456639033754f3bad3f5d379df064d4ccd0b54d0fb8e46ea;
+        malwarebazaar: MalwareBazaar has no sample for
+        c3a46b979b941ecc456639033754f3bad3f5d379df064d4ccd0b54d0fb8e46ea: hash_not_found; triage:
+        triage has no file analysis for SHA256
+        c3a46b979b941ecc456639033754f3bad3f5d379df064d4ccd0b54d0fb8e46ea; malshare: download
+        returned status 404"
+    last_attempted_at: '2026-09-03T10:16:36.578Z'
