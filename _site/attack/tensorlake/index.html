@@ -14,27 +14,64 @@
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
   <h1>Tensorlake npm release ran a credential-stealing worm</h1>
-  
+
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> Tensorlake · <a href="https://github.com/tensorlakeai/tensorlake" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-10-07</div>
-    
+
     <div class="meta-item"><strong>Target Kind:</strong> library</div>
     <div class="meta-item"><strong>Language:</strong> JavaScript</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
-    
-    
+
+
     <div class="meta-item"><strong>Impact:</strong> credential_theft, remote_code_execution</div>
-    
+
     <div class="meta-item"><strong>Phase:</strong> source</div>
   </div>
 
   <h2>Synopsis</h2>
   <p class="synopsis">The official tensorlake 0.5.144 npm release added a preinstall loader. Installing the SDK with lifecycle scripts enabled launched a worm that stole credentials and attempted further propagation.</p>
 
-  
 
-  
+  <h2>Story</h2>
+  <div class="story">
+
+      <p>Developers installing a toolkit for running AI-generated code in isolated sandboxes received a
+credential-stealing worm before they ever created a sandbox. Tensorlake's npm release 0.5.144
+arrived on October 8 with an installation hook that launched the malware on the installing
+machine. SafeDep and Socket independently flagged the release within minutes, tracing the danger
+to the SDK that developers used to manage Tensorlake environments.</p>
+
+      <p>SafeDep reconstructed a compromise of the project's source and release process. On October 7, a
+repository administrator account added two payload files and an installation hook through
+GitHub's web interface, then revised the changes and set the package version. The account
+subsequently started the project's normal npm publication workflow. Trusted publishing delivered
+the poisoned source through the legitimate pipeline; provenance attached to sibling packages
+documented that build without establishing that its contents were safe.</p>
+      <figure class="pull-quote">
+        <blockquote>Trusted publishing delivered the poisoned source through the legitimate pipeline; provenance attached to sibling packages documented that build without establishing that its contents were safe.</blockquote>
+        <figcaption>A legitimate pipeline built poisoned source</figcaption>
+      </figure>
+
+      <p>The retained source snapshot contains the preinstall command, lib/setup.mjs, and the large
+Math_Symbol.js payload. SafeDep found that the loader obtained Bun and avoided recognized CI
+environments, letting the publishing job proceed while leaving downstream installations exposed.
+Socket described collection of cloud credentials, package tokens, SSH material, and AI-tool
+configuration, together with remote execution and propagation capabilities. A token-monitoring
+component also made recovery hazardous: the researchers documented destructive behavior tied to
+invalidated credentials.</p>
+
+      <p>npm removed the malicious version, and Tensorlake's maintainers reverted the source changes and
+released 0.5.145, according to SafeDep. That stopped this version's normal distribution but did
+not account for machines where it had already executed. The exposure began with installing the
+management SDK, outside the isolated environments it was meant to control. Neither the package's
+routine download volume nor a successful release job measured how many developers actually ran
+the payload.</p>
+
+  </div>
+
+
+
   <h2>Affected Artifacts</h2>
   <div class="artifact-table-wrap">
     <table class="artifact-table">
@@ -48,82 +85,82 @@
         </tr>
       </thead>
       <tbody>
-        
+
         <tr>
           <td>
             <strong>tensorlake</strong>
-            
+
             <br><span>npm · source_archive</span>
-            
-            
+
+
           </td>
           <td>2026-10-08</td>
           <td>
-            
+
               <code>0.5.144</code>
-            
+
           </td>
           <td>
-            
+
               <code>0.5.145</code>
-            
+
           </td>
           <td>
-            
+
               <code>sha1:843a898ab72793568d77c53ff9282e6ce7c66aea</code>
-            
+
           </td>
         </tr>
-        
+
         <tr>
           <td>
             <strong>tensorlakeai/tensorlake</strong>
-            
+
             <br><span>github · revision_control_system</span>
-            
+
             <br><a href="https://github.com/tensorlakeai/tensorlake" target="_blank">https://github.com/tensorlakeai/tensorlake</a>
           </td>
           <td>2026-10-07</td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
         </tr>
-        
+
       </tbody>
     </table>
   </div>
-  
 
-  
 
-  
 
-  
 
-  
 
-  
+
+
+
+
+
+
   <h2>References</h2>
   <ul>
-    
+
       <li><a href="https://socket.dev/blog/tensorlake-compromise" target="_blank">TensorLake npm SDK Compromised in ChainDrop Shai-Hulud Credential-Stealing Attack</a></li>
-    
+
       <li><a href="https://safedep.io/tensorlake-npm-compromise-mini-shai-hulud/" target="_blank">tensorlake 0.5.144 npm Compromise Ships Mini Shai-Hulud</a></li>
-    
+
   </ul>
-  
+
 </div>
 
   </div>

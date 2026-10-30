@@ -12,6 +12,8 @@ func TestUnknownIncidentFactsMayBeOmitted(t *testing.T) {
 	entry := Entry{
 		ID: "example", Title: "Example release distributed a credential stealer",
 		Synopsis:   "The official release contained a credential stealer.",
+		Story:      "The official release contained a credential stealer.\n\nThe maintainer removed it.",
+		PullQuote:  &PullQuote{Text: "The maintainer removed it.", After: 2},
 		Target:     Party{Name: "Example", Kind: "library"},
 		Method:     Method{Phase: "distribution"},
 		Impact:     Impact{Types: []string{"credential_theft"}},
@@ -29,6 +31,77 @@ func TestUnknownIncidentFactsMayBeOmitted(t *testing.T) {
 	entry.Target.Name = ""
 	if got := validateEntry(entry, nil); len(got) == 0 {
 		t.Fatal("the attacked entity must still be identified")
+	}
+}
+
+func TestRequiredStoryParagraphs(t *testing.T) {
+	for _, tt := range []struct {
+		name, story string
+		valid       bool
+	}{
+		{"missing", "", false},
+		{"whitespace only", " \n\n\t ", false},
+		{"one paragraph", "One paragraph.", false},
+		{"wrapped paragraph", "One paragraph\ncontinues here.", false},
+		{"two paragraphs", "First.\n\nSecond.", true},
+		{"four paragraphs", "First.\n\nSecond.\n\nThird.\n\nFourth.", true},
+		{"five paragraphs", "First.\n\nSecond.\n\nThird.\n\nFourth.\n\nFifth.", false},
+		{"blank lines with whitespace", "First.\n \t\nSecond.", true},
+		{"CRLF paragraphs", "First.\r\n\r\nSecond.", true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			got := validateStory("meta.yaml", "example", "story", tt.story)
+			if (len(got) == 0) != tt.valid {
+				t.Fatalf("valid = %v, want %v; issues: %+v", len(got) == 0, tt.valid, got)
+			}
+		})
+	}
+}
+
+func TestRequiredPullQuote(t *testing.T) {
+	story := "First paragraph.\n \t\nSecond paragraph."
+	for _, tt := range []struct {
+		name  string
+		quote *PullQuote
+		valid bool
+	}{
+		{"missing", nil, false},
+		{"empty object", &PullQuote{}, false},
+		{"blank text", &PullQuote{Text: " \n\t", After: 1}, false},
+		{"visible after first", &PullQuote{Text: "First paragraph.", After: 1}, true},
+		{"visible after last", &PullQuote{Text: "Second paragraph.", After: 2}, true},
+		{"zero is never rendered", &PullQuote{Text: "First paragraph.", After: 0}, false},
+		{"negative position", &PullQuote{Text: "First paragraph.", After: -1}, false},
+		{"past story", &PullQuote{Text: "First paragraph.", After: 3}, false},
+		{"too many words", &PullQuote{Text: strings.Repeat("word ", 41), After: 1}, false},
+		{"too many sentences", &PullQuote{Text: "One. Two. Three.", After: 1}, false},
+		{"long caption", &PullQuote{Text: "First paragraph.", Caption: strings.Repeat("word ", 9), After: 1}, false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			got := validatePullQuote("meta.yaml", "example", "pull_quote", tt.quote, story)
+			if (len(got) == 0) != tt.valid {
+				t.Fatalf("valid = %v, want %v; issues: %+v", len(got) == 0, tt.valid, got)
+			}
+		})
+	}
+}
+
+func TestArticleRequirementsApplyToAttacksAndCampaigns(t *testing.T) {
+	for name, issues := range map[string][]issue{
+		"attack":   validateEntry(Entry{ID: "example"}, nil),
+		"campaign": validateCampaign(Campaign{ID: "example"}),
+	} {
+		for _, field := range []string{"story", "pull_quote"} {
+			found := false
+			for _, item := range issues {
+				if item.Field == field && item.Severity == "error" {
+					found = true
+				}
+			}
+			if !found {
+				t.Errorf("%s missing %s should be a validation error", name, field)
+			}
+		}
 	}
 }
 

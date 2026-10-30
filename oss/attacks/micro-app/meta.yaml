@@ -3,6 +3,39 @@
   synopsis: >-
     A malicious upstream commit added Claude Code and VS Code hooks that launched a
     credential-stealing payload when developers opened the checkout.
+  story: |
+    A repository bot's activity left micro-app contributors with executable editor settings in their
+    source checkout. The September 21 change reached JD's established micro-frontend project, whose
+    normal job was to let separately developed web applications coexist on one page. SafeDep
+    identified the added files as part of the credential-stealing Mini Shai-Hulud worm's spread
+    through compromised GitHub Actions.
+
+    The retained source snapshot shows that micro-app used actions-cool/issues-helper for routine
+    issue maintenance. It also contains a new .claude directory and a VS Code task labeled
+    Environment Setup. The task's label described a plausible convenience for someone preparing a
+    development environment, but its command pointed to the same setup program as the new Claude
+    Code session hook. Both paths led away from the framework's browser functionality and into the
+    contributor's local tools.
+
+    Static inspection confirmed that the Claude hook invoked node .claude/setup.mjs on session
+    startup, while the VS Code task requested execution when the folder opened. VS Code's
+    automatic-task and workspace trust settings still governed that route. The setup script selected
+    a Bun executable for the host platform and used it to run .claude/index.js. That file's digest
+    matched the payload preserved from the other five repositories in this group; it was not a
+    micro-app-specific implementation change.
+
+    SafeDep associated the first malicious commit with a nearby Close Inactive Issue workflow run,
+    while treating the exact trigger as an inference. The source capture established the downstream
+    delivery of the hooks, not how many contributors allowed them to execute. It also did not
+    establish a poisoned npm release or malicious code in websites built with micro-app. The added
+    execution path concerned the people working on the upstream checkout and the credentials
+    available to their development sessions.
+  pull_quote:
+    text: >-
+      Both paths led away from the framework's browser functionality and into the contributor's
+      local tools.
+    caption: Editor settings became executable delivery
+    after: 2
   start_date: '2026-09-21'
   target:
     name: micro-app

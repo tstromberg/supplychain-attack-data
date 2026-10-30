@@ -3,6 +3,38 @@
   synopsis: >-
     An attacker published modified MemTensor packages to npm and PyPI. Bundled Go binaries ran
     during plugin use or Python import and searched developer home directories for secrets.
+  story: |
+    An AI memory plugin began passing user prompts to a hidden executable on September 23, when
+    compromised MemTensor releases introduced a program for collecting developer secrets. Socket and
+    StepSecurity identified malicious versions of the MemOS Cloud integration for OpenClaw,
+    alongside the Python package MemoryOS. The affected software belonged to an established project
+    that helped AI applications retain information between interactions; the attacker inserted the
+    collection machinery into that ordinary work.
+
+    The npm releases, 0.1.21, 0.1.23, and 0.1.25 of @memtensor/memos-cloud-openclaw-plugin, carried
+    executables for Linux, macOS, and Windows. Inspection of the retained 0.1.23 and 0.1.25 archives
+    confirmed the package identities and six bundled platform binaries. StepSecurity found that
+    gateway startup and memory recall launched the program in a detached process. During recall, the
+    launcher also supplied the user's prompt. Disabling package-install scripts would not prevent
+    that later execution inside the running plugin.
+
+    The payload, named sckit, targeted credentials that could unlock cloud services, source
+    repositories, and package registries. Socket's analysis connected its collection to skyleen.fr
+    and described the Python counterpart in MemoryOS 2.0.34, where importing memos reached the
+    launcher through logging initialization. These entry points put the malware inside processes
+    already entrusted with application configuration and user input. Public reporting established
+    the malicious releases, but did not establish how the attacker first obtained access.
+
+    The release sequence complicated recovery. StepSecurity found that versions 0.1.22 and 0.1.24
+    restored clean contents, only for another malicious version to appear less than four minutes
+    after each. A newer version number therefore offered no assurance that the intrusion had ended.
+    The reports identified affected releases and collection capabilities, but supplied neither a
+    confirmed victim count nor evidence that the successive clean-content publications had
+    permanently removed the attacker's access.
+  pull_quote:
+    text: A newer version number therefore offered no assurance that the intrusion had ended.
+    caption: Malware returned after clean releases
+    after: 4
   start_date: '2026-09-23'
   target:
     name: MemTensor
@@ -36,16 +68,3 @@
   impact:
     types:
       - credential_theft
-  story: >
-    Malicious changes appeared in both MemTensor repositories before publication. The npm plugin and
-    Python package bundled platform-specific sckit executables. Socket could not establish the
-    initial access mechanism.
-
-
-    The plugin launched the executable on gateway startup and memory recall. The Python package
-    launched it when memos was imported.
-
-
-    The payload searched for package-registry, source-control, cloud, Vault, and SSH credentials.
-    Its configuration named servers under skyleen.fr. Intervening npm releases 0.1.22 and 0.1.24
-    reverted the malicious content, but later poisoned releases followed.

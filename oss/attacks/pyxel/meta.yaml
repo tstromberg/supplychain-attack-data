@@ -3,6 +3,39 @@
   synopsis: >-
     A compromised contributor account added a malicious GitHub Actions workflow to Pyxel. The
     workflow attempted to send repository credentials to an attacker-controlled server.
+  story: |
+    A purported security audit in Pyxel's repository was designed to hand the project's publishing
+    credentials to an outsider. The October 8 intrusion used the account of Takashi Kitao, the
+    maintainer of the Python retro-game engine, to add and revise a GitHub Actions workflow.
+    StepSecurity documented three malicious commits and two additional manual executions during the
+    attacker's activity.
+
+    Pyxel helped developers make games with deliberately small palettes and simple sound
+    capabilities, but its release machinery held credentials with much broader consequences. In the
+    retained security-audit.yml, the attacker's command explicitly referenced CARGO_REGISTRY_TOKEN,
+    PERSONAL_ACCESS_TOKEN, PYPI_PASSWORD, and PYPI_USERNAME. These were the names of secrets the
+    workflow asked GitHub to supply, not credentials hardcoded in the sample. Their values, if
+    available to the job, were assembled for transmission to an external IP address.
+
+    The workflow also requested a full checkout and scanned both current files and Git history for
+    cloud, source-control, and AI-service credential patterns. Static inspection showed that it
+    collected nearby lines around AWS key identifiers, allowing associated secrets to accompany a
+    match. Historical scanning was bounded by command-output limits, and matching a
+    credential-shaped string did not prove it was still usable. Deleting a secret from the latest
+    source file would not remove it from the history the workflow searched.
+
+    OpenSourceMalware placed Pyxel in the renewed GhostAction account-compromise campaign.
+    StepSecurity recorded five successful workflow runs, but those status results did not reveal the
+    exact credentials stolen. The public evidence established malicious automation in the upstream
+    repository and access to its execution path; it did not establish a malicious PyPI or crates.io
+    release of Pyxel. A workflow removal alone could not demonstrate that any credentials already
+    transmitted had been invalidated.
+  pull_quote:
+    text: >-
+      Deleting a secret from the latest source file would not remove it from the history the
+      workflow searched.
+    caption: The audit searched earlier commits too
+    after: 3
   start_date: '2026-10-08'
   target:
     name: Pyxel
@@ -36,6 +69,8 @@
       title: >-
         New GhostAction Wave Hits Hundreds of Repos, Expanding Beyond CI/CD Secrets to Cloud
         Credentials
+    - url: https://opensourcemalware.com/blog/ghostaction-attack-escalates
+      title: GhostAction Attack Escalates By Targeting GitHub Users
   notes:
     - >-
       The injected source workflow is the affected artifact. The reports did not identify a

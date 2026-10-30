@@ -14,27 +14,63 @@
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
   <h1>hugo-paper source commits added a preinstall downloader</h1>
-  
+
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> hugo-paper · <a href="https://github.com/nanxiaobei/hugo-paper" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-08-21</div>
-    
+
     <div class="meta-item"><strong>Target Kind:</strong> project</div>
     <div class="meta-item"><strong>Language:</strong> JavaScript</div>
-    
-    
-    
+
+
+
     <div class="meta-item"><strong>Impact:</strong> remote_code_execution</div>
-    
+
     <div class="meta-item"><strong>Phase:</strong> source</div>
   </div>
 
   <h2>Synopsis</h2>
   <p class="synopsis">Unauthorized commits added scripts/preinstall.js to the upstream hugo-paper repository. Package installation from an affected checkout downloaded and executed a script from buildwithknexus.xyz.</p>
 
-  
 
-  
+  <h2>Story</h2>
+  <div class="story">
+
+      <p>A routine-looking template change in Paper, a theme for the Hugo website generator, concealed a
+command that downloaded and ran an outsider's code. SafeDep researcher Kunal Singh found that an
+attacker had replaced the project's default-branch tip on August 21 while copying the author,
+message, and March date of a legitimate merge. A developer browsing the history could see
+familiar metadata while receiving different files.</p>
+      <figure class="pull-quote">
+        <blockquote>A developer browsing the history could see familiar metadata while receiving different files.</blockquote>
+        <figcaption>The history concealed different contents</figcaption>
+      </figure>
+
+      <p>Paper supplies the presentation layer for a Hugo site, including layouts and styling. Its source
+also includes JavaScript tooling, and the compromised checkout added a preinstall command to
+package.json. Installing those dependencies with lifecycle scripts enabled started
+scripts/preinstall.js. The retained clean and compromised snapshots isolate that addition from
+the theme's ordinary contents: the exposure was the developer's installation step, not a visitor
+reading a generated page.</p>
+
+      <p>Static inspection of the retained loader showed platform-specific paths to the same
+operator-controlled service, buildwithknexus.xyz. Windows downloaded a command file into the
+temporary directory; macOS and Linux fetched a shell script and launched it in a detached
+background job. Output was suppressed, and the download disabled certificate verification. The
+visible installation could therefore finish without displaying the program being fetched or the
+commands it ran.</p>
+
+      <p>SafeDep identified another tell in the rewritten history: the substitute for the signed,
+two-parent merge had one parent and no signature. The original contributor's change was clean.
+Neither the report nor the retained first-stage script established what the server's later
+payload did, and no poisoned npm release was identified. The confirmed compromise was the
+upstream source checkout and its ability to execute a remotely replaceable script during
+dependency installation.</p>
+
+  </div>
+
+
+
   <h2>Affected Artifacts</h2>
   <div class="artifact-table-wrap">
     <table class="artifact-table">
@@ -48,56 +84,56 @@
         </tr>
       </thead>
       <tbody>
-        
+
         <tr>
           <td>
             <strong>hugo-paper</strong>
-            
+
             <br><span>github · revision_control_system</span>
-            
+
             <br><a href="https://github.com/nanxiaobei/hugo-paper" target="_blank">https://github.com/nanxiaobei/hugo-paper</a>
           </td>
           <td>2026-08-21</td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
         </tr>
-        
+
       </tbody>
     </table>
   </div>
-  
 
-  
 
-  
 
-  
 
-  
 
-  
+
+
+
+
+
+
   <h2>References</h2>
   <ul>
-    
+
       <li><a href="https://safedep.io/hugo-paper-mevn-cli-forged-commit-preinstall-dropper/" target="_blank">Forged Commits Push a preinstall Dropper into hugo-paper and mevn-cli</a></li>
-    
+
       <li><a href="https://github.com/nanxiaobei/hugo-paper/commit/a68d2c9b2ad9d857b09dcb30a578ac1de6487061" target="_blank">Affected upstream commit</a></li>
-    
+
   </ul>
-  
+
 </div>
 
   </div>

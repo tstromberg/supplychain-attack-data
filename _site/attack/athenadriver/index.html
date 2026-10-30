@@ -14,27 +14,62 @@
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
   <h1>athenadriver repository distributed a credential-stealing workflow</h1>
-  
+
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> athenadriver · <a href="https://github.com/uber/athenadriver" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-10-08</div>
-    
+
     <div class="meta-item"><strong>Target Kind:</strong> project</div>
     <div class="meta-item"><strong>Language:</strong> Shell</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
-    
-    
+
+
     <div class="meta-item"><strong>Impact:</strong> credential_theft</div>
-    
+
     <div class="meta-item"><strong>Phase:</strong> source</div>
   </div>
 
   <h2>Synopsis</h2>
   <p class="synopsis">A compromised contributor account added a malicious GitHub Actions workflow to athenadriver. The workflow attempted to send repository credentials to an attacker-controlled server.</p>
 
-  
 
-  
+  <h2>Story</h2>
+  <div class="story">
+
+      <p>A retained maintainer account gave an attacker a direct route into Uber's athenadriver
+repository on October 8. The project provided a Go database driver for Amazon Athena, letting
+applications query the service through familiar database interfaces. StepSecurity traced a
+malicious security-audit.yml commit to the compromised account of original author Henry Wu, near
+the end of a rapid sweep across repositories that account could modify.</p>
+
+      <p>The captured workflow contained no populated list of named Actions secrets. Instead, it
+requested the complete repository history and searched the checkout and earlier changes for
+credential-like strings. This made a repository without an obvious publishing secret useful to
+the attacker. Old code and examples could still contain keys. The script also gathered context
+around AWS identifiers, rather than assuming an access-key ID by itself supplied a complete
+credential.</p>
+      <figure class="pull-quote">
+        <blockquote>Old code and examples could still contain keys.</blockquote>
+        <figcaption>Repository history remained useful to the attacker</figcaption>
+      </figure>
+
+      <p>The resulting text was sent by an HTTP POST to 193.32.204.199. StepSecurity examined the actual
+run log and found the collector's acknowledgment, confirming delivery of a request. That
+acknowledgment did not disclose which live credentials, if any, were in its body. The
+researchers also noted faulty regular-expression syntax in some searches, so the workflow's
+broad intentions should not be mistaken for exhaustive or flawless collection.</p>
+
+      <p>OpenSourceMalware's wider GhostAction investigation described the same shift from named CI
+secrets toward repository-history mining. In athenadriver, the confirmed intrusion was malicious
+upstream automation and an executed outbound request. It did not establish that the Go driver
+delivered a backdoor to applications using Athena or that Uber's infrastructure was subsequently
+accessed. The available record left the validity and later use of any harvested credentials
+unresolved.</p>
+
+  </div>
+
+
+
   <h2>Affected Artifacts</h2>
   <div class="artifact-table-wrap">
     <table class="artifact-table">
@@ -48,56 +83,58 @@
         </tr>
       </thead>
       <tbody>
-        
+
         <tr>
           <td>
             <strong>athenadriver</strong>
-            
+
             <br><span>github · revision_control_system</span>
-            
+
             <br><a href="https://github.com/uber/athenadriver" target="_blank">https://github.com/uber/athenadriver</a>
           </td>
           <td>2026-10-08</td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
         </tr>
-        
+
       </tbody>
     </table>
   </div>
-  
 
-  
 
-  
 
-  
 
-  
 
-  
+
+
+
+
+
+
   <h2>References</h2>
   <ul>
-    
+
       <li><a href="https://www.stepsecurity.io/blog/ghostaction-returns" target="_blank">GhostAction Returns: Malicious Security Audit Workflows Now Mine Credentials from Entire Git Histories</a></li>
-    
+
       <li><a href="https://socket.dev/blog/ghostaction-cloud-credentials" target="_blank">New GhostAction Wave Hits Hundreds of Repos, Expanding Beyond CI/CD Secrets to Cloud Credentials</a></li>
-    
+
+      <li><a href="https://opensourcemalware.com/blog/ghostaction-attack-escalates" target="_blank">GhostAction Attack Escalates By Targeting GitHub Users</a></li>
+
   </ul>
-  
+
 </div>
 
   </div>

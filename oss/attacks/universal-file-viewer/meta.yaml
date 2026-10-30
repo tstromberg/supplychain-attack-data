@@ -4,6 +4,39 @@
     The universal_file_viewer 0.1.5 archive on pub.dev contained infected example build files from a
     compromised maintainer workstation. Building the example could execute XCSSET; ordinary
     dependency use did not compile those files.
+  story: |
+    A Flutter package's demonstration app carried malware even though the library developers
+    ordinarily imported was clean. On September 8, Aikido researcher Ilyas Makari reported XCSSET in
+    universal_file_viewer 0.1.5 on pub.dev. The package provided document and media preview widgets;
+    the dangerous files accompanied it in the example project that showed developers how to use
+    them.
+
+    Aikido attributed the contamination to a maintainer's infected workstation, where the worm
+    modified local build files before publication. The retained pub.dev archive confirmed the
+    distinction: the affected paths were under example/, including Android's Gradle configuration
+    and the iOS and macOS Xcode projects. Adding the library as a dependency did not build that
+    demonstration. A developer explicitly building the example entered a different execution path
+    from an application merely using the preview widgets.
+
+    The Android configuration attached a hidden shell command to a preBuild task. The Xcode projects
+    embedded build rules and encoded commands that contacted remote infrastructure. Those were
+    instructions for the developer's build tools, rather than Dart features needed to display a
+    document. Aikido's broader payload analysis described XCSSET modules for stealing browser and
+    other local data and modifying additional projects, explaining how one workstation infection
+    could become another maintainer's published source.
+
+    The pub.dev version record marks 0.1.5 as retracted, and the captured archive's digest matches
+    the registry's published value. That establishes what the registry distributed without turning
+    every package download into a confirmed infection. The cited investigation did not identify how
+    many developers built the infected example. Its narrow execution condition mattered: the package
+    was compromised upstream, but ordinary dependency use and local example development did not
+    carry the same exposure.
+  pull_quote:
+    text: >-
+      A developer explicitly building the example entered a different execution path from an
+      application merely using the preview widgets.
+    caption: The example carried the build hooks
+    after: 2
   start_date: '2026-09-08T10:44:57.394900Z'
   target:
     name: universal_file_viewer

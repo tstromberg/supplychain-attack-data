@@ -14,27 +14,63 @@
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
   <h1>Pyxel repository distributed a credential-stealing workflow</h1>
-  
+
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> Pyxel · <a href="https://github.com/kitao/pyxel" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-10-08</div>
-    
+
     <div class="meta-item"><strong>Target Kind:</strong> project</div>
     <div class="meta-item"><strong>Language:</strong> Shell</div>
     <div class="meta-item"><strong>Cause:</strong> compromised_account_credentials</div>
-    
-    
+
+
     <div class="meta-item"><strong>Impact:</strong> credential_theft</div>
-    
+
     <div class="meta-item"><strong>Phase:</strong> source</div>
   </div>
 
   <h2>Synopsis</h2>
   <p class="synopsis">A compromised contributor account added a malicious GitHub Actions workflow to Pyxel. The workflow attempted to send repository credentials to an attacker-controlled server.</p>
 
-  
 
-  
+  <h2>Story</h2>
+  <div class="story">
+
+      <p>A purported security audit in Pyxel's repository was designed to hand the project's publishing
+credentials to an outsider. The October 8 intrusion used the account of Takashi Kitao, the
+maintainer of the Python retro-game engine, to add and revise a GitHub Actions workflow.
+StepSecurity documented three malicious commits and two additional manual executions during the
+attacker's activity.</p>
+
+      <p>Pyxel helped developers make games with deliberately small palettes and simple sound
+capabilities, but its release machinery held credentials with much broader consequences. In the
+retained security-audit.yml, the attacker's command explicitly referenced CARGO_REGISTRY_TOKEN,
+PERSONAL_ACCESS_TOKEN, PYPI_PASSWORD, and PYPI_USERNAME. These were the names of secrets the
+workflow asked GitHub to supply, not credentials hardcoded in the sample. Their values, if
+available to the job, were assembled for transmission to an external IP address.</p>
+
+      <p>The workflow also requested a full checkout and scanned both current files and Git history for
+cloud, source-control, and AI-service credential patterns. Static inspection showed that it
+collected nearby lines around AWS key identifiers, allowing associated secrets to accompany a
+match. Historical scanning was bounded by command-output limits, and matching a
+credential-shaped string did not prove it was still usable. Deleting a secret from the latest
+source file would not remove it from the history the workflow searched.</p>
+      <figure class="pull-quote">
+        <blockquote>Deleting a secret from the latest source file would not remove it from the history the workflow searched.</blockquote>
+        <figcaption>The audit searched earlier commits too</figcaption>
+      </figure>
+
+      <p>OpenSourceMalware placed Pyxel in the renewed GhostAction account-compromise campaign.
+StepSecurity recorded five successful workflow runs, but those status results did not reveal the
+exact credentials stolen. The public evidence established malicious automation in the upstream
+repository and access to its execution path; it did not establish a malicious PyPI or crates.io
+release of Pyxel. A workflow removal alone could not demonstrate that any credentials already
+transmitted had been invalidated.</p>
+
+  </div>
+
+
+
   <h2>Affected Artifacts</h2>
   <div class="artifact-table-wrap">
     <table class="artifact-table">
@@ -48,56 +84,58 @@
         </tr>
       </thead>
       <tbody>
-        
+
         <tr>
           <td>
             <strong>Pyxel</strong>
-            
+
             <br><span>github · revision_control_system</span>
-            
+
             <br><a href="https://github.com/kitao/pyxel" target="_blank">https://github.com/kitao/pyxel</a>
           </td>
           <td>2026-10-08</td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
         </tr>
-        
+
       </tbody>
     </table>
   </div>
-  
 
-  
 
-  
 
-  
 
-  
 
-  
+
+
+
+
+
+
   <h2>References</h2>
   <ul>
-    
+
       <li><a href="https://www.stepsecurity.io/blog/ghostaction-returns" target="_blank">GhostAction Returns: Malicious Security Audit Workflows Now Mine Credentials from Entire Git Histories</a></li>
-    
+
       <li><a href="https://socket.dev/blog/ghostaction-cloud-credentials" target="_blank">New GhostAction Wave Hits Hundreds of Repos, Expanding Beyond CI/CD Secrets to Cloud Credentials</a></li>
-    
+
+      <li><a href="https://opensourcemalware.com/blog/ghostaction-attack-escalates" target="_blank">GhostAction Attack Escalates By Targeting GitHub Users</a></li>
+
   </ul>
-  
+
 </div>
 
   </div>

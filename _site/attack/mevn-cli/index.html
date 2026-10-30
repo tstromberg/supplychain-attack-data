@@ -14,27 +14,63 @@
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
   <h1>mevn-cli source commits added a preinstall downloader</h1>
-  
+
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> mevn-cli · <a href="https://github.com/madlabsinc/mevn-cli" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-08-20</div>
-    
+
     <div class="meta-item"><strong>Target Kind:</strong> project</div>
     <div class="meta-item"><strong>Language:</strong> JavaScript</div>
-    
-    
-    
+
+
+
     <div class="meta-item"><strong>Impact:</strong> remote_code_execution</div>
-    
+
     <div class="meta-item"><strong>Phase:</strong> source</div>
   </div>
 
   <h2>Synopsis</h2>
   <p class="synopsis">Unauthorized commits added scripts/preinstall.js to the upstream mevn-cli repository. Package installation from an affected checkout downloaded and executed a script from buildwithknexus.xyz.</p>
 
-  
 
-  
+  <h2>Story</h2>
+  <div class="story">
+
+      <p>A tool meant to spare web developers repetitive setup work acquired an extra setup step of its
+own: downloading and executing a script from an attacker-controlled server. SafeDep found
+malicious commits in mevn-cli, a command-line scaffolding tool for applications built with
+MongoDB, Express, Vue, and Node.js. The changes reached upstream branches on August 20, without
+a corresponding malicious npm publication.</p>
+
+      <p>The project's documentation invited developers to use its tooling to assemble a working
+application. In the compromised source, package.json instead made dependency installation invoke
+scripts/preinstall.js before the developer reached that work. Comparing the retained snapshot
+with its clean predecessor confirmed the added hook and loader. This was an exposure for people
+installing dependencies from the altered checkout. The existence of an npm package with the same
+name did not establish that registry users received those changes.</p>
+      <figure class="pull-quote">
+        <blockquote>The existence of an npm package with the same name did not establish that registry users received those changes.</blockquote>
+        <figcaption>Source exposure had a specific boundary</figcaption>
+      </figure>
+
+      <p>The retained loader selected a Windows command file or a Unix shell script from
+buildwithknexus.xyz, saved it in a temporary location, and executed it with terminal output
+hidden. On macOS and Linux it detached the download-and-execute job from the installation.
+SafeDep documented an earlier Windows variant followed by a revision, and found that the
+attacker appended commits with copied authors, timestamps, and messages rather than describing
+the new executable behavior.</p>
+
+      <p>The final loader matched the one recovered from hugo-paper, tying the two source compromises
+together at the file level. That match did not reveal the contents of the remotely served second
+stage, which SafeDep had not recovered. The available evidence established an upstream
+downloader and concealed source changes, but not a specific theft outcome, a count of infected
+developers, or a verified cleanup. Retaining both the altered checkout and its clean predecessor
+preserved the distinction between legitimate scaffolding and the added execution path.</p>
+
+  </div>
+
+
+
   <h2>Affected Artifacts</h2>
   <div class="artifact-table-wrap">
     <table class="artifact-table">
@@ -48,56 +84,56 @@
         </tr>
       </thead>
       <tbody>
-        
+
         <tr>
           <td>
             <strong>mevn-cli</strong>
-            
+
             <br><span>github · revision_control_system</span>
-            
+
             <br><a href="https://github.com/madlabsinc/mevn-cli" target="_blank">https://github.com/madlabsinc/mevn-cli</a>
           </td>
           <td>2026-08-20</td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
         </tr>
-        
+
       </tbody>
     </table>
   </div>
-  
 
-  
 
-  
 
-  
 
-  
 
-  
+
+
+
+
+
+
   <h2>References</h2>
   <ul>
-    
+
       <li><a href="https://safedep.io/hugo-paper-mevn-cli-forged-commit-preinstall-dropper/" target="_blank">Forged Commits Push a preinstall Dropper into hugo-paper and mevn-cli</a></li>
-    
+
       <li><a href="https://github.com/madlabsinc/mevn-cli/commit/f8830218b5d70d068cca19a45df261a8cf19f30d" target="_blank">Affected upstream commit</a></li>
-    
+
   </ul>
-  
+
 </div>
 
   </div>

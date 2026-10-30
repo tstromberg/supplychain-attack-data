@@ -3,6 +3,38 @@
   synopsis: >-
     A compromised contributor account added a malicious GitHub Actions workflow to Typecho Fans
     plugins. The workflow attempted to send repository credentials to an attacker-controlled server.
+  story: |
+    An attacker returned to a compromised community plugin repository in October and tried to
+    restart a secret-stealing workflow without changing the malware. StepSecurity found an empty
+    commit followed by a small README edit in typecho-fans/plugins, both intended to trigger
+    automation already present since September 5. This time, the resulting runs stopped at an
+    approval requirement.
+
+    Typecho Fans maintained a collection of plugins for the Typecho blogging platform, with an index
+    and download links for users and a shared repository for contributors. The retained September
+    snapshot contained a workflow called Github Actions Security. Its name suggested maintenance,
+    but the single substantive command sent API_MIRROR, GITEE_TOKEN, and SYNC_PV to an external HTTP
+    endpoint. Those secret references tied the payload to the repository's automation rather than to
+    a particular blog plugin's PHP code.
+
+    The workflow supported both push events and manual dispatch. Its preceding cache-busting step
+    only wrote a timestamp into the job environment; the next step attempted the secret transfer.
+    The October edits therefore did not need to add another loader or modify a plugin to create a
+    new execution opportunity. StepSecurity associated the activity with the compromised
+    xxyangyoulin account and documented the October 7 runs remaining in action_required.
+
+    That approval gate prevented the observed October attempts from executing, but it did not
+    establish that the earlier September workflow had never run. The preserved source proved an
+    upstream CI implant, not poisoned plugin archives or infection of Typecho websites.
+    OpenSourceMalware's GhostAction research corroborated the wider campaign's use of such
+    workflows; the outcome for any earlier secrets exposed from this particular repository remained
+    unconfirmed.
+  pull_quote:
+    text: >-
+      That approval gate prevented the observed October attempts from executing, but it did not
+      establish that the earlier September workflow had never run.
+    caption: A blocked retry did not settle earlier exposure
+    after: 4
   start_date: '2026-09-05'
   target:
     name: Typecho Fans plugins
@@ -32,6 +64,8 @@
       title: >-
         GhostAction Returns: Malicious Security Audit Workflows Now Mine Credentials from Entire Git
         Histories
+    - url: https://opensourcemalware.com/blog/ghostaction-attack-escalates
+      title: GhostAction Attack Escalates By Targeting GitHub Users
   notes:
     - >-
       October 7 attempts to rerun the workflow were blocked by the repository approval requirement.

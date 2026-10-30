@@ -14,38 +14,64 @@
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
   <h1>LiteLLM release pipeline shipped Python startup malware</h1>
-  
+
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> LiteLLM · <a href="https://github.com/BerriAI/litellm" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-10-10</div>
-    
+
     <div class="meta-item"><strong>Target Kind:</strong> library</div>
     <div class="meta-item"><strong>Language:</strong> Python</div>
-    
-    
-    
+
+
+
     <div class="meta-item"><strong>Impact:</strong> credential_theft, remote_code_execution</div>
-    
+
     <div class="meta-item"><strong>Phase:</strong> ci_cd</div>
   </div>
 
   <h2>Synopsis</h2>
   <p class="synopsis">An attacker used stolen release credentials to publish LiteLLM 1.107.0 on October 21. Its wheels and container image carried Python startup hooks that stole secrets and loaded remote code.</p>
 
-  
+
   <h2>Story</h2>
   <div class="story">
-    
-      <p>Secret-stealing workflows ran in the upstream repository on October 10 and 12. Later vendor findings linked a stolen GitHub token to approval of the October 21 release.</p>
-    
-      <p>Container provenance recorded Berri-AI/litellm as its source, rather than the legitimate BerriAI organization. The malicious build included cook.pth, cook.py, and sitecustomize.py.</p>
-    
-      <p>The installed startup hooks collected cloud and AI credentials and could execute remotely supplied Python. Floating container tags also resolved to the affected image. This incident is separate from the March LiteLLM compromise.</p>
-    
-  </div>
-  
 
-  
+      <p>An administrative key left in a public repository in May helped an attacker turn LiteLLM's
+October 21 release into a credential thief and persistent backdoor. The package lets
+applications talk to multiple AI providers through a common interface, making its deployment
+environments useful places to find provider keys. Seven version 1.107.0 wheels and affected
+container images reached official registries before the maintainers contained the release, in a
+separate incident from LiteLLM's March compromise.</p>
+
+      <p>LiteLLM's postmortem traced the first access to an internal Agent Platform API. The exposed
+master key returned a GitHub organization owner's token on October 10; the attacker then used
+disposable workflows to steal other maintainers' credentials. Socket independently recovered
+secret-stealing workflows from October 10 and 12, on branches deleted soon after use. With
+multiple identities available, the attacker changed the release system to build from the
+lookalike Berri-AI organization and supplied the separate approval needed to publish.</p>
+
+      <p>The malicious wheels turned normal Python startup into an execution trigger. OpenSourceMalware
+found cook.pth, cook.py, and sitecustomize.py arranged to run a collector and retrieve
+additional Python code periodically. Applications did not need to import LiteLLM for the startup
+hooks to execute. Inspection of the retained Linux wheel confirmed those three files in the
+exact 1.107.0 release. OpenSourceMalware's analysis covered browser data, cloud and developer
+credentials, and keys stored by LiteLLM itself, with stolen information sent to www.litellm.dev.</p>
+      <figure class="pull-quote">
+        <blockquote>Applications did not need to import LiteLLM for the startup hooks to execute.</blockquote>
+        <figcaption>Python startup was enough</figcaption>
+      </figure>
+
+      <p>The maintainers said PyPI quarantined the release by 13:23 UTC on October 21, with affected
+Docker Hub tags removed or repointed by 14:20. They restricted publishing, removed GitHub
+organization access, and treated organizational credentials as exposed. Removing the release
+closed a delivery route, but could not recall secrets or background processes from affected
+environments. The postmortem also corrected the initial account of token theft: the owner's
+credential came from the Agent Platform API, rather than the deployment logs first suspected.</p>
+
+  </div>
+
+
+
   <h2>Affected Artifacts</h2>
   <div class="artifact-table-wrap">
     <table class="artifact-table">
@@ -59,82 +85,86 @@
         </tr>
       </thead>
       <tbody>
-        
+
         <tr>
           <td>
             <strong>litellm</strong>
-            
+
             <br><span>pypi · binary_archive</span>
-            
-            
+
+
           </td>
           <td>2026-10-10</td>
           <td>
-            
+
               <code>1.107.0</code>
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               <code>sha256:462d0c9f67ca522d9e0e4acd245e90b36ce0d5353604a66bb7c43a1ec4a6fcf7</code>
-            
+
           </td>
         </tr>
-        
+
         <tr>
           <td>
             <strong>ghcr.io/berriai/litellm</strong>
-            
+
             <br><span>docker · container_image</span>
-            
-            
+
+
           </td>
           <td>2026-10-10</td>
           <td>
-            
+
               <code>v1.107.0</code>
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
         </tr>
-        
+
       </tbody>
     </table>
   </div>
-  
 
-  
 
-  
 
-  
 
-  
 
-  
+
+
+
+
+
+
   <h2>References</h2>
   <ul>
-    
+
       <li><a href="https://socket.dev/blog/litellm-compromise" target="_blank">LiteLLM PyPI Package and Docker Images Compromised to Steal Cloud and AI Credentials</a></li>
-    
+
       <li><a href="https://socket.dev/blog/litellm-attack-timeline" target="_blank">New Evidence Shows LiteLLM Secret-Stealing Workflows Ran 11 Days Before Supply Chain Attack</a></li>
-    
+
+      <li><a href="https://docs.litellm.ai/blog/security-incident-oct-21-2026-attack-chain" target="_blank">The attack chain behind the v1.107.0 LiteLLM release</a></li>
+
+      <li><a href="https://opensourcemalware.com/blog/litellm-1-107-0-pypi-wheel-contains-a-credential-stealer-and-persistent-python-backdoor" target="_blank">LiteLLM 1.107.0 PyPI Wheel Contains a Credential Stealer and Persistent Python Backdoor</a></li>
+
   </ul>
-  
+
 </div>
 
   </div>

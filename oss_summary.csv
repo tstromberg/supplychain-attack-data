@@ -2792,8 +2792,60 @@ checkout. Wiz found the beacon path, the TLS certificate issuer, and the
 23.254.164.0/23 address range shared with the Mastra npm compromise that
 Microsoft attributed to the North Korean actor Sapphire Sleet, and with the
 axios attack Google linked to UNC1069.",2026,2026-08-20,2026-08-20,Unknown,group,Rust,compromised_account_credentials,credential_theft,true,dependency,"credential_theft, remote_code_execution, data_exfiltration",2285,"Supply chain attack on arrayref <https://blog.rust-lang.org/2026/08/20/supply-chain-attack-on-arrayref>, RUSTSEC-2026-0260 arrayref 0.3.10 removed from crates.io <https://rustsec.org/advisories/RUSTSEC-2026-0260.html>, RUSTSEC-2026-0265 proc-macro1 removed from crates.io <https://rustsec.org/advisories/RUSTSEC-2026-0265.html>, arrayref Rust crate supply chain attack <https://www.stepsecurity.io/blog/arrayref-rust-crate-supply-chain-attack>, Rust supply chain attack on arrayref shows significant overlap with DPRK campaigns <https://www.wiz.io/blog/rust-supply-chain-attack-on-arrayref-significant-overlap-with-dprk-campaigns>, The arrayref supply chain attack <https://www.compilersutra.com/docs/articles/rust-arrayref-supply-chain-attack/>",,4
-mevn-cli,mevn-cli source commits added a preinstall downloader,mevn-cli,project,,https://github.com/madlabsinc/mevn-cli,Unauthorized commits added scripts/preinstall.js to the upstream mevn-cli repository. Package installation from an affected checkout downloaded and executed a script from buildwithknexus.xyz.,,2026,2026-08-20,,,,JavaScript,,,,source,remote_code_execution,,"Forged Commits Push a preinstall Dropper into hugo-paper and mevn-cli <https://safedep.io/hugo-paper-mevn-cli-forged-commit-preinstall-dropper/>, Affected upstream commit <https://github.com/madlabsinc/mevn-cli/commit/f8830218b5d70d068cca19a45df261a8cf19f30d>",,1
-hugo-paper,hugo-paper source commits added a preinstall downloader,hugo-paper,project,,https://github.com/nanxiaobei/hugo-paper,Unauthorized commits added scripts/preinstall.js to the upstream hugo-paper repository. Package installation from an affected checkout downloaded and executed a script from buildwithknexus.xyz.,,2026,2026-08-21,,,,JavaScript,,,,source,remote_code_execution,,"Forged Commits Push a preinstall Dropper into hugo-paper and mevn-cli <https://safedep.io/hugo-paper-mevn-cli-forged-commit-preinstall-dropper/>, Affected upstream commit <https://github.com/nanxiaobei/hugo-paper/commit/a68d2c9b2ad9d857b09dcb30a578ac1de6487061>",,1
+mevn-cli,mevn-cli source commits added a preinstall downloader,mevn-cli,project,,https://github.com/madlabsinc/mevn-cli,Unauthorized commits added scripts/preinstall.js to the upstream mevn-cli repository. Package installation from an affected checkout downloaded and executed a script from buildwithknexus.xyz.,"A tool meant to spare web developers repetitive setup work acquired an extra setup step of its
+own: downloading and executing a script from an attacker-controlled server. SafeDep found
+malicious commits in mevn-cli, a command-line scaffolding tool for applications built with
+MongoDB, Express, Vue, and Node.js. The changes reached upstream branches on August 20, without
+a corresponding malicious npm publication.
+
+The project's documentation invited developers to use its tooling to assemble a working
+application. In the compromised source, package.json instead made dependency installation invoke
+scripts/preinstall.js before the developer reached that work. Comparing the retained snapshot
+with its clean predecessor confirmed the added hook and loader. This was an exposure for people
+installing dependencies from the altered checkout. The existence of an npm package with the same
+name did not establish that registry users received those changes.
+
+The retained loader selected a Windows command file or a Unix shell script from
+buildwithknexus.xyz, saved it in a temporary location, and executed it with terminal output
+hidden. On macOS and Linux it detached the download-and-execute job from the installation.
+SafeDep documented an earlier Windows variant followed by a revision, and found that the
+attacker appended commits with copied authors, timestamps, and messages rather than describing
+the new executable behavior.
+
+The final loader matched the one recovered from hugo-paper, tying the two source compromises
+together at the file level. That match did not reveal the contents of the remotely served second
+stage, which SafeDep had not recovered. The available evidence established an upstream
+downloader and concealed source changes, but not a specific theft outcome, a count of infected
+developers, or a verified cleanup. Retaining both the altered checkout and its clean predecessor
+preserved the distinction between legitimate scaffolding and the added execution path.
+",2026,2026-08-20,,,,JavaScript,,,,source,remote_code_execution,,"Forged Commits Push a preinstall Dropper into hugo-paper and mevn-cli <https://safedep.io/hugo-paper-mevn-cli-forged-commit-preinstall-dropper/>, Affected upstream commit <https://github.com/madlabsinc/mevn-cli/commit/f8830218b5d70d068cca19a45df261a8cf19f30d>",,1
+hugo-paper,hugo-paper source commits added a preinstall downloader,hugo-paper,project,,https://github.com/nanxiaobei/hugo-paper,Unauthorized commits added scripts/preinstall.js to the upstream hugo-paper repository. Package installation from an affected checkout downloaded and executed a script from buildwithknexus.xyz.,"A routine-looking template change in Paper, a theme for the Hugo website generator, concealed a
+command that downloaded and ran an outsider's code. SafeDep researcher Kunal Singh found that an
+attacker had replaced the project's default-branch tip on August 21 while copying the author,
+message, and March date of a legitimate merge. A developer browsing the history could see
+familiar metadata while receiving different files.
+
+Paper supplies the presentation layer for a Hugo site, including layouts and styling. Its source
+also includes JavaScript tooling, and the compromised checkout added a preinstall command to
+package.json. Installing those dependencies with lifecycle scripts enabled started
+scripts/preinstall.js. The retained clean and compromised snapshots isolate that addition from
+the theme's ordinary contents: the exposure was the developer's installation step, not a visitor
+reading a generated page.
+
+Static inspection of the retained loader showed platform-specific paths to the same
+operator-controlled service, buildwithknexus.xyz. Windows downloaded a command file into the
+temporary directory; macOS and Linux fetched a shell script and launched it in a detached
+background job. Output was suppressed, and the download disabled certificate verification. The
+visible installation could therefore finish without displaying the program being fetched or the
+commands it ran.
+
+SafeDep identified another tell in the rewritten history: the substitute for the signed,
+two-parent merge had one parent and no signature. The original contributor's change was clean.
+Neither the report nor the retained first-stage script established what the server's later
+payload did, and no poisoned npm release was identified. The confirmed compromise was the
+upstream source checkout and its ability to execute a remotely replaceable script during
+dependency installation.
+",2026,2026-08-21,,,,JavaScript,,,,source,remote_code_execution,,"Forged Commits Push a preinstall Dropper into hugo-paper and mevn-cli <https://safedep.io/hugo-paper-mevn-cli-forged-commit-preinstall-dropper/>, Affected upstream commit <https://github.com/nanxiaobei/hugo-paper/commit/a68d2c9b2ad9d857b09dcb30a578ac1de6487061>",,1
 openapi-react-query-codegen,GitHub Actions comment trigger published malicious openapi-react-query-codegen,@7nohe/openapi-react-query-codegen,library,https://www.npmjs.com/package/@7nohe/openapi-react-query-codegen,https://github.com/7nohe/openapi-react-query-codegen,"A GitHub Actions release workflow fired on any pull request comment reading ""npm publish"", with no check on who wrote it. An attacker used it to build, sign and publish ten malicious versions of @7nohe/openapi-react-query-codegen from their own fork.","A GitHub account created for the purpose spent twenty minutes on the
 evening of August 28, 2026 turning a convenience feature in one npm
 project's release pipeline into a package-publishing machine. Ten malicious
@@ -2973,29 +3025,432 @@ maintains was affected, and stated plainly that it cannot determine which users 
 server that took the stolen credentials was not Coder's, so Coder has no logs of it. Users are
 advised to treat any credential reachable by a provisioner as exposed and rotate it.
 ",2026,2026-08-31T07:35:00Z,2026-08-31T21:45:00Z,unattributed,unknown,HCL,compromised_infrastructure,credential_theft,false,distribution,"credential_theft, data_exfiltration",,"Malicious Packages Served from Unauthorized Registry Server - coder/coder advisory GHSA-vx42-ghc9-gw65 <https://github.com/coder/coder/security/advisories/GHSA-vx42-ghc9-gw65>, Coder's registry infrastructure compromised to push malicious modules - BleepingComputer <https://www.bleepingcomputer.com/news/security/coders-registry-infrastructure-compromised-to-push-malicious-modules/>, chore: purge identified terraform modules via dbpurge (#28802) - coder/coder <https://github.com/coder/coder/commit/10fd510ada0e3a7c222511dbd9916f83afd1acf0>, chore: migration to delete identified modules - coder/coder #28798 <https://github.com/coder/coder/pull/28798>, Coder Registry Compromise: Malicious Terraform Modules Explained - eSecurity Planet <https://www.esecurityplanet.com/cybersecurity/news-coder-registry-malicious-terraform-modules/>",,4
-typecho-fans-plugins,Typecho Fans plugins repository distributed a credential-stealing workflow,Typecho Fans plugins,project,,https://github.com/typecho-fans/plugins,A compromised contributor account added a malicious GitHub Actions workflow to Typecho Fans plugins. The workflow attempted to send repository credentials to an attacker-controlled server.,,2026,2026-09-05,,,,Shell,compromised_account_credentials,,,source,credential_theft,,GhostAction Returns: Malicious Security Audit Workflows Now Mine Credentials from Entire Git Histories <https://www.stepsecurity.io/blog/ghostaction-returns>,,1
-universal-file-viewer,Flutter example build files distributed XCSSET malware,universal_file_viewer,application,,https://github.com/Shonu72/universal_file_viewer,The universal_file_viewer 0.1.5 archive on pub.dev contained infected example build files from a compromised maintainer workstation. Building the example could execute XCSSET; ordinary dependency use did not compile those files.,,2026,2026-09-08T10:44:57.394900Z,,,,Shell,,,,source,credential_theft,,"Compromised Flutter package on pub.dev contains XCSSET malware <https://www.aikido.dev/blog/compromised-flutter-package-on-pub-dev-contains-xcsset-malware>, Registry metadata and archive digest <https://pub.dev/api/packages/universal_file_viewer/versions/0.1.5>",,1
-wot-design-uni,wot-design-uni upstream commits installed malicious editor hooks,wot-design-uni,project,,https://github.com/Moonofweisheng/wot-design-uni,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,,2026,2026-09-20,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/Moonofweisheng/wot-design-uni/commit/0320fd8a3825502362d91c1e46c061290c156197>",,1
-micro-app,micro-app upstream commits installed malicious editor hooks,micro-app,project,,https://github.com/jd-opensource/micro-app,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,,2026,2026-09-21,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/jd-opensource/micro-app/commit/c610739cc5d2493704509ae7f755d4f79229c68b>",,1
-xadmin-client,xadmin-client upstream commits installed malicious editor hooks,xadmin-client,project,,https://github.com/nineaiyu/xadmin-client,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,,2026,2026-09-22,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/nineaiyu/xadmin-client/commit/257a90c876fb858a54bbdeb47836701aefa0dabc>",,1
-memtensor,MemTensor releases bundled a credential-stealing Go payload,MemTensor,project_organization,,https://github.com/MemTensor/MemOS,An attacker published modified MemTensor packages to npm and PyPI. Bundled Go binaries ran during plugin use or Python import and searched developer home directories for secrets.,"Malicious changes appeared in both MemTensor repositories before publication. The npm plugin and Python package bundled platform-specific sckit executables. Socket could not establish the initial access mechanism.
+typecho-fans-plugins,Typecho Fans plugins repository distributed a credential-stealing workflow,Typecho Fans plugins,project,,https://github.com/typecho-fans/plugins,A compromised contributor account added a malicious GitHub Actions workflow to Typecho Fans plugins. The workflow attempted to send repository credentials to an attacker-controlled server.,"An attacker returned to a compromised community plugin repository in October and tried to
+restart a secret-stealing workflow without changing the malware. StepSecurity found an empty
+commit followed by a small README edit in typecho-fans/plugins, both intended to trigger
+automation already present since September 5. This time, the resulting runs stopped at an
+approval requirement.
 
-The plugin launched the executable on gateway startup and memory recall. The Python package launched it when memos was imported.
+Typecho Fans maintained a collection of plugins for the Typecho blogging platform, with an index
+and download links for users and a shared repository for contributors. The retained September
+snapshot contained a workflow called Github Actions Security. Its name suggested maintenance,
+but the single substantive command sent API_MIRROR, GITEE_TOKEN, and SYNC_PV to an external HTTP
+endpoint. Those secret references tied the payload to the repository's automation rather than to
+a particular blog plugin's PHP code.
 
-The payload searched for package-registry, source-control, cloud, Vault, and SSH credentials. Its configuration named servers under skyleen.fr. Intervening npm releases 0.1.22 and 0.1.24 reverted the malicious content, but later poisoned releases followed.
+The workflow supported both push events and manual dispatch. Its preceding cache-busting step
+only wrote a timestamp into the job environment; the next step attempted the secret transfer.
+The October edits therefore did not need to add another loader or modify a plugin to create a
+new execution opportunity. StepSecurity associated the activity with the compromised
+xxyangyoulin account and documented the October 7 runs remaining in action_required.
+
+That approval gate prevented the observed October attempts from executing, but it did not
+establish that the earlier September workflow had never run. The preserved source proved an
+upstream CI implant, not poisoned plugin archives or infection of Typecho websites.
+OpenSourceMalware's GhostAction research corroborated the wider campaign's use of such
+workflows; the outcome for any earlier secrets exposed from this particular repository remained
+unconfirmed.
+",2026,2026-09-05,,,,Shell,compromised_account_credentials,,,source,credential_theft,,"GhostAction Returns: Malicious Security Audit Workflows Now Mine Credentials from Entire Git Histories <https://www.stepsecurity.io/blog/ghostaction-returns>, GhostAction Attack Escalates By Targeting GitHub Users <https://opensourcemalware.com/blog/ghostaction-attack-escalates>",,1
+universal-file-viewer,Flutter example build files distributed XCSSET malware,universal_file_viewer,application,,https://github.com/Shonu72/universal_file_viewer,The universal_file_viewer 0.1.5 archive on pub.dev contained infected example build files from a compromised maintainer workstation. Building the example could execute XCSSET; ordinary dependency use did not compile those files.,"A Flutter package's demonstration app carried malware even though the library developers
+ordinarily imported was clean. On September 8, Aikido researcher Ilyas Makari reported XCSSET in
+universal_file_viewer 0.1.5 on pub.dev. The package provided document and media preview widgets;
+the dangerous files accompanied it in the example project that showed developers how to use
+them.
+
+Aikido attributed the contamination to a maintainer's infected workstation, where the worm
+modified local build files before publication. The retained pub.dev archive confirmed the
+distinction: the affected paths were under example/, including Android's Gradle configuration
+and the iOS and macOS Xcode projects. Adding the library as a dependency did not build that
+demonstration. A developer explicitly building the example entered a different execution path
+from an application merely using the preview widgets.
+
+The Android configuration attached a hidden shell command to a preBuild task. The Xcode projects
+embedded build rules and encoded commands that contacted remote infrastructure. Those were
+instructions for the developer's build tools, rather than Dart features needed to display a
+document. Aikido's broader payload analysis described XCSSET modules for stealing browser and
+other local data and modifying additional projects, explaining how one workstation infection
+could become another maintainer's published source.
+
+The pub.dev version record marks 0.1.5 as retracted, and the captured archive's digest matches
+the registry's published value. That establishes what the registry distributed without turning
+every package download into a confirmed infection. The cited investigation did not identify how
+many developers built the infected example. Its narrow execution condition mattered: the package
+was compromised upstream, but ordinary dependency use and local example development did not
+carry the same exposure.
+",2026,2026-09-08T10:44:57.394900Z,,,,Shell,,,,source,credential_theft,,"Compromised Flutter package on pub.dev contains XCSSET malware <https://www.aikido.dev/blog/compromised-flutter-package-on-pub-dev-contains-xcsset-malware>, Registry metadata and archive digest <https://pub.dev/api/packages/universal_file_viewer/versions/0.1.5>",,1
+wot-design-uni,wot-design-uni upstream commits installed malicious editor hooks,wot-design-uni,project,,https://github.com/Moonofweisheng/wot-design-uni,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,"A daily housekeeping workflow in the wot-design-uni repository sat beside a much less routine
+addition in its September 20 source: instructions to start a malware loader in developers'
+coding sessions. The project supplied Vue 3 and TypeScript components for uni-app applications.
+SafeDep classified the new hooks as the work of the credential-stealing Mini Shai-Hulud worm,
+part of the worm's continued spread through a previously compromised GitHub Action.
+
+The archived Issue Inactive workflow called actions-cool/issues-helper@v3 to close reports
+waiting for information and lock old discussions. These were administrative chores rather than
+compilation steps. The same checkout now contained .claude/settings.json and .vscode/tasks.json,
+each directing a local tool to .claude/setup.mjs. The juxtaposition mattered: the repository's
+automation dependency was relevant even though the malicious addition did not change a mobile UI
+component.
+
+In the preserved hook configuration, a Claude Code session-start event invoked Node, while VS
+Code was asked to run an Environment Setup task on folder opening. The setup script then
+obtained Bun and launched the bundled index.js. Hash comparison confirmed the same payload in
+the other five investigated repositories. For developers who allowed those project commands to
+execute, opening a development session could reach code outside the application's intended build
+or runtime behavior.
+
+The archive established the presence of those files at the identified upstream commit, rather
+than a count of infected workstations. It did not show that ordinary installations of a
+published component package shipped the hooks, or that users of finished mobile applications
+executed them. The incident therefore remained a compromise of the development source path.
+Resolving a finding on that path required distinguishing the poisoned checkout from any
+separately built and published package.
+",2026,2026-09-20,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/Moonofweisheng/wot-design-uni/commit/0320fd8a3825502362d91c1e46c061290c156197>",,1
+micro-app,micro-app upstream commits installed malicious editor hooks,micro-app,project,,https://github.com/jd-opensource/micro-app,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,"A repository bot's activity left micro-app contributors with executable editor settings in their
+source checkout. The September 21 change reached JD's established micro-frontend project, whose
+normal job was to let separately developed web applications coexist on one page. SafeDep
+identified the added files as part of the credential-stealing Mini Shai-Hulud worm's spread
+through compromised GitHub Actions.
+
+The retained source snapshot shows that micro-app used actions-cool/issues-helper for routine
+issue maintenance. It also contains a new .claude directory and a VS Code task labeled
+Environment Setup. The task's label described a plausible convenience for someone preparing a
+development environment, but its command pointed to the same setup program as the new Claude
+Code session hook. Both paths led away from the framework's browser functionality and into the
+contributor's local tools.
+
+Static inspection confirmed that the Claude hook invoked node .claude/setup.mjs on session
+startup, while the VS Code task requested execution when the folder opened. VS Code's
+automatic-task and workspace trust settings still governed that route. The setup script selected
+a Bun executable for the host platform and used it to run .claude/index.js. That file's digest
+matched the payload preserved from the other five repositories in this group; it was not a
+micro-app-specific implementation change.
+
+SafeDep associated the first malicious commit with a nearby Close Inactive Issue workflow run,
+while treating the exact trigger as an inference. The source capture established the downstream
+delivery of the hooks, not how many contributors allowed them to execute. It also did not
+establish a poisoned npm release or malicious code in websites built with micro-app. The added
+execution path concerned the people working on the upstream checkout and the credentials
+available to their development sessions.
+",2026,2026-09-21,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/jd-opensource/micro-app/commit/c610739cc5d2493704509ae7f755d4f79229c68b>",,1
+xadmin-client,xadmin-client upstream commits installed malicious editor hooks,xadmin-client,project,,https://github.com/nineaiyu/xadmin-client,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,"The frontend for a Django-and-Vue administration system acquired malicious development hooks
+while its issue bots continued their ordinary work. The September 22 source snapshot of
+nineaiyu/xadmin-client contained the same implanted payload found in five other repositories.
+SafeDep identified the group as infections by the credential-stealing Mini Shai-Hulud worm
+linked to the compromised actions-cool/issues-helper action.
+
+xadmin-client's README described a Vue 3 interface for a role-based access-control system,
+derived from vue-pure-admin. Its archived workflows used issues-helper to label reports, remove
+labels, and close issues that had received no feedback for thirty days. Those routines explain
+why a frontend repository depended on an external GitHub Action at all. The malicious files,
+however, appeared in .claude and .vscode, where a developer's local coding tools would find
+them.
+
+Inspection showed a Claude Code session hook and a VS Code folder-open task pointing to node
+.claude/setup.mjs. The setup program downloaded Bun and ran a bundled JavaScript payload whose
+digest matched the other five captures. The settings thus connected source distribution to local
+command execution without needing to alter a visible application screen. Execution was
+conditional on using the relevant tool and allowing the project-defined command, particularly VS
+Code's automatic task.
+
+The retained commit proved that the upstream checkout distributed the hooks. It did not prove
+that a deployed xadmin administration website served malware, that a package registry published
+the altered files, or that every contributor ran them. The incident's immediate downstream
+audience was developers handling that source. Their potential exposure came from the commands in
+the checkout, while actual credential theft or persistent access would require additional
+endpoint evidence.
+",2026,2026-09-22,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/nineaiyu/xadmin-client/commit/257a90c876fb858a54bbdeb47836701aefa0dabc>",,1
+memtensor,MemTensor releases bundled a credential-stealing Go payload,MemTensor,project_organization,,https://github.com/MemTensor/MemOS,An attacker published modified MemTensor packages to npm and PyPI. Bundled Go binaries ran during plugin use or Python import and searched developer home directories for secrets.,"An AI memory plugin began passing user prompts to a hidden executable on September 23, when
+compromised MemTensor releases introduced a program for collecting developer secrets. Socket and
+StepSecurity identified malicious versions of the MemOS Cloud integration for OpenClaw,
+alongside the Python package MemoryOS. The affected software belonged to an established project
+that helped AI applications retain information between interactions; the attacker inserted the
+collection machinery into that ordinary work.
+
+The npm releases, 0.1.21, 0.1.23, and 0.1.25 of @memtensor/memos-cloud-openclaw-plugin, carried
+executables for Linux, macOS, and Windows. Inspection of the retained 0.1.23 and 0.1.25 archives
+confirmed the package identities and six bundled platform binaries. StepSecurity found that
+gateway startup and memory recall launched the program in a detached process. During recall, the
+launcher also supplied the user's prompt. Disabling package-install scripts would not prevent
+that later execution inside the running plugin.
+
+The payload, named sckit, targeted credentials that could unlock cloud services, source
+repositories, and package registries. Socket's analysis connected its collection to skyleen.fr
+and described the Python counterpart in MemoryOS 2.0.34, where importing memos reached the
+launcher through logging initialization. These entry points put the malware inside processes
+already entrusted with application configuration and user input. Public reporting established
+the malicious releases, but did not establish how the attacker first obtained access.
+
+The release sequence complicated recovery. StepSecurity found that versions 0.1.22 and 0.1.24
+restored clean contents, only for another malicious version to appear less than four minutes
+after each. A newer version number therefore offered no assurance that the intrusion had ended.
+The reports identified affected releases and collection capabilities, but supplied neither a
+confirmed victim count nor evidence that the successive clean-content publications had
+permanently removed the attacker's access.
 ",2026,2026-09-23,,,,Go,,,,source,credential_theft,,"MemTensor npm and PyPI Packages Compromised in Credential-Stealing Supply Chain Attack <https://socket.dev/blog/memtensor-compromise>, Sckit Supply Chain Worm Hits MemTensor npm & PyPi scopes <https://www.stepsecurity.io/blog/sckit-supply-chain-worm-hits-memtensor-npm-pypi-scopes>",,2
-ant-design-pro-components,pro-components upstream commits installed malicious editor hooks,pro-components,project,,https://github.com/ant-design/pro-components,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,,2026,2026-09-24,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/ant-design/pro-components/commit/1bc4049d295a4af4da3cef8074e4b5d7312a6858>",,1
-maaframework,MaaFramework upstream commits installed malicious editor hooks,MaaFramework,project,,https://github.com/MaaXYZ/MaaFramework,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,,2026,2026-09-24,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/MaaXYZ/MaaFramework/commit/97123f9160fcf03964187e66abcc2824f8fa1d9a>",,1
-vben-admin-thin-next,vben-admin-thin-next upstream commits installed malicious editor hooks,vben-admin-thin-next,project,,https://github.com/vbenjs/vben-admin-thin-next,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,,2026,2026-09-24,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/vbenjs/vben-admin-thin-next/commit/d83cd757e7731d9e62882758646e25614519e142>",,1
-tensorlake,Tensorlake npm release ran a credential-stealing worm,Tensorlake,library,,https://github.com/tensorlakeai/tensorlake,The official tensorlake 0.5.144 npm release added a preinstall loader. Installing the SDK with lifecycle scripts enabled launched a worm that stole credentials and attempted further propagation.,,2026,2026-10-07,,,,JavaScript,compromised_account_credentials,,,source,"credential_theft, remote_code_execution",,"TensorLake npm SDK Compromised in ChainDrop Shai-Hulud Credential-Stealing Attack <https://socket.dev/blog/tensorlake-compromise>, tensorlake 0.5.144 npm Compromise Ships Mini Shai-Hulud <https://safedep.io/tensorlake-npm-compromise-mini-shai-hulud/>",,2
-pyxel,Pyxel repository distributed a credential-stealing workflow,Pyxel,project,,https://github.com/kitao/pyxel,A compromised contributor account added a malicious GitHub Actions workflow to Pyxel. The workflow attempted to send repository credentials to an attacker-controlled server.,,2026,2026-10-08,,,,Shell,compromised_account_credentials,,,source,credential_theft,,"GhostAction Returns: Malicious Security Audit Workflows Now Mine Credentials from Entire Git Histories <https://www.stepsecurity.io/blog/ghostaction-returns>, New GhostAction Wave Hits Hundreds of Repos, Expanding Beyond CI/CD Secrets to Cloud Credentials <https://socket.dev/blog/ghostaction-cloud-credentials>",,1
-athenadriver,athenadriver repository distributed a credential-stealing workflow,athenadriver,project,,https://github.com/uber/athenadriver,A compromised contributor account added a malicious GitHub Actions workflow to athenadriver. The workflow attempted to send repository credentials to an attacker-controlled server.,,2026,2026-10-08,,,,Shell,compromised_account_credentials,,,source,credential_theft,,"GhostAction Returns: Malicious Security Audit Workflows Now Mine Credentials from Entire Git Histories <https://www.stepsecurity.io/blog/ghostaction-returns>, New GhostAction Wave Hits Hundreds of Repos, Expanding Beyond CI/CD Secrets to Cloud Credentials <https://socket.dev/blog/ghostaction-cloud-credentials>",,1
-litellm-october-2026,LiteLLM release pipeline shipped Python startup malware,LiteLLM,library,,https://github.com/BerriAI/litellm,An attacker used stolen release credentials to publish LiteLLM 1.107.0 on October 21. Its wheels and container image carried Python startup hooks that stole secrets and loaded remote code.,"Secret-stealing workflows ran in the upstream repository on October 10 and 12. Later vendor findings linked a stolen GitHub token to approval of the October 21 release.
+ant-design-pro-components,pro-components upstream commits installed malicious editor hooks,pro-components,project,,https://github.com/ant-design/pro-components,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,"The source repository behind Ant Design ProComponents gained a second, unrelated job on
+September 24: starting a malware loader from contributors' editor sessions. ProComponents
+supplied reusable interface components for business applications, but the new files lived in
+coding-tool configuration rather than the React components consumers expected. SafeDep
+identified the changes as another infection by the credential-stealing Mini Shai-Hulud worm.
 
-Container provenance recorded Berri-AI/litellm as its source, rather than the legitimate BerriAI organization. The malicious build included cook.pth, cook.py, and sitecustomize.py.
+The preserved checkout includes an Issue Open Check workflow that called
+actions-cool/issues-helper, alongside newly added Claude Code and VS Code hooks. Inspecting
+those hooks showed two routes to node .claude/setup.mjs. The Claude configuration applied to
+session startup; the VS Code configuration requested a task when the project folder opened. An
+Environment Setup label gave the latter an ordinary development purpose on its face, even though
+it launched the implanted file.
 
-The installed startup hooks collected cloud and AI credentials and could execute remotely supplied Python. Floating container tags also resolved to the affected image. This incident is separate from the March LiteLLM compromise.
-",2026,2026-10-10,,,,Python,,,,ci_cd,"credential_theft, remote_code_execution",,"LiteLLM PyPI Package and Docker Images Compromised to Steal Cloud and AI Credentials <https://socket.dev/blog/litellm-compromise>, New Evidence Shows LiteLLM Secret-Stealing Workflows Ran 11 Days Before Supply Chain Attack <https://socket.dev/blog/litellm-attack-timeline>",,2
-ovhcloud-cli,OVHcloud CLI release assets were replaced with malware,OVHcloud CLI,application,,https://github.com/ovh/ovhcloud-cli,An attacker replaced binaries on five existing OVHcloud CLI GitHub releases and changed their checksums. Customers fetching the assets during a 94-minute window received a credential stealer.,,2026,2026-10-19T12:47:00Z,2026-10-19T14:21:00Z,,,,compromised_account_credentials,credential_theft,true,distribution,credential_theft,,"ovhcloud-cli security incident - October 19th, 2026 <https://github.com/ovh/ovhcloud-cli/security/advisories/GHSA-862f-55f5-vmvw>, OVHcloud CLI Compromised via GitHub Release Swap <https://www.stepsecurity.io/blog/ovhcloud-cli-github-release-swap-glassworm>",,1
-creative-tim-polinrider,Creative Tim dashboard repositories carried PolinRider loaders,Creative Tim,project_organization,,https://github.com/creativetimofficial,Four Creative Tim dashboard repositories contained malicious JavaScript at their default branch tips. The loaders used Ethereum transactions to resolve infrastructure for credential-stealing payloads.,,,,,,,,,,,source,credential_theft,,PolinRider Switches to Ethereum C2 in 30+ Repositories <https://safedep.io/polinrider-ethereum-c2-github-repositories/>,,4
-visanduma-nova-two-factor,Visanduma development branches distributed PolinRider loaders,Visanduma,project_organization,,https://github.com/visanduma/nova-two-factor,A compromised Visanduma developer account introduced malware into nova-two-factor development branches distributed through Packagist. Socket identified four affected development versions and no malicious stable release.,,,,,,,,compromised_account_credentials,,,source,credential_theft,,PolinRider Spreads Through Compromised GitHub Accounts and Packagist <https://socket.dev/blog/polinrider-github-packagist>,,1
+The setup program selected a platform-specific Bun runtime before running .claude/index.js. The
+payload was 500,143 bytes and matched the copies retained from micro-app, MaaFramework, and the
+other affected projects. That comparison made the change materially different from an unfamiliar
+but legitimate contributor preference: the repository contained the same executable payload
+distributed across the incident group. VS Code's permission and trust controls remained relevant
+to whether its automatic task actually ran.
+
+SafeDep observed that the malicious commit reused its parent's version-like message, 3.1.14-7,
+making a summary view less informative than the file changes. The evidence did not establish
+that a ProComponents npm release carried the hooks, or that applications using the components
+delivered malware to browser users. The demonstrated distribution was the upstream source state
+and its developer-tool commands; downstream execution and any resulting credential loss remained
+separate questions.
+",2026,2026-09-24,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/ant-design/pro-components/commit/1bc4049d295a4af4da3cef8074e4b5d7312a6858>",,1
+maaframework,MaaFramework upstream commits installed malicious editor hooks,MaaFramework,project,,https://github.com/MaaXYZ/MaaFramework,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,"MaaFramework's September 24 source tree acquired a JavaScript bootstrapper in an unexpected
+place: the settings used by contributors' coding tools. The project provided an
+image-recognition framework for automating interactions and testing software. SafeDep found it
+among six established repositories receiving hooks for the credential-stealing Mini Shai-Hulud
+worm, with the nearest candidate trigger in this case being the project's Release workflow.
+
+The retained checkout explains why the language of the project's main code was no protection
+against this change. MaaFramework advertised a C++ core and interfaces for several ecosystems,
+but .claude/settings.json instructed a coding session to start a Node.js program. A separate
+.vscode/tasks.json offered the same command as Environment Setup. The files traveled with the
+source regardless of which framework binding a contributor intended to work on.
+
+The added setup script downloaded a suitable Bun runtime and launched the bundled
+.claude/index.js. Its platform selection covered Windows, macOS, and Linux. Comparing the
+archived payload with those in the other affected repositories produced an identical digest,
+linking the source additions without relying on a filename alone. The Claude session hook and
+the requested VS Code folder-open task were alternate entry points; execution still depended on
+the local tool, available runtime, and applicable trust controls.
+
+The release-workflow association was based on timing, not proof that a published MaaFramework
+binary contained the implant. The captured evidence instead showed executable settings
+distributed through the upstream repository. No affected PyPI, npm, NuGet, or other packaged
+release was established by this investigation. That distinction kept the incident's scope on the
+compromised development checkout while leaving the number of workstations that actually ran its
+hooks unresolved.
+",2026,2026-09-24,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/MaaXYZ/MaaFramework/commit/97123f9160fcf03964187e66abcc2824f8fa1d9a>",,1
+vben-admin-thin-next,vben-admin-thin-next upstream commits installed malicious editor hooks,vben-admin-thin-next,project,,https://github.com/vbenjs/vben-admin-thin-next,A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.,"A stripped-down Vue administration template arrived with more setup machinery than its
+developers intended. The September 24 upstream state of vben-admin-thin-next included new hooks
+for Claude Code and VS Code, offering an execution path on contributors' machines. SafeDep
+associated the files with the spread of the credential-stealing Mini Shai-Hulud worm through
+actions-cool/issues-helper, an automation dependency used by the repository.
+
+The project's documentation presented the template as a starting point for web administration
+interfaces built with Vue, Vite, and TypeScript. Working from a source checkout was therefore
+central to its use: a developer could adapt the template into a new application. The retained
+tree contained issue-management workflows as well as the added editor settings. Copying or
+cloning that tree could carry the settings into the same local environment used to customize the
+application.
+
+The implanted .vscode/tasks.json requested an Environment Setup task on folder opening, and
+.claude/settings.json registered a session-start command. Both invoked node .claude/setup.mjs.
+That program selected and downloaded Bun, then launched .claude/index.js; the latter matched the
+payload recovered from the five related repositories. The task was an instruction to execute
+code, not merely an editor preference. Local trust settings and permission to run automatic
+tasks still controlled the VS Code route.
+
+The confirmed artifact was the source snapshot at commit d83cd757, not an identified poisoned
+registry release. The evidence also did not establish that every project derived from this
+template inherited or executed the hooks. A developer's checkout, the tools used to open it, and
+the permission to run its commands determined the relevant exposure. Public reporting identified
+the upstream infection but did not supply a count of resulting workstation compromises.
+",2026,2026-09-24,,,,,,,true,source,credential_theft,,"September upstream reinfections <https://safedep.io/mini-shai-hulud-reinfection-github-repositories/>, Upstream commit adding editor hooks <https://github.com/vbenjs/vben-admin-thin-next/commit/d83cd757e7731d9e62882758646e25614519e142>",,1
+tensorlake,Tensorlake npm release ran a credential-stealing worm,Tensorlake,library,,https://github.com/tensorlakeai/tensorlake,The official tensorlake 0.5.144 npm release added a preinstall loader. Installing the SDK with lifecycle scripts enabled launched a worm that stole credentials and attempted further propagation.,"Developers installing a toolkit for running AI-generated code in isolated sandboxes received a
+credential-stealing worm before they ever created a sandbox. Tensorlake's npm release 0.5.144
+arrived on October 8 with an installation hook that launched the malware on the installing
+machine. SafeDep and Socket independently flagged the release within minutes, tracing the danger
+to the SDK that developers used to manage Tensorlake environments.
+
+SafeDep reconstructed a compromise of the project's source and release process. On October 7, a
+repository administrator account added two payload files and an installation hook through
+GitHub's web interface, then revised the changes and set the package version. The account
+subsequently started the project's normal npm publication workflow. Trusted publishing delivered
+the poisoned source through the legitimate pipeline; provenance attached to sibling packages
+documented that build without establishing that its contents were safe.
+
+The retained source snapshot contains the preinstall command, lib/setup.mjs, and the large
+Math_Symbol.js payload. SafeDep found that the loader obtained Bun and avoided recognized CI
+environments, letting the publishing job proceed while leaving downstream installations exposed.
+Socket described collection of cloud credentials, package tokens, SSH material, and AI-tool
+configuration, together with remote execution and propagation capabilities. A token-monitoring
+component also made recovery hazardous: the researchers documented destructive behavior tied to
+invalidated credentials.
+
+npm removed the malicious version, and Tensorlake's maintainers reverted the source changes and
+released 0.5.145, according to SafeDep. That stopped this version's normal distribution but did
+not account for machines where it had already executed. The exposure began with installing the
+management SDK, outside the isolated environments it was meant to control. Neither the package's
+routine download volume nor a successful release job measured how many developers actually ran
+the payload.
+",2026,2026-10-07,,,,JavaScript,compromised_account_credentials,,,source,"credential_theft, remote_code_execution",,"TensorLake npm SDK Compromised in ChainDrop Shai-Hulud Credential-Stealing Attack <https://socket.dev/blog/tensorlake-compromise>, tensorlake 0.5.144 npm Compromise Ships Mini Shai-Hulud <https://safedep.io/tensorlake-npm-compromise-mini-shai-hulud/>",,2
+pyxel,Pyxel repository distributed a credential-stealing workflow,Pyxel,project,,https://github.com/kitao/pyxel,A compromised contributor account added a malicious GitHub Actions workflow to Pyxel. The workflow attempted to send repository credentials to an attacker-controlled server.,"A purported security audit in Pyxel's repository was designed to hand the project's publishing
+credentials to an outsider. The October 8 intrusion used the account of Takashi Kitao, the
+maintainer of the Python retro-game engine, to add and revise a GitHub Actions workflow.
+StepSecurity documented three malicious commits and two additional manual executions during the
+attacker's activity.
+
+Pyxel helped developers make games with deliberately small palettes and simple sound
+capabilities, but its release machinery held credentials with much broader consequences. In the
+retained security-audit.yml, the attacker's command explicitly referenced CARGO_REGISTRY_TOKEN,
+PERSONAL_ACCESS_TOKEN, PYPI_PASSWORD, and PYPI_USERNAME. These were the names of secrets the
+workflow asked GitHub to supply, not credentials hardcoded in the sample. Their values, if
+available to the job, were assembled for transmission to an external IP address.
+
+The workflow also requested a full checkout and scanned both current files and Git history for
+cloud, source-control, and AI-service credential patterns. Static inspection showed that it
+collected nearby lines around AWS key identifiers, allowing associated secrets to accompany a
+match. Historical scanning was bounded by command-output limits, and matching a
+credential-shaped string did not prove it was still usable. Deleting a secret from the latest
+source file would not remove it from the history the workflow searched.
+
+OpenSourceMalware placed Pyxel in the renewed GhostAction account-compromise campaign.
+StepSecurity recorded five successful workflow runs, but those status results did not reveal the
+exact credentials stolen. The public evidence established malicious automation in the upstream
+repository and access to its execution path; it did not establish a malicious PyPI or crates.io
+release of Pyxel. A workflow removal alone could not demonstrate that any credentials already
+transmitted had been invalidated.
+",2026,2026-10-08,,,,Shell,compromised_account_credentials,,,source,credential_theft,,"GhostAction Returns: Malicious Security Audit Workflows Now Mine Credentials from Entire Git Histories <https://www.stepsecurity.io/blog/ghostaction-returns>, New GhostAction Wave Hits Hundreds of Repos, Expanding Beyond CI/CD Secrets to Cloud Credentials <https://socket.dev/blog/ghostaction-cloud-credentials>, GhostAction Attack Escalates By Targeting GitHub Users <https://opensourcemalware.com/blog/ghostaction-attack-escalates>",,1
+athenadriver,athenadriver repository distributed a credential-stealing workflow,athenadriver,project,,https://github.com/uber/athenadriver,A compromised contributor account added a malicious GitHub Actions workflow to athenadriver. The workflow attempted to send repository credentials to an attacker-controlled server.,"A retained maintainer account gave an attacker a direct route into Uber's athenadriver
+repository on October 8. The project provided a Go database driver for Amazon Athena, letting
+applications query the service through familiar database interfaces. StepSecurity traced a
+malicious security-audit.yml commit to the compromised account of original author Henry Wu, near
+the end of a rapid sweep across repositories that account could modify.
+
+The captured workflow contained no populated list of named Actions secrets. Instead, it
+requested the complete repository history and searched the checkout and earlier changes for
+credential-like strings. This made a repository without an obvious publishing secret useful to
+the attacker. Old code and examples could still contain keys. The script also gathered context
+around AWS identifiers, rather than assuming an access-key ID by itself supplied a complete
+credential.
+
+The resulting text was sent by an HTTP POST to 193.32.204.199. StepSecurity examined the actual
+run log and found the collector's acknowledgment, confirming delivery of a request. That
+acknowledgment did not disclose which live credentials, if any, were in its body. The
+researchers also noted faulty regular-expression syntax in some searches, so the workflow's
+broad intentions should not be mistaken for exhaustive or flawless collection.
+
+OpenSourceMalware's wider GhostAction investigation described the same shift from named CI
+secrets toward repository-history mining. In athenadriver, the confirmed intrusion was malicious
+upstream automation and an executed outbound request. It did not establish that the Go driver
+delivered a backdoor to applications using Athena or that Uber's infrastructure was subsequently
+accessed. The available record left the validity and later use of any harvested credentials
+unresolved.
+",2026,2026-10-08,,,,Shell,compromised_account_credentials,,,source,credential_theft,,"GhostAction Returns: Malicious Security Audit Workflows Now Mine Credentials from Entire Git Histories <https://www.stepsecurity.io/blog/ghostaction-returns>, New GhostAction Wave Hits Hundreds of Repos, Expanding Beyond CI/CD Secrets to Cloud Credentials <https://socket.dev/blog/ghostaction-cloud-credentials>, GhostAction Attack Escalates By Targeting GitHub Users <https://opensourcemalware.com/blog/ghostaction-attack-escalates>",,1
+litellm-october-2026,LiteLLM release pipeline shipped Python startup malware,LiteLLM,library,,https://github.com/BerriAI/litellm,An attacker used stolen release credentials to publish LiteLLM 1.107.0 on October 21. Its wheels and container image carried Python startup hooks that stole secrets and loaded remote code.,"An administrative key left in a public repository in May helped an attacker turn LiteLLM's
+October 21 release into a credential thief and persistent backdoor. The package lets
+applications talk to multiple AI providers through a common interface, making its deployment
+environments useful places to find provider keys. Seven version 1.107.0 wheels and affected
+container images reached official registries before the maintainers contained the release, in a
+separate incident from LiteLLM's March compromise.
+
+LiteLLM's postmortem traced the first access to an internal Agent Platform API. The exposed
+master key returned a GitHub organization owner's token on October 10; the attacker then used
+disposable workflows to steal other maintainers' credentials. Socket independently recovered
+secret-stealing workflows from October 10 and 12, on branches deleted soon after use. With
+multiple identities available, the attacker changed the release system to build from the
+lookalike Berri-AI organization and supplied the separate approval needed to publish.
+
+The malicious wheels turned normal Python startup into an execution trigger. OpenSourceMalware
+found cook.pth, cook.py, and sitecustomize.py arranged to run a collector and retrieve
+additional Python code periodically. Applications did not need to import LiteLLM for the startup
+hooks to execute. Inspection of the retained Linux wheel confirmed those three files in the
+exact 1.107.0 release. OpenSourceMalware's analysis covered browser data, cloud and developer
+credentials, and keys stored by LiteLLM itself, with stolen information sent to www.litellm.dev.
+
+The maintainers said PyPI quarantined the release by 13:23 UTC on October 21, with affected
+Docker Hub tags removed or repointed by 14:20. They restricted publishing, removed GitHub
+organization access, and treated organizational credentials as exposed. Removing the release
+closed a delivery route, but could not recall secrets or background processes from affected
+environments. The postmortem also corrected the initial account of token theft: the owner's
+credential came from the Agent Platform API, rather than the deployment logs first suspected.
+",2026,2026-10-10,,,,Python,,,,ci_cd,"credential_theft, remote_code_execution",,"LiteLLM PyPI Package and Docker Images Compromised to Steal Cloud and AI Credentials <https://socket.dev/blog/litellm-compromise>, New Evidence Shows LiteLLM Secret-Stealing Workflows Ran 11 Days Before Supply Chain Attack <https://socket.dev/blog/litellm-attack-timeline>, The attack chain behind the v1.107.0 LiteLLM release <https://docs.litellm.ai/blog/security-incident-oct-21-2026-attack-chain>, LiteLLM 1.107.0 PyPI Wheel Contains a Credential Stealer and Persistent Python Backdoor <https://opensourcemalware.com/blog/litellm-1-107-0-pypi-wheel-contains-a-credential-stealer-and-persistent-python-backdoor>",,2
+ovhcloud-cli,OVHcloud CLI release assets were replaced with malware,OVHcloud CLI,application,,https://github.com/ovh/ovhcloud-cli,An attacker replaced binaries on five existing OVHcloud CLI GitHub releases and changed their checksums. Customers fetching the assets during a 94-minute window received a credential stealer.,"A customer whose build rejected an unexpected checksum helped expose a brief replacement of
+OVHcloud's official command-line downloads on October 19. The software let administrators manage
+cloud resources, but binaries attached to five existing GitHub releases had been swapped for
+secret-stealing builds. The source and version tags could remain familiar while a new download
+supplied different executable code.
+
+OVHcloud confirmed that a compromised developer account replaced release assets for versions
+0.11.0 through 0.15.0 between 12:47 and 14:21 UTC. OpenSourceMalware reconstructed changes to
+the downloadable archives and their checksum files, explaining why checking a fresh download
+against a freshly replaced checksum list could miss the substitution. A previously pinned digest
+provided the customer with an independent comparison. The vendor said its source and build chain
+were unaffected.
+
+The vendor's later investigation traced stolen credentials to a malicious color-picker-universal
+extension installed on a developer's personal MacBook a year earlier. It linked the extension's
+infrastructure to GlassWorm and said the stolen keys, rather than that laptop itself, were used
+for the release swaps. The altered CLI collected cloud configuration, SSH keys, and
+developer-tool data. OpenSourceMalware had independently identified earlier suspicious activity
+on the same GitHub account, while treating continuity of the operator as an inference.
+
+OVHcloud removed the altered assets, released clean version 0.16.0, and enabled release
+immutability. It reported roughly 250 downloads during the incident, rather than 250
+demonstrated executions. A build from the unchanged source was distinct from an archive obtained
+through the compromised release page. The bounded exposure was a download of an altered asset
+during the incident, not every earlier installation bearing one of the same five version
+numbers.
+",2026,2026-10-19T12:47:00Z,2026-10-19T14:21:00Z,,,,compromised_account_credentials,credential_theft,true,distribution,credential_theft,,"ovhcloud-cli security incident - October 19th, 2026 <https://github.com/ovh/ovhcloud-cli/security/advisories/GHSA-862f-55f5-vmvw>, OVHcloud CLI Compromised via GitHub Release Swap <https://www.stepsecurity.io/blog/ovhcloud-cli-github-release-swap-glassworm>, Glassworm Hacks OVH Clouds CLI tool <https://opensourcemalware.com/blog/glassworm-hacks-ovh-clouds-cli-tool>",,1
+creative-tim-polinrider,Creative Tim dashboard repositories carried PolinRider loaders,Creative Tim,project_organization,,https://github.com/creativetimofficial,Four Creative Tim dashboard repositories contained malicious JavaScript at their default branch tips. The loaders used Ethereum transactions to resolve infrastructure for credential-stealing payloads.,"Developers borrowing Creative Tim's dashboard starters could also inherit concealed malware from
+their source trees. SafeDep's September 30 investigation found PolinRider loaders in four
+repositories under the established creativetimofficial organization: Black Dashboard Django,
+Material Dashboard Django, and the Django and Flask editions of Argon Dashboard. These were
+upstream project checkouts, not merely an unmerged contribution proposing a malicious change.
+
+The templates combined Python web applications with browser assets and JavaScript build tools.
+Their retained READMEs described features such as authentication, database setup, and CSS
+compilation, placing those assets alongside the code developers would customize for a new site.
+The preserved Black and Material snapshots contained large obfuscated additions in
+postcss.config.js. The Argon snapshots contained injected code in the vendored
+bootstrap-datetimepicker.js file. Each location concealed executable material in a file with an
+existing development or interface role.
+
+SafeDep traced the loader family through a server-discovery mechanism using Ethereum
+transactions: transaction data identified infrastructure from which later stages could be
+retrieved. Its analysis connected that chain to Node.js and Python credential-stealing
+components. The compromised files established distributed loaders, but their filenames alone did
+not establish that every browser visitor or every Python application startup would execute them.
+The PostCSS path, in particular, exposed tooling that loaded the configuration during asset
+processing.
+
+The four captured commits preserved the repository states identified by the investigation.
+September 30 was the date SafeDep confirmed the infected branch tips, not a demonstrated common
+date of initial access. No original compromise method, confirmed victim total, or complete
+remediation was established for this organization. The group's inclusion here rested on
+malicious files in its actual upstream repositories; the separate, rejected oxc pull request
+that helped lead researchers to the campaign did not meet that distribution boundary.
+",,,,,,,,,,source,credential_theft,,PolinRider Switches to Ethereum C2 in 30+ Repositories <https://safedep.io/polinrider-ethereum-c2-github-repositories/>,,4
+visanduma-nova-two-factor,Visanduma development branches distributed PolinRider loaders,Visanduma,project_organization,,https://github.com/visanduma/nova-two-factor,A compromised Visanduma developer account introduced malware into nova-two-factor development branches distributed through Packagist. Socket identified four affected development versions and no malicious stable release.,"A package used to add two-factor authentication to Laravel Nova became a distribution route for
+malware through its development branches. Socket researcher Karlo Zanki reported malicious code
+in visanduma/nova-two-factor on September 17, tracing the source changes to a compromised
+Visanduma developer account. The finding concerned development versions, with no malicious
+stable release identified.
+
+Packagist made those branches available through Composer under names such as dev-main. Consumers
+following development code could therefore receive an upstream change without a new numbered
+release. Socket listed dev-main, dev-nova4support, dev-using-inertia, and dev-nova5 as affected.
+The registry was a route from compromised source to consumers, rather than evidence of a
+separate Packagist account takeover.
+
+Socket identified altered Tailwind configuration among the payload files and associated the
+intrusion with PolinRider. Such JavaScript configuration can execute when frontend tooling loads
+it, giving a PHP project's development process an additional attack surface. The report placed
+the Visanduma compromise in mid-June, but did not provide a precise initial date.
+
+By the October 30 review, Packagist had frozen the package and explicitly flagged all four
+development versions as malware. That registry response supplied a concrete containment measure,
+but did not establish that affected checkouts or developers' machines had been cleaned. The
+package's cumulative downloads did not measure use of the poisoned branches, and the attacker's
+reach into private projects remained unknown.
+",,,,,,,compromised_account_credentials,,,source,credential_theft,,"PolinRider Spreads Through Compromised GitHub Accounts and Packagist <https://socket.dev/blog/polinrider-github-packagist>, Nova Two Factor package status and documentation <https://packagist.org/packages/visanduma/nova-two-factor>, Packagist malware reports for four development versions <https://packagist.org/packages/visanduma/nova-two-factor/filter-lists/malware/>",,1

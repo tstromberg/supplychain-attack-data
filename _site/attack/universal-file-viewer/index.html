@@ -14,27 +14,63 @@
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
   <h1>Flutter example build files distributed XCSSET malware</h1>
-  
+
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> universal_file_viewer · <a href="https://github.com/Shonu72/universal_file_viewer" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-09-08</div>
-    
+
     <div class="meta-item"><strong>Target Kind:</strong> application</div>
     <div class="meta-item"><strong>Language:</strong> Shell</div>
-    
-    
-    
+
+
+
     <div class="meta-item"><strong>Impact:</strong> credential_theft</div>
-    
+
     <div class="meta-item"><strong>Phase:</strong> source</div>
   </div>
 
   <h2>Synopsis</h2>
   <p class="synopsis">The universal_file_viewer 0.1.5 archive on pub.dev contained infected example build files from a compromised maintainer workstation. Building the example could execute XCSSET; ordinary dependency use did not compile those files.</p>
 
-  
 
-  
+  <h2>Story</h2>
+  <div class="story">
+
+      <p>A Flutter package's demonstration app carried malware even though the library developers
+ordinarily imported was clean. On September 8, Aikido researcher Ilyas Makari reported XCSSET in
+universal_file_viewer 0.1.5 on pub.dev. The package provided document and media preview widgets;
+the dangerous files accompanied it in the example project that showed developers how to use
+them.</p>
+
+      <p>Aikido attributed the contamination to a maintainer's infected workstation, where the worm
+modified local build files before publication. The retained pub.dev archive confirmed the
+distinction: the affected paths were under example/, including Android's Gradle configuration
+and the iOS and macOS Xcode projects. Adding the library as a dependency did not build that
+demonstration. A developer explicitly building the example entered a different execution path
+from an application merely using the preview widgets.</p>
+      <figure class="pull-quote">
+        <blockquote>A developer explicitly building the example entered a different execution path from an application merely using the preview widgets.</blockquote>
+        <figcaption>The example carried the build hooks</figcaption>
+      </figure>
+
+      <p>The Android configuration attached a hidden shell command to a preBuild task. The Xcode projects
+embedded build rules and encoded commands that contacted remote infrastructure. Those were
+instructions for the developer's build tools, rather than Dart features needed to display a
+document. Aikido's broader payload analysis described XCSSET modules for stealing browser and
+other local data and modifying additional projects, explaining how one workstation infection
+could become another maintainer's published source.</p>
+
+      <p>The pub.dev version record marks 0.1.5 as retracted, and the captured archive's digest matches
+the registry's published value. That establishes what the registry distributed without turning
+every package download into a confirmed infection. The cited investigation did not identify how
+many developers built the infected example. Its narrow execution condition mattered: the package
+was compromised upstream, but ordinary dependency use and local example development did not
+carry the same exposure.</p>
+
+  </div>
+
+
+
   <h2>Affected Artifacts</h2>
   <div class="artifact-table-wrap">
     <table class="artifact-table">
@@ -48,56 +84,56 @@
         </tr>
       </thead>
       <tbody>
-        
+
         <tr>
           <td>
             <strong>universal_file_viewer</strong>
-            
+
             <br><span>pub · source_archive</span>
-            
-            
+
+
           </td>
           <td>2026-09-08T10:44:57.394900Z</td>
           <td>
-            
+
               <code>0.1.5</code>
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               <code>sha256:5cea38548f03cf44ad03bba44a3c6012782f280bd543a3c555535081353feb04</code>
-            
+
           </td>
         </tr>
-        
+
       </tbody>
     </table>
   </div>
-  
 
-  
 
-  
 
-  
 
-  
 
-  
+
+
+
+
+
+
   <h2>References</h2>
   <ul>
-    
+
       <li><a href="https://www.aikido.dev/blog/compromised-flutter-package-on-pub-dev-contains-xcsset-malware" target="_blank">Compromised Flutter package on pub.dev contains XCSSET malware</a></li>
-    
+
       <li><a href="https://pub.dev/api/packages/universal_file_viewer/versions/0.1.5" target="_blank">Registry metadata and archive digest</a></li>
-    
+
   </ul>
-  
+
 </div>
 
   </div>

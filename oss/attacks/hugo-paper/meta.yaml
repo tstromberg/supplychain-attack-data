@@ -4,6 +4,37 @@
     Unauthorized commits added scripts/preinstall.js to the upstream hugo-paper repository. Package
     installation from an affected checkout downloaded and executed a script from
     buildwithknexus.xyz.
+  story: |
+    A routine-looking template change in Paper, a theme for the Hugo website generator, concealed a
+    command that downloaded and ran an outsider's code. SafeDep researcher Kunal Singh found that an
+    attacker had replaced the project's default-branch tip on August 21 while copying the author,
+    message, and March date of a legitimate merge. A developer browsing the history could see
+    familiar metadata while receiving different files.
+
+    Paper supplies the presentation layer for a Hugo site, including layouts and styling. Its source
+    also includes JavaScript tooling, and the compromised checkout added a preinstall command to
+    package.json. Installing those dependencies with lifecycle scripts enabled started
+    scripts/preinstall.js. The retained clean and compromised snapshots isolate that addition from
+    the theme's ordinary contents: the exposure was the developer's installation step, not a visitor
+    reading a generated page.
+
+    Static inspection of the retained loader showed platform-specific paths to the same
+    operator-controlled service, buildwithknexus.xyz. Windows downloaded a command file into the
+    temporary directory; macOS and Linux fetched a shell script and launched it in a detached
+    background job. Output was suppressed, and the download disabled certificate verification. The
+    visible installation could therefore finish without displaying the program being fetched or the
+    commands it ran.
+
+    SafeDep identified another tell in the rewritten history: the substitute for the signed,
+    two-parent merge had one parent and no signature. The original contributor's change was clean.
+    Neither the report nor the retained first-stage script established what the server's later
+    payload did, and no poisoned npm release was identified. The confirmed compromise was the
+    upstream source checkout and its ability to execute a remotely replaceable script during
+    dependency installation.
+  pull_quote:
+    text: A developer browsing the history could see familiar metadata while receiving different files.
+    caption: The history concealed different contents
+    after: 1
   start_date: '2026-08-21'
   target:
     name: hugo-paper

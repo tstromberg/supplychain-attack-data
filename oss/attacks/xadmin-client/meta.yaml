@@ -3,6 +3,39 @@
   synopsis: >-
     A malicious upstream commit added Claude Code and VS Code hooks that launched a
     credential-stealing payload when developers opened the checkout.
+  story: |
+    The frontend for a Django-and-Vue administration system acquired malicious development hooks
+    while its issue bots continued their ordinary work. The September 22 source snapshot of
+    nineaiyu/xadmin-client contained the same implanted payload found in five other repositories.
+    SafeDep identified the group as infections by the credential-stealing Mini Shai-Hulud worm
+    linked to the compromised actions-cool/issues-helper action.
+
+    xadmin-client's README described a Vue 3 interface for a role-based access-control system,
+    derived from vue-pure-admin. Its archived workflows used issues-helper to label reports, remove
+    labels, and close issues that had received no feedback for thirty days. Those routines explain
+    why a frontend repository depended on an external GitHub Action at all. The malicious files,
+    however, appeared in .claude and .vscode, where a developer's local coding tools would find
+    them.
+
+    Inspection showed a Claude Code session hook and a VS Code folder-open task pointing to node
+    .claude/setup.mjs. The setup program downloaded Bun and ran a bundled JavaScript payload whose
+    digest matched the other five captures. The settings thus connected source distribution to local
+    command execution without needing to alter a visible application screen. Execution was
+    conditional on using the relevant tool and allowing the project-defined command, particularly VS
+    Code's automatic task.
+
+    The retained commit proved that the upstream checkout distributed the hooks. It did not prove
+    that a deployed xadmin administration website served malware, that a package registry published
+    the altered files, or that every contributor ran them. The incident's immediate downstream
+    audience was developers handling that source. Their potential exposure came from the commands in
+    the checkout, while actual credential theft or persistent access would require additional
+    endpoint evidence.
+  pull_quote:
+    text: >-
+      The settings thus connected source distribution to local command execution without needing to
+      alter a visible application screen.
+    caption: The visible application could look unchanged
+    after: 3
   start_date: '2026-09-22'
   target:
     name: xadmin-client

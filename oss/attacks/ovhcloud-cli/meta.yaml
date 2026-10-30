@@ -4,6 +4,39 @@
     An attacker replaced binaries on five existing OVHcloud CLI GitHub releases and changed their
     checksums. Customers fetching the assets during a 94-minute window received a credential
     stealer.
+  story: |
+    A customer whose build rejected an unexpected checksum helped expose a brief replacement of
+    OVHcloud's official command-line downloads on October 19. The software let administrators manage
+    cloud resources, but binaries attached to five existing GitHub releases had been swapped for
+    secret-stealing builds. The source and version tags could remain familiar while a new download
+    supplied different executable code.
+
+    OVHcloud confirmed that a compromised developer account replaced release assets for versions
+    0.11.0 through 0.15.0 between 12:47 and 14:21 UTC. OpenSourceMalware reconstructed changes to
+    the downloadable archives and their checksum files, explaining why checking a fresh download
+    against a freshly replaced checksum list could miss the substitution. A previously pinned digest
+    provided the customer with an independent comparison. The vendor said its source and build chain
+    were unaffected.
+
+    The vendor's later investigation traced stolen credentials to a malicious color-picker-universal
+    extension installed on a developer's personal MacBook a year earlier. It linked the extension's
+    infrastructure to GlassWorm and said the stolen keys, rather than that laptop itself, were used
+    for the release swaps. The altered CLI collected cloud configuration, SSH keys, and
+    developer-tool data. OpenSourceMalware had independently identified earlier suspicious activity
+    on the same GitHub account, while treating continuity of the operator as an inference.
+
+    OVHcloud removed the altered assets, released clean version 0.16.0, and enabled release
+    immutability. It reported roughly 250 downloads during the incident, rather than 250
+    demonstrated executions. A build from the unchanged source was distinct from an archive obtained
+    through the compromised release page. The bounded exposure was a download of an altered asset
+    during the incident, not every earlier installation bearing one of the same five version
+    numbers.
+  pull_quote:
+    text: >-
+      The source and version tags could remain familiar while a new download supplied different
+      executable code.
+    caption: The download changed under an existing version
+    after: 1
   start_date: '2026-10-19T12:47:00Z'
   target:
     name: OVHcloud CLI
@@ -35,11 +68,13 @@
       title: ovhcloud-cli security incident - October 19th, 2026
     - url: https://www.stepsecurity.io/blog/ovhcloud-cli-github-release-swap-glassworm
       title: OVHcloud CLI Compromised via GitHub Release Swap
+    - url: https://opensourcemalware.com/blog/glassworm-hacks-ovh-clouds-cli-tool
+      title: Glassworm Hacks OVH Clouds CLI tool
   end_date: '2026-10-19T14:21:00Z'
   notes:
     - >-
-      Source builds, go install, Homebrew, and the Docker image were not affected. A rebuilt binary
-      is not an original swapped release asset.
+      The vendor confirmed unchanged source and build infrastructure. Exposure depended on
+      downloading and running a replaced release asset during the incident window.
   impact:
     types:
       - credential_theft

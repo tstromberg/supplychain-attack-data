@@ -73,8 +73,8 @@ type Campaign struct {
 
 // PullQuote lifts the turn of a story out of the prose: the mechanism that
 // broke an assumption, the step earlier attacks had not reached. It is
-// optional, and most records are better without one. After is the story
-// paragraph it follows, counting from 1.
+// required for each article. After is the story paragraph it follows,
+// counting from 1.
 type PullQuote struct {
 	Text    string `yaml:"text"`
 	Caption string `yaml:"caption"`
@@ -747,7 +747,7 @@ const (
 
 func validatePullQuote(path, id, field string, quote *PullQuote, story string) []issue {
 	if quote == nil {
-		return nil
+		return []issue{{"error", field, "", path, id, "at least one pull quote is required; set pull_quote.text and pull_quote.after"}}
 	}
 
 	var issues []issue
@@ -775,21 +775,15 @@ func validatePullQuote(path, id, field string, quote *PullQuote, story string) [
 		issues = append(issues, issue{"error", field + ".after", strconv.Itoa(quote.After), path, id,
 			fmt.Sprintf("pull_quote.after is past the end of a %d paragraph story", paragraphs)})
 	}
-	if quote.After < 0 {
+	if quote.After < 1 {
 		issues = append(issues, issue{"error", field + ".after", strconv.Itoa(quote.After), path, id,
-			"pull_quote.after must not be negative"})
+			"pull_quote.after must be at least 1 so the quote appears after a story paragraph"})
 	}
 	return issues
 }
 
 func countParagraphs(story string) int {
-	count := 0
-	for _, paragraph := range strings.Split(story, "\n\n") {
-		if strings.TrimSpace(paragraph) != "" {
-			count++
-		}
-	}
-	return count
+	return len(storyParagraphs(story))
 }
 
 func countSentences(value string) int {
@@ -825,9 +819,6 @@ func isASCIIDigit(b byte) bool {
 }
 
 func validateStory(path, id, field, value string) []issue {
-	if strings.TrimSpace(value) == "" {
-		return nil
-	}
 	count := len(storyParagraphs(value))
 	if count >= 2 && count <= 4 {
 		return nil

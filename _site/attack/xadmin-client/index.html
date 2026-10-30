@@ -14,27 +14,63 @@
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
   <h1>xadmin-client upstream commits installed malicious editor hooks</h1>
-  
+
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> xadmin-client · <a href="https://github.com/nineaiyu/xadmin-client" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-09-22</div>
-    
+
     <div class="meta-item"><strong>Target Kind:</strong> project</div>
     <div class="meta-item"><strong>Language:</strong> N/A</div>
-    
-    
+
+
     <div class="meta-item"><strong>Transitive:</strong> true</div>
     <div class="meta-item"><strong>Impact:</strong> credential_theft</div>
-    
+
     <div class="meta-item"><strong>Phase:</strong> source</div>
   </div>
 
   <h2>Synopsis</h2>
   <p class="synopsis">A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.</p>
 
-  
 
-  
+  <h2>Story</h2>
+  <div class="story">
+
+      <p>The frontend for a Django-and-Vue administration system acquired malicious development hooks
+while its issue bots continued their ordinary work. The September 22 source snapshot of
+nineaiyu/xadmin-client contained the same implanted payload found in five other repositories.
+SafeDep identified the group as infections by the credential-stealing Mini Shai-Hulud worm
+linked to the compromised actions-cool/issues-helper action.</p>
+
+      <p>xadmin-client's README described a Vue 3 interface for a role-based access-control system,
+derived from vue-pure-admin. Its archived workflows used issues-helper to label reports, remove
+labels, and close issues that had received no feedback for thirty days. Those routines explain
+why a frontend repository depended on an external GitHub Action at all. The malicious files,
+however, appeared in .claude and .vscode, where a developer's local coding tools would find
+them.</p>
+
+      <p>Inspection showed a Claude Code session hook and a VS Code folder-open task pointing to node
+.claude/setup.mjs. The setup program downloaded Bun and ran a bundled JavaScript payload whose
+digest matched the other five captures. The settings thus connected source distribution to local
+command execution without needing to alter a visible application screen. Execution was
+conditional on using the relevant tool and allowing the project-defined command, particularly VS
+Code's automatic task.</p>
+      <figure class="pull-quote">
+        <blockquote>The settings thus connected source distribution to local command execution without needing to alter a visible application screen.</blockquote>
+        <figcaption>The visible application could look unchanged</figcaption>
+      </figure>
+
+      <p>The retained commit proved that the upstream checkout distributed the hooks. It did not prove
+that a deployed xadmin administration website served malware, that a package registry published
+the altered files, or that every contributor ran them. The incident's immediate downstream
+audience was developers handling that source. Their potential exposure came from the commands in
+the checkout, while actual credential theft or persistent access would require additional
+endpoint evidence.</p>
+
+  </div>
+
+
+
   <h2>Affected Artifacts</h2>
   <div class="artifact-table-wrap">
     <table class="artifact-table">
@@ -48,56 +84,56 @@
         </tr>
       </thead>
       <tbody>
-        
+
         <tr>
           <td>
             <strong>nineaiyu/xadmin-client</strong>
-            
+
             <br><span>github · revision_control_system</span>
-            
+
             <br><a href="https://github.com/nineaiyu/xadmin-client" target="_blank">https://github.com/nineaiyu/xadmin-client</a>
           </td>
           <td>2026-09-22</td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
         </tr>
-        
+
       </tbody>
     </table>
   </div>
-  
 
-  
 
-  
 
-  
 
-  
 
-  
+
+
+
+
+
+
   <h2>References</h2>
   <ul>
-    
+
       <li><a href="https://safedep.io/mini-shai-hulud-reinfection-github-repositories/" target="_blank">September upstream reinfections</a></li>
-    
+
       <li><a href="https://github.com/nineaiyu/xadmin-client/commit/257a90c876fb858a54bbdeb47836701aefa0dabc" target="_blank">Upstream commit adding editor hooks</a></li>
-    
+
   </ul>
-  
+
 </div>
 
   </div>

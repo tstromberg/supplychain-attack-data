@@ -3,6 +3,38 @@
   synopsis: >-
     An attacker used stolen release credentials to publish LiteLLM 1.107.0 on October 21. Its wheels
     and container image carried Python startup hooks that stole secrets and loaded remote code.
+  story: |
+    An administrative key left in a public repository in May helped an attacker turn LiteLLM's
+    October 21 release into a credential thief and persistent backdoor. The package lets
+    applications talk to multiple AI providers through a common interface, making its deployment
+    environments useful places to find provider keys. Seven version 1.107.0 wheels and affected
+    container images reached official registries before the maintainers contained the release, in a
+    separate incident from LiteLLM's March compromise.
+
+    LiteLLM's postmortem traced the first access to an internal Agent Platform API. The exposed
+    master key returned a GitHub organization owner's token on October 10; the attacker then used
+    disposable workflows to steal other maintainers' credentials. Socket independently recovered
+    secret-stealing workflows from October 10 and 12, on branches deleted soon after use. With
+    multiple identities available, the attacker changed the release system to build from the
+    lookalike Berri-AI organization and supplied the separate approval needed to publish.
+
+    The malicious wheels turned normal Python startup into an execution trigger. OpenSourceMalware
+    found cook.pth, cook.py, and sitecustomize.py arranged to run a collector and retrieve
+    additional Python code periodically. Applications did not need to import LiteLLM for the startup
+    hooks to execute. Inspection of the retained Linux wheel confirmed those three files in the
+    exact 1.107.0 release. OpenSourceMalware's analysis covered browser data, cloud and developer
+    credentials, and keys stored by LiteLLM itself, with stolen information sent to www.litellm.dev.
+
+    The maintainers said PyPI quarantined the release by 13:23 UTC on October 21, with affected
+    Docker Hub tags removed or repointed by 14:20. They restricted publishing, removed GitHub
+    organization access, and treated organizational credentials as exposed. Removing the release
+    closed a delivery route, but could not recall secrets or background processes from affected
+    environments. The postmortem also corrected the initial account of token theft: the owner's
+    credential came from the Agent Platform API, rather than the deployment logs first suspected.
+  pull_quote:
+    text: Applications did not need to import LiteLLM for the startup hooks to execute.
+    caption: Python startup was enough
+    after: 3
   start_date: '2026-10-10'
   target:
     name: LiteLLM
@@ -38,20 +70,13 @@
       title: LiteLLM PyPI Package and Docker Images Compromised to Steal Cloud and AI Credentials
     - url: https://socket.dev/blog/litellm-attack-timeline
       title: New Evidence Shows LiteLLM Secret-Stealing Workflows Ran 11 Days Before Supply Chain Attack
+    - url: https://docs.litellm.ai/blog/security-incident-oct-21-2026-attack-chain
+      title: The attack chain behind the v1.107.0 LiteLLM release
+    - url: >-
+        https://opensourcemalware.com/blog/litellm-1-107-0-pypi-wheel-contains-a-credential-stealer-and-persistent-python-backdoor
+      title: LiteLLM 1.107.0 PyPI Wheel Contains a Credential Stealer and Persistent Python Backdoor
   language: Python
   impact:
     types:
       - credential_theft
       - remote_code_execution
-  story: >
-    Secret-stealing workflows ran in the upstream repository on October 10 and 12. Later vendor
-    findings linked a stolen GitHub token to approval of the October 21 release.
-
-
-    Container provenance recorded Berri-AI/litellm as its source, rather than the legitimate BerriAI
-    organization. The malicious build included cook.pth, cook.py, and sitecustomize.py.
-
-
-    The installed startup hooks collected cloud and AI credentials and could execute remotely
-    supplied Python. Floating container tags also resolved to the affected image. This incident is
-    separate from the March LiteLLM compromise.

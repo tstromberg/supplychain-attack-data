@@ -1,8 +1,16 @@
-.PHONY: all compile run clean site serve deploy samples-inventory samples-verify samples-npm-mirror missing-before missing-during missing-after refs artifacts artifacts-verify sync sync-dry snapshot
+.PHONY: all compile validate run clean site serve deploy samples-inventory samples-verify samples-npm-mirror missing-before missing-during missing-after refs artifacts artifacts-verify sync sync-dry snapshot
 
 all: compile run site
 
 compile: out/yaml2csv
+
+# Validate without overwriting generated CSVs. Any validation error fails this target.
+validate: out/yaml2csv
+	@validation_status=0; \
+	for scope in oss proprietary; do \
+		YAML2CSV_STRICT=1 ./out/yaml2csv "$$scope" > /dev/null || validation_status=1; \
+	done; \
+	exit $$validation_status
 
 out/yaml2csv: $(wildcard ./cmd/yaml2csv/*.go)
 	@mkdir -p out

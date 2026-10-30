@@ -14,27 +14,62 @@
     <div class="attack-detail">
   <a href="/" class="back-link">&larr; Return to Chronicle</a>
   <h1>MaaFramework upstream commits installed malicious editor hooks</h1>
-  
+
   <div class="metadata-grid">
     <div class="meta-item"><strong>Target:</strong> MaaFramework · <a href="https://github.com/MaaXYZ/MaaFramework" target="_blank">repo</a></div>
     <div class="meta-item"><strong>Date:</strong> 2026-09-24</div>
-    
+
     <div class="meta-item"><strong>Target Kind:</strong> project</div>
     <div class="meta-item"><strong>Language:</strong> N/A</div>
-    
-    
+
+
     <div class="meta-item"><strong>Transitive:</strong> true</div>
     <div class="meta-item"><strong>Impact:</strong> credential_theft</div>
-    
+
     <div class="meta-item"><strong>Phase:</strong> source</div>
   </div>
 
   <h2>Synopsis</h2>
   <p class="synopsis">A malicious upstream commit added Claude Code and VS Code hooks that launched a credential-stealing payload when developers opened the checkout.</p>
 
-  
 
-  
+  <h2>Story</h2>
+  <div class="story">
+
+      <p>MaaFramework's September 24 source tree acquired a JavaScript bootstrapper in an unexpected
+place: the settings used by contributors' coding tools. The project provided an
+image-recognition framework for automating interactions and testing software. SafeDep found it
+among six established repositories receiving hooks for the credential-stealing Mini Shai-Hulud
+worm, with the nearest candidate trigger in this case being the project's Release workflow.</p>
+
+      <p>The retained checkout explains why the language of the project's main code was no protection
+against this change. MaaFramework advertised a C++ core and interfaces for several ecosystems,
+but .claude/settings.json instructed a coding session to start a Node.js program. A separate
+.vscode/tasks.json offered the same command as Environment Setup. The files traveled with the
+source regardless of which framework binding a contributor intended to work on.</p>
+      <figure class="pull-quote">
+        <blockquote>The files traveled with the source regardless of which framework binding a contributor intended to work on.</blockquote>
+        <figcaption>A cross-language development exposure</figcaption>
+      </figure>
+
+      <p>The added setup script downloaded a suitable Bun runtime and launched the bundled
+.claude/index.js. Its platform selection covered Windows, macOS, and Linux. Comparing the
+archived payload with those in the other affected repositories produced an identical digest,
+linking the source additions without relying on a filename alone. The Claude session hook and
+the requested VS Code folder-open task were alternate entry points; execution still depended on
+the local tool, available runtime, and applicable trust controls.</p>
+
+      <p>The release-workflow association was based on timing, not proof that a published MaaFramework
+binary contained the implant. The captured evidence instead showed executable settings
+distributed through the upstream repository. No affected PyPI, npm, NuGet, or other packaged
+release was established by this investigation. That distinction kept the incident's scope on the
+compromised development checkout while leaving the number of workstations that actually ran its
+hooks unresolved.</p>
+
+  </div>
+
+
+
   <h2>Affected Artifacts</h2>
   <div class="artifact-table-wrap">
     <table class="artifact-table">
@@ -48,56 +83,56 @@
         </tr>
       </thead>
       <tbody>
-        
+
         <tr>
           <td>
             <strong>MaaXYZ/MaaFramework</strong>
-            
+
             <br><span>github · revision_control_system</span>
-            
+
             <br><a href="https://github.com/MaaXYZ/MaaFramework" target="_blank">https://github.com/MaaXYZ/MaaFramework</a>
           </td>
           <td>2026-09-24</td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
           <td>
-            
+
               N/A
-            
+
           </td>
         </tr>
-        
+
       </tbody>
     </table>
   </div>
-  
 
-  
 
-  
 
-  
 
-  
 
-  
+
+
+
+
+
+
   <h2>References</h2>
   <ul>
-    
+
       <li><a href="https://safedep.io/mini-shai-hulud-reinfection-github-repositories/" target="_blank">September upstream reinfections</a></li>
-    
+
       <li><a href="https://github.com/MaaXYZ/MaaFramework/commit/97123f9160fcf03964187e66abcc2824f8fa1d9a" target="_blank">Upstream commit adding editor hooks</a></li>
-    
+
   </ul>
-  
+
 </div>
 
   </div>

@@ -4,6 +4,41 @@
     The official tensorlake 0.5.144 npm release added a preinstall loader. Installing the SDK with
     lifecycle scripts enabled launched a worm that stole credentials and attempted further
     propagation.
+  story: |
+    Developers installing a toolkit for running AI-generated code in isolated sandboxes received a
+    credential-stealing worm before they ever created a sandbox. Tensorlake's npm release 0.5.144
+    arrived on October 8 with an installation hook that launched the malware on the installing
+    machine. SafeDep and Socket independently flagged the release within minutes, tracing the danger
+    to the SDK that developers used to manage Tensorlake environments.
+
+    SafeDep reconstructed a compromise of the project's source and release process. On October 7, a
+    repository administrator account added two payload files and an installation hook through
+    GitHub's web interface, then revised the changes and set the package version. The account
+    subsequently started the project's normal npm publication workflow. Trusted publishing delivered
+    the poisoned source through the legitimate pipeline; provenance attached to sibling packages
+    documented that build without establishing that its contents were safe.
+
+    The retained source snapshot contains the preinstall command, lib/setup.mjs, and the large
+    Math_Symbol.js payload. SafeDep found that the loader obtained Bun and avoided recognized CI
+    environments, letting the publishing job proceed while leaving downstream installations exposed.
+    Socket described collection of cloud credentials, package tokens, SSH material, and AI-tool
+    configuration, together with remote execution and propagation capabilities. A token-monitoring
+    component also made recovery hazardous: the researchers documented destructive behavior tied to
+    invalidated credentials.
+
+    npm removed the malicious version, and Tensorlake's maintainers reverted the source changes and
+    released 0.5.145, according to SafeDep. That stopped this version's normal distribution but did
+    not account for machines where it had already executed. The exposure began with installing the
+    management SDK, outside the isolated environments it was meant to control. Neither the package's
+    routine download volume nor a successful release job measured how many developers actually ran
+    the payload.
+  pull_quote:
+    text: >-
+      Trusted publishing delivered the poisoned source through the legitimate pipeline; provenance
+      attached to sibling packages documented that build without establishing that its contents were
+      safe.
+    caption: A legitimate pipeline built poisoned source
+    after: 2
   start_date: '2026-10-07'
   target:
     name: Tensorlake
