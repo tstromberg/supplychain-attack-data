@@ -1,13 +1,13 @@
 - id: cursor-claude-code
   title: Cursor marketplace distributed a modified Claude Code extension
   synopsis: >-
-    Cursor distributed a malicious Anthropic.claude-code 2.1.313 extension through its marketplace.
+    Cursor distributed malicious Anthropic.claude-code 2.1.312 and 2.1.313 extensions through its marketplace.
     The modified package collected host details and attempted to establish a persistent SSH
     backdoor.
   story: |
     Developers obtaining Claude Code through Cursor's extension marketplace on October 29 could
     receive a modified extension that tried to leave an SSH backdoor on their computers. Cursor
-    identified version 2.1.313 as affected and bounded its availability to roughly 02:27–13:35
+    identified versions 2.1.312 and 2.1.313 as affected and bounded availability to roughly 02:27–13:35
     Pacific time. The company put the potentially affected population at no more than 5,000 users;
     that did not establish successful remote access to 5,000 machines.
 
@@ -16,6 +16,8 @@
     conversation. The researchers corrected their initial distribution attribution after hearing
     from Cursor: the affected channel was Cursor's marketplace. Their revised report distinguished
     that artifact from the npm package and the Open VSX and Microsoft extension distributions.
+    Microsoft's October 30 analysis confirmed that neither Visual Studio Marketplace nor the npm
+    distribution carried the malicious packages; Anthropic told Microsoft its systems were uncompromised.
 
     The implant added an attacker-controlled SSH key labeled svc-telemetry, attempted to enable the
     local SSH service, and arranged a reverse tunnel and persistent retries. It also reported host
@@ -23,13 +25,21 @@
     values. Cursor said privilege requirements and implementation errors prevented the SSH-enabling
     step on most ordinary macOS and Windows installations. Those failures did not necessarily
     prevent the unauthorized key, persistence files, or reconnaissance traffic from being created.
+    Microsoft distinguished the key authorizing access to the victim from a separate embedded
+    private key used to authenticate outbound tunnel connections. The tunnel requested a
+    server-assigned port forwarding to the victim's local SSH port 22. Persistence used a macOS
+    LaunchAgent, a Linux reboot cron entry, or an attempted Windows SYSTEM task with a Startup-folder
+    fallback. These were code capabilities, not evidence that every mechanism succeeded or that a
+    Linux package was distributed. Updating the extension or disabling the server would leave
+    separately written keys and startup artifacts requiring cleanup.
 
     Cursor removed the extension, temporarily shut the marketplace, rotated keys, rebuilt the
     service, and worked with the hosting provider to disable the attacker's server. Its recovery
-    guidance addressed standalone persistence as well as the extension itself. The advisory
-    establishes the incident, but this collection's recovered macOS artifact did not match the
-    expected extension identity and remains disputed. It was not used to claim an independently
-    verified Claude Code payload or to broaden the affected distribution channels.
+    guidance addressed standalone persistence as well as the extension itself. Cursor's October 30
+    advisory update corrected package hashes and clarified affected versions. This collection's
+    artifact recovered using the earlier macOS digest did not match the expected extension identity
+    and remains disputed. It was not used to claim an independently verified Claude Code payload
+    or to broaden the affected distribution channels.
   pull_quote:
     text: >-
       It ran when the extension loaded, before legitimate initialization, without requiring the user
@@ -48,26 +58,39 @@
       name: Anthropic.claude-code darwin-arm64
       kind: ide_extension
       versions:
+        - 2.1.312
         - 2.1.313
+      hashes:
+        - sha256:fcbb327e38e61c4fec795e0d0591f52cd1014b813d20a5912104953c3a17c364
+        - sha256:80402fdcad8799285fd93044976973ca000da7995fb93363f819bb8e4f84ee6c
       notes:
         - >-
-          The advisory’s reported macOS digest is disputed by the recovered archive identity; see
+          Cursor's updated advisory maps fcbb327e… to 2.1.312 and 80402fdc… to 2.1.313.
+          The earlier reported macOS digest is disputed by the recovered archive identity; see
           samples/manifest.yaml.
     - id: claude-code-win32-x64
       name: Anthropic.claude-code win32-x64
       kind: ide_extension
       versions:
+        - 2.1.312
         - 2.1.313
       hashes:
         - sha256:3de1722901165769893bef57c72594e9a54459faa23f3091b136b79966edd081
+        - sha256:6786ec90cbd45949695bd7805c9fbb26cfc91bc5fc897de0183d9bcb9cb21731
+      notes:
+        - >-
+          Cursor's updated advisory maps 3de17229… to 2.1.312 and 6786ec90… to 2.1.313.
   references:
     - url: https://cursor.com/blog/claude-code-extension-security-notice
-      title: 'Security notice: malicious Anthropic.claude-code 2.1.313 in Cursor Extension Marketplace'
+      title: 'Security notice: malicious Anthropic.claude-code 2.1.312 and 2.1.313 in Cursor Extension Marketplace'
     - url: https://socket.dev/blog/claude-code-extension-compromise
       title: Cursor Removes Malicious Claude Code 2.1.313 Extension From Its Marketplace
     - url: >-
         https://opensourcemalware.com/blog/trojanized-claude-code-extension-plants-persistent-ssh-backdoor
       title: Trojanized Claude Code Extension Plants an SSH Backdoor
+    - url: >-
+        https://www.microsoft.com/en-us/security/blog/2026/10/30/inside-malicious-claude-code-branded-cursor-extension-persistent-ssh-backdoor/
+      title: Inside a malicious Claude Code-branded extension and its persistent SSH backdoor
   end_date: '2026-10-29T20:35:00Z'
   language: JavaScript
   impact:
@@ -82,5 +105,8 @@
       Cursor reported that enabling SSH generally failed without administrator privileges.
       Persistence and host-information collection still required remediation.
     - >-
-      The recovered macOS advisory digest identifies anysphere.remote-ssh 1.1.17 internally. It is
+      The recovered earlier macOS advisory digest identifies anysphere.remote-ssh 1.1.17 internally. It is
       disputed evidence, not a verified Claude Code package; see samples/manifest.yaml.
+    - >-
+      Microsoft identifies ecb58cb29078d9646ad1dcdbe51526f2d9cfea06be5fb2ab183e8ecc3ab6bf15
+      as the JavaScript entry-point hash, not a VSIX package hash.
